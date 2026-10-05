@@ -1,0 +1,26 @@
+{
+  "name": "xmr20-wallet",
+  "version": "0.1.14",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "pretest": "npm run build"
+  },
+  "dependencies": {
+    "@solana/web3.js": "1.98.4",
+    "@noble/hashes": "1.8.0",
+    "@noble/curves": "1.9.7",
+    "bs58": "6.0.0",
+    "buffer": "6.0.3",
+    "@solana/spl-token": "0.4.15"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "MIT"
+}
