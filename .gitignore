@@ -1,0 +1,15 @@
+node_modules/
+review/
+.DS_Store
+*.zip
+*.log
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+wallet-backups/
+browser-profiles/
+playwright-report/
+test-results/
