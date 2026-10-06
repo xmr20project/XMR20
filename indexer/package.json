@@ -1,0 +1,24 @@
+{
+  "name": "xmr20-read-indexer",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "npm run build && node --test test/*.test.mjs && python3 -m unittest discover -s test -p 'test_*.py'",
+    "start": "python3 build/service.py --config config.local.json"
+  },
+  "dependencies": {
+    "@noble/hashes": "1.8.0",
+    "@solana/web3.js": "1.98.4",
+    "@solana/spl-token": "0.4.15",
+    "monero-ts": "0.11.16"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}

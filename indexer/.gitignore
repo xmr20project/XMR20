@@ -1,0 +1,9 @@
+node_modules/
+build/
+state/
+config.local.json
+.env*
+*.sqlite*
+*.age
+__pycache__/
+*.pyc

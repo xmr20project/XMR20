@@ -1,6 +1,14 @@
-# XMR20 Wallet
+# XMR20 Wallet and Read Indexer
 
-Source repository for the XMR20 Chrome extension, developer preview **0.1.14**.
+Source repository for the XMR20 Chrome extension, developer preview **0.1.14**, and the experimental read-only token indexer.
+
+## Read indexer
+
+The standalone [indexer source and instructions](indexer/README.md) are in `indexer/`. It rebuilds its own state from public Monero records and finalized Solana account data, with local signature verification. Build it separately with Node.js 24+, Python 3.9+ and its own npm lockfile.
+
+Token discovery and historical launch bindings still depend on the primary public catalog. Complete live replay and primary parity are not yet verified for this source release. It does not sign transactions or authorize bridge withdrawals. See the indexer README for exact limits.
+
+## Wallet
 
 ## Features
 
@@ -30,7 +38,7 @@ The manifest contains a **public** key to preserve extension identity. It is not
 
 ## Scope and limitations
 
-This repository contains extension source, its installable build, unit tests, public pricing fixtures and two small service integration modules used by tests. It does not contain the full XMR20 website/indexer, deployment credentials, browser profiles, user wallets, recovery phrases or transfer receipts. No service deployment is performed by building or testing this repository.
+The wallet portion contains extension source, its installable build, unit tests, public pricing fixtures and two small service integration modules used by tests. The separate `indexer/` directory contains the read-only second indexer. This repository does not contain the full XMR20 website, primary transaction service, deployment credentials, browser profiles, user wallets, recovery phrases or transfer receipts. No service deployment is performed by building or testing this repository.
 
 Private keys are stored in the password-encrypted local vault. Unlocked key material exists in memory while the wallet is in use. This is a developer preview, not an independently audited production wallet. The existing operator-attested bridge requires SOL for Solana network/account fees and explicit approvals. See [bridge notes](BRIDGE-0.1.14.md).
 

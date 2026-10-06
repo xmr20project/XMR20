@@ -1,0 +1,81 @@
+{
+  "description": "Read-only source extracted for standalone packaging; paths name the original private workspace, not build dependencies. No deployment or live replay is asserted.",
+  "sources": [
+    {
+      "path": "backend/web/shared/xmr20/address.js",
+      "sha256": "4a46f5072b3a988427e182b2392f50b751daa98101b1b6348e01cb757f9a34c1"
+    },
+    {
+      "path": "backend/packages/xmr20-bridge/mainnet-bridge-adapter.mjs",
+      "sha256": "4557a4b3ffcfd705c2c6311fb32c2e63e32110393b92d709293b871d4de1f8ce"
+    },
+    {
+      "path": "backend/packages/xmr20-bridge/holder-index.mjs",
+      "sha256": "9accd74a64ea5bc329ee96958d19c6f492aab75446f29e4a3c6048637142e9d4"
+    },
+    {
+      "path": "backend/packages/xmr20-bridge/v2-client.mjs",
+      "sha256": "48acae0b9c825975082396c489bfbf5071f964f80ea3b9e3dc1acae1b6d03af6"
+    },
+    {
+      "path": "backend/web/shared/fund-deployment.js",
+      "sha256": "eb47637b0f3480f3ca4bfed0602f4d253452fc9b74e43cc57554528e3116ef72"
+    },
+    {
+      "path": "backend/web/shared/fund-client.js",
+      "sha256": "9287236bbcf41286810a3d1838c91dbe0662a45a4783e8d88e2ea4e894800edd"
+    },
+    {
+      "path": "operations/indexer-preflight/checkpoint_accounting.mjs",
+      "sha256": "71bbf6b97a4668950591ed139d85c08f0dadff485b6001a189c804cb491dc0d5"
+    },
+    {
+      "path": "indexer/src/ledger.mjs",
+      "sha256": "c80e5b4ee70b2e2d57152016701a17188d39d9f314699a2f4d412227e5416e62"
+    },
+    {
+      "path": "indexer/src/verifier.mjs",
+      "sha256": "43b8bd996dbbac6adf7a48395ae40ca749f2e88523c680cb570bc0205c53f737"
+    },
+    {
+      "path": "indexer/src/service.py",
+      "sha256": "9e21547dcdd1b890af3a7811ccf940775caa4a0133a92bf78b73366df8375b74"
+    },
+    {
+      "path": "indexer/build_scanner.py",
+      "sha256": "af5a89e6181a7b39603a05c4a6f3b5b40e757f7440eab8cefaeb2364024f9b62"
+    },
+    {
+      "path": "backend/packages/xmr20-mainnet-probe/probe.py",
+      "sha256": "e67ac5226c9374b2d6ddbeff142f5a11eb1e26436f064f67b5286386d55f5983"
+    },
+    {
+      "path": "backend/packages/xmr20-bridge/mainnet_launch.py",
+      "sha256": "b7d1c1e136db770d26c6a6da31c2ef936b243d025689a4954effeb27854ee96d"
+    },
+    {
+      "path": "backend/packages/xmr20-bridge/mainnet_bridge.py",
+      "sha256": "baa8027d9f1926c9e521dd1438b8cb87babbd5738d9ebf520e1be3f907c2ab87"
+    },
+    {
+      "path": "operations/indexer-preflight/test_checkpoint_accounting.mjs",
+      "sha256": "0197709b24d8a232987400c4aef8ae225fa780da655887470e399e59dc2d4ffc"
+    },
+    {
+      "path": "indexer/test/ledger.test.mjs",
+      "sha256": "ae4e951c5e069c031cb356d30d44e6c902f791d5ea757d1a1566ade28801abd8"
+    },
+    {
+      "path": "indexer/test/verifier.test.mjs",
+      "sha256": "cb2b5d51d3957147ce939b18786f38742f11b09353480687ad5727c52228cb06"
+    },
+    {
+      "path": "indexer/test/test_service.py",
+      "sha256": "150ad9d653afe77827d5f92e5b878090a13fa8d5c87e1a2b75c7f6ca9dd706de"
+    },
+    {
+      "path": "operations/indexer-preflight/review-packages/full-replay-20261005T100924Z/reviewed-public-policy.json",
+      "sha256": "04d1f5976f6179314c83c55e43225652fdc41797ad6936ca4afae8abeae83bf4"
+    }
+  ]
+}

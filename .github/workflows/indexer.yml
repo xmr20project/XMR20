@@ -1,0 +1,26 @@
+name: Read indexer checks
+on:
+  push:
+    paths: ['indexer/**', '.github/workflows/indexer.yml']
+  pull_request:
+    paths: ['indexer/**', '.github/workflows/indexer.yml']
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: indexer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: indexer/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm test
