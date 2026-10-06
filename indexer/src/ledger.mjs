@@ -4,17 +4,19 @@ import {addresses,decodeReceipt} from './escrow.mjs';
 import {planCheckpointReads,verifyPrograms,tokenEvidence,account,GENESIS} from './accounting.mjs';
 import {replayMainnetEvents,reconcileSupply,moneroHolderRows} from './replay.mjs';
 import {PROGRAMS} from './accounting.mjs';
+import {discover,recheckDiscovery} from './discovery.mjs';
+import {verificationReport} from './verification.mjs';
 const need=(v,s)=>{if(!v)throw Error(s)};
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 const allowed=new Set(['getGenesisHash','getMultipleAccounts','getProgramAccounts']);
 export function readClient(url,fetcher=fetch){
-  const u=new URL(url);need(u.protocol==='https:'&&!u.username&&!u.password,'rpc-url');
+  const u=new URL(url);need((u.protocol==='https:'||u.protocol==='http:'&&['127.0.0.1','[::1]'].includes(u.hostname))&&!u.username&&!u.password&&!u.hash,'rpc-url');
   let last=0;
   return async(method,params=[])=>{
     need(allowed.has(method),'rpc-method');
     for(let attempt=0;attempt<3;attempt++){
       await wait(Math.max(0,350-(Date.now()-last)));last=Date.now();
-      const res=await fetcher(url,{method:'POST',redirect:'error',signal:AbortSignal.timeout(25000),headers:{'Content-Type':'application/json','User-Agent':'XMR20-Read-Indexer/0.1'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params})});
+      const res=await fetcher(url,{method:'POST',redirect:'error',signal:AbortSignal.timeout(25000),headers:{'Content-Type':'application/json','User-Agent':'XMR20-Read-Indexer/0.2'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params})});
       if(res.status===429&&attempt<2){await wait(15000*(attempt+1));continue;}
       need(res.ok,'solana-http-'+res.status);
       const text=await res.text();need(text.length<32*1024*1024,'rpc-size');
@@ -47,7 +49,8 @@ export async function calculate(input,rpc,{manifests=PROGRAMS}={}){
         accountReads.push({...r,keys});
       }
       if(changed)continue;
-      accepted=tokenEvidence(p,{mint:p.mint,enumeration,accountReads},launches.get(p.launchId));break;
+      accepted=tokenEvidence(p,{mint:p.mint,enumeration,accountReads},launches.get(p.launchId));
+      recheckDiscovery(launches.get(p.launchId),accepted.infos);break;
     }
     need(accepted,'solana-context-changing');evidence.set(p.mint,accepted);
   }
@@ -71,14 +74,23 @@ export async function calculate(input,rpc,{manifests=PROGRAMS}={}){
     const supply=reconcileSupply({...e,moneroOutstanding:token?.outstanding||0n,moneroHolders});
     snapshots.push({schema:'xmr20-holders-v1',id:r.id,mint,moneroNetwork:'mainnet',solanaNetwork:'mainnet-beta',state:'verified',decimals:6,checkedAt:Date.now(),moneroHeight:input.scan.height,moneroBlockHash:input.checkpoint.hash,moneroConfirmations:10,solanaSlot:e.slot,escrowAddress:addresses(e.plan.programId,mint).vault.toBase58(),...supply});
   }
-  return {snapshots,checkpoint:input.checkpoint,accepted:{deployments:ledger.tokens.size,credits:ledger.credits.size,transfers:ledger.transfers.size,burns:ledger.burns.size}};
+  return {snapshots,checkpoint:input.checkpoint,verification:verificationReport(input,ledger,snapshots),accepted:{deployments:ledger.tokens.size,credits:ledger.credits.size,transfers:ledger.transfers.size,burns:ledger.burns.size}};
 }
-if(process.argv[2]==='--calculate'){
+export async function discoverAndCalculate(input,rpc,options={}){
+  const found=await discover(input,rpc,options);
+  const ids=[...found.launches,...found.unbound].map(r=>r.id).sort();
+  const result=await calculate({...input,discoveryAdmissions:ids,projection:{schema:'xmr20-public-replay-projection-v1',launches:found.launches,receipts:[],holderSnapshots:[]}},rpc,options);
+  // The provisional discovery pass must agree with the final balance-aware
+  // replay; nonce conflicts or other admission differences cannot be hidden.
+  need(JSON.stringify(ids)===JSON.stringify(result.verification.ledger.tokens.map(r=>r.deployment).sort()),'discovery-admission-mismatch');
+  return {...result,catalog:[...found.launches,...found.unbound].sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0),unbound:found.unbound.map(r=>({id:r.id,mint:r.mint,state:'unbound',solanaSlot:r.discoverySlot})),discoverySource:'chain'};
+}
+if(['--calculate','--discover-calculate'].includes(process.argv[2])){
   try{
     const input=JSON.parse(readFileSync(0,'utf8'));
-    const result=await calculate(input,readClient(input.solanaUrl));process.stdout.write(JSON.stringify(result)+'\n');
+    const result=await (process.argv[2]==='--discover-calculate'?discoverAndCalculate:calculate)(input,readClient(input.solanaUrl));process.stdout.write(JSON.stringify(result)+'\n');
   }catch(e){
-    const known=/^(accounting\.[a-z-]+|solana-[a-z-]+|solana-http-\d{3}|receipt-[a-z-]+|deployment-not-indexed|rpc-[a-z-]+|program-coverage|enumeration-context)$/;
+    const known=/^(accounting\.[a-z-]+|discovery\.[a-z-]+|discovery-admission-mismatch|solana-[a-z-]+|solana-http-\d{3}|receipt-[a-z-]+|deployment-not-indexed|rpc-[a-z-]+|program-coverage|enumeration-context)$/;
     process.stdout.write(JSON.stringify({error:known.test(e.message)?e.message:'ledger-validation-failed'})+'\n');process.exitCode=1;
   }
 }

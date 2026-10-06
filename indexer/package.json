@@ -1,6 +1,6 @@
 {
   "name": "xmr20-read-indexer",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "license": "MIT",
   "type": "module",
@@ -10,7 +10,8 @@
   "scripts": {
     "build": "node build.mjs",
     "test": "npm run build && node --test test/*.test.mjs && python3 -m unittest discover -s test -p 'test_*.py'",
-    "start": "python3 build/service.py --config config.local.json"
+    "start": "python3 build/service.py --config config.local.json",
+    "compare": "node build/compare.mjs"
   },
   "dependencies": {
     "@noble/hashes": "1.8.0",

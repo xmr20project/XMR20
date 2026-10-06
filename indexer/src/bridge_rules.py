@@ -4,7 +4,7 @@ LIMIT = 50000000000000
 SCAN_CACHE_VERSION = 2
 
 def scan_cache_path(c):
-    policy = {'version': SCAN_CACHE_VERSION, **{k: c.get(k) for k in ('network', 'address', 'bridgeStartHeight', 'transferStartHeight', 'daemonUrls')}}
+    policy = {'version': SCAN_CACHE_VERSION, **{k: c.get(k) for k in ('network', 'address', 'bridgeStartHeight', 'transferStartHeight', 'daemonUrls', 'replayHeight')}}
     digest = hashlib.sha256(canonical(policy).encode()).hexdigest()
     return Path(c['dataDir']) / ('bridge-chain-cache-v2-' + digest + '.json')
 
@@ -51,6 +51,10 @@ def scan(c):
     urls = c['daemonUrls']
     heights = [carr.daemon(u, 'get_info')['height'] for u in urls]
     height = min(heights)
+    if c.get('replayHeight') is not None:
+        target = c['replayHeight']
+        require(type(target) is int and c['bridgeStartHeight'] <= target < height, 'Replay checkpoint unavailable')
+        height = target + 1
     tip = height - 1
     start = c['bridgeStartHeight']
     require(type(start) is int and 0 <= start <= tip, 'Invalid mainnet index range')

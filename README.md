@@ -1,12 +1,14 @@
 # XMR20 Wallet and Read Indexer
 
-Source repository for the XMR20 Chrome extension, developer preview **0.1.14**, and the experimental read-only token indexer.
+Source repository for the XMR20 Chrome extension, developer preview **0.1.14**, and the experimental read-only token indexer **0.2.0**.
 
 ## Read indexer
 
 The standalone [indexer source and instructions](indexer/README.md) are in `indexer/`. It rebuilds its own state from public Monero records and finalized Solana account data, with local signature verification. Build it separately with Node.js 24+, Python 3.9+ and its own npm lockfile.
 
-Token discovery and historical launch bindings still depend on the primary public catalog. Complete live replay and primary parity are not yet verified for this source release. It does not sign transactions or authorize bridge withdrawals. See the indexer README for exact limits.
+The reader discovers token declarations and escrow bindings from chain data, without the XMR20 website catalog or primary database. Operators can use their own node endpoints and compare checkpointed verification reports. The repository includes [published rules](indexer/PROTOCOL.md), [verification instructions and remaining trust assumptions](indexer/VERIFICATION.md), synthetic tests and GitHub checks.
+
+Complete mainnet replay and primary parity have **not yet been verified for version 0.2.0**. Open source and matching reports do not certify bridge security: deployments and credits still require the configured authority, and withdrawals remain operator-attested. The reader does not sign or authorize withdrawals.
 
 ## Wallet
 
