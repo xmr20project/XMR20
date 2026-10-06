@@ -49,7 +49,8 @@ export function planCheckpointReads(input){
  for(const row of projection.launches.filter(eligible))if(row.mint)tokens.set(row.mint,{mint:row.mint,launchId:row.id,deployment:row.moneroTxid,manifest:binding(row),deposits:new Set()});
  // Every credit read by either ledger requires the original receipt account,
  // including otherwise non-public ledger deployments. Nothing is top-N sampled.
- const deployments=new Map();for(const e of scan.events)if(e.envelope.record.op==='deploy')deployments.set(e.txid,e.envelope.record);
+ const admitted=input.discoveryAdmissions?new Set(input.discoveryAdmissions):null;
+ const deployments=new Map();for(const e of scan.events)if(e.envelope.record.op==='deploy'&&(!admitted||admitted.has(e.txid)))deployments.set(e.txid,e.envelope.record);
  for(const e of scan.events){const r=e.envelope.record;if(r.op!=='credit')continue;const deploy=deployments.get(r.token);if(!deploy)continue;
   const row=byMint.get(deploy.mint);need(row,'unbound-credited-mint');
   if(!tokens.has(row.mint))tokens.set(row.mint,{mint:row.mint,launchId:row.id,deployment:r.token,manifest:binding(row),deposits:new Set()});
@@ -59,7 +60,8 @@ export function planCheckpointReads(input){
   if(receipt.direction==='xmr-to-sol'&&HASH.test(receipt.sourceTxid||''))token.deposits.add(addresses(token.manifest.programId,row.mint).receipt('withdraw',Buffer.from(receipt.sourceTxid,'hex')).toBase58());}
  const plans=[...tokens.values()].sort((a,b)=>a.mint.localeCompare(b.mint)).map(t=>{
   const a=addresses(t.manifest.programId,t.mint);programs.set(t.manifest.programId,t.manifest);
-  const keys=[t.mint,a.config.toBase58(),a.vault.toBase58(),...[...t.deposits].sort()];need(keys.length<=MAX_ACCOUNTS,'account-limit');
+  const discovery=projection.launches.find(r=>r.id===t.launchId)?.discoverySource==='chain';
+  const keys=[...new Set([t.mint,a.config.toBase58(),a.vault.toBase58(),...[...t.deposits].sort(),...(discovery?PROGRAMS.map(p=>addresses(p.programId,t.mint).config.toBase58()):[])])];need(keys.length<=MAX_ACCOUNTS,'account-limit');
   return {mint:t.mint,launchId:t.launchId,deployment:t.deployment,programId:t.manifest.programId,version:t.manifest.version,
    enumeration:{method:'getProgramAccounts',params:[TOKEN_2022_PROGRAM_ID.toBase58(),{encoding:'base64',commitment:'finalized',withContext:true,filters:[{memcmp:{offset:0,bytes:t.mint}}]}]},
    accountKeys:keys,accountMethod:'getMultipleAccounts',accountOptions:{encoding:'base64',commitment:'finalized'},
@@ -113,4 +115,4 @@ function tokenEvidence(plan,row,launch){
  return {slot,unissued:false,infos,plan,mintSupply:mint.supply,vaultBalance:vault,lockedRaw:locked,withheldRaw:withheld,solanaHolders:[...balances].sort().map(([address,n])=>({address,amountRaw:n.toString()})),attestor};
 }
 
-export {verifyPrograms,tokenEvidence,account,GENESIS};
+export {verifyPrograms,tokenEvidence,account,GENESIS,inputs as validateInputs};
