@@ -1,0 +1,32 @@
+{
+  "network": "mainnet",
+  "address": "4AMg1kDaXkWckE3uyd1YqoBKvn4z8ATxmWQVdtjF6aGU4sT278XoyhUV1Ve88ZMCXNXQJpjW2553NWERfMZcNsBtCkMLiNM",
+  "bridgeStartHeight": 3772610,
+  "transferStartHeight": 3773055,
+  "daemonUrls": [
+    "https://monero-node-one.example",
+    "https://monero-node-two.example"
+  ],
+  "catalogUrl": "https://api.xmr20.org/api/xmr20/tokens",
+  "solanaUrl": "https://solana-rpc.example",
+  "dataDir": "./state",
+  "node": "/absolute/path/to/node",
+  "port": 8792,
+  "policy": {
+    "operatorAddress": "4AMg1kDaXkWckE3uyd1YqoBKvn4z8ATxmWQVdtjF6aGU4sT278XoyhUV1Ve88ZMCXNXQJpjW2553NWERfMZcNsBtCkMLiNM",
+    "transferStartHeight": 3773055,
+    "abandonedLaunches": [
+      {
+        "mint": "HZ5r1XNvkr2QHAPCPYCf29JE9dRmHGsRjbLmHKDPfGw6",
+        "ticker": "XMR20",
+        "txid": "37f199a0b110272ebaf2bc75254042a540c5f42e3c2539d74793fc8042053656"
+      },
+      {
+        "mint": "2oS4JK1jbzcu6VLfQtnW8gG2hSDrUWBFoeXxjVLw4Gak",
+        "ticker": "TEST",
+        "txid": "7ca154d48f6534f59ad98fc75545e6ddfe8d53f6e68279ed717d647904b14d8e"
+      }
+    ],
+    "v3ProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265"
+  }
+}

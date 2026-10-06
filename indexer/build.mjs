@@ -1,0 +1,17 @@
+import {mkdirSync,copyFileSync,readFileSync,writeFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {createRequire} from 'node:module';
+import {fileURLToPath} from 'node:url';
+import {dirname,resolve} from 'node:path';
+import {build} from 'esbuild';
+const here=dirname(fileURLToPath(import.meta.url)),out=resolve(here,'build');
+const require=createRequire(import.meta.url);
+mkdirSync(out,{recursive:true});
+for(const name of ['verifier','ledger'])await build({entryPoints:[resolve(here,'src',name+'.mjs')],outfile:resolve(out,name+'.mjs'),bundle:true,platform:'node',format:'esm',target:'node24',external:['./monero.cjs'],banner:{js:"import {createRequire as _createRequire} from 'node:module';const require=_createRequire(import.meta.url);"},legalComments:'eof'});
+const moneroRoot=dirname(require.resolve('monero-ts/package.json'));
+copyFileSync(resolve(moneroRoot,'dist/monero.js'),resolve(out,'monero.cjs'));
+copyFileSync(resolve(moneroRoot,'LICENSE.txt'),resolve(out,'MONERO-LICENSE.txt'));
+for(const name of ['service.py','scanner.py','probe_rules.py','launch_rules.py','bridge_rules.py'])copyFileSync(resolve(here,'src',name),resolve(out,name));
+const files=['ledger.mjs','verifier.mjs','monero.cjs','service.py','scanner.py','probe_rules.py','launch_rules.py','bridge_rules.py'];
+writeFileSync(resolve(out,'hashes.json'),JSON.stringify(Object.fromEntries(files.map(f=>[f,createHash('sha256').update(readFileSync(resolve(out,f))).digest('hex')])),null,2)+'\n');
+console.log('Built the read-only indexer. No services started.');
