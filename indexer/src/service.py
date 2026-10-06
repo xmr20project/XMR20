@@ -1,7 +1,7 @@
 """Independent, keyless public indexer. Only its own state directory is writable.
 
 The scanner uses the existing pinned parsing, signatures, ordering and reorg
-rules. Public launch metadata is discovered through the primary catalog; chain
+rules. Token discovery uses confirmed inscriptions and raw escrow accounts; chain
 events and balances are independently checked. There are no transaction APIs.
 """
 import argparse,fcntl,hashlib,http.client,json,os,re,select,sqlite3,ssl,subprocess,sys,threading,time
@@ -12,8 +12,8 @@ from scanner import scanner
 
 HERE=Path(__file__).resolve().parent
 HASH=re.compile(r'^[a-f0-9]{64}$')
-ID=re.compile(r'^[a-f0-9-]{36}$')
-FIELDS=('id','mint','owner','ticker','name','image','network','moneroNetwork','moneroTxid','bridgeVersion','bridgeProgramId','escrowPolicy','transferTaxBps','platformFeeBps','solanaFinalized','bridgeReady','proofVerified','confirmations','publicIndex','hidden','halted','cancelledAt','createdAt','state','description','metadataHash','solanaSignature')
+ID=re.compile(r'^[a-f0-9]{64}$')
+
 
 class Rejected(Exception):pass
 
@@ -45,13 +45,17 @@ class Gateway:
     def __init__(self,config):
         self.config=config;self.connections={};self.last=0;self.requests=0;self.verifier=None
     def request(self,url,path,body=None):
-        u=urlsplit(url);require(u.scheme=='https' and not u.username and not u.password and not u.query and not u.fragment,'endpoint')
+        u=urlsplit(url);require(url in self.config['daemonUrls'],'daemon-endpoint')
+        require((u.scheme=='https' or u.scheme=='http' and u.hostname in ('127.0.0.1','::1')) and not u.username and not u.password and not u.query and not u.fragment,'endpoint')
         time.sleep(max(0,0.2-(time.monotonic()-self.last)));self.last=time.monotonic()
         for attempt in range(2):
-            conn=self.connections.setdefault(url,http.client.HTTPSConnection(u.hostname,u.port or 443,timeout=25,context=ssl.create_default_context()))
+            conn=self.connections.get(url)
+            if conn is None:
+                conn=http.client.HTTPSConnection(u.hostname,u.port or 443,timeout=25,context=ssl.create_default_context()) if u.scheme=='https' else http.client.HTTPConnection(u.hostname,u.port or 80,timeout=25)
+                self.connections[url]=conn
             try:
                 self.requests+=1
-                conn.request('GET' if body is None else 'POST',u.path.rstrip('/')+path,body=None if body is None else compact(body).encode(),headers={'Content-Type':'application/json','User-Agent':'XMR20-Read-Indexer/0.1'})
+                conn.request('GET' if body is None else 'POST',u.path.rstrip('/')+path,body=None if body is None else compact(body).encode(),headers={'Content-Type':'application/json','User-Agent':'XMR20-Read-Indexer/0.2'})
                 r=conn.getresponse();raw=r.read(32*1024*1024+1)
                 require(r.status==200,'upstream-http-'+str(r.status));require(len(raw)<=32*1024*1024,'upstream-size')
                 data=json.loads(raw);require(type(data) is dict and 'error' not in data,'upstream-response');return data
@@ -78,19 +82,22 @@ class Gateway:
         except Exception:
             self.verifier.kill();self.verifier.wait();self.verifier=None;raise
 
-def catalog_projection(data):
-    require(data.get('schema')=='xmr20-launches-v1' and data.get('moneroNetwork')=='mainnet' and data.get('solanaNetwork')=='mainnet-beta','catalog-network')
-    rows=data.get('tokens');require(type(rows) is list and 0<len(rows)<=20000,'catalog-size')
-    seen=set();mints=set();out=[]
-    for source in rows:
-        require(type(source) is dict,'catalog-row')
-        row={k:source[k] for k in FIELDS if k in source}
-        require(ID.fullmatch(row.get('id','')) and row['id'] not in seen,'catalog-id');seen.add(row['id'])
-        mint=row.get('mint')
-        if mint:require(re.fullmatch(r'[1-9A-HJ-NP-Za-km-z]{32,44}',mint) and mint not in mints,'catalog-mint');mints.add(mint)
-        require(row.get('network')=='mainnet-beta' and row.get('moneroNetwork')=='mainnet','catalog-network')
-        require(len(compact(row))<16384,'catalog-row-size');out.append(row)
-    return out
+def validate_config(c):
+    require(c.get('network')=='mainnet' and isinstance(c.get('policy'),dict),'config-network')
+    p=c['policy']
+    require(c.get('address')==p.get('operatorAddress') and isinstance(c.get('address'),str),'config-authority')
+    require(type(c.get('bridgeStartHeight')) is int and c['bridgeStartHeight']>=0,'config-start')
+    require(c.get('replayHeight') is None or type(c['replayHeight']) is int and c['replayHeight']>=c['bridgeStartHeight'],'config-replay-height')
+    require(type(c.get('transferStartHeight')) is int and c['transferStartHeight']>=c['bridgeStartHeight'] and c['transferStartHeight']==p.get('transferStartHeight'),'config-transfer-height')
+    require(isinstance(c.get('daemonUrls'),list) and len(c['daemonUrls'])==2 and len(set(c['daemonUrls']))==2,'config-daemons')
+    require('catalogUrl' not in c,'remove-catalog-url')
+    for endpoint in [*c['daemonUrls'],c.get('solanaUrl','')]:
+        u=urlsplit(endpoint)
+        require(bool(u.hostname) and (u.scheme=='https' or u.scheme=='http' and u.hostname in ('127.0.0.1','::1')) and not u.username and not u.password and not u.fragment and (endpoint not in c['daemonUrls'] or not u.query),'config-endpoint')
+    require(Path(c.get('node','')).is_absolute() and Path(c['node']).is_file(),'config-node-path')
+    require(isinstance(c.get('dataDir'),str) and bool(c['dataDir']),'config-data-dir')
+    require(type(c.get('port',8792)) is int and 1<=c.get('port',8792)<=65535,'config-port')
+    return c
 
 def checkpoint(gateway,c,height):
     headers=[gateway.daemon(u,'get_block_header_by_height',{'height':height})['block_header'] for u in c['daemonUrls']]
@@ -98,68 +105,73 @@ def checkpoint(gateway,c,height):
     require(headers[0]['hash']==headers[1]['hash'],'checkpoint-disagreement')
     return {'height':height,'hash':headers[0]['hash']}
 
+def scan_and_publish(config,store,gateway,engine,calculate=None):
+    """One bounded pass. No catalog request or transaction-capable transport."""
+    try:scan=engine['scan'](config)
+    except ValueError as error:
+        if str(error)!='Monero mainnet index is catching up. Retry shortly.':raise
+        blocks=json.loads(engine['scan_cache_path'](config).read_text())
+        height=max(map(int,blocks),default=config['bridgeStartHeight']-1)
+        store.put(status={'state':'syncing','replayHeight':config.get('replayHeight'),'indexedHeight':height,'startHeight':config['bridgeStartHeight'],'requests':gateway.requests,'updatedAt':int(time.time()*1000)})
+        return False
+    cp=checkpoint(gateway,config,scan['height'])
+    previous=store.get('published')
+    if previous:
+        oldcp=checkpoint(gateway,config,previous['checkpoint']['height'])
+        if oldcp!=previous['checkpoint']:store.put(published=None)
+    store.put(status={'state':'validating','replayHeight':config.get('replayHeight'),'indexedHeight':scan['height'],'blockHash':cp['hash'],'requests':gateway.requests,'updatedAt':int(time.time()*1000)})
+    payload={'schemaVersion':1,'policy':config['policy'],'scanStartHeight':config['bridgeStartHeight'],'scan':scan,'checkpoint':cp,'solanaUrl':config['solanaUrl']}
+    if calculate is None:
+        proc=subprocess.run([config['node'],str(HERE/'ledger.mjs'),'--discover-calculate'],input=compact(payload).encode(),stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,timeout=600,env={'PATH':'/usr/bin:/bin','HOME':str(config['dataDir'])})
+        require(len(proc.stdout)<32*1024*1024,'ledger-output')
+        result=json.loads(proc.stdout)
+        if proc.returncode or 'error' in result:raise Rejected(result.get('error','ledger-failed'))
+    else:result=calculate(payload)
+    require(result.get('discoverySource')=='chain' and isinstance(result.get('catalog'),list) and result.get('verification',{}).get('schema')=='xmr20-verification-v1','ledger-output')
+    require(checkpoint(gateway,config,scan['height'])==cp,'checkpoint-changed')
+    now=int(time.time()*1000)
+    publication={**result,'revision':now,'checkedAt':now}
+    store.put(published=publication,catalog=result['catalog'],status={'state':'ready','replayHeight':config.get('replayHeight'),'indexedHeight':scan['height'],'blockHash':cp['hash'],'requests':gateway.requests,'updatedAt':now,'accepted':result['accepted']})
+    return True
+
+
 def worker(config,store,stop):
-    gateway=Gateway(config);engine=scanner(gateway);cache=engine['scan_cache_path'](config)
-    last_catalog=0;catalog=store.get('catalog',[])
-    while not stop.is_set():
-        try:
-            if time.time()-last_catalog>180:
-                try:
-                    fresh=catalog_projection(gateway.request(config['catalogUrl'],''))
-                    old={r['id']:r for r in catalog}
-                    for r in fresh:
-                        prev=old.get(r['id'])
-                        if prev:
-                            for key in ('mint','owner','moneroTxid','bridgeVersion','bridgeProgramId','escrowPolicy'):
-                                require(not prev.get(key) or prev[key]==r.get(key),'catalog-identity-changed')
-                    catalog=fresh;last_catalog=time.time();store.put(catalog=catalog,catalogCheckedAt=int(time.time()*1000))
-                except Exception:
-                    if not catalog:raise
-                    # A saved catalog allows already known tokens to keep indexing.
-                    # Its age remains visible; no claim of complete discovery.
-            try:scan=engine['scan'](config)
-            except ValueError as error:
-                if str(error)!='Monero mainnet index is catching up. Retry shortly.':raise
-                blocks=json.loads(cache.read_text());height=max(map(int,blocks),default=config['bridgeStartHeight']-1)
-                store.put(status={'state':'syncing','indexedHeight':height,'startHeight':config['bridgeStartHeight'],'requests':gateway.requests,'updatedAt':int(time.time()*1000)})
-                continue
-            cp=checkpoint(gateway,config,scan['height'])
-            previous=store.get('published')
-            if previous:
-                oldcp=checkpoint(gateway,config,previous['checkpoint']['height'])
-                if oldcp!=previous['checkpoint']:store.put(published=None)
-            store.put(status={'state':'validating','indexedHeight':scan['height'],'blockHash':cp['hash'],'requests':gateway.requests,'updatedAt':int(time.time()*1000)})
-            launches=[r for r in catalog if r.get('mint') and r.get('moneroTxid') and not r.get('hidden') and not r.get('halted') and not r.get('cancelledAt')]
-            payload={'schemaVersion':1,'policy':config['policy'],'scan':scan,'checkpoint':cp,'projection':{'schema':'xmr20-public-replay-projection-v1','launches':launches,'receipts':[],'holderSnapshots':[]},'solanaUrl':config['solanaUrl']}
-            proc=subprocess.run([config['node'],str(HERE/'ledger.mjs'),'--calculate'],input=compact(payload).encode(),stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,timeout=600,env={'PATH':'/usr/bin:/bin','HOME':config['dataDir']})
-            require(len(proc.stdout)<32*1024*1024,'ledger-output')
-            result=json.loads(proc.stdout)
-            if proc.returncode or 'error' in result:raise Rejected(result.get('error','ledger-failed'))
-            require(checkpoint(gateway,config,scan['height'])==cp,'checkpoint-changed')
-            now=int(time.time()*1000)
-            publication={**result,'catalog':catalog,'revision':now,'checkedAt':now,'catalogCheckedAt':store.get('catalogCheckedAt',0)}
-            store.put(published=publication,status={'state':'ready','indexedHeight':scan['height'],'blockHash':cp['hash'],'requests':gateway.requests,'updatedAt':now,'accepted':result['accepted']})
-            stop.wait(30)
-        except Exception as error:
-            category=error.args[0] if isinstance(error,Rejected) else 'scanner-or-validation-unavailable'
-            if not isinstance(category,str) or not re.fullmatch(r'[a-z0-9.-]{1,100}',category):category='validation-unavailable'
-            old=store.get('status',{})
-            store.put(status={**old,'state':'delayed','reason':category,'requests':gateway.requests,'updatedAt':int(time.time()*1000)})
-            print(compact({'event':'indexer-delayed','category':category}),flush=True);stop.wait(30)
+    gateway=Gateway(config);engine=scanner(gateway)
+    try:
+        while not stop.is_set():
+            try:
+                finished=scan_and_publish(config,store,gateway,engine)
+                if finished:stop.wait(30)
+            except Exception as error:
+                category=error.args[0] if isinstance(error,Rejected) else 'scanner-or-validation-unavailable'
+                if not isinstance(category,str) or not re.fullmatch(r'[a-z0-9.-]{1,100}',category):category='validation-unavailable'
+                old=store.get('status',{})
+                store.put(status={**old,'state':'delayed','reason':category,'requests':gateway.requests,'updatedAt':int(time.time()*1000)})
+                print(compact({'event':'indexer-delayed','category':category}),flush=True);stop.wait(30)
+    finally:
+        if gateway.verifier:
+            gateway.verifier.kill();gateway.verifier.wait()
+        for connection in gateway.connections.values():connection.close()
 
 def public_response(path,query,state,now):
     status=state.get('status',{'state':'starting'});publication=state.get('published')
     fresh=bool(publication and now-publication['checkedAt']<=180000 and status.get('state') in ('ready','validating'))
     if path in ('/','/health','/healthz'):
-        return 200 if path=='/' or fresh else 503,{'schema':'xmr20-indexer-health-v1','service':'XMR20 independent read indexer','readOnly':True,'ready':fresh,'pendingSupported':False,'catalogSource':'primary-public-catalog','catalogCheckedAt':state.get('catalogCheckedAt',0),'lastVerifiedAt':publication.get('checkedAt') if publication else None,**status}
+        return 200 if path=='/' or fresh else 503,{'schema':'xmr20-indexer-health-v1','service':'XMR20 independent read indexer','readOnly':True,'ready':fresh,'pendingSupported':False,'catalogSource':'chain','rulesVersion':(publication or {}).get('verification',{}).get('rulesVersion'),'lastVerifiedAt':publication.get('checkedAt') if publication else None,**status}
+    if path in ('/verification','/api/xmr20/verification'):
+        if not publication or not fresh:return 503,{'error':'No fresh verified report available.'}
+        return 200,publication['verification']
     if path=='/api/xmr20/pending':return 501,{'error':'Pending receipts are served by the primary service.'}
     if path=='/api/xmr20/tokens':
-        return 200,{'schema':'xmr20-launches-v1','moneroNetwork':'mainnet','solanaNetwork':'mainnet-beta','confirmations':10,'tokens':state.get('catalog',[]),'complete':fresh,'catalogSource':'primary-public-catalog','checkedAt':state.get('catalogCheckedAt',0)}
-    match=re.fullmatch(r'/api/xmr20/tokens/([a-f0-9-]{36})/holders',path)
+        return 200,{'schema':'xmr20-launches-v1','moneroNetwork':'mainnet','solanaNetwork':'mainnet-beta','confirmations':10,'tokens':state.get('catalog',[]),'complete':fresh,'catalogSource':'chain','checkedAt':(publication or {}).get('checkedAt',0)}
+    match=re.fullmatch(r'/api/xmr20/tokens/([a-f0-9]{64})/holders',path)
     if match:
         id=match[1]
         if not any(r['id']==id for r in state.get('catalog',[])):return 404,{'error':'Not found'}
         snap=next((s for s in (publication or {}).get('snapshots',[]) if s['id']==id),None)
+        if not snap:
+            unbound=next((s for s in (publication or {}).get('unbound',[]) if s['id']==id),None)
+            if unbound:return 200,{**unbound,'stale':not fresh,'message':'No matching escrow found; no token balance is asserted.'}
         if not snap:return 200,{'schema':'xmr20-holders-v1','id':id,'moneroNetwork':'mainnet','solanaNetwork':'mainnet-beta','state':'syncing','message':'Independent history validation is not complete.'}
         return 200,{**snap,'stale':not fresh}
     if path in ('/api/wallet-holdings','/api/xmr20/wallet-holdings'):
@@ -180,14 +192,14 @@ def public_response(path,query,state,now):
                     row['receipt']={'url':'https://xmrchain.net/tx/'+last['txid'],'label':'Latest bridge credit' if last['operation']=='credit' else 'Latest incoming transfer','confirmations':last['confirmations']}
                 rows.append(row)
         rows=sorted((r for r in rows if r['id']>after),key=lambda r:r['id']);page=rows[:100]
-        return 200,{'schema':'xmr20-wallet-holdings-v1','address':address,'network':network,'moneroNetwork':'mainnet','solanaNetwork':'mainnet-beta','rows':page,'complete':fresh and now-publication['catalogCheckedAt']<=300000,'checked':publication['checkedAt'],'revision':revision,'nextCursor':page[-1]['id'] if len(rows)>100 else None}
+        return 200,{'schema':'xmr20-wallet-holdings-v1','address':address,'network':network,'moneroNetwork':'mainnet','solanaNetwork':'mainnet-beta','rows':page,'complete':fresh,'checked':publication['checkedAt'],'revision':revision,'nextCursor':page[-1]['id'] if len(rows)>100 else None}
     return 404,{'error':'Not found'}
 
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--config',required=True);args=parser.parse_args()
-    config=json.loads(Path(args.config).read_text());root=Path(config['dataDir']);root.mkdir(parents=True,exist_ok=True)
+    config=validate_config(json.loads(Path(args.config).read_text()));root=Path(config['dataDir']);root.mkdir(parents=True,exist_ok=True)
     lock=open(root/'writer.lock','a');fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
-    store=Store(root/'indexer.sqlite');store.put(status={'state':'starting','updatedAt':int(time.time()*1000)})
+    store=Store(root/'indexer.sqlite');store.put(published=None,catalog=[],status={'state':'starting','replayHeight':config.get('replayHeight'),'updatedAt':int(time.time()*1000)})
     stop=threading.Event()
     threading.Thread(target=worker,args=(config,store,stop),daemon=True).start()
     class Handler(BaseHTTPRequestHandler):

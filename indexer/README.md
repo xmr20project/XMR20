@@ -1,22 +1,23 @@
-# XMR20 read indexer
+# XMR20 independent read indexer 0.2.0
 
-Experimental, read-only source release of the second XMR20 token indexer. It
-replays public Monero inscription records, verifies their signatures locally,
-and checks finalized Solana escrow receipts, supply and holder accounts. It can
-build its own SQLite database and scan cache without an operator wallet or a
-copy of the primary database.
+Run your own read-only XMR20 index from public Monero records and finalized
+Solana account data. This package builds its own scan cache and SQLite database,
+verifies Monero signatures locally, discovers deployments and escrow bindings
+from chain data, and reconciles holder balances. **It does not fetch the XMR20
+website catalog, primary balances, listing flags or an operator database.**
 
-**This is not yet fully independent token discovery or a trustless bridge.**
-Token discovery and launch-to-escrow bindings still use the primary public
-catalog. Complete mainnet replay and comparison with the primary at matching
-checkpoints have not been verified for this source release. Do not switch a
-funded wallet to this reader merely because its HTTP server is reachable.
+This is an experimental source release. A full mainnet rebuild and agreement
+with the primary at matching checkpoints have **not been verified for 0.2.0**.
+Independent indexing makes the accounting inspectable; it does not make the
+operator-attested bridge trustless or certify project security.
+
+- [Protocol and admission rules](PROTOCOL.md)
+- [Rebuild comparison, evidence and remaining trust assumptions](VERIFICATION.md)
 
 ## Build and test
 
-Use Node.js 24 or later, npm, and Python 3.9 or later on Linux or macOS. Python
-uses only the standard library. Windows requires a Linux environment such as
-WSL because the service uses POSIX file locking and subprocess pipes.
+Requirements: Node.js 24+, npm and Python 3.9+ on Linux or macOS. Python uses
+only its standard library. Windows needs a Linux environment such as WSL.
 
 From the repository root:
 
@@ -26,36 +27,55 @@ npm ci --ignore-scripts
 npm test
 ```
 
-Tests build the runtime first. `npm run build` builds without running tests.
-The package has its own dependency lockfile; it does not depend on the wallet
-extension, an unpublished backend checkout or local dependency pools. Building
-and testing do not start a scanner or contact blockchain nodes. Tests use mock
-chain data and unfunded synthetic identities. Generated output is in `build/`.
+Tests build the runtime first and use synthetic chain accounts and unfunded
+identities. They do not contact chain nodes, start the service or move funds.
+GitHub's indexer workflow runs the tests with network access disabled after
+installing dependencies. `npm run build` builds without testing.
 
-## Configure and run
+There are no dependencies on unpublished backend files or the wallet build.
+`package-lock.json` pins npm dependencies. `build/source-manifest.json` identifies
+the source used, and `build/hashes.json` contains runtime output hashes. See
+[verification instructions](VERIFICATION.md) for a repeat-build comparison.
+
+## Configure your nodes
 
 ```sh
 cp config.example.json config.local.json
 command -v node
 ```
 
-Edit `config.local.json` before starting:
+Edit the ignored `config.local.json`:
 
-- Replace `node` with the absolute path printed by `command -v node`.
-- Replace both `daemonUrls` placeholders with distinct HTTPS Monero mainnet
-  daemons. The reader needs `get_info`, `get_block_header_by_height`,
-  `get_block` and `/get_transactions`, including historical transaction data.
-- Replace `solanaUrl` with an HTTPS Solana mainnet RPC that supports
-  `getGenesisHash`, complete `getProgramAccounts` enumeration and
-  `getMultipleAccounts`. Rate-limited public providers may be insufficient.
-- The default `catalogUrl` is the primary public XMR20 token catalog. An
-  alternative must provide the same schema and authoritative historical
-  bindings; changing the URL does not itself establish independent discovery.
-- `dataDir` is this reader's own writable state directory. Run from `indexer/`
-  when using the relative `./state` example, or choose an absolute path.
-- `port` defaults to 8792. The HTTP listener binds to loopback only.
+- Set `node` to the absolute path printed above.
+- Set `daemonUrls` to two distinct, synchronized Monero mainnet daemon endpoints.
+  The example uses your own node at `http://127.0.0.1:18081` and a placeholder
+  second peer. Choose the second peer yourself. Endpoints must provide
+  `get_info`, `get_block_header_by_height`, `get_block` and `/get_transactions`,
+  including historical transaction data.
+- Set `solanaUrl` to your own or a chosen Solana mainnet RPC. It must support
+  `getGenesisHash`, complete Token-2022 `getProgramAccounts` enumeration and
+  `getMultipleAccounts`. A public rate-limited endpoint may be insufficient.
+- Keep `replayHeight: null` to follow the chain tip. For an agreed comparison
+  checkpoint, set it to a Monero block height at or after `bridgeStartHeight`.
+  This pins Monero only; it cannot rewind ordinary Solana RPC account reads.
+- Set `dataDir` to a writable directory dedicated to this reader. The example's
+  `./state` is relative to the directory in which you start the process.
+- `port` defaults to 8792; the HTTP listener binds to loopback.
 
-Then run explicitly:
+HTTPS is required for remote endpoints. Plain HTTP is accepted only for the
+literal loopback addresses `127.0.0.1` and `[::1]`. URLs cannot contain embedded
+usernames/passwords or fragments. Monero endpoints also cannot contain queries.
+Private RPC provider access details belong only in ignored local configuration.
+No wallet seed, spend key, funded wallet or server credential is needed.
+
+The public policy comes from the reviewed 5 October 2026 snapshot: scan start
+**3,772,610**, transfer activation **3,773,055**, the configured deployment/credit
+authority, the pinned V3 program, and two exact historical exclusions. These
+settings determine the ledger, so review them and publish your policy hash with
+your result. Independent discovery does not remove the authority requirement
+or make deployment admission permissionless.
+
+## Run a rebuild
 
 ```sh
 npm start
@@ -64,91 +84,87 @@ npm start
 In another terminal:
 
 ```sh
-curl http://127.0.0.1:8792/health
-curl http://127.0.0.1:8792/api/xmr20/tokens
+curl --fail http://127.0.0.1:8792/health
+curl --fail http://127.0.0.1:8792/api/xmr20/tokens
+curl --fail http://127.0.0.1:8792/verification > my-report.json
 ```
 
-The first run scans from Monero block **3,772,610**, not the current tip. It can
-take substantial time and RPC traffic; no measured completion estimate is
-provided. Progress is saved between bounded scan passes and process restarts.
-`/health` returns HTTP 503 while syncing or delayed, and balance reads remain
-unavailable until reconciliation. A running HTTP server is not proof of a
-finished rebuild. Stop with Ctrl-C; retain your local state to resume later.
+The first run scans from the configured start, not the current tip. A full
+rebuild requires historical RPC access, time, storage and memory; no measured
+mainnet completion estimate is available for this release. Progress is saved
+between bounded scan passes and restarts. Retain your state directory to resume;
+choose a new, empty directory for a rebuild without cached data.
 
-Public policy in the example comes from the reviewed 5 October 2026 policy
-snapshot. Transfer activation is **3,773,055**. The public deployment authority,
-bridge program IDs and two historical deployment exclusions are verification
-inputs, not secrets. Changing them changes which ledger you compute. Scanner
-`address` and `policy.operatorAddress`, and both transfer-height settings, must
-stay consistent. This release does not attest that future server policy remains
-identical to this snapshot.
+`/health` returns HTTP 503 until reconciled or when delayed. `/verification`
+returns HTTP 503 without a fresh publication. A responding server, an empty
+catalog or a stale holder response is not proof of a finished rebuild. Read
+`ready`, `complete`, `stale`, checkpoint heights and any `replayHeight` setting.
+Stop the service with Ctrl-C.
 
-Endpoints require HTTPS. Monero/catalog URLs reject embedded credentials,
-queries and fragments. Use a TLS endpoint/proxy for a local node; plain HTTP
-localhost is not supported by this unchanged transport. Keep any private RPC
-access details in ignored local configuration, never in Git.
+The service requests no XMR20-operated API. You can block those domains while
+rebuilding, provided your chosen node endpoints remain reachable. Such a **full
+mainnet isolation run has not yet been completed for this release**; the offline
+CI suite tests this property with synthetic evidence.
 
 ## Read API
 
 | Route | Purpose |
 | --- | --- |
-| `/health` | Replay progress, readiness and delayed state |
-| `/api/xmr20/tokens` | Catalog with its source and freshness metadata |
-| `/api/xmr20/tokens/<id>/holders` | Reconciled holders and backing for one token |
+| `/health` | Readiness, progress, delay reason and pinned replay height |
+| `/api/xmr20/tokens` | Chain-derived declarations; `catalogSource: "chain"` |
+| `/api/xmr20/tokens/<deployment-txid>/holders` | Reconciled holders and backing |
 | `/api/wallet-holdings?address=<address>&network=monero` | Indexed holdings |
-| `/api/xmr20/wallet-holdings` | Holdings alias; also supports `network=solana` |
+| `/api/xmr20/wallet-holdings` | Holdings alias; also accepts `network=solana` |
+| `/verification` or `/api/xmr20/verification` | Checkpointed ledger/backing report |
+
+Token IDs are the **64-character Monero deployment transaction hash**, not the
+primary site's launch UUID. Ticker and creator come from the declaration;
+artwork and human-readable metadata are not fetched. This is not yet a tested
+drop-in backend for the existing wallet.
+
+An `unbound` declaration has no matching escrow and asserts no token balance.
+A credited declaration with missing backing, an ambiguous escrow, incomplete
+accounts or inconsistent evidence prevents publication. Listing flags from the
+primary cannot hide a token. The published historical policy exclusions still
+apply.
 
 Holdings pagination uses `after` and `revision`; restart on HTTP 409. Respect
-`complete`, `stale`, missing snapshots and HTTP errors. Pending receipts return
-HTTP 501 and POST requests return HTTP 405. There is no signing, relay,
-withdrawal authorization, wallet recovery or bridge submission endpoint.
+freshness and completion flags even on HTTP 200. Pending receipts return HTTP
+501; POST returns HTTP 405. There is no transaction signing, bridge submission,
+withdrawal approval or recovery endpoint. The internal `--calculate` library
+path remains for older fixtures; the service uses `--discover-calculate`.
 
-## Verification and limitations
+## Compare operators
 
-- Both Monero peers must agree on checked block hashes and relevant carrier
-  payloads. This is an RPC-based reader, not a full Monero consensus node;
-  two URLs do not prove independent operators or honest responses. Choose
-  providers you trust, ideally including your own validating node.
-- The primary catalog supplies token discovery, version bindings and listing
-  flags. Saved entries survive temporary outages, but this release cannot
-  promise to discover every token if the primary disappears. Listing decisions
-  can affect what is included. Public source alone does not remove this trust.
-- Original deposits are checked against finalized receipt accounts. Program
-  binaries must match the published hashes and be immutable. All Solana reads
-  within one token must share exactly the same finalized slot. Different tokens
-  may use different slots; there is no single atomic cross-chain snapshot.
-- Busy RPC providers may repeatedly return different slots; publication then
-  stays delayed. Missing or invalid evidence is not replaced with a zero balance.
-- No complete live replay, current primary parity, funded wallet failover or
-  independent security audit is certified by the local tests. Reorg handling is
-  tested on synthetic data; deep reorg recovery after a bridge release is not
-  proven by this read-only service.
-- XMR20 records expose token amounts and relevant addresses. These are public
-  application records, not private native-XMR payments or Monero consensus
-  balances. Operator-attested withdrawals remain separate from this reader.
-- The current scanner persists a JSON cache and replays retained events. Work,
-  storage and memory grow with history. Validation also has explicit event and
-  account-count limits; this is not an unlimited or performance-certified node.
-- The verification library creates a temporary unfunded wallet object in memory
-  because its signature-check API requires one. No existing wallet, recovery
-  phrase, spend key or funded identity is required or exported.
+After both operators have built their own databases and exported reports:
 
-To compare independent runs, use the same policy and Monero block hash/height,
-and identical finalized Solana slots for each token. Compare exact integer
-amounts and accepted operations; matching tickers or similar totals is not
-sufficient. Publish the source version, policy, checkpoint and discrepancies.
+```sh
+npm run compare -- my-report.json other-report.json
+```
 
-## Source layout and licensing
+A full `MATCH` requires equal rules/policy, Monero checkpoint and per-token
+Solana checkpoints. Different heights or slots are reported as not comparable,
+not automatically as dishonest balances. Ordinary Solana `minContextSlot` does
+not select a historical slot. Reports expose public XMR20 holder addresses and
+amounts; they contain neither private keys nor native-XMR wallet balances.
 
-`src/probe_rules.py`, `launch_rules.py` and `bridge_rules.py` preserve the
-read-only functions selected by the second indexer's pinned build. `scanner.py`
-binds them to the allowlisted gateway. `replay.mjs` contains ledger and supply
-rules; `accounting.mjs` checks raw Solana evidence. Legacy signing-domain strings
-and PDA seeds are protocol bytes and must not be renamed as branding changes.
-`SOURCE_PROVENANCE.json` records the input file hashes for this extraction;
-it is not proof of current live process parity.
+A report hash is a comparison tool, **not an authentication or consensus proof**.
+Someone can invent a self-consistent report. Compute your own from independently
+chosen nodes and compare it; do not trust a downloaded report merely because
+its hashes match its contents. See [VERIFICATION.md](VERIFICATION.md).
 
-The original project code follows the repository's MIT licence. npm dependencies
-retain their own licences. The build copies the Monero library licence alongside
-its runtime. This source package excludes private configuration, server access,
-operational backups and the primary transaction workers.
+## Source and licence
+
+`src/probe_rules.py`, `launch_rules.py` and `bridge_rules.py` define parsing,
+signatures and scanning. `replay.mjs` defines ledger admission and supply;
+`discovery.mjs` derives escrow bindings; `accounting.mjs` checks raw Solana
+accounts; `verification.mjs` defines reports. Legacy signing domains and PDA
+seeds are protocol bytes and must not be renamed for branding.
+
+`SOURCE_PROVENANCE.json` records historical extraction inputs, not hashes of the
+modified release or proof of live-service parity. The build generates current
+source/runtime hashes. Original code follows the repository MIT licence;
+dependencies retain their own licences. The Monero runtime licence is copied
+alongside the built library. The signature verifier creates a temporary,
+unfunded in-memory wallet object because its library requires one; no existing
+wallet is opened or exported.

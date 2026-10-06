@@ -23,4 +23,10 @@ jobs:
         with:
           python-version: '3.12'
       - run: npm ci --ignore-scripts --no-audit --no-fund
-      - run: npm test
+      - name: Build and test with network disabled
+        run: sudo unshare --net -- env "PATH=$PATH" npm test
+      - name: Check deterministic rebuild
+        run: |
+          cp build/hashes.json /tmp/xmr20-first-build-hashes.json
+          npm run build
+          cmp /tmp/xmr20-first-build-hashes.json build/hashes.json

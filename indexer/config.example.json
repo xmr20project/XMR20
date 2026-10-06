@@ -3,11 +3,11 @@
   "address": "4AMg1kDaXkWckE3uyd1YqoBKvn4z8ATxmWQVdtjF6aGU4sT278XoyhUV1Ve88ZMCXNXQJpjW2553NWERfMZcNsBtCkMLiNM",
   "bridgeStartHeight": 3772610,
   "transferStartHeight": 3773055,
+  "replayHeight": null,
   "daemonUrls": [
-    "https://monero-node-one.example",
+    "http://127.0.0.1:18081",
     "https://monero-node-two.example"
   ],
-  "catalogUrl": "https://api.xmr20.org/api/xmr20/tokens",
   "solanaUrl": "https://solana-rpc.example",
   "dataDir": "./state",
   "node": "/absolute/path/to/node",

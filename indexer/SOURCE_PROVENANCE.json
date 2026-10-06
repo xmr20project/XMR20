@@ -1,5 +1,5 @@
 {
-  "description": "Read-only source extracted for standalone packaging; paths name the original private workspace, not build dependencies. No deployment or live replay is asserted.",
+  "description": "Historical extraction provenance for 0.1.0. These hashes describe original inputs, not the modified 0.2.0 files or current live services. No deployment or full live replay is asserted.",
   "sources": [
     {
       "path": "backend/web/shared/xmr20/address.js",
@@ -77,5 +77,16 @@
       "path": "operations/indexer-preflight/review-packages/full-replay-20261005T100924Z/reviewed-public-policy.json",
       "sha256": "04d1f5976f6179314c83c55e43225652fdc41797ad6936ca4afae8abeae83bf4"
     }
-  ]
+  ],
+  "release": {
+    "version": "0.2.0",
+    "baseCommit": "c660fc07ec34f3701047988ecf95a36e4b6fb6f0",
+    "changes": [
+      "Chain-derived token discovery and escrow binding replace primary catalog dependence.",
+      "Canonical checkpoint reports and local comparison CLI.",
+      "Literal loopback HTTP node support and optional pinned Monero replay height.",
+      "Self-contained source fingerprint, offline synthetic tests and protocol documentation."
+    ],
+    "currentSourceHashes": "Generated locally in build/source-manifest.json; build/hashes.json covers runtime outputs."
+  }
 }
