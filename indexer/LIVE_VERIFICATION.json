@@ -1,0 +1,111 @@
+{
+  "schema": "xmr20-reader-operator-verification-v1",
+  "observedAt": "2026-10-07T17:48:19.758156+00:00",
+  "rulesVersion": "xmr20-reader-0.2.0",
+  "operatorReportedEvidence": true,
+  "runtime": {
+    "sourceSha256": "5a918c8f38da831627d8291ff4a35413697aef28e55a95f80ecd53027704238f",
+    "sourceFiles": {
+      "build.mjs": "9f0a1f06dfc6c19b5eec1201d3f40917d68adfe966524eca59fb066cc257b3f0",
+      "package-lock.json": "98c644a40282e77edc8a796e9714c8c884132428bc5409b6cdf511a164f9d83a",
+      "package.json": "5a60d0c30273e3136f5db2493840c899b35c8bd51cb85762b15aae128b634744",
+      "src/accounting.mjs": "ddc681ae426af6e6347c79a6c678b9166b00b542ebcde589f460d3b78ba147f2",
+      "src/address.js": "4a46f5072b3a988427e182b2392f50b751daa98101b1b6348e01cb757f9a34c1",
+      "src/bridge_rules.py": "3bec4e4b62676a4b3d304f898e05afb72ce2fa82a8c28994585a0ebcfcdcec3d",
+      "src/compare.mjs": "853028f7bd7703183ed66c7a07e0bc5295ab04df044aefc8179ca31586de9783",
+      "src/discovery.mjs": "ddc51fb7136a6ab99d9ddfc32f621ee86a1799fdb5ce4615507c9c572b4b011f",
+      "src/escrow.mjs": "e5931085a914944035b8cce97a858f3d9c5be8292d31124e42c898c2a52ba60c",
+      "src/fund-policy.mjs": "62246ed3c2a57fe3264abd1813e793bba6f096bb4564a778e71fde7f13f6d499",
+      "src/launch_rules.py": "0351e72f242426fbf7be30bf6b207b464c11ee87a79cb4690d344c9e11320b5f",
+      "src/ledger.mjs": "607d4a8e54834b6e50ad4cfc078fc8d7338e2e2b662a0dd63797f033f4501f83",
+      "src/probe_rules.py": "62f705d8e8dd454aaf962eda45700cc3fa3a07d9d12159112fce93fe6cc0d88a",
+      "src/replay.mjs": "aad82352f79b023c37798d455aa810884f91fbde10a6d9bd59bccad0cffdc273",
+      "src/scanner.py": "e24579422fb99a266df55a9077fea7b88ca50380fc306fd93201a8ef56e412d2",
+      "src/service.py": "9146f3f5f0dce84c0941792bd8f068f2249e8f7089dc07c382f5a34fb9854145",
+      "src/verification.mjs": "39a3cf8f88af3a31d0ca1bab9561fee49a22af141782bab5e653dfb2ed22ba98",
+      "src/verifier.mjs": "067a0b0346a3423fd8d7e1a87d3fe9b63c379cb8adb8949e0fc01abc9cb684e4"
+    },
+    "outputHashes": {
+      "ledger.mjs": "c8568ff4782ad025a74bac517c45c1fa9ac6a59478b3724047fcd6f1bfcd7a6b",
+      "verifier.mjs": "8cfb8ba184edfe302c2609eced98a5c558eac13403cbdcb0bdcb1eaf5207821a",
+      "compare.mjs": "29032f505eeb0bb03ad6f5744496627699baae79c94d5052fa156707fbe794fa",
+      "monero.cjs": "f54e18d60fd582ad4b65d1d17c88a8300e0b3d4f556d43fe23adff67a491a5a2",
+      "service.py": "9146f3f5f0dce84c0941792bd8f068f2249e8f7089dc07c382f5a34fb9854145",
+      "scanner.py": "e24579422fb99a266df55a9077fea7b88ca50380fc306fd93201a8ef56e412d2",
+      "probe_rules.py": "62f705d8e8dd454aaf962eda45700cc3fa3a07d9d12159112fce93fe6cc0d88a",
+      "launch_rules.py": "0351e72f242426fbf7be30bf6b207b464c11ee87a79cb4690d344c9e11320b5f",
+      "bridge_rules.py": "3bec4e4b62676a4b3d304f898e05afb72ce2fa82a8c28994585a0ebcfcdcec3d",
+      "source-manifest.json": "ddfbe8fcc51e9b96f3e0516dff45d1e837b60ce8fccd6e534487821d48419c37"
+    },
+    "filesRehashedBeforePublication": true
+  },
+  "rebuild": {
+    "fromHeight": 3772610,
+    "initialDatabaseAndCacheEmpty": true,
+    "primaryCatalogOrDatabaseCopied": false,
+    "projectApiBlocked": true,
+    "catalogSource": "chain",
+    "cutoverCheckpoint": {
+      "height": 3778739,
+      "hash": "e4c83e87fce7c9e2cd03023777e81bc55b044f40b8f8ef542acd5d74ed1328af"
+    },
+    "cutoverLedgerSha256": "f190fca4d6d975b4ee9d44a6dddb9f542ba490fb281a30f31f7d60d462488110",
+    "immutableProgramPinsCheckedAtCutover": 3
+  },
+  "latestPublicObservation": {
+    "observerCheckedAt": 1791395167245,
+    "healthLastVerifiedAt": 1791395155628,
+    "ready": true,
+    "checkpoint": {
+      "height": 3779006,
+      "hash": "2287bfec19e4916e2fb12b1dce4b9b26be8fe2bdffcd65dec7898d4b1d0948f6"
+    },
+    "accepted": {
+      "deployments": 47,
+      "credits": 14,
+      "transfers": 16,
+      "burns": 4
+    },
+    "referenceStatus": "PRIMARY_LEDGER_MATCH",
+    "referenceLedgerSha256": "1b458616033fb931f81287c0e13d1d884620287efc6224ab737414775040d7ec",
+    "independentLedgerSha256": "1b458616033fb931f81287c0e13d1d884620287efc6224ab737414775040d7ec",
+    "primarySourceIdentityCheckedAt": 1791365291140,
+    "primarySourceIdentityScope": "Preserved disk source identity, not current loaded-process attestation.",
+    "publicComparison": {
+      "status": "PARTIAL_MATCH",
+      "moneroCheckpoint": {
+        "height": 3779006,
+        "hash": "2287bfec19e4916e2fb12b1dce4b9b26be8fe2bdffcd65dec7898d4b1d0948f6"
+      },
+      "matchedTokens": 8,
+      "mismatchedDeployments": [],
+      "differentMoneroHeights": 9,
+      "missingOrStalePrimarySnapshots": 30,
+      "sameSlotBackingMatches": 0,
+      "differentSolanaSlots": 8,
+      "scope": "public holder balances at identical reported Monero height; same-slot backing only; primary API does not expose a block hash or full accepted event set"
+    },
+    "overall": "UNVERIFIED"
+  },
+  "links": {
+    "health": "https://indexer2.xmr20.org/health",
+    "status": "https://indexer2.xmr20.org/verification/status",
+    "reference": "https://indexer2.xmr20.org/verification/reference"
+  },
+  "limits": [
+    "Operator-run rebuild and reference-code replay, not an independent implementation or audit.",
+    "Complete live-primary accepted-state attestation remains unverified; primary public API has no full accepted event export or checkpoint hash.",
+    "Backing is comparable only at equal finalized Solana slots; different/stale checkpoints cannot establish agreement.",
+    "Source/runtime fingerprint is an identifier, not consensus inclusion proof or bridge security certification.",
+    "No RPC credentials, runtime configuration, database, wallet material or funded transaction is included."
+  ],
+  "publicationChecks": {
+    "nodeTests": 39,
+    "pythonTests": 9,
+    "networkDisabled": true,
+    "deterministicRepeatBuild": true,
+    "runtimeSourceFingerprintMatchesDeployed": true,
+    "deployedRuntimeOutputsRehashed": 10,
+    "buildOutputNote": "Bundles can include dependency paths, so output-byte identity across directory layouts/toolchains is not claimed. Source hashes match; repeat builds in this candidate are identical."
+  }
+}

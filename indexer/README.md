@@ -6,10 +6,22 @@ verifies Monero signatures locally, discovers deployments and escrow bindings
 from chain data, and reconciles holder balances. **It does not fetch the XMR20
 website catalog, primary balances, listing flags or an operator database.**
 
-This is an experimental source release. A full mainnet rebuild and agreement
-with the primary at matching checkpoints have **not been verified for 0.2.0**.
-Independent indexing makes the accounting inspectable; it does not make the
-operator-attested bridge trustless or certify project security.
+This remains an experimental source release. On 7 October 2026, an operator-run
+mainnet rebuild from the published start completed using its own initially empty
+database/cache with project API access blocked. Its accepted ledger matched a
+replay of the preserved primary ledger source at the exact Monero height/hash.
+**Complete live-primary accepted-state and same-slot backing parity remain
+unverified.** See [dated evidence](LIVE_VERIFICATION.json). Independent indexing
+makes the accounting inspectable; it does not make the operator-attested bridge
+trustless or certify project security.
+
+This source includes the deployed 0.2.0 runtime repair: correct CommonJS globals
+in ESM bundles, whole-token retry when a finalized RPC bank is temporarily behind,
+and paired enumeration/account reads with compensating pacing. Exact finalized-slot
+equality, signatures, admission/accounting rules and the RPC read allowlist remain
+unchanged. The source fingerprint is
+`5a918c8f38da831627d8291ff4a35413697aef28e55a95f80ecd53027704238f`;
+tests and documentation are outside that runtime fingerprint.
 
 - [Protocol and admission rules](PROTOCOL.md)
 - [Rebuild comparison, evidence and remaining trust assumptions](VERIFICATION.md)
@@ -102,9 +114,12 @@ catalog or a stale holder response is not proof of a finished rebuild. Read
 Stop the service with Ctrl-C.
 
 The service requests no XMR20-operated API. You can block those domains while
-rebuilding, provided your chosen node endpoints remain reachable. Such a **full
-mainnet isolation run has not yet been completed for this release**; the offline
-CI suite tests this property with synthetic evidence.
+rebuilding, provided your chosen node endpoints remain reachable. The dated
+operator run completed with systemd network isolation and startup probes confirming
+project API access blocked; its separate observer can read the primary and does not
+feed the scanner. This is operator-run evidence, not an independent audit or a
+guarantee that another operator has reproduced it. The offline CI suite tests
+source behavior with synthetic evidence.
 
 ## Read API
 

@@ -7,7 +7,7 @@ checks still requiring real mainnet evidence or independent review.
 
 | Question | What 0.2.0 provides | What it does not establish |
 | --- | --- | --- |
-| Can I rebuild without the project API/database? | Chain-derived discovery, local signatures, own database and configurable node endpoints | A completed full mainnet isolation run for this release |
+| Can I rebuild without the project API/database? | Chain-derived discovery, local signatures, own database and configurable node endpoints | A separately operated reproduction or independent audit |
 | Can the website hide a token from this reader? | No website listing flags are consulted | Admission is still limited by the published authority, rules and explicit historical exclusions |
 | Can I independently validate the underlying chain? | You can use your own validating nodes as RPC sources | This application does not itself implement Monero or Solana consensus; two Monero URLs can share one operator |
 | Is the token accounting internally consistent? | Exact deposits, whole-mint holder enumeration, integer supply and backing checks at stated checkpoints | A fabricated RPC response or self-consistent report is not a cryptographic chain proof |
@@ -96,6 +96,26 @@ snapshot shared by both blockchains.
 
 ## Verification completed for this source release
 
+On 7 October 2026 the operator completed an empty-state mainnet rebuild from
+Monero block 3,772,610 with project API access blocked. The cutover report at
+height 3,778,739 / `e4c83e87fce7c9e2cd03023777e81bc55b044f40b8f8ef542acd5d74ed1328af`
+agreed with a replay of the preserved primary pure ledger source. All three
+immutable Solana program pins were checked again. The repaired source fingerprint
+and runtime hashes were rechecked against the running second reader before
+publication; see [dated verification evidence](LIVE_VERIFICATION.json).
+
+This is **preserved-source replay**, not attestation of the primary process's
+loaded code, complete accepted event set or backing. The primary public API does
+not expose its full accepted events or checkpoint hash. Public holder balances
+are comparable only at equal reported Monero heights; backing requires equal
+finalized Solana slots. The live observer intentionally reports overall
+`UNVERIFIED` until full parity evidence is available. Current reports are at
+[verification/status](https://indexer2.xmr20.org/verification/status) and
+[verification/reference](https://indexer2.xmr20.org/verification/reference).
+Their changing state is not permanent certification. The preserved primary
+source fingerprint is separately timestamped in the report; replay does not
+constitute a fresh primary-server source audit on every observer cycle.
+
 Local tests cover:
 
 - V1/V2/V3 chain-derived discovery and reconciliation against synthetic raw
@@ -119,19 +139,20 @@ constants. Fixtures are never evidence of actual funds or actual deployment.
 
 ## Evidence still needed before a stronger claim
 
-- Complete replay from the published start using this release, an empty cache
-  and no XMR20 project API access; publish checkpoints and reproducible evidence.
+- Independently reproduce the operator-run empty-cache replay with project API
+  access blocked; record your own checkpoints, runtime and isolation evidence.
 - At least one separately operated rebuild and comparison. Agreement between
   two copies of the same implementation does not exclude a shared bug; a second
   implementation of the documented rules is stronger evidence.
-- Primary-service comparison at compatible checkpoints, with discrepancies
-  investigated and documented. Primary agreement alone is not correctness.
+- Full running-primary accepted-state comparison and backing at equal finalized
+  Solana slots, with discrepancies investigated and documented. Source replay
+  and partial same-height public balance matches do not establish full parity.
 - Independent review of protocol rules, scanner, dependencies, bridge programs,
   authority control and withdrawals, including source-to-deployed-binary builds.
 - Resource measurements on full history, deep reorg analysis, and separately
   tested wallet integration/failover before routing funded wallets to it.
 
-This source publication does not certify those gates as passed. History and
+The dated operator evidence does not certify the remaining gates as passed. History and
 account limits currently cap scans at 100,000 accepted-format events and 20,000
 planned/enumerated accounts per token. The scanner caches history in JSON and
 replays it; storage, memory and work increase with history. New protocol or
