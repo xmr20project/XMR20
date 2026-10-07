@@ -8,7 +8,7 @@ The standalone [indexer source and instructions](indexer/README.md) are in `inde
 
 The reader discovers token declarations and escrow bindings from chain data, without the XMR20 website catalog or primary database. Operators can use their own node endpoints and compare checkpointed verification reports. The repository includes [published rules](indexer/PROTOCOL.md), [verification instructions and remaining trust assumptions](indexer/VERIFICATION.md), synthetic tests and GitHub checks.
 
-Complete mainnet replay and primary parity have **not yet been verified for version 0.2.0**. Open source and matching reports do not certify bridge security: deployments and credits still require the configured authority, and withdrawals remain operator-attested. The reader does not sign or authorize withdrawals.
+A mainnet rebuild from the published scan start completed on 7 October 2026 with project API access blocked. Its accepted ledger matched a replay of the preserved primary ledger source at the same Monero height and block hash. The runtime repair used by the live second indexer is included here; [dated verification evidence](indexer/LIVE_VERIFICATION.json) records its source fingerprint. **Complete parity with the running primary service, including its accepted events and backing at equal Solana slots, remains unverified.** Open source and matching reports do not certify bridge security: deployments and credits still require the configured authority, and withdrawals remain operator-attested. The reader does not sign or authorize withdrawals.
 
 ## Wallet
 
