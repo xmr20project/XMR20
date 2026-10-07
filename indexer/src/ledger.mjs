@@ -11,16 +11,22 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
 const allowed=new Set(['getGenesisHash','getMultipleAccounts','getProgramAccounts']);
 export function readClient(url,fetcher=fetch){
   const u=new URL(url);need((u.protocol==='https:'||u.protocol==='http:'&&['127.0.0.1','[::1]'].includes(u.hostname))&&!u.username&&!u.password&&!u.hash,'rpc-url');
-  let last=0;
+  let last=0,lastMethod=null,debt=0;
   return async(method,params=[])=>{
     need(allowed.has(method),'rpc-method');
     for(let attempt=0;attempt<3;attempt++){
-      await wait(Math.max(0,350-(Date.now()-last)));last=Date.now();
+      // Keep the overall RPC pace while reading an enumeration and its account
+      // state together. Waiting between them makes an exact bank match unlikely.
+      const paired=lastMethod==='getProgramAccounts'&&method==='getMultipleAccounts';
+      await wait(Math.max(0,(paired?0:350+debt)-(Date.now()-last)));
+      debt=paired?debt+350:0;last=Date.now();lastMethod=method;
       const res=await fetcher(url,{method:'POST',redirect:'error',signal:AbortSignal.timeout(25000),headers:{'Content-Type':'application/json','User-Agent':'XMR20-Read-Indexer/0.2'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params})});
       if(res.status===429&&attempt<2){await wait(15000*(attempt+1));continue;}
       need(res.ok,'solana-http-'+res.status);
       const text=await res.text();need(text.length<32*1024*1024,'rpc-size');
-      const data=JSON.parse(text);need(!data.error&&data.result!==undefined,'solana-rpc-rejected');return data.result;
+      const data=JSON.parse(text);
+      need(data.error?.code!==-32016,'solana-context-unavailable');
+      need(!data.error&&data.result!==undefined,'solana-rpc-rejected');return data.result;
     }
     throw Error('solana-rate-limit');
   };
@@ -44,7 +50,9 @@ export async function calculate(input,rpc,{manifests=PROGRAMS}={}){
       let changed=false;
       for(let i=0;i<p.accountKeys.length;i+=100){
         const keys=p.accountKeys.slice(i,i+100);
-        const r=await rpc('getMultipleAccounts',[keys,{encoding:'base64',commitment:'finalized',minContextSlot:enumeration.context.slot}]);
+        let r;
+        try{r=await rpc('getMultipleAccounts',[keys,{encoding:'base64',commitment:'finalized',minContextSlot:enumeration.context.slot}]);}
+        catch(e){if(e.message!=='solana-context-unavailable')throw e;changed=true;break;}
         if(r.context?.slot!==enumeration.context.slot){changed=true;break;}
         accountReads.push({...r,keys});
       }

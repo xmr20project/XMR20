@@ -21,6 +21,29 @@ for(const v of [1,2,3])test('independent replay reconciles raw V'+v+' accounts a
 test('moving Solana contexts never publish mixed account states',async()=>{const f=fixture();await assert.rejects(calculate(f.input,rpcFor(f,r=>r.context.slot++),f.options),/solana-context-changing/)});
 test('wrong deposit backing is rejected',async()=>{const f=fixture();f.input.solana.tokens[0].accountReads[0].value[3].owner=f.holder.toBase58();await assert.rejects(calculate(f.input,rpcFor(f),f.options),/receipt-owner/)});
 test('RPC transport rejects transactions before fetch',async()=>{const rpc=readClient('https://example.invalid',()=>{throw Error('network must not run')});await assert.rejects(rpc('sendTransaction',[]),/rpc-method/)});
+test('lagging finalized RPC bank retries a whole token attempt without mixing slots',async()=>{
+ const f=fixture();const original=rpcFor(f);let unavailable=true;let enumerations=0;
+ const rpc=async(method,params)=>{
+  if(method==='getProgramAccounts')enumerations++;
+  if(method==='getMultipleAccounts'&&params[1]?.minContextSlot!==undefined&&unavailable){unavailable=false;throw Error('solana-context-unavailable');}
+  return original(method,params);
+ };
+ const result=await calculate(f.input,rpc,f.options);
+ assert.equal(enumerations,2);assert.equal(result.snapshots[0].solanaSlot,500);assert.equal(result.snapshots[0].moneroRaw,'1000');
+});
+test('persistent lagging finalized bank cannot publish a balance',async()=>{
+ const f=fixture();const original=rpcFor(f);
+ await assert.rejects(calculate(f.input,async(method,params)=>{
+  if(method==='getMultipleAccounts'&&params[1]?.minContextSlot!==undefined)throw Error('solana-context-unavailable');
+  return original(method,params);
+ },f.options),/solana-context-changing/);
+});
+test('transport distinguishes a lagging bank from unrelated RPC rejection',async()=>{
+ for(const [code,category] of [[-32016,'solana-context-unavailable'],[-32012,'solana-rpc-rejected']]){
+  const rpc=readClient('https://example.invalid',async()=>({ok:true,status:200,async text(){return JSON.stringify({error:{code}});}}));
+  await assert.rejects(rpc('getMultipleAccounts',[]),new RegExp(category));
+ }
+});
 
 for(const [name,edit,category] of [
  ['missing holder account',f=>f.input.solana.tokens[0].enumeration.value.pop(),'enumeration-incomplete'],

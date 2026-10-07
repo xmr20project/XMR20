@@ -1,5 +1,5 @@
 {
-  "description": "Historical extraction provenance for 0.1.0. These hashes describe original inputs, not the modified 0.2.0 files or current live services. No deployment or full live replay is asserted.",
+  "description": "Historical extraction provenance for 0.1.0. These hashes describe original inputs, not the modified 0.2.0 runtime. Dated operator deployment and scoped replay evidence are recorded separately in LIVE_VERIFICATION.json.",
   "sources": [
     {
       "path": "backend/web/shared/xmr20/address.js",
@@ -87,6 +87,17 @@
       "Literal loopback HTTP node support and optional pinned Monero replay height.",
       "Self-contained source fingerprint, offline synthetic tests and protocol documentation."
     ],
-    "currentSourceHashes": "Generated locally in build/source-manifest.json; build/hashes.json covers runtime outputs."
+    "currentSourceHashes": "Generated locally in build/source-manifest.json; build/hashes.json covers runtime outputs.",
+    "runtimeRepair": {
+      "date": "2026-10-07",
+      "baseCommit": "1523a9ed7e7c5660394e34eb8cefef16378fe4fc",
+      "sourceSha256": "5a918c8f38da831627d8291ff4a35413697aef28e55a95f80ecd53027704238f",
+      "verification": "LIVE_VERIFICATION.json",
+      "changes": [
+        "ESM bundles provide CommonJS filename/directory globals.",
+        "Lagging finalized bank retries whole-token reads without relaxing exact-slot validation.",
+        "Enumeration/account reads are paired with compensating RPC pacing."
+      ]
+    }
   }
 }
