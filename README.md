@@ -1,6 +1,6 @@
 # XMR20 Wallet and Read Indexer
 
-Source repository for the XMR20 Chrome extension, developer preview **0.1.14**, and the experimental read-only token indexer **0.2.0**.
+Source repository for the XMR20 Chrome extension, developer preview **0.1.14** and opt-in bridge testing build **0.1.20**, and the experimental read-only token indexer **0.2.0**.
 
 ## Read indexer
 
@@ -11,6 +11,22 @@ The reader discovers token declarations and escrow bindings from chain data, wit
 A mainnet rebuild from the published scan start completed on 7 October 2026 with project API access blocked. Its accepted ledger matched a replay of the preserved primary ledger source at the same Monero height and block hash. The runtime repair used by the live second indexer is included here; [dated verification evidence](indexer/LIVE_VERIFICATION.json) records its source fingerprint. **Complete parity with the running primary service, including its accepted events and backing at equal Solana slots, remains unverified.** Open source and matching reports do not certify bridge security: deployments and credits still require the configured authority, and withdrawals remain operator-attested. The reader does not sign or authorize withdrawals.
 
 ## Wallet
+
+## New bridge testing build — 0.1.20
+
+The latest bridge work is included in source and the installable `extension-bridge/` build. It supports any linked wallet and tokens whose XMR20 launch proofs and Token-2022 configuration pass verification. The earlier cumulative 1 XMR20 test limit does not apply to this build.
+
+- Deposit from Solana into your linked Monero position.
+- Airdrop to another registered Monero holder.
+- Transfer a balance to another registered Monero holder, who can withdraw to their own linked Solana wallet.
+- View exact token fees and destinations, keep public recovery receipts, and resume interrupted operations.
+- Approve a return once and let it finish while the wallet stays open and unlocked. Closing, locking, changing account or pausing stops automatic signing.
+
+**This is an upgradeable, unaudited testing release.** The deployment wallet can still change the program. A verifier co-signature remains required for transfers and withdrawals, and refusal or lost keys can prevent withdrawal. XMR20 links and token transfers are public protocol records; these are not private native-XMR transfers. Ten Monero confirmations remain required. The receiving wallet must register its link for the selected token before receiving it.
+
+A real self round trip has completed; the two-holder path passes compiled-contract tests but has not yet completed a funded mainnet test. See [verification and test instructions](BRIDGE-TESTING.md).
+
+The testing build currently uses the local connector at `127.0.0.1:8933` and the separately configured operator forwarded at `127.0.0.1:8934`. Downloading the wallet does not deploy that service or make the testing bridge publicly hosted. The existing website and ordinary wallet route are unchanged.
 
 ## Features
 
@@ -29,6 +45,15 @@ npm ci
 npm test
 ```
 
+Build the new bridge candidate separately:
+
+```sh
+npm run build:bridge
+npm run bridge:connector
+```
+
+Load `extension-bridge/` for version 0.1.20. The connector requires the configured testing operator; it has no signer or deployment credentials. `npm run build` continues to produce the ordinary `extension/` build.
+
 Tests build the extension first. To build without running tests, use `npm run build`.
 The test suite uses disposable keys and mocked network responses; it does not move real funds.
 
@@ -40,7 +65,7 @@ The manifest contains a **public** key to preserve extension identity. It is not
 
 ## Scope and limitations
 
-The wallet portion contains extension source, its installable build, unit tests, public pricing fixtures and two small service integration modules used by tests. The separate `indexer/` directory contains the read-only second indexer. This repository does not contain the full XMR20 website, primary transaction service, deployment credentials, browser profiles, user wallets, recovery phrases or transfer receipts. No service deployment is performed by building or testing this repository.
+The wallet portion contains extension source, installable builds, unit tests, the shared bridge client modules in `bridge/`, public pricing fixtures and two small service integration modules used by tests. The separate `indexer/` directory contains the read-only second indexer. This repository does not contain the full XMR20 website, primary transaction service, deployment credentials, browser profiles, user wallets, recovery phrases or transfer receipts. No service deployment is performed by building or testing this repository.
 
 Private keys are stored in the password-encrypted local vault. Unlocked key material exists in memory while the wallet is in use. This is a developer preview, not an independently audited production wallet. The existing operator-attested bridge requires SOL for Solana network/account fees and explicit approvals. See [bridge notes](BRIDGE-0.1.14.md).
 
@@ -49,3 +74,4 @@ Third-party notices and vendor licenses are included under `extension/`.
 ## License
 
 Original project code is available under the [MIT License](LICENSE). Bundled third-party code retains its original licenses and notices. The `private` setting in `package.json` prevents accidental npm publication; it does not restrict this source license.
+

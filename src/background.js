@@ -18,7 +18,7 @@ chrome.storage.onChanged.addListener((changes,area)=>{
 });
 chrome.runtime.onStartup.addListener(()=>{void serial(()=>controller.clear());});
 
-const broker=createSiteBroker({chrome,readSession:()=>controller.read(),
+const broker=createSiteBroker({chrome,jointBridge:typeof __XMR20_JOINT_MAINNET_REVIEW__!=='undefined'&&__XMR20_JOINT_MAINNET_REVIEW__,readSession:()=>controller.read(),
  readVault:async session=>{const data=await chrome.storage.local.get('xmr20-vault');return decryptVault(data['xmr20-vault'],session.password);},
  unlock:async password=>{const data=await chrome.storage.local.get(['xmr20-vault','xmr20-lock-signal']);const vault=await decryptVault(data['xmr20-vault'],password);return controller.handle({action:'open',password,box:data['xmr20-vault'],lockSignal:data['xmr20-lock-signal']??null,activeId:vault.accounts[0]?.id});},
  sign:async(message,secret)=>{const key=importSol(secret);try{return bs58.encode(ed25519.sign(new TextEncoder().encode(message),key.secretKey.slice(0,32)));}finally{key.secretKey.fill(0);}}

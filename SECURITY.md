@@ -11,3 +11,4 @@ Do not post private keys, recovery phrases, passwords, encrypted wallet backups,
 Review the source in `src/`, the workers in `extension/vendor/`, and the manifest permissions. Build with the committed lockfile using the README instructions. Unit tests generate disposable keys or use explicit test sentinels. Pricing fixtures contain public API data.
 
 The full bridge backend and indexer are outside this repository. The service integration modules under `server-patch/` are reference modules used by tests; this repository does not deploy them. Browser profiles, wallet vaults, recovery material, deployment credentials and local transfer receipts are excluded.
+

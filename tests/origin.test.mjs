@@ -1,6 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {createHmac,timingSafeEqual} from 'node:crypto';
 import {extensionAuth,walletOriginAllowed,extensionOrigin} from '../review/extension-auth.mjs';import {Keypair,bs58} from '../review/core.mjs';import {createRequire} from 'node:module';
-const require=createRequire(import.meta.url);const {ed25519}=require('@noble/curves/ed25519');
+const require=createRequire(import.meta.url);let ed25519;try{({ed25519}=require('@noble/curves/ed25519'));}catch{({ed25519}=require('../../output/xmr20-wallet-production-build/node_modules/@noble/curves/ed25519'));}
 const origin='chrome-extension://jigbpnljnmbbkebaopbnnhmiafgnofla',key=Keypair.generate(),wallet=key.publicKey.toBase58(),used=new Set();
 const codec={seal(scope,data,ttl){const p=Buffer.from(JSON.stringify({scope,data,expires:Date.now()+ttl})).toString('base64url');return p+'.'+createHmac('sha256','test-only-secret').update(p).digest('hex');},read(token,scope){const [p,sig]=token.split('.');const expected=createHmac('sha256','test-only-secret').update(p).digest('hex');if(sig!==expected)throw Error('Bad signature');const d=JSON.parse(Buffer.from(p,'base64url'));if(d.scope!==scope||d.expires<Date.now())throw Error('Wrong scope');return d.data;}};
 const auth=extensionAuth({webAuth:{codec,read:t=>codec.read(t,'web-only')},store:{limit:async()=>{},consumeNonce:async n=>{if(used.has(n))return false;used.add(n);return true;}},origin});

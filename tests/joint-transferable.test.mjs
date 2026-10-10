@@ -1,0 +1,365 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {Keypair} from '@solana/web3.js';import bs58 from 'bs58';
+import {createJointTransferableUI} from '../src/joint-transferable-ui.js';import {jointAccountProvider} from '../src/joint-account.js';
+import {transferableManifest} from '../bridge/core-transferable/mainnet-config.mjs';
+import {addresses,receiptAddress,approveExternal,transaction,creditCommitment} from '../bridge/core-transferable/sdk.mjs';
+import {digest} from '../bridge/core-transferable/records.mjs';
+import {publicReceiptStore} from '../bridge/core-transferable/browser-receipts.mjs';
+import {PRIVATE_TEST_POLICY,WALLET_TEST_POLICY} from '../bridge/core-transferable/private-test.mjs';
+import {XMR20_MINT,XCAT_MINT} from '../src/joint-bridge-assets.js';
+const native='45cQVke2TNqcDi7dkQY3dRiMgVSF89V4reM1BsBeSXDrdmBdXpbrCCqTQ39zUcvyZgVYk7kGQFjNmRfnmvaACHYz3ZMwG5q';
+function setup(t,{ready,registered=false,verify=async()=>{},snapshotComplete=true,movesConfirmed=false,privateTest=false,authorizedAccount=true,configureClient,uiOptions={}}={}){
+ const old=new Map();for(const k of ['document','localStorage','navigator'])old.set(k,Object.getOwnPropertyDescriptor(globalThis,k));const elements=new Map(),doc={hidden:false,activeElement:null,getElementById:id=>elements.get(id),addEventListener(){},removeEventListener(){}},disk=new Map();Object.defineProperty(globalThis,'document',{configurable:true,value:doc});Object.defineProperty(globalThis,'localStorage',{configurable:true,value:{getItem:k=>disk.get(k)??null,setItem:(k,v)=>disk.set(k,v)}});Object.defineProperty(globalThis,'navigator',{configurable:true,value:{locks:{request:async(k,o,f)=>f({})}}});
+ const a={id:'disposable',name:'Disposable wallet',sol:privateTest&&authorizedAccount?PRIVATE_TEST_POLICY.owner:Keypair.generate().publicKey.toBase58(),solSecret:'fixture-unavailable',xmr:native,xmrSeed:'fixture-unavailable'},manifest=transferableManifest(XMR20_MINT);let html='',busy=false,renders=0,signs=0,approvals=0,legacy=0,previous=0;
+ const previewTimers=new Map();let timerId=0;const previewOptions={setTimer:fn=>{previewTimers.set(++timerId,fn);return timerId;},clearTimer:id=>previewTimers.delete(id)};
+ const errors=[],position=addresses({...manifest,owner:a.sol,binding:digest(native)}).position.toBase58(),d={account:()=>a,modal:{open:true},same(){},esc:v=>String(v),rows:()=>[],settings(){},isBusy:()=>busy,on:(id,f)=>{if(elements.has(id))elements.get(id).onclick=f;},show(title,body){html=body;renders++;elements.clear();for(const m of body.matchAll(/<([a-z0-9]+)\b([^>]*\bid="([^"]+)"[^>]*)>/g)){const el={id:m[3],tagName:m[1].toUpperCase(),disabled:/\bdisabled\b/.test(m[2]),selectionStart:0,selectionEnd:0,focus(){doc.activeElement=this;},setSelectionRange(start,end){this.selectionStart=start;this.selectionEnd=end;}};elements.set(el.id,el);}},async run(f){if(busy)return;busy=true;try{await f(1);}catch(e){errors.push(e);if(!configureClient)throw e;}finally{busy=false;}},oneShot(){signs++;throw Error('No signing in UI fixture.');}};
+ const adapters={publicReceiptStore,createSolanaAdapter:()=>({verifyProgram:verify,fee:async amount=>(BigInt(amount)*15n/1000n).toString()}),createRuntimeHttpClient:()=>({readiness:async()=>ready?ready():{schema:'joint-readiness-v3',ready:true,manifest,...(privateTest?{privateTestPolicy:PRIVATE_TEST_POLICY}:{})}}),createWalletClient:options=>Object.assign({snapshot:async()=>({...((ready?await ready():null)??{ready:true,manifest,...(privateTest?{privateTestPolicy:PRIVATE_TEST_POLICY}:{})}),schema:'joint-index-v3',complete:snapshotComplete,pending:movesConfirmed?Object.entries(options.store.load()?.proofs||{}).filter(([,p])=>['transfer','burn'].includes(p.envelope.record.op)).map(([id,p])=>({operation:p.envelope.record.op,receipt:receiptAddress(recoveryState(options).config,id).toBase58()})):[],positions:registered?[{position,available:'98500000'}]:[]}),reviewRegistration:async nonce=>{approvals++;return {proposal:{operation:'register',nonce},envelope:{record:{owner:native}}};},reviewCredit:async input=>({proposal:{operation:input.recipient===native?'deposit':'donate',amount:input.amount,expectedFee:(BigInt(input.amount)*15n/1000n).toString(),nonce:input.nonce},envelope:{record:{owner:input.recipient}}}),receipt(){throw Error('No receipt.');}},configureClient?.(options))};
+ const ui=createJointTransferableUI(d,{previewOptions,...uiOptions,adapters,privateTest,legacy:()=>legacy++,previous:()=>previous++});t.after(()=>{ui.clear();for(const [k,v] of old)if(v)Object.defineProperty(globalThis,k,v);else delete globalThis[k];});return {ui,elements,d,a,errors,async preview(){const [id,fn]=previewTimers.entries().next().value??[];assert.ok(fn,'preview scheduled');previewTimers.delete(id);await fn();},get html(){return html;},get renders(){return renders;},get signs(){return signs;},get approvals(){return approvals;},get legacy(){return legacy;},get previous(){return previous;}};
+}
+test('replacement waits for verified history before offering first-time registration',async t=>{let resolve;const p=new Promise(r=>resolve=r),f=setup(t,{ready:()=>p});const opening=f.ui.open();await new Promise(r=>setImmediate(r));assert.ok(!f.elements.has('j3-register'));assert.match(f.html,/Verifying the replacement bridge/);assert.match(f.html,/XMR20/);assert.equal(f.signs,0);resolve({schema:'joint-readiness-v3',ready:true,manifest:transferableManifest(XMR20_MINT)});await opening;assert.equal(f.elements.get('j3-register').disabled,false);assert.equal(f.approvals,0);});
+test('unavailable service or unverified immutable code keeps real approvals disabled',async t=>{const f=setup(t,{verify:async()=>{throw Error('Synthetic missing deployment');}});await f.ui.open();assert.ok(!f.elements.has('j3-register'));assert.equal(f.elements.get('j3-ready').disabled,false);assert.match(f.html,/Real deposits are disabled/);assert.equal(f.approvals,0);});
+test('closing prevents a late readiness result from painting or enabling approvals',async t=>{let resolve;const p=new Promise(r=>resolve=r),f=setup(t,{ready:()=>p});const opening=f.ui.open();await new Promise(r=>setImmediate(r));const count=f.renders;f.ui.clear();resolve({schema:'joint-readiness-v3',ready:true,manifest:transferableManifest(XMR20_MINT)});await opening;assert.equal(f.renders,count);});
+test('registered holder sees exact balance, direct airdrop/transfer/return choices and both old withdrawal paths',async t=>{const f=setup(t,{registered:true});await f.ui.open();assert.match(f.html,/98\.500000/);for(const label of ['Airdrop to a registered','Send to another','Bridge back to my'])assert.ok(f.html.includes(label));assert.equal(f.elements.get('j3-bridge').disabled,true);await f.preview();assert.equal(f.elements.get('j3-bridge').disabled,false);f.elements.get('j3-previous').onclick();assert.equal(f.previous,1);await f.ui.open();f.elements.get('j3-legacy').onclick();assert.equal(f.legacy,1);assert.equal(f.signs,0);});
+test('incomplete native history cannot enable the holder form',async t=>{const f=setup(t,{registered:true,snapshotComplete:false});await f.ui.open();assert.ok(!f.elements.has('j3-register'));assert.equal(f.signs,0);});
+test('selected extension account signs exact ABI 3 credit; mismatched message or key cannot sign',async()=>{const key=Keypair.generate(),a={sol:key.publicKey.toBase58(),solSecret:bs58.encode(key.secretKey)},manifest=transferableManifest(XMR20_MINT),config={abi:3,network:manifest.network,program:manifest.program,mint:manifest.mint,verifier:manifest.verifier,owner:a.sol,binding:digest(native)},proposal={operation:'deposit',network:config.network,actor:a.sol,amount:'1000000',expectedFee:'15000',nonce:'ba'.repeat(32),blockhash:Keypair.generate().publicKey.toBase58(),lastValidBlockHeight:500};proposal.commitment=creditCommitment(config,proposal);const p=jointAccountProvider({account:()=>a,assert(){}}),signed=await approveExternal(config,proposal,transaction(config,proposal).serialize(),p);assert.ok(signed.signatures[0].some(v=>v));await assert.rejects(()=>approveExternal(config,{...proposal,amount:'2000000'},transaction(config,proposal).serialize(),p));a.solSecret=bs58.encode(Keypair.generate().secretKey);await assert.rejects(()=>approveExternal(config,proposal,transaction(config,proposal).serialize(),p),/does not match/);});
+test('public receipts are isolated by program, mint, linked owner; failed storage cannot continue',()=>{const disk=new Map(),storage={getItem:k=>disk.get(k)??null,setItem:(k,v)=>disk.set(k,v)},config={abi:3,...transferableManifest(XMR20_MINT),owner:Keypair.generate().publicKey.toBase58(),binding:digest(native)},store=publicReceiptStore({config,moneroOwner:native,storage}),v={schema:'joint-owner-v3',scope:digest((awaitCanonical(config))),config,moneroOwner:native,proofs:{},operations:{}};store.save(v);assert.deepEqual(store.load(),v);assert.throws(()=>publicReceiptStore({config:{...config,mint:XCAT_MINT},moneroOwner:native,storage}).save(v),/does not match/);storage.setItem=()=>{};assert.throws(()=>store.save({...v,proofs:{changed:true}}),/not saved/);});
+function awaitCanonical(v){return JSON.stringify(Object.fromEntries(Object.keys(v).sort().map(k=>[k,v[k]])));}
+test('private candidate names its mutable status, restricts to XMR20 and hides peer/airdrop actions',async t=>{
+ const f=setup(t,{privateTest:true,registered:true});await f.ui.open({rows:[{mint:XCAT_MINT}]});
+ assert.match(f.html,/Private 1 XMR20 test/);assert.match(f.html,/can still change this program/);
+ assert.match(f.html,/allowance stays at 1 XMR20 after a return/);
+ assert.equal(f.elements.get('j3-bridge').disabled,true);await f.preview();assert.equal(f.elements.get('j3-bridge').disabled,false);
+ assert.ok(!f.html.includes('Airdrop to a registered')&&!f.html.includes('Send to another'));
+ assert.ok(!f.html.includes(XCAT_MINT));assert.equal(f.signs,0);
+});
+test('private candidate rejects another selected wallet before any native signing or registration review',async t=>{
+ const f=setup(t,{privateTest:true,authorizedAccount:false});await assert.rejects(()=>f.ui.open(),/authorized linked wallets/);assert.equal(f.signs,0);assert.equal(f.approvals,0);
+});
+test('private candidate refuses a missing or substituted policy attestation and never weakens ordinary readiness',async t=>{
+ const f=setup(t,{privateTest:true,ready:async()=>({schema:'joint-readiness-v3',ready:true,manifest:transferableManifest(XMR20_MINT)})});await f.ui.open();assert.ok(!f.elements.has('j3-register'));assert.equal(f.signs,0);
+});
+
+async function clicked(f,id){const button=f.elements.get(id);assert.ok(button&&!button.disabled,id+' must be available');button.onclick();for(let i=0;i<30;i++){await new Promise(r=>setImmediate(r));if(!f.d.isBusy())return;}assert.fail('UI action did not finish');}
+function recoveryState(o){const m=o.manifest,config={abi:3,network:m.network,program:m.program,mint:m.mint,verifier:m.verifier,owner:o.provider.publicKey.toBase58(),binding:digest(native)};return {schema:'joint-owner-v3',scope:digest(awaitCanonical(config)),config,moneroOwner:native,proofs:{},operations:{}};}
+test('lost submission reply exposes the saved registration immediately and repeated clicks cannot approve again',async t=>{
+ let attempts=0;
+ const f=setup(t,{configureClient:o=>({async approveRegistration(review){attempts++;const s=recoveryState(o);s.operations.registration={proposal:review.proposal,phase:'submission-unknown',ownerSignature:'public-synthetic-signature'};o.store.save(s);throw Error('Synthetic lost submission reply');}})});
+ await f.ui.open();await clicked(f,'j3-register');const approve=f.elements.get('j3-confirm');approve.onclick();approve.onclick();
+ for(let i=0;i<30&&f.d.isBusy();i++)await new Promise(r=>setImmediate(r));
+ assert.equal(attempts,1);assert.equal(f.errors.length,0);assert.match(f.html,/Synthetic lost submission reply/);assert.match(f.html,/Your registration approval is saved/);assert.ok(f.elements.has('j3-check-0'));assert.ok(!f.elements.has('j3-confirm')&&!f.elements.has('j3-register'));
+});
+test('failure before owner approval preserves the review without inventing a saved submission',async t=>{
+ const f=setup(t,{configureClient:()=>({approveRegistration:async()=>{throw Error('Synthetic preparation failure');}})});
+ await f.ui.open();await clicked(f,'j3-register');await clicked(f,'j3-confirm');assert.equal(f.errors.length,0);assert.match(f.html,/Synthetic preparation failure/);assert.ok(f.elements.has('j3-confirm'));assert.ok(!f.elements.has('j3-check-0'));
+});
+test('confirmed expiry skips an unnecessary history read and replacement review stays visible',async t=>{
+ let state,options,failHistory=false;
+ const f=setup(t,{configureClient:o=>{options=o;state=recoveryState(o);state.operations.registration={proposal:{operation:'register',nonce:'ab'.repeat(32)},envelope:{record:{owner:native}},phase:'submission-unknown',ownerSignature:'public-synthetic-signature'};o.store.save(state);return {
+  snapshot:async()=>{if(failHistory)throw Error('Synthetic failed history refresh');return {schema:'joint-index-v3',manifest:transferableManifest(XMR20_MINT),complete:true,positions:[]};},
+  check:async()=>{state.operations.registration.phase='approval-expired';options.store.save(state);failHistory=true;return {retryApprovalRequired:true};}
+ };}});
+ await f.ui.open();await clicked(f,'j3-check-0');assert.equal(f.errors.length,0);assert.match(f.html,/previous registration approval expired or failed/);assert.ok(f.elements.has('j3-renew-0'));assert.ok(!f.elements.has('j3-register'));
+ failHistory=false;await clicked(f,'j3-renew-0');assert.ok(f.elements.has('j3-confirm'));assert.match(f.html,/Wallet registration review/);
+});
+test('a finalized Solana registration awaiting its Monero link cannot offer a duplicate registration',async t=>{
+ const f=setup(t,{configureClient:o=>{const s=recoveryState(o);s.operations.registration={proposal:{operation:'register',nonce:'ab'.repeat(32)},phase:'finalized',ownerSignature:'public-synthetic-signature'};o.store.save(s);return {};}});
+ await f.ui.open();assert.match(f.html,/Solana registration confirmed/);assert.ok(f.elements.has('j3-check-0'));assert.ok(!f.elements.has('j3-register'));assert.equal(f.approvals,0);
+});
+
+
+test('registration has one primary action, readable status and secondary recovery inside details',async t=>{
+ const f=setup(t,{configureClient:o=>{const s=recoveryState(o);s.operations.registration={proposal:{operation:'register',nonce:'cd'.repeat(32)},phase:'submission-unknown',ownerSignature:'public-synthetic-signature'};o.store.save(s);return {};}});
+ await f.ui.open();assert.equal([...f.html.matchAll(/class="primary wide"/g)].length,1);assert.match(f.html,/Check registration status/);assert.doesNotMatch(f.html,/submission-unknown|Saved Solana approvals/);
+ assert.ok(f.html.indexOf('<summary>Receipts and recovery')<f.html.indexOf('id="j3-retry-0"'));
+ assert.ok(f.html.indexOf('<summary>Other bridge balances')<f.html.indexOf('id="j3-legacy"'));
+});
+
+test('registration error is next to the main action and retains a single review after a pre-sign failure',async t=>{
+ const f=setup(t,{configureClient:()=>({approveRegistration:async()=>{throw Error('Transferable service unavailable. Keep the public recovery receipt.');}})});
+ await f.ui.open();await clicked(f,'j3-register');await clicked(f,'j3-confirm');
+ assert.match(f.html,/The bridge service could not finish this request/);
+ assert.ok(f.html.indexOf('role="alert"')<f.html.indexOf('id="j3-confirm"'));assert.ok(f.html.indexOf('id="progress"')<f.html.indexOf('id="j3-confirm"'));
+ assert.equal([...f.html.matchAll(/class="primary wide"/g)].length,1);assert.equal(f.elements.get('j3-confirm').disabled,false);
+});
+
+test('the selected extension account preserves the verifier registration signature while adding only its own',async()=>{
+ const {approveRegistrationExternal}=await import('../bridge/core-transferable/sdk.mjs'),{ed25519}=await import('@noble/curves/ed25519');
+ const key=Keypair.generate(),verifier=Keypair.generate(),account={sol:key.publicKey.toBase58(),solSecret:bs58.encode(key.secretKey)},config={...transferableManifest(XMR20_MINT),owner:account.sol,verifier:verifier.publicKey.toBase58(),binding:digest(native)},proposal={operation:'register',network:config.network,nonce:'ce'.repeat(32),commitment:'ab'.repeat(32),blockhash:Keypair.generate().publicKey.toBase58(),lastValidBlockHeight:500},tx=transaction(config,proposal);tx.sign([verifier]);
+ const signature=Buffer.from(tx.signatures[1]),provider=jointAccountProvider({account:()=>account,assert(){}}),signed=await approveRegistrationExternal(config,proposal,tx.serialize(),provider);
+ assert.ok(ed25519.verify(signed.signatures[0],signed.message.serialize(),key.publicKey.toBytes()));assert.deepEqual(Buffer.from(signed.signatures[1]),signature);
+});
+
+test('successful registration replaces the review immediately while later publication and history reads are still pending',async t=>{
+ let finishCheck,finishPublish,finishHistory,options,state,historyAfterApproval=false;
+ const checking=new Promise(r=>finishCheck=r),publishing=new Promise(r=>finishPublish=r),history=new Promise(r=>finishHistory=r);
+ const f=setup(t,{configureClient:o=>{options=o;return {
+  async approveRegistration(review){state=recoveryState(o);state.operations.registration={proposal:review.proposal,phase:'submission-unknown',ownerSignature:'public-synthetic-signature'};o.store.save(state);return {operationId:'registration'};},
+  async check(){await checking;state.operations.registration.phase='finalized';options.store.save(state);return {confirmed:true};},
+  async publishCreditOrLink(){await publishing;state.operations.registration.publication={txid:'ab'.repeat(32)};options.store.save(state);historyAfterApproval=true;},
+  async snapshot(){if(historyAfterApproval)await history;return {schema:'joint-index-v3',manifest:transferableManifest(XMR20_MINT),complete:true,positions:[]};}
+ };}});
+ await f.ui.open();await clicked(f,'j3-register');f.elements.get('j3-confirm').onclick();
+ for(let i=0;i<5;i++)await new Promise(r=>setImmediate(r));
+ assert.ok(!f.elements.has('j3-confirm'));assert.match(f.html,/Your registration approval is saved/);assert.equal(f.elements.get('j3-check-0').disabled,true);
+ finishCheck();for(let i=0;i<5;i++)await new Promise(r=>setImmediate(r));
+ assert.match(f.html,/Solana registration confirmed/);assert.ok(!f.elements.has('j3-confirm'));assert.equal(f.elements.get('j3-check-0').disabled,true);
+ finishPublish();for(let i=0;i<5;i++)await new Promise(r=>setImmediate(r));
+ assert.match(f.html,/View Monero link record/);assert.ok(f.html.includes('https://xmrchain.net/tx/'+'ab'.repeat(32)));assert.ok(!f.elements.has('j3-confirm'));
+ finishHistory();for(let i=0;i<5;i++)await new Promise(r=>setImmediate(r));assert.equal(f.elements.get('j3-check-0').disabled,false);assert.equal(f.errors.length,0);
+});
+
+test('accepted background deposit shows a pending balance and prevents duplicate approval until verified complete',async t=>{
+ let state,opts,status='monero-pending',checks=0,published=0;
+ const f=setup(t,{registered:true,configureClient:o=>{opts=o;state=recoveryState(o);state.operations.deposit={proposal:{operation:'deposit',nonce:'aa'.repeat(32),amount:'1000000'},envelope:{record:{amount:'985000'}},phase:'submission-unknown',ownerSignature:'fixture'};o.store.save(state);return {
+  async backgroundStatus(){state.operations.deposit.background={enabled:true,phase:status,checkedAt:100};opts.store.save(state);return {accepted:true,backgroundEnabled:true,phase:status};},
+  async check(){checks++;state.operations.deposit.phase='finalized';opts.store.save(state);return {confirmed:true};},
+  async publishCreditOrLink(){published++;}
+ };}});
+ await f.ui.open();assert.match(f.html,/Bridging to Monero/);assert.match(f.html,/0\.985000/);assert.match(f.html,/You can close the wallet/);assert.match(f.html,/not spendable yet/);
+ assert.ok(!f.elements.has('j3-review'));assert.equal(f.approvals,0);assert.equal(checks,0);
+ status='complete';await clicked(f,'j3-background');assert.equal(checks,1);assert.equal(published,0);assert.equal(f.approvals,0);assert.ok(f.elements.has('j3-bridge'));
+});
+
+test('unacknowledged approval never claims automatic completion or that it is safe to close',async t=>{
+ const f=setup(t,{configureClient:o=>{const s=recoveryState(o);s.operations.registration={proposal:{operation:'register'},phase:'submission-unknown',ownerSignature:'fixture'};o.store.save(s);return {backgroundStatus:async()=>({accepted:false,backgroundEnabled:true})};}});
+ await f.ui.open();assert.doesNotMatch(f.html,/You can close the wallet/);assert.match(f.html,/Your registration approval is saved/);assert.ok(f.elements.has('j3-check-0'));
+});
+
+
+test('pending screen polls automatically, stops on close and ignores late responses without signing',async t=>{
+ let next,cancelled=0,polls=0,release,state,opts;
+ const f=setup(t,{uiOptions:{setTimer:fn=>(next=fn),clearTimer:()=>cancelled++},configureClient:o=>{opts=o;state=recoveryState(o);state.operations.registration={proposal:{operation:'register'},phase:'submission-unknown',ownerSignature:'fixture'};o.store.save(state);return {
+  async backgroundStatus(){polls++;if(polls===2)await new Promise(r=>release=r);state.operations.registration.background={enabled:true,phase:'monero-pending'};opts.store.save(state);return {accepted:true,backgroundEnabled:true,phase:'monero-pending'};}
+ };}});
+ await f.ui.open();assert.equal(polls,1);const checking=next();await new Promise(r=>setImmediate(r));assert.equal(polls,2);
+ const renders=f.renders;f.ui.clear();release();await checking;assert.equal(f.renders,renders);assert.equal(f.approvals,0);assert.ok(cancelled>0);
+});
+
+test('completed registration never blocks a newer pending deposit with redundant history checks',async t=>{
+ let opts,state,calls=[],snapshots=0;
+ const f=setup(t,{configureClient:o=>{opts=o;state=recoveryState(o);state.operations.link={proposal:{operation:'register'},phase:'finalized',background:{enabled:true,phase:'complete'}};state.operations.deposit={proposal:{operation:'deposit',amount:'1000000'},envelope:{record:{amount:'985000'}},phase:'submission-unknown'};o.store.save(state);return {
+  async backgroundStatus(id){calls.push(id);assert.equal(id,'deposit');state.operations[id].background={enabled:true,phase:'monero-pending'};opts.store.save(state);return {accepted:true,backgroundEnabled:true,phase:'monero-pending'};},
+  async snapshot(){snapshots++;throw Error('No full history needed for public pending progress');},
+  async check(){throw Error('No repeated registration reconciliation');}
+ };}});
+ await f.ui.open();assert.deepEqual(calls,['deposit']);assert.equal(snapshots,0);assert.match(f.html,/Bridging to Monero/);assert.doesNotMatch(f.html,/Connecting your wallets|Updating the wallet/);assert.equal(f.errors.length,0);
+});
+
+test('an expired deposit is surfaced as one fresh review after checking, never an automatic retry',async t=>{
+ let opts,state,checks=0,renewed=0;
+ const f=setup(t,{registered:true,configureClient:o=>{opts=o;state=recoveryState(o);state.operations.deposit={proposal:{operation:'deposit',amount:'1000000',nonce:'ef'.repeat(32)},envelope:{record:{owner:native,amount:'985000'}},phase:'submission-unknown'};o.store.save(state);return {
+  async backgroundStatus(){state.operations.deposit.background={enabled:true,phase:'approval-required'};opts.store.save(state);return {accepted:true,backgroundEnabled:true,phase:'approval-required'};},
+  async check(){checks++;state.operations.deposit.phase='approval-expired';opts.store.save(state);return {retryApprovalRequired:true};},
+  async reviewCredit(input){renewed++;assert.equal(input.nonce,'ef'.repeat(32));return {proposal:{operation:'deposit',amount:input.amount,nonce:input.nonce},envelope:{record:{owner:native}}};}
+ };}});
+ await f.ui.open();assert.equal(checks,1);assert.match(f.html,/Deposit approval expired/);assert.doesNotMatch(f.html,/You can close the wallet/);assert.ok(!f.elements.has('j3-review'));assert.equal([...f.html.matchAll(/id="j3-renew-0"/g)].length,1);assert.equal(renewed,0);
+ await clicked(f,'j3-renew-0');assert.equal(renewed,1);assert.match(f.html,/Deposit review/);assert.equal(f.signs,0);
+});
+
+test('a saved completed registration uses one attested history read on reopen without reconciling it again',async t=>{
+ let snapshots=0,checks=0;
+ const f=setup(t,{configureClient:o=>{const s=recoveryState(o);s.operations.link={proposal:{operation:'register'},phase:'finalized',background:{enabled:true,phase:'complete'}};o.store.save(s);return {
+  async backgroundStatus(){checks++;throw Error('Completed operation must not restart');},
+  async snapshot(){snapshots++;return {schema:'joint-index-v3',manifest:o.manifest,complete:true,positions:[{position:addresses(s.config).position.toBase58(),available:'0'}]};}
+ };}});
+ await f.ui.open();assert.equal(checks,0);assert.equal(snapshots,1);assert.equal(f.elements.get('j3-bridge').disabled,true);await f.preview();assert.equal(f.elements.get('j3-bridge').disabled,false);
+ await f.ui.open();assert.equal(checks,0);assert.equal(snapshots,2);
+});
+
+test('a lost deposit submission reply blocks a second funding form even without a worker acknowledgement',async t=>{
+ const f=setup(t,{registered:true,configureClient:o=>{const s=recoveryState(o);s.operations.deposit={proposal:{operation:'deposit',amount:'1000000'},phase:'submission-unknown'};o.store.save(s);return {backgroundStatus:async()=>({accepted:false,backgroundEnabled:false})};}});
+ await f.ui.open();assert.match(f.html,/Your signed deposit is saved/);assert.ok(!f.elements.has('j3-review'));assert.ok(f.elements.has('j3-check-0'));assert.equal(f.approvals,0);
+});
+
+test('one funding button shows exact terms and submits once without a second approval screen',async t=>{
+ let submits=0,release,options,state,submitted;
+ const f=setup(t,{registered:true,configureClient:o=>{options=o;return {
+  async approveCredit(review){submits++;submitted=review;await new Promise(r=>release=r);state=recoveryState(o);state.operations.deposit={...review,envelope:{record:{owner:native,amount:'985000'}},phase:'submission-unknown',ownerSignature:'synthetic-public-signature'};o.store.save(state);return {operationId:'deposit'};},
+  async backgroundStatus(){state.operations.deposit.background={enabled:true,phase:'solana-pending'};options.store.save(state);return {accepted:true,backgroundEnabled:true,phase:'solana-pending'};}
+ };}});
+ await f.ui.open();assert.equal(submits,0);assert.equal(f.elements.get('j3-bridge').disabled,true);
+ await f.preview();assert.equal(submits,0);assert.match(f.html,/0\.015000 XMR20/);assert.match(f.html,/0\.985000 XMR20/);assert.ok(f.html.includes(native));assert.match(f.html,/SOL network and account costs are additional/);
+ assert.ok(!f.elements.has('j3-review'));assert.ok(!f.elements.has('j3-confirm'));
+ const button=f.elements.get('j3-bridge');button.onclick();button.onclick();await new Promise(r=>setImmediate(r));assert.equal(submits,1);assert.equal(submitted.proposal.amount,'1000000');assert.equal(submitted.envelope.record.owner,native);
+ release();for(let i=0;i<30&&f.d.isBusy();i++)await new Promise(r=>setImmediate(r));
+ assert.equal(submits,1);assert.match(f.html,/Bridging to Monero/);assert.match(f.html,/Status updates automatically/);assert.ok(!f.elements.has('j3-bridge'));assert.ok(!f.elements.has('j3-confirm'));
+ assert.ok(f.html.indexOf('<summary>Receipts and recovery')<f.html.indexOf('id="j3-background"'));assert.equal(f.errors.length,0);
+});
+
+test('editing while a quote is pending preserves typing and cannot enable an obsolete amount',async t=>{
+ let release,previews=0,submits=0;
+ const f=setup(t,{registered:true,configureClient:()=>({async reviewCredit(input){previews++;if(previews===1)await new Promise(r=>release=r);return {proposal:{operation:'deposit',amount:input.amount,expectedFee:'15000'},envelope:{record:{owner:native}}};},async approveCredit(){submits++;throw Error('Must not approve');}})});
+ await f.ui.open();const loading=f.preview();const amount=f.elements.get('j3-amount');amount.focus();amount.selectionStart=1;amount.selectionEnd=1;amount.oninput({target:{value:'2'}});
+ assert.equal(document.activeElement.id,'j3-amount');assert.equal(document.activeElement.selectionStart,1);assert.equal(f.elements.get('j3-amount').disabled,false);assert.equal(f.elements.get('j3-bridge').disabled,true);
+ release();await loading;assert.equal(f.elements.get('j3-bridge').disabled,true);await f.preview();assert.match(f.html,/1\.985000 XMR20/);assert.equal(submits,0);
+ f.elements.get('j3-amount').oninput({target:{value:'bad'}});assert.equal(f.elements.get('j3-bridge').disabled,true);assert.doesNotMatch(f.html,/1\.985000 XMR20/);assert.equal(submits,0);
+});
+
+test('private cap and invalid input block automatic preparation and one-button approval',async t=>{
+ let previews=0,submits=0;
+ const f=setup(t,{registered:true,privateTest:true,configureClient:()=>({async reviewCredit(){previews++;throw Error('No preview for invalid input');},async approveCredit(){submits++;}})});
+ await f.ui.open({amountRaw:'2000000'});assert.equal(f.elements.get('j3-bridge').disabled,true);assert.match(f.html,/Enter an amount up to 1 XMR20/);
+ for(const value of ['0','-1','2','0.0000001','abc']){f.elements.get('j3-amount').oninput({target:{value}});assert.equal(f.elements.get('j3-bridge').disabled,true);}
+ assert.equal(previews,0);assert.equal(submits,0);
+});
+
+test('a late quote for a changed account or closed wallet cannot repaint or approve',async t=>{
+ let release;
+ const f=setup(t,{registered:true,configureClient:()=>({async reviewCredit(input){await new Promise(r=>release=r);return {proposal:{operation:'deposit',amount:input.amount},envelope:{record:{owner:native}}};}})});
+ await f.ui.open();const pending=f.preview();f.a.sol=Keypair.generate().publicKey.toBase58();const renders=f.renders;release();await pending;
+ assert.equal(f.renders,renders);assert.equal(f.signs,0);assert.equal(f.elements.get('j3-bridge').disabled,true);f.ui.clear();
+});
+
+test('a changed fee stops the click and requires the refreshed inline terms before another click',async t=>{
+ let previews=0,submits=0;
+ const f=setup(t,{registered:true,configureClient:()=>({async reviewCredit(input){return {proposal:{operation:'deposit',amount:input.amount,expectedFee:++previews===1?'15000':'20000'},envelope:{record:{owner:native}}};},async approveCredit(){submits++;throw Error('Amount, destination, fee or ownership changed. Review again.');}})});
+ await f.ui.open();await f.preview();await clicked(f,'j3-bridge');assert.equal(submits,1);assert.match(f.html,/fee or ownership changed/);assert.equal(f.elements.get('j3-bridge').disabled,true);
+ await f.preview();assert.match(f.html,/0\.020000 XMR20/);assert.match(f.html,/0\.980000 XMR20/);assert.equal(f.elements.get('j3-bridge').disabled,false);assert.equal(submits,1);assert.equal(f.signs,0);
+});
+
+test('return flow shows one inline action and clears a pending deposit quote',async t=>{
+ const f=setup(t,{registered:true});await f.ui.open();f.elements.get('j3-operation').onchange({target:{value:'release'}});
+ assert.ok(!f.elements.has('j3-bridge'));assert.ok(!f.elements.has('j3-review'));await f.preview();assert.match(f.html,/Arrives on Solana/);assert.equal(f.elements.get('j3-return').disabled,false);assert.ok(!f.elements.has('j3-publish'));assert.equal(f.signs,0);
+});
+
+test('home balance return action selects the private return route without signing or preparing funding',async t=>{
+ let funding=0;const f=setup(t,{privateTest:true,registered:true,configureClient:()=>({async reviewCredit(){funding++;throw Error('No new funding from a return action');}})});
+ await f.ui.open({mint:XMR20_MINT,amountRaw:'985000',direction:'xmr-to-sol'});
+ assert.match(f.html,/value="release" selected/);assert.match(f.html,/value="0\.985000"/);
+ assert.match(f.html,/Bridge to Solana/);assert.ok(!f.elements.has('j3-bridge'));
+ await f.preview();assert.equal(f.elements.get('j3-return').disabled,false);assert.ok(!f.elements.has('j3-publish'));
+ assert.equal(funding,0);assert.equal(f.signs,0);assert.equal(f.approvals,0);
+});
+
+test('home balance send action selects the new peer-transfer route and still requires native approval',async t=>{
+ let funding=0;const f=setup(t,{registered:true,configureClient:()=>({async reviewCredit(){funding++;throw Error('No funding from a peer transfer');}})});
+ await f.ui.open({mint:XMR20_MINT,amountRaw:'985000',direction:'xmr-to-xmr'});
+ assert.match(f.html,/value="transfer" selected/);assert.ok(f.elements.has('j3-recipient'));
+ assert.match(f.html,/Review transfer/);assert.ok(!f.elements.has('j3-bridge'));
+ assert.equal(funding,0);assert.equal(f.signs,0);assert.equal(f.approvals,0);
+});
+
+test('reopening a completed bridge for return never presents registration as pending during history loading',async t=>{
+ let finish,reads=0;
+ const f=setup(t,{privateTest:true,configureClient:o=>{
+  const state=recoveryState(o);state.operations.link={proposal:{operation:'register'},phase:'finalized',background:{enabled:true,phase:'complete'}};
+  state.operations.deposit={proposal:{operation:'deposit',amount:'1000000'},phase:'finalized',background:{enabled:true,phase:'complete'}};o.store.save(state);
+  return {async snapshot(){reads++;await new Promise(r=>finish=r);return {schema:'joint-index-v3',manifest:o.manifest,privateTestPolicy:PRIVATE_TEST_POLICY,complete:true,positions:[{position:addresses(state.config).position.toBase58(),available:'985000'}]};}};
+ }});
+ const opening=f.ui.open({amountRaw:'985000',direction:'xmr-to-sol'});await new Promise(r=>setImmediate(r));
+ assert.match(f.html,/Checking your return/);assert.doesNotMatch(f.html,/Monero link needs ten|Connect your linked wallets|Check registration status/);
+ assert.ok(!f.elements.has('j3-register'));assert.ok(!f.elements.has('j3-review'));assert.ok(!f.elements.has('j3-ready'));
+ finish();await opening;assert.equal(reads,1);assert.match(f.html,/0\.985000/);assert.match(f.html,/Bridge to Solana/);
+ await f.preview();assert.equal(f.elements.get('j3-return').disabled,false);assert.equal(f.signs,0);assert.equal(f.approvals,0);
+});
+
+test('failed return history read keeps saved receipts and offers connection retry without inventing a new confirmation wait',async t=>{
+ const f=setup(t,{configureClient:o=>{const state=recoveryState(o);state.operations.link={proposal:{operation:'register'},phase:'finalized',background:{enabled:true,phase:'complete'}};o.store.save(state);return {async snapshot(){throw Error('Synthetic unavailable history');}};}});
+ await f.ui.open({amountRaw:'985000',direction:'xmr-to-sol'});
+ assert.match(f.html,/Your balance could not be verified/);assert.doesNotMatch(f.html,/Monero link needs ten|Check registration status/);
+ assert.equal(f.elements.get('j3-ready').disabled,false);assert.ok(f.elements.has('j3-export'));
+ assert.ok(!f.elements.has('j3-register'));assert.ok(!f.elements.has('j3-review'));assert.equal(f.approvals,0);assert.equal(f.signs,0);
+});
+
+test('completed saved registration absent from a complete report requires reconciliation rather than another registration',async t=>{
+ const f=setup(t,{configureClient:o=>{const state=recoveryState(o);state.operations.link={proposal:{operation:'register'},phase:'finalized',background:{enabled:true,phase:'complete'}};o.store.save(state);return {};}});
+ await f.ui.open({direction:'xmr-to-sol'});assert.match(f.html,/saved registration is complete/);assert.match(f.html,/Do not register again/);
+ assert.doesNotMatch(f.html,/Monero link needs ten/);assert.ok(!f.elements.has('j3-register'));assert.equal(f.signs,0);assert.equal(f.approvals,0);
+});
+
+test('published return stays on one saved continuation and cannot offer or replay another native approval',async t=>{
+ let publications=0,state,opts;
+ const f=setup(t,{registered:true,configureClient:o=>{opts=o;state=o.store.load()??recoveryState(o);return {async publishMove(review){publications++;state.proofs[review.nonce]={envelope:{record:{p:'xmr20-joint',v:3,net:'mainnet',op:'burn',owner:native,mint:state.config.mint,program:state.config.program,amount:review.amount,nonce:review.nonce,to:state.config.owner,from:addresses(state.config).position.toBase58()}},phase:'publication-unknown',result:{txid:'ab'.repeat(32)}};opts.store.save(state);}};}});
+ await f.ui.open({direction:'xmr-to-sol',amountRaw:'985000'});await f.preview();const publish=f.elements.get('j3-return');
+ await clicked(f,'j3-return');assert.equal(publications,1);assert.match(f.html,/Returning to Solana/);assert.match(f.html,/Waiting for ten Monero confirmations/);
+ assert.ok(f.elements.has('j3-pause-return'));assert.ok(!f.elements.has('j3-review'));assert.ok(!f.elements.has('j3-publish'));assert.ok(!f.elements.has('j3-bridge'));
+ assert.equal([...f.html.matchAll(/class="primary wide"/g)].length,0);
+ publish.onclick();for(let i=0;i<20&&f.d.isBusy();i++)await new Promise(r=>setImmediate(r));assert.equal(publications,1);
+ await f.ui.open({direction:'xmr-to-sol'});assert.match(f.html,/Returning to Solana/);assert.ok(!f.elements.has('j3-review'));assert.equal(f.signs,0);
+});
+
+test('lost native publication reply preserves the exact saved return instead of offering a second approval',async t=>{
+ let publications=0,reviewed;
+ const f=setup(t,{registered:true,movesConfirmed:true,configureClient:o=>({async publishMove(review){publications++;const state=recoveryState(o);state.proofs[review.nonce]={envelope:{record:{p:'xmr20-joint',v:3,net:'mainnet',op:'burn',owner:native,mint:state.config.mint,program:state.config.program,amount:review.amount,nonce:review.nonce,to:state.config.owner,from:addresses(state.config).position.toBase58()}},phase:'publication-unknown'};o.store.save(state);throw Error('Synthetic lost reply');},async reviewMove(id){reviewed=id;throw Error('Synthetic record awaiting confirmations');}})});
+ await f.ui.open({direction:'xmr-to-sol',amountRaw:'985000'});await f.preview();await clicked(f,'j3-return');
+ assert.match(f.html,/publication is not yet confirmed/);assert.ok(!f.elements.has('j3-publish'));assert.ok(!f.elements.has('j3-review'));
+ await clicked(f,'j3-move-0');assert.match(reviewed,/^[a-f0-9]{64}$/);assert.equal(publications,1);assert.match(f.html,/awaiting confirmations/);assert.ok(f.elements.has('j3-return'));assert.equal(f.signs,0);
+});
+
+test('saved Solana return approval is checked before any new release review',async t=>{
+ let checks=0,reviews=0;
+ const f=setup(t,{registered:true,configureClient:o=>{const state=recoveryState(o),id='ac'.repeat(32);state.proofs[id]={envelope:{record:{op:'burn',amount:'985000',nonce:id}},result:{txid:'ba'.repeat(32)}};state.operations.release={proposal:{operation:'release',nonce:id,amount:'985000'},phase:'submission-unknown'};o.store.save(state);return {async check(operation){checks++;assert.equal(operation,'release');return {pending:true};},async reviewMove(){reviews++;throw Error('Must not prepare another release');}};}});
+ await f.ui.open({direction:'xmr-to-sol'});assert.match(f.html,/Check Solana confirmation/);await clicked(f,'j3-resume-move-0');
+ assert.equal(checks,1);assert.equal(reviews,0);assert.equal(f.signs,0);assert.ok(!f.elements.has('j3-review'));assert.ok(!f.elements.has('j3-publish'));
+});
+
+test('two old return records retain both receipts but continue the earliest without publishing another',async t=>{
+ const ids=['bc'.repeat(32),'cd'.repeat(32)];let continued;
+ const f=setup(t,{registered:true,movesConfirmed:true,configureClient:o=>{const state=recoveryState(o);ids.forEach((id,i)=>{state.proofs[id]={envelope:{record:{op:'burn',nonce:id,amount:'985000'}},result:{txid:(i?'ab':'de').repeat(32)}};});o.store.save(state);return {async reviewMove(id){continued=id;throw Error('Synthetic waiting for confirmation');}};}});
+ await f.ui.open({direction:'xmr-to-sol'});assert.equal([...f.html.matchAll(/class="primary wide"/g)].length,1);assert.match(f.html,/Additional saved records/);
+ assert.ok(f.elements.has('j3-proof-0'));assert.ok(f.elements.has('j3-proof-1'));assert.ok(!f.elements.has('j3-review'));
+ await clicked(f,'j3-move-0');assert.equal(continued,ids[0]);assert.equal(f.signs,0);assert.equal(f.approvals,0);
+});
+
+test('an already signed Solana release takes precedence over an earlier unsubmitted return proof',async t=>{
+ const ids=['ab'.repeat(32),'ba'.repeat(32)];let checked;
+ const f=setup(t,{registered:true,configureClient:o=>{const state=recoveryState(o);ids.forEach(id=>{state.proofs[id]={envelope:{record:{op:'burn',nonce:id,amount:'985000'}}};});state.operations.second={proposal:{operation:'release',nonce:ids[1],amount:'985000'},phase:'submission-unknown'};o.store.save(state);return {async check(id){checked=id;return {pending:true};},async reviewMove(){throw Error('Must check the signed release first');}};}});
+ await f.ui.open({direction:'xmr-to-sol'});assert.match(f.html,/Check Solana confirmation/);await clicked(f,'j3-resume-move-0');assert.equal(checked,'second');assert.equal(f.signs,0);
+});
+
+test('a return below confirmed history waits normally and prepares only after its exact receipt appears',async t=>{
+ const id='ad'.repeat(32);let confirmed=false,reviews=0;
+ const f=setup(t,{registered:true,configureClient:o=>{const state=recoveryState(o);state.proofs[id]={envelope:{record:{op:'burn',nonce:id,amount:'985000'}},result:{txid:'da'.repeat(32)}};o.store.save(state);return {
+  async snapshot(){return {schema:'joint-index-v3',manifest:o.manifest,complete:true,positions:[{position:addresses(state.config).position.toBase58(),available:'985000'}],pending:[{operation:'burn',receipt:receiptAddress(state.config,confirmed?id:'ae'.repeat(32)).toBase58()}],accepted:[]};},
+  async reviewMove(nonce){reviews++;assert.equal(nonce,id);return {proposal:{operation:'release',nonce:id,amount:'985000',expectedFee:'14775'},envelope:state.proofs[id].envelope};}
+ };}});
+ await f.ui.open({direction:'xmr-to-sol'});await clicked(f,'j3-move-0');
+ assert.equal(reviews,0);assert.match(f.html,/Wait for ten Monero confirmations/);assert.doesNotMatch(f.html,/joint-error|service could not finish/);assert.ok(!f.elements.has('j3-confirm'));
+ confirmed=true;await clicked(f,'j3-move-0');assert.equal(reviews,1);assert.match(f.html,/Return to Solana review/);assert.ok(f.elements.has('j3-confirm'));assert.equal(f.signs,0);
+});
+
+test('an unavailable return snapshot stays a connection error, never a fabricated confirmation status',async t=>{
+ let fail=false,reviews=0;
+ const f=setup(t,{registered:true,configureClient:o=>{const state=recoveryState(o),id='af'.repeat(32);state.proofs[id]={envelope:{record:{op:'burn',nonce:id,amount:'985000'}},result:{txid:'fa'.repeat(32)}};o.store.save(state);return {async snapshot(){if(fail)throw Error('Transferable service unavailable. Keep the public recovery receipt.');return {schema:'joint-index-v3',manifest:o.manifest,complete:true,positions:[{position:addresses(state.config).position.toBase58(),available:'985000'}]};},async reviewMove(){reviews++;}};}});
+ await f.ui.open({direction:'xmr-to-sol'});await clicked(f,'j3-move-0');assert.match(f.html,/This saved record has not reached/);fail=true;await clicked(f,'j3-move-0');assert.match(f.html,/service could not finish/);assert.doesNotMatch(f.html,/This saved record has not reached/);assert.equal(reviews,0);assert.equal(f.signs,0);
+});
+
+function automaticReturn(t,{deferSigning=false}={}){
+ const timers=new Map();let next=0,options,state,release,publications=0,signatures=0;
+ const f=setup(t,{registered:true,movesConfirmed:true,uiOptions:{setTimer:fn=>{timers.set(++next,fn);return next;},clearTimer:id=>timers.delete(id)},configureClient:o=>{
+  options=o;state=recoveryState(o);
+  return {
+   async publishMove({amount,nonce}){publications++;state.proofs[nonce]={envelope:{record:{p:'xmr20-joint',v:3,net:'mainnet',op:'burn',owner:native,mint:state.config.mint,program:state.config.program,amount,nonce,to:state.config.owner,from:addresses(state.config).position.toBase58()},signature:'synthetic'},result:{txid:'ab'.repeat(32)}};o.store.save(state);},
+   async reviewMove(nonce){return {config:state.config,proposal:{operation:'release',nonce,amount:'985000',expectedFee:'14775'},envelope:state.proofs[nonce].envelope};},
+   async approveMove(review){if(deferSigning)await new Promise(r=>release=r);options.provider.assertCurrent();signatures++;state.operations.return={...review,phase:'submission-unknown'};o.store.save(state);return {operationId:'return'};},
+   async check(){state.operations.return.phase='finalized';o.store.save(state);return {confirmed:true};}
+  };
+ }});
+ return {f,get publications(){return publications;},get signatures(){return signatures;},get pending(){return !!release;},release:()=>release(),tick(){const [id,fn]=timers.entries().next().value??[];assert.ok(fn,'return continuation scheduled');timers.delete(id);fn();}};
+}
+
+test('one return button automatically completes both approvals and confirmation without review or continue clicks',async t=>{
+ const a=automaticReturn(t),f=a.f;await f.ui.open({direction:'xmr-to-sol',amountRaw:'985000'});await f.preview();
+ assert.match(f.html,/0\.014775 XMR20/);assert.match(f.html,/0\.970225 XMR20/);assert.ok(f.html.includes(f.a.sol));assert.equal(a.publications,0);assert.equal(a.signatures,0);
+ await clicked(f,'j3-return');assert.equal(a.publications,1);assert.equal(a.signatures,0);assert.ok(!f.elements.has('j3-confirm'));assert.ok(!f.elements.has('j3-publish'));
+ a.tick();for(let i=0;i<30&&f.d.isBusy();i++)await new Promise(r=>setImmediate(r));assert.equal(a.signatures,1);assert.match(f.html,/Waiting for Solana confirmation/);
+ a.tick();for(let i=0;i<30&&f.d.isBusy();i++)await new Promise(r=>setImmediate(r));assert.match(f.html,/Your return is confirmed on Solana/);assert.equal(a.signatures,1);assert.equal(a.publications,1);
+});
+
+test('pausing during final preparation revokes the actual provider guard before it can sign',async t=>{
+ const a=automaticReturn(t,{deferSigning:true}),f=a.f;await f.ui.open({direction:'xmr-to-sol',amountRaw:'985000'});await f.preview();await clicked(f,'j3-return');
+ a.tick();for(let i=0;i<30&&!a.pending;i++)await new Promise(r=>setImmediate(r));assert.ok(a.pending);f.elements.get('j3-pause-return').onclick();a.release();for(let i=0;i<30&&f.d.isBusy();i++)await new Promise(r=>setImmediate(r));
+ assert.equal(a.signatures,0);assert.match(f.html,/Automatic completion is paused/);assert.ok(!f.elements.has('j3-publish'));assert.ok(f.elements.has('j3-return'));
+});
+
+test('a failed saved-return connection offers reconnect above the saved amount, without a fake fee spinner or disabled resume',async t=>{
+ let fail=true;
+ const f=setup(t,{registered:true,configureClient:o=>{const state=recoveryState(o),id='ba'.repeat(32);state.proofs[id]={envelope:{record:{op:'burn',nonce:id,amount:'985000'}},result:{txid:'ab'.repeat(32)}};o.store.save(state);return {async snapshot(){if(fail)throw Error('Synthetic interrupted history request');return {schema:'joint-index-v3',manifest:o.manifest,complete:true,positions:[{position:addresses(state.config).position.toBase58(),available:'985000'}]};}};}});
+ await f.ui.open({direction:'xmr-to-sol'});assert.match(f.html,/Your saved bridge is waiting for a connection/);assert.match(f.html,/Reconnect bridge/);
+ assert.ok(f.html.indexOf('id="j3-ready"')<f.html.indexOf('Returning to Solana'));assert.ok(!f.elements.has('j3-return'));assert.doesNotMatch(f.html,/Checking the amount and token fee/);
+ fail=false;await clicked(f,'j3-ready');await f.preview();assert.equal(f.elements.get('j3-return').disabled,false);assert.equal(f.signs,0);
+});
+
+test('wallet testing exposes all token and holder actions for a different selected wallet',async t=>{
+ const f=setup(t,{privateTest:true,authorizedAccount:false,registered:true,uiOptions:{walletTest:true},ready:async()=>({manifest:transferableManifest(XMR20_MINT),privateTestPolicy:WALLET_TEST_POLICY})});await f.ui.open({rows:[{mint:XCAT_MINT}]});
+ assert.match(f.html,/Any linked wallet/);assert.match(f.html,/upgradeable/);assert.ok(f.html.includes(XCAT_MINT));for(const label of ['Airdrop to a registered','Send to another','Bridge back to my'])assert.ok(f.html.includes(label));await f.preview();assert.equal(f.elements.get('j3-bridge').disabled,false);assert.equal(f.signs,0);
+});

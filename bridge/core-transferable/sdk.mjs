@@ -1,0 +1,62 @@
+// Exact ABI-3 local messages. No deployment identity or live signer is enabled.
+import {PublicKey,SystemProgram,TransactionInstruction,TransactionMessage,VersionedTransaction,ComputeBudgetProgram} from '@solana/web3.js';
+import {TOKEN_2022_PROGRAM_ID as TOKEN,getAssociatedTokenAddressSync,createAssociatedTokenAccountIdempotentInstruction} from '@solana/spl-token';
+import {digest} from '../core-next/records.mjs';
+import {ed25519} from '@noble/curves/ed25519';
+const need=(v,m)=>{if(!v)throw Error(m);};
+const pk=x=>new PublicKey(x),hex=x=>{need(typeof x==='string'&&/^[a-f0-9]{64}$/.test(x)&&!/^0+$/.test(x),'Nonzero public commitment required.');return Buffer.from(x,'hex');};
+const u64=x=>{need(typeof x==='string'&&/^(0|[1-9][0-9]{0,15})$/.test(x),'Exact integer amount required.');const b=Buffer.alloc(8);b.writeBigUInt64LE(BigInt(x));return b;};
+export function addresses(c){
+ need(c?.abi===3&&['local-svm','mainnet-beta'].includes(c.network)&&c.owner!==c.verifier,'Explicit transferable deployment configuration required.');
+ const program=pk(c.program),mint=pk(c.mint),owner=pk(c.owner),verifier=pk(c.verifier);
+ const position=PublicKey.findProgramAddressSync([Buffer.from('joint-v3-position'),mint.toBuffer(),verifier.toBuffer(),owner.toBuffer()],program)[0];
+ const pool=PublicKey.findProgramAddressSync([Buffer.from('joint-v3-pool'),mint.toBuffer(),verifier.toBuffer()],program)[0];
+ const link=c.binding?PublicKey.findProgramAddressSync([Buffer.from('joint-v3-link'),mint.toBuffer(),verifier.toBuffer(),hex(c.binding)],program)[0]:null;
+ return {program,mint,owner,verifier,position,pool,link,vault:getAssociatedTokenAddressSync(mint,pool,true,TOKEN),ata:getAssociatedTokenAddressSync(mint,owner,false,TOKEN)};
+}
+export function receiptAddress(c,nonce){const a=addresses(c);return PublicKey.findProgramAddressSync([Buffer.from('joint-v3-receipt'),a.position.toBuffer(),hex(nonce)],a.program)[0];}
+export function creditCommitment(c,p){const a=addresses(c);return digest(Buffer.concat([Buffer.from('XMR20-JOINT-CREDIT-V3\n'),a.program.toBuffer(),a.mint.toBuffer(),a.position.toBuffer(),pk(p.actor??c.owner).toBuffer(),hex(p.nonce),u64((BigInt(p.amount)-BigInt(p.expectedFee)).toString())]));}
+const meta=(pubkey,isWritable=false,isSigner=false)=>({pubkey,isWritable,isSigner});
+export function transaction(c,p){
+ const a=addresses(c);need(p?.network===c.network&&['register','deposit','donate','transfer','release'].includes(p.operation),'Wrong network or operation.');
+ const actor=pk(p.actor??c.owner),instructions=[ComputeBudgetProgram.setComputeUnitLimit({units:500000}),ComputeBudgetProgram.setComputeUnitPrice({microLamports:10000})];
+ let keys,data;
+ if(p.operation==='register'){
+  need(actor.equals(a.owner)&&a.link,'Link registration owner required.');
+  data=Buffer.concat([Buffer.from([1]),hex(c.binding),hex(p.commitment)]);
+  keys=[meta(a.owner,true,true),meta(a.verifier,false,true),meta(a.position,true),meta(a.link,true),meta(a.pool,true),meta(a.mint),meta(a.vault),meta(TOKEN),meta(SystemProgram.programId)];
+  instructions.push(createAssociatedTokenAccountIdempotentInstruction(actor,a.vault,a.pool,a.mint,TOKEN),createAssociatedTokenAccountIdempotentInstruction(actor,a.ata,a.owner,a.mint,TOKEN));
+ }else{
+  need(typeof p.amount==='string'&&BigInt(p.amount)>0n&&BigInt(p.amount)<=50000000000000n,'Amount is outside the transferable limit.');
+  const fee=p.operation==='transfer'?'0':p.expectedFee;u64(fee);need(BigInt(p.amount)>BigInt(fee),'Transfer fee consumes the amount.');
+  need(p.operation==='donate'||actor.equals(a.owner),'Only donations may use another funding wallet.');
+  if(p.operation==='deposit'||p.operation==='donate')need(p.commitment===creditCommitment(c,p),'Credit commitment differs from exact public backing.');
+  const kind={deposit:2,release:3,transfer:4,donate:5}[p.operation];
+  data=Buffer.concat([Buffer.from([kind]),u64(p.amount),hex(p.nonce),hex(p.commitment),...(kind===4?[]:[u64(fee)])]);
+  const ata=getAssociatedTokenAddressSync(a.mint,actor,false,TOKEN);
+  keys=[meta(actor,true,true),meta(a.position,true),meta(a.pool,true),meta(a.mint),meta(a.vault,true),meta(TOKEN),meta(SystemProgram.programId),meta(ata,true),meta(receiptAddress(c,p.nonce),true)];
+  if(kind===3||kind===4)keys.push(meta(a.verifier,false,true));
+  if(kind===4){need(p.toOwner&&p.toOwner!==c.owner,'A different registered recipient required.');keys.push(meta(addresses({...c,owner:p.toOwner}).position,true));}
+ }
+ instructions.push(new TransactionInstruction({programId:a.program,keys,data}));
+ return new VersionedTransaction(new TransactionMessage({payerKey:actor,recentBlockhash:p.blockhash,instructions}).compileToV0Message());
+}
+export function decodePosition(data){const b=Buffer.from(data);need(b.length===169&&b[0]===3,'Invalid transferable position.');return {owner:new PublicKey(b.subarray(1,33)).toBase58(),verifier:new PublicKey(b.subarray(33,65)).toBase58(),mint:new PublicKey(b.subarray(65,97)).toBase58(),binding:b.subarray(97,129).toString('hex'),linkProof:b.subarray(129,161).toString('hex'),balance:b.readBigUInt64LE(161).toString()};}
+export function decodeReceipt(data){const b=Buffer.from(data);need(b.length===153&&[2,3,4,5].includes(b[0]),'Invalid transferable receipt.');return {kind:b[0],from:new PublicKey(b.subarray(1,33)).toBase58(),to:new PublicKey(b.subarray(33,65)).toBase58(),nonce:b.subarray(65,97).toString('hex'),commitment:b.subarray(97,129).toString('hex'),gross:b.readBigUInt64LE(129).toString(),net:b.readBigUInt64LE(137).toString(),fee:b.readBigUInt64LE(145).toString()};}
+// Registration is fully checked and verifier-authorized before its short-lived
+// owner approval. Other custody operations retain the unsigned-review path.
+export async function approveRegistrationExternal(c,p,bytes,provider){
+ need(p.operation==='register','Preauthorized signing is registration-only.');
+ const expected=transaction(c,p),tx=VersionedTransaction.deserialize(bytes),msg=expected.message.serialize(),owner=pk(c.owner),verifier=pk(c.verifier);
+ provider.assertCurrent?.();
+ need(provider.publicKey?.toBase58()===owner.toBase58()&&Buffer.from(tx.message.serialize()).equals(Buffer.from(msg))&&tx.signatures.length===2&&tx.signatures[0].every(n=>n===0)&&ed25519.verify(tx.signatures[1],msg,verifier.toBytes()),'Registration authorization or selected wallet changed.');
+ const verifierSignature=Buffer.from(tx.signatures[1]);
+ const signed=await provider.signTransaction(tx);provider.assertCurrent?.();
+ need(provider.publicKey?.toBase58()===owner.toBase58()&&Buffer.from(signed.message.serialize()).equals(Buffer.from(msg))&&signed.signatures.length===2&&ed25519.verify(signed.signatures[0],msg,owner.toBytes())&&Buffer.from(signed.signatures[1]).equals(verifierSignature),'Wallet approval differs from the authorized registration.');return signed;
+}
+export async function approveExternal(c,p,bytes,provider){
+ const expected=transaction(c,p),tx=VersionedTransaction.deserialize(bytes),actor=pk(p.actor??c.owner),msg=expected.message.serialize();provider.assertCurrent?.();
+ need(provider.publicKey?.toBase58()===actor.toBase58()&&Buffer.from(tx.message.serialize()).equals(Buffer.from(msg))&&tx.signatures.every(s=>s.every(n=>n===0)),'Unsigned review or selected wallet changed.');
+ const signed=await provider.signTransaction(tx);provider.assertCurrent?.();
+ need(provider.publicKey?.toBase58()===actor.toBase58()&&Buffer.from(signed.message.serialize()).equals(Buffer.from(msg))&&signed.signatures.length===expected.signatures.length&&ed25519.verify(signed.signatures[0],msg,actor.toBytes())&&signed.signatures.slice(1).every(s=>s.every(n=>n===0)),'Wallet approval differs from the exact custody review.');return signed;
+}
