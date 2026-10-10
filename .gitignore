@@ -13,3 +13,7 @@ wallet-backups/
 browser-profiles/
 playwright-report/
 test-results/
+
+extension-joint-review/
+extension-transferable-review/
+extension-transferable-private-test/

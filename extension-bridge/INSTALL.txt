@@ -1,0 +1,50 @@
+XMR20 Wallet — Preview 0.1.14
+
+Update an existing wallet
+1. Extract this ZIP.
+2. Close wallet windows and replace the files in your existing unpacked extension folder.
+3. Open chrome://extensions and click Reload on XMR20 Wallet.
+4. Reload http://127.0.0.1:8893/ in the SAME Chrome profile.
+5. Click Connect wallet, then Connect XMR20 Wallet. Approve the connection and sign-in in the wallet.
+Do not uninstall the extension to update: uninstalling can delete the saved vault.
+Reloading locks the wallet; unlock with your existing password. No key re-import is needed.
+The Codex in-app browser does not share your Chrome extension installation.
+
+First installation
+Extract into a folder you will keep. In chrome://extensions turn on Developer mode,
+click Load unpacked, and select the folder containing manifest.json.
+
+Connection update
+One build now accepts https://xmr20.org and exactly http://127.0.0.1:8893.
+Other local ports, localhost and other websites are rejected by the wallet.
+The live website has not been changed. Local connect/sign-in uses separate approvals;
+private keys stay inside the extension. Website transaction signing is not enabled.
+
+Wallet features
+Encrypted local keys and backups use AES-256-GCM with PBKDF2-SHA256 (600,000 iterations).
+Unlock sessions survive popup closure until the selected inactivity timeout.
+Manual Lock, browser restart and extension reload end the session.
+Use the full-wallet tab for long scans/sends. New wallets have separate Solana and
+Monero recovery keys; back up BOTH. The password cannot recover a lost backup.
+SOL, synced native XMR and confirmed XMR20 token prices contribute to the estimated total.
+Pending inscriptions are excluded. Unavailable data is marked as a partial estimate.
+Pending-send recovery only offers cancellation for unsigned reserved requests.
+
+This is an unaudited local developer preview. No real funds are sent in automated tests.
+Public addresses are queried against the XMR20 index and remote blockchain nodes.
+Native Monero scanning happens locally. No analytics or remote executable code.
+
+Update 0.1.13
+Website connection approval preselects the account currently selected in the
+extension. Sign-in keeps the account approved for that connection. If the active
+account cannot sign, explicitly choose a signing account; another account is
+never silently selected. Connection and sign-in still require approval.
+
+Update 0.1.14
+Bridge replaces Swap. Move supported XMR20 tokens Solana → Monero or Monero → Solana.
+Use an account with both addresses linked. Solana fees require SOL in that account.
+Review token fees and net received; approve each signing step inside this wallet.
+On return to Solana, approve the final unlock after Monero confirms.
+Use Bridge or Activity > View / resume bridges to continue a saved transfer.
+Keep the expanded wallet open while approving. Do not restart a transfer after a timeout.
+Browser tests use disposable wallets and simulated networks, not live funds.

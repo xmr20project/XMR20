@@ -1,9 +1,15 @@
 import {login,walletRequest,jsonFetch,amount,units} from './core.js';
 import {bridgeToken,bridgeOpen,validateBridgeQuote,validateBridgeReceipt,bridgeBurnReview,bridgeStatus} from './bridge-policy.js';
 import {bridgeSolReserve,prepareBridgeSolana,signBridgeSolana,signedAttemptResolved} from './bridge-solana.js';
+import {createJointEscrowUI} from './joint-escrow-ui.js';
+import {createJointMainnetUI} from './joint-mainnet-ui.js';
+import {createJointTransferableUI} from './joint-transferable-ui.js';
 export function createBridgeUI(d){
+ const joint=typeof __XMR20_JOINT_PREVIEW__!=='undefined'&&__XMR20_JOINT_PREVIEW__?createJointEscrowUI(d):null;
+ const previous=typeof __XMR20_JOINT_MAINNET_REVIEW__!=='undefined'&&__XMR20_JOINT_MAINNET_REVIEW__?createJointMainnetUI(d,{legacy:openStandard}):null;
+ const mainnet=typeof __XMR20_JOINT_TRANSFERABLE_REVIEW__!=='undefined'&&__XMR20_JOINT_TRANSFERABLE_REVIEW__?createJointTransferableUI(d,{legacy:openStandard,previous:()=>previous.open()}):previous;
  let ctx=null,timer=null;
- function clear(){clearTimeout(timer);timer=null;}
+ function clear(){clearTimeout(timer);timer=null;mainnet?.clear();if(previous!==mainnet)previous?.clear();}
  function assert(c){d.same(c.epoch);const a=d.account();if(ctx!==c||a.id!==c.a.id||a.sol!==c.a.sol||a.xmr!==c.a.xmr)throw Error('Wallet account changed. Reopen Bridge.');}
  const fmt=(n,ticker)=>`${amount(n)} ${ticker}`;
  function show(c,title,html){clear();assert(c);d.show(title,`<div data-bridge-view="${c.id}">${html}</div>`);}
@@ -21,7 +27,8 @@ export function createBridgeUI(d){
  }
  function token(c,id){const l=c.catalog.find(l=>l.id===id);return bridgeToken({id,mint:l?.mint,deployment:l?.moneroTxid,ticker:l?.ticker||'Token',name:l?.name||'Token'},l);}
  async function reload(c){c.remote=await request(c,'account');if(!Array.isArray(c.remote.transfers))throw Error('Saved bridge lookup incomplete.');}
- async function open(){clear();d.show('Bridge', '<p id="progress" class="busy">Loading bridge balances and saved transfers…</p>');await d.run(async epoch=>{
+ async function open(options){if(mainnet)return mainnet.open(options);if(typeof __XMR20_JOINT_PREVIEW__!=='undefined'&&__XMR20_JOINT_PREVIEW__){clear();joint.clear();d.show('Bridge','<p>Choose a bridge flow.</p><button class="secondary wide" id="bridge-standard">Existing token bridge</button><button class="secondary wide" id="bridge-joint">Joint escrow test</button><p class="subtle">Joint escrow runs locally with temporary test keys and tokens.</p>');d.on('bridge-standard',()=>void openStandard());d.on('bridge-joint',()=>void joint.open());return;}return openStandard();}
+ async function openStandard(){clear();joint?.clear();d.show('Bridge', '<p id="progress" class="busy">Loading bridge balances and saved transfers…</p>');await d.run(async epoch=>{
   const a=d.account();if(!a?.solSecret||!a.xmr||a.watch)throw Error('Select an account with a Solana key and a Monero address. Link both in Settings first.');
   const c={id:crypto.randomUUID(),a:{...a},epoch};ctx=c;c.token=await login(a);assert(c);
   const [remote,catalog]=await Promise.all([request(c,'account'),jsonFetch('https://api.xmr20.org/api/xmr20/tokens')]);assert(c);
@@ -30,14 +37,15 @@ export function createBridgeUI(d){
  function menu(c){
   const remote=c.remote.transfers.filter(t=>t.owner===c.a.sol&&t.moneroAddress===c.a.xmr&&bridgeOpen(t));
   const drafts=local(c).filter(r=>!r.transfer&&!remote.some(t=>t.id===r.intent));
-  show(c,'Bridge',`<p class="subtle">Move the same XMR20 token between your Solana and Monero accounts.</p><button class="secondary wide" id="bridge-to-xmr">Solana → Monero</button><button class="secondary wide" id="bridge-to-sol">Monero → Solana</button><p class="subtle">SOL pays Solana network and account fees. The service publishes Monero records. Token fees appear before approval.</p>${remote.length||drafts.length?'<h3>Resume a bridge</h3>':''}${remote.map((t,i)=>`<button class="secondary wide" id="resume-bridge-${i}">${d.esc(fmt(t.amountRaw,c.catalog.find(l=>l.id===t.launchId)?.ticker||'Token'))}<small>${t.direction==='sol-to-xmr'?'To Monero':'To Solana'} · ${d.esc(bridgeStatus(t)[0])}</small></button>`).join('')}${drafts.map((r,i)=>`<button class="secondary wide" id="resume-draft-${i}">Check saved ${d.esc(r.symbol)} bridge</button>`).join('')}<p class="subtle">Experimental operator-attested bridge. Keep the expanded wallet open while approving; saved transfers can be resumed later.</p>`);
+  show(c,'Bridge',`<p class="subtle">${mainnet?'Withdraw existing legacy balances or finish a saved transfer.':'Move the same XMR20 token between your Solana and Monero accounts.'}</p>${mainnet?'':'<button class="secondary wide" id="bridge-to-xmr">Solana → Monero</button>'}<button class="secondary wide" id="bridge-to-sol">Monero → Solana</button><p class="subtle">SOL pays Solana network and account fees. The service publishes Monero records. Token fees appear before approval.</p>${remote.length||drafts.length?'<h3>Resume a bridge</h3>':''}${remote.map((t,i)=>`<button class="secondary wide" id="resume-bridge-${i}">${d.esc(fmt(t.amountRaw,c.catalog.find(l=>l.id===t.launchId)?.ticker||'Token'))}<small>${t.direction==='sol-to-xmr'?'To Monero':'To Solana'} · ${d.esc(bridgeStatus(t)[0])}</small></button>`).join('')}${drafts.map((r,i)=>`<button class="secondary wide" id="resume-draft-${i}">Check saved ${d.esc(r.symbol)} bridge</button>`).join('')}<p class="subtle">Experimental operator-attested bridge. Keep the expanded wallet open while approving; saved transfers can be resumed later.</p>`);
   bind(c,'bridge-to-xmr',()=>choose(c,'sol-to-xmr'));bind(c,'bridge-to-sol',()=>choose(c,'xmr-to-sol'));
   remote.forEach((t,i)=>bind(c,'resume-bridge-'+i,async()=>{const row=token(c,t.launchId),r=await saved(c,t,row);status(c,r);}));
   drafts.forEach((r,i)=>bind(c,'resume-draft-'+i,()=>recoverDraft(c,r)));
  }
  async function choose(c,direction){
+  if(mainnet&&direction==='sol-to-xmr')throw Error('New legacy deposits are closed. Use the new bridge for XCAT.');
   if(direction==='xmr-to-sol'&&!c.a.xmrSeed)throw Error('Import this account’s Monero recovery phrase before bridging from Monero.');
-  const network=direction==='sol-to-xmr'?'solana':'monero',rows=d.rows().filter(r=>r.network===network&&BigInt(r.amountRaw)>0n);
+  const network=direction==='sol-to-xmr'?'solana':'monero',rows=d.rows().filter(r=>r.network===network&&r.bridge!=='joint-v3'&&BigInt(r.amountRaw)>0n);
   show(c,direction==='sol-to-xmr'?'Bridge to Monero':'Bridge to Solana',`<p class="subtle">Choose a token on ${network==='solana'?'Solana':'Monero'}.</p>${rows.map((r,i)=>`<button class="secondary wide" id="bridge-token-${i}">${d.esc(fmt(r.amountRaw,r.ticker))}</button>`).join('')||'<p>No confirmed tokens available on this chain. Refresh wallet balances.</p>'}<button class="text-btn wide" id="bridge-back">Back</button>`);
   rows.forEach((r,i)=>bind(c,'bridge-token-'+i,()=>form(c,{...token(c,r.id),amountRaw:r.amountRaw},direction)));bind(c,'bridge-back',()=>menu(c));
  }
@@ -46,6 +54,7 @@ export function createBridgeUI(d){
   const pending=c.remote.transfers.filter(t=>t.owner===c.a.sol&&t.moneroAddress===c.a.xmr&&t.launchId===row.id&&t.direction===direction&&bridgeOpen(t));
   if(pending.length){if(pending.length>1){menu(c);return;}status(c,await saved(c,pending[0],row));return;}
   if(local(c).some(r=>r.row.id===row.id&&r.direction===direction&&!r.transfer)){menu(c);return;}
+  if(mainnet&&direction==='sol-to-xmr')throw Error('New legacy deposits are closed. Recover a saved transfer instead.');
   if(c.remote.pair&&c.remote.pair.address!==c.a.xmr)throw Error('This Solana account is linked to a different Monero address on the service. Select the matching account; the existing link will not be replaced.');
   if(!c.remote.pair){show(c,'Link bridge accounts',`<p class="subtle">Register these public addresses for bridging. This does not move tokens. This service link cannot be replaced.</p><label>Solana</label><div class="address">${d.esc(c.a.sol)}</div><label>Monero</label><div class="address">${d.esc(c.a.xmr)}</div><button class="primary wide" id="bridge-link">Link these accounts</button>`);bind(c,'bridge-link',async()=>{const result=await request(c,'pair',{address:c.a.xmr});if(result.pair?.address!==c.a.xmr||result.pair?.owner!==c.a.sol)throw Error('Bridge account link mismatch.');await form(c,row,direction);});return;}
   show(c,'Bridge '+row.ticker,`<p class="subtle">${direction==='sol-to-xmr'?'Solana → Monero':'Monero → Solana'} · ${d.esc(c.a.name)}</p><label for="bridge-amount">Amount (${d.esc(row.ticker)})</label><input id="bridge-amount" inputmode="decimal" placeholder="0.00" autocomplete="off"><p class="subtle">Indexed: ${d.esc(fmt(row.amountRaw||'0',row.ticker))}. Available balance will be checked.</p><p id="progress" class="busy"></p><button class="primary wide" id="bridge-review">Review bridge</button><button class="text-btn wide" id="bridge-back">Back</button>`);
@@ -104,5 +113,5 @@ export function createBridgeUI(d){
   if(t.state==='complete'||t.sourceSignature&&s.operation==='Deposit'||t.destinationSignature&&s.operation==='Withdrawal')throw Error('A different submission is recorded. Keep the saved receipt for review.');
   progress('Resubmitting the same saved approval…');const next=await request(c,'submit'+s.operation,{id:r.intent,transaction:s.transaction,ticket:s.ticket});status(c,await saved(c,next,r.row));
  }
- return {open,clear(){clear();if(ctx){ctx.a.solSecret='';ctx.a.xmrSeed='';ctx.token=null;}ctx=null;}};
+ return {open,clear(){clear();joint?.clear();if(ctx){ctx.a.solSecret='';ctx.a.xmrSeed='';ctx.token=null;}ctx=null;}};
 }
