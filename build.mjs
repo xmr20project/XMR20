@@ -1,11 +1,26 @@
 import {createRequire} from 'node:module';
 import {resolve} from 'node:path';
-import {existsSync,readFileSync,writeFileSync,copyFileSync,mkdirSync} from 'node:fs';
-const base=resolve(import.meta.dirname), modules=resolve(base,'node_modules');
+import {existsSync,readFileSync,writeFileSync,copyFileSync,mkdirSync,cpSync} from 'node:fs';
+const base=resolve(import.meta.dirname);
+const modules=resolve(base,'node_modules');
 const require=createRequire(resolve(modules,'esbuild/package.json'));const {build}=require('esbuild');
-const result=await build({metafile:true,entryPoints:[resolve(base,'src/app.js')],outfile:resolve(base,'extension/app.js'),bundle:true,format:'esm',platform:'browser',target:'chrome120',nodePaths:[modules],minify:true,legalComments:'eof',inject:[resolve(base,'src/polyfill.js')]});
+// Experimental UI is opt-in at build time; ordinary builds erase the test flow.
+const jointPreview=process.env.XMR20_JOINT_ESCROW_PREVIEW==='local-svm';
+const walletTest=process.env.XMR20_JOINT_PRIVATE_TEST==='all-tokens';
+const privateTest=process.env.XMR20_JOINT_PRIVATE_TEST==='local'||walletTest;
+const transferableReview=process.env.XMR20_JOINT_TRANSFERABLE_REVIEW==='local'||privateTest;
+const mainnetReview=process.env.XMR20_JOINT_MAINNET_REVIEW==='local'||transferableReview;
+if(jointPreview&&mainnetReview)throw Error('Build the synthetic and real-token reviews separately.');
+const output=walletTest?'extension-bridge':privateTest?'extension-transferable-private-test':transferableReview?'extension-transferable-review':mainnetReview?'extension-joint-review':'extension';
+if(mainnetReview){cpSync(resolve(base,'extension'),resolve(base,output),{recursive:true});const m=JSON.parse(readFileSync(resolve(base,output,'manifest.json'),'utf8'));m.name=walletTest?'XMR20 Wallet — Bridge testing':privateTest?'XMR20 Wallet — Private 1 XMR20 test':transferableReview?'XMR20 Wallet — Transferable bridge review':'XMR20 Wallet — Joint bridge review';m.version=walletTest?'0.1.20':privateTest?'0.1.19':transferableReview?'0.1.18':'0.1.17';m.content_security_policy.extension_pages=m.content_security_policy.extension_pages.replace("; worker-src",' http://127.0.0.1:8928'+(privateTest?' http://127.0.0.1:8933':'')+'; worker-src');if(privateTest)m.host_permissions=[...new Set([...(m.host_permissions||[]),'http://127.0.0.1:8933/*'])];writeFileSync(resolve(base,output,'manifest.json'),JSON.stringify(m,null,2));}
+if(transferableReview)writeFileSync(resolve(base,output,'style.css'),readFileSync(resolve(base,'extension/style.css'),'utf8')+'\n'+readFileSync(resolve(base,'src/joint-transferable.css'),'utf8'));
+const definitions={__XMR20_JOINT_PREVIEW__:String(jointPreview),__XMR20_JOINT_MAINNET_REVIEW__:String(mainnetReview),__XMR20_JOINT_TRANSFERABLE_REVIEW__:String(transferableReview),__XMR20_JOINT_PRIVATE_TEST__:String(privateTest),__XMR20_JOINT_WALLET_TEST__:String(walletTest)};
+// Exclude the entire ABI-3 module graph from ordinary/fixed-owner packages.
+// Top-level dependency initialization must not retain opt-in policy identities.
+const bridgePlugins=transferableReview?[]:[{name:'exclude-transferable-review',setup(b){b.onLoad({filter:/[\\/]joint-transferable-ui\.js$/},()=>({contents:"export function createJointTransferableUI(){throw Error('Transferable review is not enabled in this build.');}",loader:'js'}));b.onLoad({filter:/[\\/]joint-holdings\.js$/},()=>({contents:"export function createJointHoldings(){return null;} export const isJointHolding=()=>false; export function replaceHoldingSource(rows,incoming,{network}){return [...rows.filter(r=>r.network!==network),...incoming];}",loader:'js'}));}}];
+const result=await build({define:definitions,plugins:bridgePlugins,metafile:true,entryPoints:[resolve(base,'src/app.js')],outfile:resolve(base,output,'app.js'),bundle:true,format:'esm',platform:'browser',target:'chrome120',nodePaths:[modules],minify:true,legalComments:'eof',inject:[resolve(base,'src/polyfill.js')]});
 await build({entryPoints:[resolve(base,'src/core.js')],outfile:resolve(base,'review/core.mjs'),bundle:true,format:'esm',platform:'browser',target:'es2022',nodePaths:[modules],inject:[resolve(base,'src/polyfill.js')]});
-console.log('Built extension/app.js and test module. Load the extension/ folder in Chrome.');
+console.log('Built '+output+'/app.js and test module.');
 await build({entryPoints:[resolve(base,'server-patch/extension-auth.mjs')],outfile:resolve(base,'review/extension-auth.mjs'),bundle:true,format:'esm',platform:'node',target:'node22',nodePaths:[modules],banner:{js:"import {createRequire as nodeCreateRequire} from 'node:module'; const require=nodeCreateRequire(import.meta.url);"}});
 
 // Bundle the license text of each dependency included in the distributed script.
@@ -20,10 +35,12 @@ for(const input of Object.keys(result.metafile.inputs)){
   }break;}dir=resolve(dir,'..');
  }
 }
-writeFileSync(resolve(base,'extension/THIRD-PARTY-NOTICES.txt'),[...notices.values()].join('\n\n----------------------------------------\n\n'));
+writeFileSync(resolve(base,output,'THIRD-PARTY-NOTICES.txt'),[...notices.values()].join('\n\n----------------------------------------\n\n'));
 
-await build({entryPoints:[resolve(base,'src/background.js')],outfile:resolve(base,'extension/background.js'),bundle:true,format:'esm',platform:'browser',target:'chrome120',nodePaths:[modules],inject:[resolve(base,'src/polyfill.js')],minify:true});
+await build({define:definitions,entryPoints:[resolve(base,'src/background.js')],outfile:resolve(base,output,'background.js'),bundle:true,format:'esm',platform:'browser',target:'chrome120',nodePaths:[modules],inject:[resolve(base,'src/polyfill.js')],minify:true});
 
-await build({entryPoints:[resolve(base,'src/approval.js')],outfile:resolve(base,'extension/approval.js'),bundle:true,format:'esm',platform:'browser',target:'chrome120',minify:true});
+await build({entryPoints:[resolve(base,'src/approval.js')],outfile:resolve(base,output,'approval.js'),bundle:true,format:'esm',platform:'browser',target:'chrome120',minify:true});
+if(mainnetReview)await build({entryPoints:[resolve(base,'src/joint-owner.worker.js')],outfile:resolve(base,output,'vendor/joint-owner.worker.js'),bundle:true,format:'iife',platform:'browser',target:'chrome120',nodePaths:[modules],inject:[resolve(base,'src/polyfill.js')],minify:true});
+if(transferableReview)await build({entryPoints:[resolve(base,'src/joint-transferable.worker.js')],outfile:resolve(base,output,'vendor/joint-transferable.worker.js'),bundle:true,format:'iife',platform:'browser',target:'chrome120',nodePaths:[modules],inject:[resolve(base,'src/polyfill.js')],minify:true});
 
 await build({entryPoints:[resolve(base,'src/bridge-review-entry.js')],outfile:resolve(base,'review/bridge.mjs'),bundle:true,format:'esm',platform:'browser',target:'es2022',nodePaths:[modules],inject:[resolve(base,'src/polyfill.js')]});
