@@ -2,9 +2,9 @@
 
 ## Verification on 10 October 2026
 
-- 196 extension tests passed, including exact account/message signing, saved-receipt recovery, single-action return cancellation and the all-wallet interface.
-- 327 bridge checks passed in the development workspace. They include real compiled Solana custody execution with disposable keys: deposit 2 tokens, credit 1.97 after the fixture tax, transfer 1.97 between different Monero holders, then withdraw 1.94045 to the recipient’s different Solana wallet. The transfer itself charges no second token tax. These are synthetic balances, not a funded peer-transfer claim.
-- The extension was also built from a fresh npm dependency installation in an isolated publication directory; its 196 tests and both builds passed without workspace dependency symlinks.
+- 197 extension tests passed, including exact account/message signing, saved-receipt recovery, single-action return cancellation and the all-wallet interface.
+- 328 bridge checks passed in the development workspace. They include real compiled Solana custody execution with disposable keys: deposit 2 tokens, credit 1.97 after the fixture tax, transfer 1.97 between different Monero holders, then withdraw 1.94045 to the recipient’s different Solana wallet. The transfer itself charges no second token tax. These are synthetic balances, not a funded peer-transfer claim.
+- The extension was also built from a fresh npm dependency installation in an isolated publication directory; its 197 tests and both builds passed without workspace dependency symlinks.
 - Mainnet self round trip: 1 XMR20 deposited, 0.985 credited on Monero, 0.970225 returned to the original Solana wallet after the token’s two transfer taxes. [Finalized return](https://solscan.io/tx/qEZGttzhQEk3ZTrRoGPn1eEQoBLbmWVChXoPVHQ9Zmf4VnvqWDDXfnDkUjGpsK5H74LpS9Z39ZK4NDxG9wChavv).
 
 ## Try a transfer between holders
