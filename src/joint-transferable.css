@@ -1,0 +1,18 @@
+.joint-transferable{font-size:14px;line-height:1.55;color:#efe5d9}
+.joint-transferable p{margin:16px 0}
+.joint-transferable h3{font-size:16px;margin:24px 0 12px}
+.joint-transferable .subtle,.joint-transferable .joint-limits{font-size:12px;color:#cbbeb0}
+.joint-transferable label{font-size:12px;color:#cbbeb0}
+.joint-transferable input,.joint-transferable select{font-size:14px;caret-color:#ffae68}
+.joint-transferable .primary,.joint-transferable .secondary,.joint-transferable .text-btn{font-size:13px;min-height:44px}
+.joint-transferable button:disabled{cursor:not-allowed}
+.joint-transferable details{margin-top:20px;color:#cbbeb0;font-size:13px}
+.joint-transferable summary{cursor:pointer;text-decoration:underline;text-underline-offset:4px}
+.joint-transferable strong{font-variant-numeric:tabular-nums}
+.joint-transferable a{display:inline-block;min-height:32px;padding-block:6px;color:#ffae68}
+.joint-transferable .address{overflow-wrap:anywhere;user-select:text}
+.joint-transferable ::selection{background:#ab4f15;color:#fff}
+.joint-transferable summary:focus-visible{outline:2px solid #ffae68;outline-offset:3px}
+
+.joint-transferable .joint-error{color:#ffae68;overflow-wrap:anywhere}
+.joint-transferable #progress:empty{display:none}
