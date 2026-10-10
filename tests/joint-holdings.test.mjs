@@ -57,3 +57,11 @@ test('independent index updates preserve the other bridge and never duplicate an
  let rows=replaceHoldingSource([joint,sol],[legacy],{network:'monero'});assert.deepEqual(rows,[joint,sol,legacy]);rows=replaceHoldingSource(rows,[joint],{bridge:asset.mint});assert.equal(rows.length,3);assert.equal(rows.filter(isJointHolding).length,1);
  rows=replaceHoldingSource(rows,[],{bridge:asset.mint});assert.deepEqual(rows,[sol,legacy]);
 });
+
+test('any-wallet home reads held or selected tokens without opening unused default token runtimes',async()=>{
+ const {WALLET_TEST_POLICY}=await import('../bridge/core-transferable/private-test.mjs'),{XCAT_MINT,rememberJointAsset}=await import('../src/joint-bridge-assets.js');
+ const calls=[],disk=new Map(),storage={getItem:k=>disk.get(k),setItem:(k,v)=>disk.set(k,v)};
+ const reader=createJointHoldings({walletTest:true,storage,adapters:{runtime:a=>({snapshot:async()=>{calls.push(a.mint);return {schema:'joint-index-v3',complete:true,manifest:transferableManifest(a.mint),privateTestPolicy:WALLET_TEST_POLICY,positions:[],accepted:[]};}}),chain:()=>({verifyProgram:async()=>{}})}});
+ await reader.load(account);assert.deepEqual(calls,[policy.mint]);
+ rememberJointAsset({mint:XCAT_MINT,symbol:'XCAT'},storage);await reader.load(account);assert.deepEqual(calls,[policy.mint,XCAT_MINT]);
+});

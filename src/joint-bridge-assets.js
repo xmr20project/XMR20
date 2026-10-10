@@ -24,4 +24,4 @@ export async function loadJointCatalog({fetcher=fetch,signal}={}){
 }
 const seenKey='xmr20-joint-discovered-assets-v3';
 export function savedJointAssets(storage=globalThis.localStorage){try{const v=JSON.parse(storage?.getItem(seenKey)||'[]');return Array.isArray(v)&&v.length<=10000?v.filter(r=>supportedMint(r?.mint)):[];}catch{return [];}}
-export function rememberJointAsset(asset,storage=globalThis.localStorage){try{storage?.setItem(seenKey,JSON.stringify(discoveredAssets([...savedJointAssets(storage),asset]).filter(a=>a.key!=='previous-xcat').map(({mint,symbol,name})=>({mint,symbol,name}))));}catch{/* Discovery is optional and never authorizes spending. */}}
+export function rememberJointAsset(asset,storage=globalThis.localStorage){try{const rows=[...savedJointAssets(storage),asset],selected=new Set(rows.map(a=>a.mint));storage?.setItem(seenKey,JSON.stringify(discoveredAssets(rows).filter(a=>a.key!=='previous-xcat'&&selected.has(a.mint)).map(({mint,symbol,name})=>({mint,symbol,name}))));}catch{/* Discovery is optional and never authorizes spending. */}}

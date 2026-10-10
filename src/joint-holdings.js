@@ -31,7 +31,7 @@ export function createJointHoldings({privateTest=privateBuild,walletTest=walletT
  privateTest=privateTest||walletTest;
  const endpoint=privateTest?'http://127.0.0.1:8933':'http://127.0.0.1:8928',entries=new Map();
  const key=(a,mint)=>'xmr20-joint-holdings-v3:'+transferableManifest(mint).program+':'+mint+':'+a.sol+':'+digest(a.xmr);
- function assets(a,rows){if(!a?.sol||!a?.xmr||privateTest&&!walletTest&&(a.sol!==PRIVATE_TEST_POLICY.owner||a.xmr!==PRIVATE_TEST_POLICY.moneroOwner))return [];return discoveredAssets([...rows,...savedJointAssets(storage)]).filter(v=>v.key!=='previous-xcat'&&(!privateTest||walletTest||v.mint===PRIVATE_TEST_POLICY.mint));}
+ function assets(a,rows){if(!a?.sol||!a?.xmr||privateTest&&!walletTest&&(a.sol!==PRIVATE_TEST_POLICY.owner||a.xmr!==PRIVATE_TEST_POLICY.moneroOwner))return [];const known=[...rows,...savedJointAssets(storage)],mints=new Set([PRIVATE_TEST_POLICY.mint,...known.map(r=>r.mint)]);return discoveredAssets(known).filter(v=>v.key!=='previous-xcat'&&mints.has(v.mint)&&(!privateTest||walletTest||v.mint===PRIVATE_TEST_POLICY.mint));}
  function cached(a,asset){try{const v=JSON.parse(storage?.getItem(key(a,asset.mint))??'null');if(!v||v.savedAt>now()||now()-v.savedAt>86400000||v.sol!==a.sol||v.xmr!==a.xmr||v.mint!==asset.mint)return null;const row=jointHoldingRow(v.report,a,asset,{privateTest,walletTest,now:v.savedAt});return row?{...row,stale:true}:null;}catch{return null;}}
  async function read(a,asset,signal){
   const manifest=transferableManifest(asset.mint),policy=walletTest?WALLET_TEST_POLICY:privateTest?PRIVATE_TEST_POLICY:undefined;
