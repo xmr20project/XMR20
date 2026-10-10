@@ -76,7 +76,7 @@ test('registration has one primary action, readable status and secondary recover
 test('registration error is next to the main action and retains a single review after a pre-sign failure',async t=>{
  const f=setup(t,{configureClient:()=>({approveRegistration:async()=>{throw Error('Transferable service unavailable. Keep the public recovery receipt.');}})});
  await f.ui.open();await clicked(f,'j3-register');await clicked(f,'j3-confirm');
- assert.match(f.html,/The bridge service could not finish this request/);
+ assert.match(f.html,/The wallet could not reach the bridge service/);
  assert.ok(f.html.indexOf('role="alert"')<f.html.indexOf('id="j3-confirm"'));assert.ok(f.html.indexOf('id="progress"')<f.html.indexOf('id="j3-confirm"'));
  assert.equal([...f.html.matchAll(/class="primary wide"/g)].length,1);assert.equal(f.elements.get('j3-confirm').disabled,false);
 });
@@ -132,6 +132,26 @@ test('pending screen polls automatically, stops on close and ignores late respon
  };}});
  await f.ui.open();assert.equal(polls,1);const checking=next();await new Promise(r=>setImmediate(r));assert.equal(polls,2);
  const renders=f.renders;f.ui.clear();release();await checking;assert.equal(f.renders,renders);assert.equal(f.approvals,0);assert.ok(cancelled>0);
+});
+
+test('registration advances its visible waiting stage without another approval or full history read',async t=>{
+ let state,opts,phase='solana-pending';
+ const f=setup(t,{configureClient:o=>{opts=o;state=recoveryState(o);state.operations.registration={proposal:{operation:'register'},phase:'submission-unknown',ownerSignature:'fixture'};o.store.save(state);return {
+  async backgroundStatus(){state.operations.registration.background={enabled:true,phase};opts.store.save(state);return {accepted:true,backgroundEnabled:true,phase};},
+  snapshot:async()=>{throw Error('Pending progress must not wait on history');}
+ };}});
+ await f.ui.open();assert.match(f.html,/Waiting for Solana confirmation/);assert.match(f.html,/No tokens have moved/);assert.match(f.html,/data-loading="true"/);assert.doesNotMatch(f.html,/around 20 minutes/);
+ phase='monero-pending';await clicked(f,'j3-background');assert.match(f.html,/Waiting for Monero confirmations/);assert.match(f.html,/around 20 minutes from publication/);assert.match(f.html,/Solana confirmation<\/span><span>Confirmed/);assert.match(f.html,/Ten Monero confirmations<\/span><span>Waiting/);
+ phase='publishing';state.operations.registration.publication={txid:'aa'.repeat(32),confirmed:false};opts.store.save(state);await clicked(f,'j3-background');assert.match(f.html,/Waiting for Monero confirmations/);assert.match(f.html,/Monero wallet link<\/span><span>Published/);assert.doesNotMatch(f.html,/Publishing your Monero wallet link/);
+ assert.ok(!f.elements.has('j3-register')&&!f.elements.has('j3-confirm'));assert.equal(f.approvals,0);assert.equal(f.signs,0);
+});
+
+test('an unavailable progress update labels the previous stage as last known instead of showing live activity',async t=>{
+ let next,state,opts,polls=0;
+ const f=setup(t,{uiOptions:{setTimer:fn=>(next=fn),clearTimer(){}},configureClient:o=>{opts=o;state=recoveryState(o);state.operations.registration={proposal:{operation:'register'},phase:'submission-unknown',ownerSignature:'fixture'};o.store.save(state);return {
+  async backgroundStatus(){if(++polls>1)throw Error('Offline');state.operations.registration.background={enabled:true,phase:'monero-pending'};opts.store.save(state);return {accepted:true,backgroundEnabled:true,phase:'monero-pending'};}
+ };}});
+ await f.ui.open();await next();assert.match(f.html,/Last known: Waiting for Monero confirmations/);assert.match(f.html,/Status updates are temporarily unavailable/);assert.match(f.html,/class="joint-busy joint-wait-label" data-loading="false"/);assert.equal(f.approvals,0);assert.equal(f.signs,0);
 });
 
 test('completed registration never blocks a newer pending deposit with redundant history checks',async t=>{
@@ -320,7 +340,7 @@ test('a return below confirmed history waits normally and prepares only after it
 test('an unavailable return snapshot stays a connection error, never a fabricated confirmation status',async t=>{
  let fail=false,reviews=0;
  const f=setup(t,{registered:true,configureClient:o=>{const state=recoveryState(o),id='af'.repeat(32);state.proofs[id]={envelope:{record:{op:'burn',nonce:id,amount:'985000'}},result:{txid:'fa'.repeat(32)}};o.store.save(state);return {async snapshot(){if(fail)throw Error('Transferable service unavailable. Keep the public recovery receipt.');return {schema:'joint-index-v3',manifest:o.manifest,complete:true,positions:[{position:addresses(state.config).position.toBase58(),available:'985000'}]};},async reviewMove(){reviews++;}};}});
- await f.ui.open({direction:'xmr-to-sol'});await clicked(f,'j3-move-0');assert.match(f.html,/This saved record has not reached/);fail=true;await clicked(f,'j3-move-0');assert.match(f.html,/service could not finish/);assert.doesNotMatch(f.html,/This saved record has not reached/);assert.equal(reviews,0);assert.equal(f.signs,0);
+ await f.ui.open({direction:'xmr-to-sol'});await clicked(f,'j3-move-0');assert.match(f.html,/This saved record has not reached/);fail=true;await clicked(f,'j3-move-0');assert.match(f.html,/could not reach the bridge service/);assert.doesNotMatch(f.html,/This saved record has not reached/);assert.equal(reviews,0);assert.equal(f.signs,0);
 });
 
 function automaticReturn(t,{deferSigning=false}={}){
@@ -362,4 +382,17 @@ test('a failed saved-return connection offers reconnect above the saved amount, 
 test('wallet testing exposes all token and holder actions for a different selected wallet',async t=>{
  const f=setup(t,{privateTest:true,authorizedAccount:false,registered:true,uiOptions:{walletTest:true},ready:async()=>({manifest:transferableManifest(XMR20_MINT),privateTestPolicy:WALLET_TEST_POLICY})});await f.ui.open({rows:[{mint:XCAT_MINT}]});
  assert.match(f.html,/Any linked wallet/);assert.match(f.html,/upgradeable/);assert.ok(f.html.includes(XCAT_MINT));for(const label of ['Airdrop to a registered','Send to another','Bridge back to my'])assert.ok(f.html.includes(label));await f.preview();assert.equal(f.elements.get('j3-bridge').disabled,false);assert.equal(f.signs,0);
+});
+test('bridge controls and cached balances paint before a stalled history request; no cached approval is enabled',async t=>{
+ let release;const stalled=new Promise(r=>release=r),f=setup(t,{registered:true,ready:()=>stalled});
+ const {saveBridgeDisplay}=await import('../src/bridge-display.js'),manifest=transferableManifest(XMR20_MINT),position=addresses({...manifest,owner:f.a.sol,binding:digest(native)}).position.toBase58();
+ saveBridgeDisplay(f.a,manifest,{schema:'joint-index-v3',complete:true,manifest,positions:[{position,available:'985000'}]});
+ f.d.rows=()=>[{network:'solana',mint:XMR20_MINT,amountRaw:'123456789'}];
+ const start=performance.now(),opening=f.ui.open();await new Promise(r=>setImmediate(r));
+ assert.ok(performance.now()-start<5000);assert.match(f.html,/123\.456789/);assert.match(f.html,/0\.985000/);assert.match(f.html,/last known/);
+ assert.equal(f.elements.get('j3-token').disabled,false);assert.equal(f.elements.get('j3-amount').disabled,false);assert.equal(f.elements.get('j3-bridge').disabled,true);assert.equal(f.signs,0);
+ release({ready:true,manifest});await opening;
+});
+test('Monero Max fills the exact available amount without signing',async t=>{
+ const f=setup(t,{registered:true});await f.ui.open({direction:'xmr-to-xmr'});await f.elements.get('j3-amount-max').onclick();assert.match(f.html,/value="98.5"/);assert.equal(f.signs,0);assert.equal(f.approvals,0);
 });

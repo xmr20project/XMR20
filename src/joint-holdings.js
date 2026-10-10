@@ -1,5 +1,6 @@
 // Public portfolio reads only. This module has no holder signer or submission API.
 import {Connection} from '@solana/web3.js';
+import {jointService} from './joint-service.js';
 import {discoveredAssets,savedJointAssets} from './joint-bridge-assets.js';
 import {transferableManifest} from '../bridge/core-transferable/mainnet-config.mjs';
 import {PRIVATE_TEST_POLICY,WALLET_TEST_POLICY} from '../bridge/core-transferable/private-test.mjs';
@@ -29,15 +30,15 @@ export function jointHoldingRow(report,account,asset,{privateTest=false,walletTe
 }
 export function createJointHoldings({privateTest=privateBuild,walletTest=walletTestBuild,fetcher=fetch,storage=globalThis.localStorage,now=Date.now,adapters,ttl=60000}={}){
  privateTest=privateTest||walletTest;
- const endpoint=privateTest?'http://127.0.0.1:8933':'http://127.0.0.1:8928',entries=new Map();
+ const {endpoint,rpcEndpoint}=jointService({privateTest,walletTest}),entries=new Map();
  const key=(a,mint)=>'xmr20-joint-holdings-v3:'+transferableManifest(mint).program+':'+mint+':'+a.sol+':'+digest(a.xmr);
  function assets(a,rows){if(!a?.sol||!a?.xmr||privateTest&&!walletTest&&(a.sol!==PRIVATE_TEST_POLICY.owner||a.xmr!==PRIVATE_TEST_POLICY.moneroOwner))return [];const known=[...rows,...savedJointAssets(storage)],mints=new Set([PRIVATE_TEST_POLICY.mint,...known.map(r=>r.mint)]);return discoveredAssets(known).filter(v=>v.key!=='previous-xcat'&&mints.has(v.mint)&&(!privateTest||walletTest||v.mint===PRIVATE_TEST_POLICY.mint));}
  function cached(a,asset){try{const v=JSON.parse(storage?.getItem(key(a,asset.mint))??'null');if(!v||v.savedAt>now()||now()-v.savedAt>86400000||v.sol!==a.sol||v.xmr!==a.xmr||v.mint!==asset.mint)return null;const row=jointHoldingRow(v.report,a,asset,{privateTest,walletTest,now:v.savedAt});return row?{...row,stale:true}:null;}catch{return null;}}
  async function read(a,asset,signal){
   const manifest=transferableManifest(asset.mint),policy=walletTest?WALLET_TEST_POLICY:privateTest?PRIVATE_TEST_POLICY:undefined;
   const runtime=adapters?.runtime?.(asset)??createRuntimeHttpClient({endpoint:'/api/joint-transferable/'+asset.mint,fetcher:(p,o)=>fetcher(endpoint+p,o),signal});
-  const chain=adapters?.chain?.(asset)??createSolanaAdapter({connection:new Connection(endpoint+'/api/solana-read',{commitment:'finalized',fetch:(url,o)=>fetcher(url,{...o,signal})}),manifest,privateTestPolicy:policy});
-  const report=await runtime.snapshot();need(!signal.aborted,'Balance refresh cancelled.');await chain.verifyProgram();
+  const chain=adapters?.chain?.(asset)??createSolanaAdapter({connection:new Connection(rpcEndpoint,{commitment:'finalized',fetch:(url,o)=>fetcher(url,{...o,signal})}),manifest,privateTestPolicy:policy});
+  const [report]=await Promise.all([runtime.snapshot(),chain.verifyProgram()]);need(!signal.aborted,'Balance refresh cancelled.');
   const row=jointHoldingRow(report,a,asset,{privateTest,walletTest,now:now()});
   if(row){const value=await chain.readAccount(row.position);need(value?.finalized===true&&value.owner===manifest.program&&!value.executable,'Finalized bridge custody unavailable.');const p=decodePosition(value.data);need(p.owner===a.sol&&p.verifier===manifest.verifier&&p.mint===asset.mint&&p.binding===digest(a.xmr)&&p.balance===row.chainBalance&&p.linkProof===commitment(report.accepted.find(e=>e.txid===row.linkTxid).envelope),'Bridge custody changed; refresh again.');}
   need(!signal.aborted,'Balance refresh cancelled.');try{storage?.setItem(key(a,asset.mint),JSON.stringify({sol:a.sol,xmr:a.xmr,mint:asset.mint,savedAt:now(),report}));}catch{/* Display cache is optional and never authorizes spending. */}
@@ -47,7 +48,8 @@ export function createJointHoldings({privateTest=privateBuild,walletTest=walletT
   cached(account,rows=[]){return assets(account,rows).map(asset=>cached(account,asset)).filter(Boolean);},
   async load(account,rows=[],{force=false,onResult=()=>{}}={}){
    const a={sol:account.sol,xmr:account.xmr},results=[];
-   for(const asset of assets(a,rows)){
+   const queue=assets(a,rows);
+   await Promise.all(Array.from({length:Math.min(3,queue.length)},async()=>{while(queue.length){const asset=queue.shift();
     const id=key(a,asset.mint);let e=entries.get(id);
     if(!e){e={attempt:-Infinity,value:null};entries.set(id,e);}
     if(!e.pending&&now()-e.attempt>=(force?5000:ttl)){
@@ -56,7 +58,7 @@ export function createJointHoldings({privateTest=privateBuild,walletTest=walletT
     }
     if(e.pending)await e.pending;
     const result=e.value??{mint:asset.mint,rows:[],complete:false};results.push(result);onResult(result);
-   }
+   }}));
    return {rows:results.flatMap(r=>r.rows),complete:results.every(r=>r.complete)};
   },
   clear(){for(const e of entries.values())e.abort?.abort();entries.clear();}
