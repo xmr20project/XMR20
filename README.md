@@ -59,7 +59,7 @@ The test suite uses disposable keys and mocked network responses; it does not mo
 
 ## Install or update in Chrome
 
-Open `chrome://extensions`, enable Developer mode, and choose **Load unpacked** with the `extension/` directory. For an existing installation, replace the files in its current directory and click **Reload**. Do not uninstall an existing wallet just to update it. Keep recovery material backed up privately.
+Open `chrome://extensions`, enable Developer mode, and choose **Load unpacked** with `extension-bridge/` for bridge testing 0.1.20, or `extension/` for the ordinary preview. For an existing installation, replace the files in its current directory and click **Reload**. Do not uninstall an existing wallet just to update it. Keep recovery material backed up privately.
 
 The manifest contains a **public** key to preserve extension identity. It is not a wallet private key. Preserve this key when rebuilding.
 
