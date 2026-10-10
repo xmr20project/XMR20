@@ -1,3 +1,5 @@
+import {maxControl,fillMaximum,maximumRaw,TOKEN_TRANSFER_LIMIT} from './max-amount.js';
+import {pendingDebits} from './pending-debits.js';
 import {login,walletRequest,jsonFetch,amount,units} from './core.js';
 import {bridgeToken,bridgeOpen,validateBridgeQuote,validateBridgeReceipt,bridgeBurnReview,bridgeStatus} from './bridge-policy.js';
 import {bridgeSolReserve,prepareBridgeSolana,signBridgeSolana,signedAttemptResolved} from './bridge-solana.js';
@@ -57,7 +59,18 @@ export function createBridgeUI(d){
   if(mainnet&&direction==='sol-to-xmr')throw Error('New legacy deposits are closed. Recover a saved transfer instead.');
   if(c.remote.pair&&c.remote.pair.address!==c.a.xmr)throw Error('This Solana account is linked to a different Monero address on the service. Select the matching account; the existing link will not be replaced.');
   if(!c.remote.pair){show(c,'Link bridge accounts',`<p class="subtle">Register these public addresses for bridging. This does not move tokens. This service link cannot be replaced.</p><label>Solana</label><div class="address">${d.esc(c.a.sol)}</div><label>Monero</label><div class="address">${d.esc(c.a.xmr)}</div><button class="primary wide" id="bridge-link">Link these accounts</button>`);bind(c,'bridge-link',async()=>{const result=await request(c,'pair',{address:c.a.xmr});if(result.pair?.address!==c.a.xmr||result.pair?.owner!==c.a.sol)throw Error('Bridge account link mismatch.');await form(c,row,direction);});return;}
-  show(c,'Bridge '+row.ticker,`<p class="subtle">${direction==='sol-to-xmr'?'Solana → Monero':'Monero → Solana'} · ${d.esc(c.a.name)}</p><label for="bridge-amount">Amount (${d.esc(row.ticker)})</label><input id="bridge-amount" inputmode="decimal" placeholder="0.00" autocomplete="off"><p class="subtle">Indexed: ${d.esc(fmt(row.amountRaw||'0',row.ticker))}. Available balance will be checked.</p><p id="progress" class="busy"></p><button class="primary wide" id="bridge-review">Review bridge</button><button class="text-btn wide" id="bridge-back">Back</button>`);
+  show(c,'Bridge '+row.ticker,`<p class="subtle">${direction==='sol-to-xmr'?'Solana → Monero':'Monero → Solana'} · ${d.esc(c.a.name)}</p>${maxControl('bridge-amount','Amount ('+d.esc(row.ticker)+')')}<input id="bridge-amount" inputmode="decimal" placeholder="0.00" autocomplete="off"><p class="subtle">Indexed: ${d.esc(fmt(row.amountRaw||'0',row.ticker))}. Available balance will be checked.</p><p id="progress" class="busy"></p><button class="primary wide" id="bridge-review">Review bridge</button><button class="text-btn wide" id="bridge-back">Back</button>`);
+  bind(c,'bridge-amount-max',async()=>{
+   const input=document.getElementById('bridge-amount');progress('Checking maximum available amount…');
+   await fillMaximum(input,async()=>{
+    const q=validateBridgeQuote(await request(c,'bridgeQuote',{launchId:row.id,direction,amountRaw:'2'}),c.a,row,direction,'2');
+    await reload(c);
+    const reserved=direction==='xmr-to-sol'?pendingDebits(c.remote,c.a,row).reduce((n,t)=>n+BigInt(t.amountRaw),0n):c.remote.transfers.filter(t=>t.owner===c.a.sol&&t.launchId===row.id&&t.direction===direction&&bridgeOpen(t)).reduce((n,t)=>n+BigInt(t.amountRaw),0n);
+    const raw=maximumRaw(q.balanceRaw,{reserved,limit:TOKEN_TRANSFER_LIMIT});
+    if(raw!=='0')validateBridgeQuote(await request(c,'bridgeQuote',{launchId:row.id,direction,amountRaw:raw}),c.a,row,direction,raw);
+    return raw;
+   },{isCurrent:()=>live(c)&&input.isConnected});progress('');
+  });
   bind(c,'bridge-back',()=>menu(c));bind(c,'bridge-review',async()=>{const raw=units(document.getElementById('bridge-amount').value,6).toString();progress('Checking your bridge balance and SOL for fees…');const fee=await bridgeSolReserve(c.a,row);assert(c);const quote=validateBridgeQuote(await request(c,'bridgeQuote',{launchId:row.id,direction,amountRaw:raw}),c.a,row,direction,raw);review(c,row,quote,fee);});
  }
  function review(c,row,q,fee){
