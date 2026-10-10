@@ -14,4 +14,5 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm test
 
+      - run: node --test services/transferable-gateway/server.test.mjs
       - run: npm run build:bridge

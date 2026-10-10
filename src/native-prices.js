@@ -1,4 +1,4 @@
-import {tokenPortfolio} from './prices.js';
+import {tokenPortfolio,tokenUsd,currentQuote} from './prices.js';
 export const NATIVE_PRICE_URL='https://api.coingecko.com/api/v3/simple/price?ids=solana,monero&vs_currencies=usd&include_last_updated_at=true';
 export function parseNativePrices(data,now=Date.now()){
  const out={};for(const [symbol,id] of [['sol','solana'],['xmr','monero']]){
@@ -20,9 +20,18 @@ export function walletPortfolio(cache,account,now=Date.now()){
  const tokens=tokenPortfolio(cache.rows,cache.prices,cache.complete,now),values=[];
  let partial=tokens.partial;
  if(tokens.value!==null)values.push(tokens.value);
- for(const [symbol,decimals,raw] of [['sol',9,cache.sol],['xmr',12,cache.xmr?.address===account?.xmr?cache.xmr.balanceRaw:null]]){
+ for(const [symbol,decimals,raw] of [['sol',9,cache.sol],['xmr',12,cache.xmr&&cache.xmr.address===account?.xmr?cache.xmr.balanceRaw:null]]){
   if(!account?.[symbol])continue;
   const value=nativeUsd(raw,decimals,cache.nativePrices?.[symbol],now);if(value===null)partial=true;else values.push(value);
  }
  return {value:values.length?values.reduce((a,b)=>a+b,0):null,partial};
+}
+
+// A delayed index must not make a known token holding disappear from the
+// displayed estimate. Spending continues to use independently verified data.
+export function walletPortfolioEstimate(cache,account,now=Date.now()){
+ const current=walletPortfolio(cache,account,now);let extra=0,coverage=0,lastKnown=!!cache.solStale;
+ for(const row of cache.rows){const quote=currentQuote(cache.prices,row.mint,now),value=tokenUsd(row,quote);if(value===null)continue;coverage++;if(row.stale||quote.stale){extra+=value;lastKnown=true;}}
+ for(const [symbol,decimals,raw] of [['sol',9,cache.sol],['xmr',12,cache.xmr&&cache.xmr.address===account?.xmr?cache.xmr.balanceRaw:null]])if(account?.[symbol]&&nativeUsd(raw,decimals,cache.nativePrices?.[symbol],now)!==null)coverage++;
+ return {...current,value:current.value===null&&coverage===0?null:(current.value??0)+extra,lastKnown,coverage};
 }

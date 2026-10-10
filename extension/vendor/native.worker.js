@@ -60,6 +60,17 @@ async function handle({data}){
    await health(data.node);await wallet.setDaemonConnection({uri:data.node,rejectUnauthorized:true},false);
    post({id:data.id,progress:{phase:'syncing'}});
    await wallet.sync();result=await snapshot(data.node);
+  }else if(data.action==='prepareMax'){
+   if(!wallet||!/^4[1-9A-HJ-NP-Za-km-z]{94}$/.test(data.to)||data.to===await wallet.getPrimaryAddress())throw Error('Invalid transfer');
+   await snapshot(data.node);pending=null;
+   const txs=await wallet.sweepUnlocked({accountIndex:0,address:data.to,relay:false});
+   // Keep the existing single-transaction review/receipt contract. Never relay
+   // or partially send a multi-transaction sweep from an amount shortcut.
+   if(txs.length!==1)throw Error('Max needs a single transaction');
+   const tx=txs[0],destinations=tx.getOutgoingTransfer().getDestinations(),amountRaw=String(tx.getOutgoingAmount()),feeRaw=String(tx.getFee()),hash=tx.getHash();
+   if(destinations.length!==1||destinations[0].getAddress()!==data.to||String(destinations[0].getAmount())!==amountRaw||tx.getIsRelayed()||! /^[1-9][0-9]{0,19}$/.test(amountRaw)||! /^[0-9]+$/.test(feeRaw)||! /^[a-f0-9]{64}$/.test(hash))throw Error('Transfer mismatch');
+   const id=crypto.randomUUID();pending={id,tx,to:data.to,amountRaw,expires:Date.now()+120000};
+   result={id,to:data.to,amountRaw,feeRaw,hash,expires:pending.expires};
   }else if(data.action==='prepare'){
    if(!wallet||!/^4[1-9A-HJ-NP-Za-km-z]{94}$/.test(data.to)||! /^[1-9][0-9]{0,19}$/.test(data.amountRaw))throw Error('Invalid transfer');
    if(data.to===await wallet.getPrimaryAddress())throw Error('Same address');
@@ -85,7 +96,7 @@ async function handle({data}){
  }catch{
   if(data.action==='open'&&wallet){try{await wallet.close(false);}catch{}wallet=null;}
   data.seed='';
-  post({id:data.id,error:data.action==='open'?'Could not unlock this Monero wallet. Check the phrase, restore height and node connection.':data.action==='sync'?'Monero sync could not finish. Your balance is unavailable; retry or switch nodes.':'Monero transaction could not complete. Check the saved receipt before retrying.'});
+  post({id:data.id,error:data.action==='open'?'Could not unlock this Monero wallet. Check the phrase, restore height and node connection.':data.action==='prepareMax'?'Could not calculate Max for one XMR transaction. Sync your wallet and try a smaller amount. Nothing was sent.':data.action==='sync'?'Monero sync could not finish. Your balance is unavailable; retry or switch nodes.':'Monero transaction could not complete. Check the saved receipt before retrying.'});
  }finally{busy=false;}
 }
 self.onmessage=handle;
