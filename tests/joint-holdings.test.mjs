@@ -65,3 +65,13 @@ test('any-wallet home reads held or selected tokens without opening unused defau
  await reader.load(account);assert.deepEqual(calls,[policy.mint]);
  rememberJointAsset({mint:XCAT_MINT,symbol:'XCAT'},storage);await reader.load(account);assert.deepEqual(calls,[policy.mint,XCAT_MINT]);
 });
+test('a slow token does not block other tokens from reaching the portfolio',async()=>{
+ const {WALLET_TEST_POLICY}=await import('../bridge/core-transferable/private-test.mjs'),{XCAT_MINT}=await import('../src/joint-bridge-assets.js');
+ let release;const wait=new Promise(r=>release=r),seen=[],reader=createJointHoldings({walletTest:true,storage:{getItem:()=>null,setItem(){}},adapters:{runtime:a=>({snapshot:async()=>{if(a.mint===policy.mint)await wait;return {schema:'joint-index-v3',complete:true,manifest:transferableManifest(a.mint),privateTestPolicy:WALLET_TEST_POLICY,positions:[],accepted:[]};}}),chain:()=>({verifyProgram:async()=>{}})}});
+ const result=reader.load(account,[{mint:XCAT_MINT}],{onResult:r=>seen.push(r.mint)});await new Promise(r=>setImmediate(r));assert.deepEqual(seen,[XCAT_MINT]);release();await result;assert.equal(seen.length,2);
+});
+test('installed profile balance refresh reaches hosted service without a local connector',async()=>{
+ const {WALLET_TEST_POLICY}=await import('../bridge/core-transferable/private-test.mjs');
+ const calls=[],reader=createJointHoldings({walletTest:true,storage:{getItem:()=>null,setItem(){}},fetcher:async(url,o)=>{calls.push({url,o});return new Response(JSON.stringify({schema:'joint-index-v3',complete:true,manifest,privateTestPolicy:WALLET_TEST_POLICY,positions:[],accepted:[]}));},adapters:{chain:()=>({verifyProgram:async()=>{}})}});
+ const r=await reader.load(account);assert.equal(r.complete,true);assert.equal(calls.length,1);assert.equal(calls[0].url,'https://api.xmr20.org/api/joint-transferable/'+asset.mint+'/snapshot');assert.equal(calls[0].o.method,'POST');
+});

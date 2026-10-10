@@ -30,6 +30,9 @@
 
 .joint-wallet-pair{margin:0 0 16px;color:#cbbeb0}.joint-wallet-pair summary{cursor:pointer;text-decoration:underline;text-underline-offset:3px}.joint-wallet-pair .address{color:#efe5d9;overflow-wrap:anywhere}
 
+/* Exact amount shortcut shared by every send and bridge form. */
+.amount-label{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:20px 0 8px}.amount-label label{margin:0}.amount-max{flex:none;min-width:52px;min-height:36px;padding:6px 12px;border:1px solid var(--line,#3b3328);border-radius:10px;background:var(--surface,#211e18);color:var(--accent,#ff8133);font:inherit;font-size:13px;font-weight:700;cursor:pointer}.amount-max:hover:not(:disabled){background:#34271b}.amount-max:focus-visible{outline:2px solid #ff8133;outline-offset:3px}.amount-max:disabled{opacity:.45;cursor:default}
+
 .joint-transferable{font-size:14px;line-height:1.55;color:#efe5d9}
 .joint-transferable p{margin:16px 0}
 .joint-transferable h3{font-size:16px;margin:24px 0 12px}
@@ -48,3 +51,9 @@
 
 .joint-transferable .joint-error{color:#ffae68;overflow-wrap:anywhere}
 .joint-transferable #progress:empty{display:none}
+.joint-waiting .joint-wait-label{font-size:1.05em;line-height:1.4}
+.joint-waiting .joint-wait-steps{list-style:none;padding:0;margin:18px 0;display:grid;gap:10px;font-size:.9em}
+.joint-wait-steps li{display:flex;justify-content:space-between;gap:16px;color:#cbbeb0}
+.joint-wait-steps li[data-state="current"]{color:#ffae68;font-weight:600}
+.joint-wait-steps li span:last-child{flex-shrink:0}
+.joint-busy[data-paused="true"]::before{animation-play-state:paused!important}
