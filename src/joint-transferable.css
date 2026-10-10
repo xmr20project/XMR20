@@ -16,3 +16,9 @@
 
 .joint-transferable .joint-error{color:#ffae68;overflow-wrap:anywhere}
 .joint-transferable #progress:empty{display:none}
+.joint-waiting .joint-wait-label{font-size:1.05em;line-height:1.4}
+.joint-waiting .joint-wait-steps{list-style:none;padding:0;margin:18px 0;display:grid;gap:10px;font-size:.9em}
+.joint-wait-steps li{display:flex;justify-content:space-between;gap:16px;color:#cbbeb0}
+.joint-wait-steps li[data-state="current"]{color:#ffae68;font-weight:600}
+.joint-wait-steps li span:last-child{flex-shrink:0}
+.joint-busy[data-paused="true"]::before{animation-play-state:paused!important}
