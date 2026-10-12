@@ -23,6 +23,14 @@ export function createRuntimeApi({runtime}){
 }
 export function createRuntimeHttpClient({fetcher=fetch,endpoint,signal}){
  need(typeof endpoint==='string'&&/^\/api\/joint-transferable\/[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(endpoint),'Explicit same-origin transferable mint endpoint required.');
- async function call(action,input={}){const r=await fetcher(endpoint+'/'+action,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(input),credentials:'omit',redirect:'error',cache:'no-store',signal:signal?AbortSignal.any([signal,AbortSignal.timeout(120000)]):AbortSignal.timeout(120000)});need(r.ok,'Transferable service unavailable. Keep the public recovery receipt.');const text=await r.text();need(text.length<=1000000,'Oversized public bridge response.');return JSON.parse(text);}
+ async function call(action,input={}){const r=await fetcher(endpoint+'/'+action,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(input),credentials:'omit',redirect:'error',cache:'no-store',signal:signal?AbortSignal.any([signal,AbortSignal.timeout(120000)]):AbortSignal.timeout(120000)});const text=await r.text();need(text.length<=1000000,'Oversized public bridge response.');
+  if(!r.ok){
+   // Only this fixed public classification controls automatic read-only retry.
+   // Provider diagnostics and arbitrary server error text never reach the UI.
+   let syncing=false;try{syncing=r.status===503&&JSON.parse(text)?.reason==='index-catch-up-required';}catch{}
+   const error=Error(syncing?'Bridge syncing recent Monero blocks. Saved approvals are kept.':'Transferable service unavailable. Keep the public recovery receipt.');
+   if(syncing)error.code='index-sync';throw error;
+  }
+  return JSON.parse(text);}
  return Object.freeze({readiness:()=>call('readiness'),progress:operationId=>call('progress',{operationId}),snapshot:()=>call('snapshot'),prepare:async i=>{const p=await call('prepare',i);return {...p,transaction:VersionedTransaction.deserialize(bytes(p.transaction))};},authorizeRegistration:async envelope=>{const p=await call('authorize-registration',{envelope});return {...p,transaction:VersionedTransaction.deserialize(bytes(p.transaction))};},submit:i=>call('submit',{config:i.config,proposal:i.proposal,envelope:i.envelope,transaction:Buffer.from(i.ownerSigned).toString('base64')}),publish:envelope=>call('publish',{envelope}),reconcile:operationId=>call('reconcile',{operationId}),retry:operationId=>call('retry',{operationId})});
 }
