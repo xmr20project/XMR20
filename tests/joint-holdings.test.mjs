@@ -30,11 +30,11 @@ test('pending custody credit is not shown until native replay makes it available
  const {report}=fixture();report.positions[0].balance='0';report.positions[0].available='0';report.accepted.pop();assert.equal(jointHoldingRow(report,account,asset,{privateTest:true}),null);
 });
 test('reader verifies deployment and matching finalized custody, then persists display-only public history',async()=>{
- const f=setup(),result=await f.c.load(account);assert.equal(result.complete,true);assert.equal(result.rows[0].amountRaw,'985000');assert.equal(f.checks,1);assert.equal(f.reads,1);assert.equal(f.c.cached(account)[0].stale,true);
+ const f=setup(),result=await f.c.load(account);assert.equal(result.complete,true);assert.equal(result.rows[0].amountRaw,'985000');assert.equal(f.checks,1);assert.equal(f.reads,2);assert.equal(f.c.cached(account)[0].stale,true);
  const saved=JSON.parse([...f.disk.values()][0]);assert.deepEqual(Object.keys(saved).sort(),['mint','report','savedAt','sol','xmr']);
 });
 test('changed custody or program failure cannot be displayed as a current balance',async()=>{
- for(const options of [{verifyProgram:async()=>{throw Error('Changed code');}},{readAccount:async()=>null},{readAccount:async()=>({owner:manifest.program,executable:true,finalized:true,data:Buffer.alloc(169)})}]){const f=setup(options),r=await f.c.load(account);assert.equal(r.complete,false);assert.deepEqual(r.rows,[]);assert.equal(f.disk.size,0);}
+ for(const options of [{verifyProgram:async()=>{throw Error('Changed code');}},{readAccount:async()=>undefined},{readAccount:async()=>({owner:manifest.program,executable:true,finalized:true,data:Buffer.alloc(169)})}]){const f=setup(options),r=await f.c.load(account);assert.equal(r.complete,false);assert.deepEqual(r.rows,[]);assert.equal(f.disk.size,0);}
 });
 test('concurrent refreshes share one read and a slow read does not cause immediate repeated scans',async()=>{
  let release,time=at;const f=setup({now:()=>time,snapshot:r=>new Promise(resolve=>release=()=>resolve(r))});
@@ -61,17 +61,35 @@ test('independent index updates preserve the other bridge and never duplicate an
 test('any-wallet home reads held or selected tokens without opening unused default token runtimes',async()=>{
  const {WALLET_TEST_POLICY}=await import('../bridge/core-transferable/private-test.mjs'),{XCAT_MINT,rememberJointAsset}=await import('../src/joint-bridge-assets.js');
  const calls=[],disk=new Map(),storage={getItem:k=>disk.get(k),setItem:(k,v)=>disk.set(k,v)};
- const reader=createJointHoldings({walletTest:true,storage,adapters:{runtime:a=>({snapshot:async()=>{calls.push(a.mint);return {schema:'joint-index-v3',complete:true,manifest:transferableManifest(a.mint),privateTestPolicy:WALLET_TEST_POLICY,positions:[],accepted:[]};}}),chain:()=>({verifyProgram:async()=>{}})}});
+ const reader=createJointHoldings({walletTest:true,storage,adapters:{runtime:a=>({snapshot:async()=>{calls.push(a.mint);return {schema:'joint-index-v3',complete:true,manifest:transferableManifest(a.mint),privateTestPolicy:WALLET_TEST_POLICY,positions:[],accepted:[]};}}),chain:a=>({verifyProgram:async()=>{},readAccount:async()=>{const b=data(fixture().report,fixture().link);new PublicKey(a.mint).toBuffer().copy(b,65);return {owner:manifest.program,finalized:true,executable:false,data:b};}})}});
  await reader.load(account);assert.deepEqual(calls,[policy.mint]);
  rememberJointAsset({mint:XCAT_MINT,symbol:'XCAT'},storage);await reader.load(account);assert.deepEqual(calls,[policy.mint,XCAT_MINT]);
 });
 test('a slow token does not block other tokens from reaching the portfolio',async()=>{
  const {WALLET_TEST_POLICY}=await import('../bridge/core-transferable/private-test.mjs'),{XCAT_MINT}=await import('../src/joint-bridge-assets.js');
- let release;const wait=new Promise(r=>release=r),seen=[],reader=createJointHoldings({walletTest:true,storage:{getItem:()=>null,setItem(){}},adapters:{runtime:a=>({snapshot:async()=>{if(a.mint===policy.mint)await wait;return {schema:'joint-index-v3',complete:true,manifest:transferableManifest(a.mint),privateTestPolicy:WALLET_TEST_POLICY,positions:[],accepted:[]};}}),chain:()=>({verifyProgram:async()=>{}})}});
+ let release;const wait=new Promise(r=>release=r),seen=[],reader=createJointHoldings({walletTest:true,storage:{getItem:()=>null,setItem(){}},adapters:{runtime:a=>({snapshot:async()=>{if(a.mint===policy.mint)await wait;return {schema:'joint-index-v3',complete:true,manifest:transferableManifest(a.mint),privateTestPolicy:WALLET_TEST_POLICY,positions:[],accepted:[]};}}),chain:a=>({verifyProgram:async()=>{},readAccount:async()=>{const b=data(fixture().report,fixture().link);new PublicKey(a.mint).toBuffer().copy(b,65);return {owner:manifest.program,finalized:true,executable:false,data:b};}})}});
  const result=reader.load(account,[{mint:XCAT_MINT}],{onResult:r=>seen.push(r.mint)});await new Promise(r=>setImmediate(r));assert.deepEqual(seen,[XCAT_MINT]);release();await result;assert.equal(seen.length,2);
 });
 test('installed profile balance refresh reaches hosted service without a local connector',async()=>{
  const {WALLET_TEST_POLICY}=await import('../bridge/core-transferable/private-test.mjs');
- const calls=[],reader=createJointHoldings({walletTest:true,storage:{getItem:()=>null,setItem(){}},fetcher:async(url,o)=>{calls.push({url,o});return new Response(JSON.stringify({schema:'joint-index-v3',complete:true,manifest,privateTestPolicy:WALLET_TEST_POLICY,positions:[],accepted:[]}));},adapters:{chain:()=>({verifyProgram:async()=>{}})}});
+ const calls=[],reader=createJointHoldings({walletTest:true,storage:{getItem:()=>null,setItem(){}},fetcher:async(url,o)=>{calls.push({url,o});return new Response(JSON.stringify({schema:'joint-index-v3',complete:true,manifest,privateTestPolicy:WALLET_TEST_POLICY,positions:[],accepted:[]}));},adapters:{chain:a=>({verifyProgram:async()=>{},readAccount:async()=>{const b=data(fixture().report,fixture().link);new PublicKey(a.mint).toBuffer().copy(b,65);return {owner:manifest.program,finalized:true,executable:false,data:b};}})}});
  const r=await reader.load(account);assert.equal(r.complete,true);assert.equal(calls.length,1);assert.equal(calls[0].url,'https://api.xmr20.org/api/joint-transferable/'+asset.mint+'/snapshot');assert.equal(calls[0].o.method,'POST');
+});
+
+
+test('unregistered token skips native history after a fresh deployment and finalized custody check',async()=>{
+ const f=setup({readAccount:async()=>null});const r=await f.c.load(account);
+ assert.equal(r.complete,true);assert.deepEqual(r.rows,[]);assert.equal(f.calls,0);assert.equal(f.checks,1);assert.equal(f.reads,1);
+});
+test('zero finalized custody clears a cached balance without waiting for native history',async()=>{
+ const f=setup();await f.c.load(account);assert.equal(f.c.cached(account).length,1);
+ const next=setup({storage:f.store,readAccount:async()=>{const x=fixture();x.report.positions[0].chainBalance='0';return {owner:manifest.program,finalized:true,executable:false,data:data(x.report,x.link)};}});
+ const r=await next.c.load(account);assert.equal(r.complete,true);assert.deepEqual(r.rows,[]);assert.equal(next.calls,0);assert.deepEqual(next.c.cached(account),[]);
+});
+test('untrusted or mismatched zero custody cannot clear a cached holding',async()=>{
+ const f=setup();await f.c.load(account);
+ for(const change of [v=>v.finalized=false,v=>v.owner=account.sol,v=>v.executable=true,v=>v.data[1]^=1]){
+  const next=setup({storage:f.store,readAccount:async()=>{const x=fixture();x.report.positions[0].chainBalance='0';const v={owner:manifest.program,finalized:true,executable:false,data:data(x.report,x.link)};change(v);return v;}});
+  const r=await next.c.load(account);assert.equal(r.complete,false);assert.equal(r.rows[0].stale,true);assert.equal(next.calls,0);
+ }
 });
