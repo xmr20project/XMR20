@@ -9,7 +9,7 @@ export function createJointCreditPreview({prepare,changed,isCurrent,setTimer=set
   timer=null;if(closed||running||!wanted||!isCurrent())return;
   const version=revision,input=structuredClone(wanted);running=true;
   try{const value=await prepare(input);if(!closed&&version===revision&&isCurrent()){state={status:'ready',input,value,error:''};}}
-  catch(e){if(!closed&&version===revision&&isCurrent())state={status:'error',input,value:null,error:e.message||'The amount could not be checked.'};}
+  catch(e){if(!closed&&version===revision&&isCurrent())state={status:'error',input,value:null,error:e.message||'The amount could not be checked.',...(e?.code==='index-sync'?{errorCode:'index-sync'}:{})};}
   finally{running=false;if(!closed&&isCurrent()){publish();if(version!==revision&&wanted)schedule(0);}}
  }
  function schedule(wait=delay){clearTimer(timer);timer=setTimer(start,wait);timer?.unref?.();}

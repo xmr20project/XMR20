@@ -36,9 +36,21 @@ export function createJointHoldings({privateTest=privateBuild,walletTest=walletT
  function cached(a,asset){try{const v=JSON.parse(storage?.getItem(key(a,asset.mint))??'null');if(!v||v.savedAt>now()||now()-v.savedAt>86400000||v.sol!==a.sol||v.xmr!==a.xmr||v.mint!==asset.mint)return null;const row=jointHoldingRow(v.report,a,asset,{privateTest,walletTest,now:v.savedAt});return row?{...row,stale:true}:null;}catch{return null;}}
  async function read(a,asset,signal){
   const manifest=transferableManifest(asset.mint),policy=walletTest?WALLET_TEST_POLICY:privateTest?PRIVATE_TEST_POLICY:undefined;
-  const runtime=adapters?.runtime?.(asset)??createRuntimeHttpClient({endpoint:'/api/joint-transferable/'+asset.mint,fetcher:(p,o)=>fetcher(endpoint+p,o),signal});
-  const chain=adapters?.chain?.(asset)??createSolanaAdapter({connection:new Connection(rpcEndpoint,{commitment:'finalized',fetch:(url,o)=>fetcher(url,{...o,signal})}),manifest,privateTestPolicy:policy});
-  const [report]=await Promise.all([runtime.snapshot(),chain.verifyProgram()]);need(!signal.aborted,'Balance refresh cancelled.');
+  const runtime=adapters?.runtime?.(asset,{signal})??createRuntimeHttpClient({endpoint:'/api/joint-transferable/'+asset.mint,fetcher:(p,o)=>fetcher(endpoint+p,o),signal});
+  const chain=adapters?.chain?.(asset,{signal})??createSolanaAdapter({connection:new Connection(rpcEndpoint,{commitment:'finalized',fetch:(url,o)=>fetcher(url,{...o,signal})}),manifest,privateTestPolicy:policy});
+  // A finalized empty custody account cannot contain a spendable bridge balance.
+  // Avoid a full native-history scan for every Solana token the wallet owns.
+  const position=addresses({...manifest,owner:a.sol,binding:digest(a.xmr)}).position.toBase58();
+  const [,custody]=await Promise.all([chain.verifyProgram(),chain.readAccount(position)]);need(!signal.aborted,'Balance refresh cancelled.');
+  if(custody){
+   need(custody.finalized===true&&custody.owner===manifest.program&&!custody.executable,'Finalized bridge custody unavailable.');
+   const p=decodePosition(custody.data);need(p.owner===a.sol&&p.verifier===manifest.verifier&&p.mint===asset.mint&&p.binding===digest(a.xmr),'Bridge custody belongs to another linked wallet.');
+  }
+  if(custody===null||decodePosition(custody.data).balance==='0'){
+   try{storage?.setItem(key(a,asset.mint),JSON.stringify({sol:a.sol,xmr:a.xmr,mint:asset.mint,savedAt:now(),empty:true}));}catch{}
+   return null;
+  }
+  const report=await runtime.snapshot();need(!signal.aborted,'Balance refresh cancelled.');
   const row=jointHoldingRow(report,a,asset,{privateTest,walletTest,now:now()});
   if(row){const value=await chain.readAccount(row.position);need(value?.finalized===true&&value.owner===manifest.program&&!value.executable,'Finalized bridge custody unavailable.');const p=decodePosition(value.data);need(p.owner===a.sol&&p.verifier===manifest.verifier&&p.mint===asset.mint&&p.binding===digest(a.xmr)&&p.balance===row.chainBalance&&p.linkProof===commitment(report.accepted.find(e=>e.txid===row.linkTxid).envelope),'Bridge custody changed; refresh again.');}
   need(!signal.aborted,'Balance refresh cancelled.');try{storage?.setItem(key(a,asset.mint),JSON.stringify({sol:a.sol,xmr:a.xmr,mint:asset.mint,savedAt:now(),report}));}catch{/* Display cache is optional and never authorizes spending. */}

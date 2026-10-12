@@ -1,6 +1,6 @@
 # XMR20 Wallet and Read Indexer
 
-Source repository for the XMR20 Chrome extension, developer preview **0.1.14** and opt-in bridge testing build **0.1.22**, and the experimental read-only token indexer **0.2.0**.
+Source repository for the XMR20 Chrome extension, developer preview **0.1.14** and opt-in bridge testing build **0.1.26**, and the experimental read-only token indexer **0.2.0**.
 
 ## Read indexer
 
@@ -12,7 +12,7 @@ A mainnet rebuild from the published scan start completed on 7 October 2026 with
 
 ## Wallet
 
-## New bridge testing build — 0.1.22
+## New bridge testing build — 0.1.26
 
 The latest bridge work is included in source and the installable `extension-bridge/` build. It supports any linked wallet and tokens whose XMR20 launch proofs and Token-2022 configuration pass verification. The earlier cumulative 1 XMR20 test limit does not apply to this build.
 
@@ -28,7 +28,7 @@ A real self round trip has completed; the two-holder path passes compiled-contra
 
 The testing build connects directly to the hosted gateway at `https://api.xmr20.org`. No local connector or SSH forward is needed. The gateway serves the website and the pinned XMR20 extension identity; it restricts routes, request size and public Solana read methods. Financial instructions still require their original signatures and proof validation. The testing program remains upgradeable.
 
-Version 0.1.22 includes Max amount controls, immediate display of last-known balances while fresh checks run, and waiting messages that explain confirmation delays. Cached data never authorizes spending. Saved approvals survive connection errors; check their status before approving again.
+Version 0.1.24 refreshes SOL, indexed holdings and bridge balances independently, so a slow bridge read does not hold up every balance. It shows account-specific last-known balances immediately and checks fresh SOL using bounded public reads. Accounts without a funded bridge position can skip the full Monero-history replay after fresh deployment and finalized position checks. The bridge explains index catch-up and resumes status and amount checks automatically; incomplete history never enables approval. Max controls, exact fees, saved approvals and recovery receipts are preserved. Cached data never authorizes spending. Network and Monero confirmation delays still apply.
 
 ## Features
 
@@ -53,14 +53,14 @@ Build the new bridge candidate separately:
 npm run build:bridge
 ```
 
-Load `extension-bridge/` for version 0.1.22. The hosted gateway is used automatically. The optional local connector remains available only for explicit development profiles. `npm run build` continues to produce the ordinary `extension/` build.
+Load `extension-bridge/` for version 0.1.26. The hosted gateway is used automatically. The optional local connector remains available only for explicit development profiles. `npm run build` continues to produce the ordinary `extension/` build.
 
 Tests build the extension first. To build without running tests, use `npm run build`.
 The test suite uses disposable keys and mocked network responses; it does not move real funds.
 
 ## Install or update in Chrome
 
-Open `chrome://extensions`, enable Developer mode, and choose **Load unpacked** with `extension-bridge/` for bridge testing 0.1.22, or `extension/` for the ordinary preview. For an existing installation, replace the files in its current directory and click **Reload**. Do not uninstall an existing wallet just to update it. Keep recovery material backed up privately.
+Open `chrome://extensions`, enable Developer mode, and choose **Load unpacked** with `extension-bridge/` for bridge testing 0.1.26, or `extension/` for the ordinary preview. For an existing installation, replace the files in its current directory and click **Reload**. Do not uninstall an existing wallet just to update it. Keep recovery material backed up privately.
 
 The manifest contains a **public** key to preserve extension identity. It is not a wallet private key. Preserve this key when rebuilding.
 
@@ -76,3 +76,19 @@ Third-party notices and vendor licenses are included under `extension/`.
 
 Original project code is available under the [MIT License](LICENSE). Bundled third-party code retains its original licenses and notices. The `private` setting in `package.json` prevents accidental npm publication; it does not restrict this source license.
 
+
+Bridge now opens with tokens held by the selected wallet, plus tokens with unfinished public receipts. Catalog discovery supplies names only. Empty portfolios have a refresh and receipt-recovery path; incoming balance updates preserve the selected token and draft amount. Cached balances are for display and never authorize spending.
+
+## Balance reader update 0.1.25
+
+The shared public endpoint now binds the independent reader’s verified holdings to the wallet’s original token IDs. Wallet freshness accepts that reader’s fixed ten-minute policy while retaining explicit stale/error states. Saved balances remain display-only; fresh transaction verification and approvals are unchanged. Update an existing extension in place and Reload; preserve its encrypted vault and receipts.
+
+The generic Bridge button opens the earlier return route when only earlier-custody Monero balances are present and the new bridge has no active choices/recoveries. Existing new-bridge requests, saved approvals and explicit token selections remain in their original flow. A single earlier token skips the network/token picker; several show the earlier-token choices. Existing signing, proof and fee checks remain mandatory.
+
+## Saved-return recovery 0.1.26
+
+An unfinished legacy return remains visible after the Monero burn consumes its token balance. The home screen shows the exact amount due on Solana and a Check and continue bridge button. Generic Bridge also resumes the saved return when no new-bridge asset is available. Resume re-reads the existing owner-bound server receipt and never creates another bridge or burn. Cached recovery state is labeled Last saved. Completed and cancelled receipts leave the recovery list.
+
+## Published protocol and service sources
+
+The transferable ABI 3 Rust program and pinned Cargo lock are in `bridge/core-transferable/program/`. Public record formats, SDK and wallet validation are in `bridge/core-transferable/`; the independent indexer and protocol rules are in `indexer/`. The read-only wallet adapter is in `services/wallet-index/`. The root MIT license covers original project code; third-party licenses remain unchanged. This release does not include the complete primary operator backend or the separate mining/NFT launch under development. Private keys, server settings and user data are excluded. Open source does not mean independently audited or production-ready.

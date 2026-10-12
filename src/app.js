@@ -1,8 +1,11 @@
+import {createPublicBalanceReader,cachedSolBalance,saveSolBalance} from './public-balance.js';
+import {createRefreshLanes} from './refresh-lanes.js';
 import {cachedPortfolio,savePortfolio,portfolioDisplay} from './portfolio-cache.js';
 import {cachedWalletHoldings,cacheWalletHoldings} from './holdings.js';
 import {maxControl,fillMaximum,maximumRaw,TOKEN_TRANSFER_LIMIT} from './max-amount.js';
 import {solanaMaximum,solanaTokenMaximum} from './solana-max.js';
 import {createBridgeUI} from './bridge-ui.js';
+import {legacyBridgeRecoveries,legacyRecoveryHTML} from './legacy-bridge-recovery.js';
 import {createJointHoldings,isJointHolding,replaceHoldingSource} from './joint-holdings.js';
 import {pendingDebits,cancellationConfirmed,balanceRejection} from './pending-debits.js';
 import {tokenImage,tokenGroups} from './token-display.js';
@@ -16,14 +19,14 @@ import {prepareSolanaTokenSend} from './sol-token-send.js';
 import {Keypair,PublicKey,bs58,checkMoneroAddress,solAddress,importSol,amount,units,encryptVault,decryptVault,loadWalletHoldings,connection,prepareSolSend,signSolSend,sendSolSigned,jsonFetch,login,walletRequest,validateTransfer,linkSolanaKey} from './core.js';
 const jointHoldings=typeof __XMR20_JOINT_TRANSFERABLE_REVIEW__!=='undefined'&&__XMR20_JOINT_TRANSFERABLE_REVIEW__?createJointHoldings():null;
 const privateBridgeTest=typeof __XMR20_JOINT_PRIVATE_TEST__!=='undefined'&&__XMR20_JOINT_PRIVATE_TEST__&&!(typeof __XMR20_JOINT_WALLET_TEST__!=='undefined'&&__XMR20_JOINT_WALLET_TEST__);
-const priceClient=createPriceClient({ttl:15000}),nativePriceClient=createNativePriceClient({ttl:15000});
+const priceClient=createPriceClient({ttl:15000}),nativePriceClient=createNativePriceClient({ttl:15000}),readSolBalance=createPublicBalanceReader(),balanceReads=createRefreshLanes();
 const $=s=>document.querySelector(s),app=$('#app'),modal=$('#modal');
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const paths={send:'M21 3 9 15m12-12-7 19-5-7-7-5 19-7',swap:'M3 7h16l-4-4m6 14H5l4 4M19 7l-4 4M5 17l4-4',receive:'M3 3h6v6H3zM15 3h6v6h-6zM3 15h6v6H3zM15 15h2v2h-2zM20 15v6h-5',home:'m3 10 9-7 9 7v11h-6v-7H9v7H3z',clock:'M12 7v5l3 2M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0',search:'m16 16 5 5M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0',settings:'M4 7h16M4 17h16M8 4v6M16 14v6',expand:'M15 3h6v6M21 3l-8 8M9 21H3v-6M3 21l8-8',refresh:'M20 7a9 9 0 1 0 1 9M20 2v5h-5',lock:'M6 10V7a6 6 0 0 1 12 0v3M4 10h16v12H4zM12 14v4',info:'M12 10v6M12 7h.01M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0',sol:'M5 6h14l-3 3H2zM5 11h14l3 3H8zM5 16h14l-3 3H2z',copy:'M8 8h13v13H8zM16 8V3H3v13h5'};
 const icon=name=>`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${paths[name]||paths.info}"/></svg>`;
 const store={async get(k){if(globalThis.chrome?.storage)return (await chrome.storage.local.get(k))[k];return JSON.parse(localStorage.getItem(k)||'null');},async set(k,v){if(globalThis.chrome?.storage)await chrome.storage.local.set({[k]:v});else localStorage.setItem(k,JSON.stringify(v));}};
 let vault=null,password='',box=null,activeId='',screen='home',epoch=0,runSequence=0,busy=false,priceRefreshId=0,lastActive=Date.now(),native=null,nativeId='',refreshId=0,cache={sol:null,xmr:null,rows:[],complete:false,loading:false,note:''},workers=new Set();
-const bridgeUI=createBridgeUI({account:()=>account(),rows:()=>cache.rows,vault:()=>vault,same,show,on,run,record,persist,oneShot,esc,modal,isBusy:()=>busy,settings:()=>{modal.close();screen='settings';render();}});
+const bridgeUI=createBridgeUI({account:()=>account(),rows:()=>cache.displayScope===account()?.sol+':'+account()?.xmr?cache.rows:[],refreshHoldings:()=>refresh(),vault:()=>vault,same,show,on,run,record,persist,oneShot,esc,modal,isBusy:()=>busy,settings:()=>{modal.close();screen='settings';render();}});
 let ownLockSignal=null,lastLockSignal=null,sessionId=null,sessionSnapshots={},preferences=normalizePreferences(null);
 async function session(action,data={}){if(!globalThis.chrome?.runtime?.id)return null;const response=await chrome.runtime.sendMessage({channel:'wallet-session',action,id:sessionId,...data});if(response?.error)throw Error(response.error);return response?.value??null;}
 async function establishSession(generation,signal=lastLockSignal){if(generation!==epoch)throw Error('Wallet locked.');const result=await session('open',{password,box,activeId,lockSignal:signal});if(generation!==epoch)throw Error('Wallet locked.');sessionId=result?.id||null;lastActive=result?.lastActive||Date.now();sessionSnapshots=result?.snapshots||{};}
@@ -36,7 +39,7 @@ const sameBox=(a,b)=>!a&&!b||!!a&&!!b&&['version','kdf','iterations','salt','iv'
 const account=()=>vault?.accounts.find(a=>a.id===activeId)||vault?.accounts[0];
 let toastTimer;function toast(text){$('#toast').textContent=text;$('#toast').classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').classList.remove('visible'),3200);}
 function on(id,fn){const el=$('#'+id);if(el)el.onclick=fn;}
-function endWorkers(){jointHoldings?.clear();bridgeUI.clear();for(const w of workers)w.terminate();workers.clear();native=null;nativeId='';}
+function endWorkers(){balanceReads.clear();jointHoldings?.clear();bridgeUI.clear();for(const w of workers)w.terminate();workers.clear();native=null;nativeId='';}
 function lock(propagate=true){if(propagate){ownLockSignal=crypto.randomUUID();void store.set('xmr20-lock-signal',ownLockSignal).catch(()=>{});}epoch++;runSequence++;refreshId++;endWorkers();vault=null;password='';sessionId=null;sessionSnapshots={};cache={sol:null,xmr:null,rows:[],complete:false,loading:false,note:''};modal.close();modal.innerHTML='';busy=false;render();}
 function checkIdle(){if((vault||modal.open)&&idleExpired(lastActive,Date.now(),preferences.autoLockMinutes)){lock();return true;}return false;}
 function userActivity(event){if(!event.isTrusted||checkIdle())return;lastActive=Date.now();if(lastActive-lastActivityBroadcast>=1000){activityChannel.postMessage({type:'activity',at:lastActive});lastActivityBroadcast=lastActive;if(sessionId){const generation=epoch;void session('touch').then(value=>{if(!value&&generation===epoch)lock(false);}).catch(()=>{if(generation===epoch)lock();});}}}
@@ -72,14 +75,15 @@ function render(){
  const a=account(),currentPortfolio=walletPortfolioEstimate(cache,a),coverage=currentPortfolio.coverage,portfolio=portfolioDisplay(currentPortfolio,cache.portfolioDisplay,coverage,cache.complete);let body='';
  if(a&&currentPortfolio.value!==null&&(cache.complete||!cache.portfolioDisplay||coverage>=cache.portfolioDisplay.coverage)){savePortfolio(a,currentPortfolio,coverage,cache.sol);cache.portfolioDisplay=cachedPortfolio(a);}
  if(screen==='home'){
- body=`<section class="hero"><div class="network"><span class="dot"></span><span>MAINNET</span></div><span class="portfolio-label">Total balance</span><h1 class="portfolio-total">${usd(portfolio.value)}</h1><p>${portfolio.lastKnown?(cache.loading||cache.priceLoading?'Last known estimate · Updating…':'Last known estimate · Some balances are delayed'):portfolio.value===null?'Prices unavailable':portfolio.partial?'Partial estimate · Some balances or prices unavailable':'Estimated USD value'}</p><span class="portfolio-scope">SOL + synced XMR + XMR20 · Pending inscriptions excluded</span><span class="price-status" role="status">${priceStatus()}</span></section><section class="actions"><button class="action" id="send">${icon('send')}Send</button><button class="action" id="bridge">${icon('swap')}Bridge</button><button class="action" id="receive">${icon('receive')}Receive</button></section><section class="content"><div class="tabs"><button class="tab active" id="tokens">Tokens</button><button class="tab" id="collectibles">Collectibles</button><button class="icon-btn" id="refresh" aria-label="Refresh balances">${icon('refresh')}</button></div>${asset('sol','Solana',a?.sol?short(a.sol):'Add a Solana account',cache.sol==null?'— SOL':amount(cache.sol,9)+' SOL',cache.sol==null?(a?.sol?'Balance unavailable':'Not connected'):cache.solStale?'Last known balance':'Native balance',null,null,null,nativeUsd(cache.sol,9,cache.nativePrices?.sol))}${asset('xmr','Monero',a?.xmr?short(a.xmr):'Add a Monero account',cache.xmr==null?'— XMR':amount(cache.xmr.balanceRaw,12)+' XMR',cache.xmr==null?(a?.xmrSeed?'Tap to sync':'Private balance'):'Last synced '+new Date(cache.xmr.updatedAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),null,null,null,nativeUsd(cache.xmr?.balanceRaw,12,cache.nativePrices?.xmr))}<div id="token-sections">${cache.jointLoading?'<p class="subtle joint-busy" data-loading="true" role="status">Checking new bridge balance…</p>':''}${tokenSections()}</div>${pendingHTML()}<div class="status">${icon('info')}<span>${esc(cache.loading?'Refreshing balances…':cache.note||'Balances are read from the XMR20 index and network nodes.')}</span></div></section>`;
+ body=`<section class="hero"><div class="network"><span class="dot"></span><span>MAINNET</span></div><span class="portfolio-label">Total balance</span><h1 class="portfolio-total">${usd(portfolio.value)}</h1><p>${portfolio.lastKnown?(cache.loading||cache.priceLoading?'Last known estimate · Updating…':'Last known estimate · Some balances are delayed'):portfolio.value===null?'Prices unavailable':portfolio.partial?'Partial estimate · Some balances or prices unavailable':'Estimated USD value'}</p><span class="portfolio-scope">SOL + synced XMR + XMR20 · Pending inscriptions excluded</span><span class="price-status" role="status">${priceStatus()}</span></section><section class="actions"><button class="action" id="send">${icon('send')}Send</button><button class="action" id="bridge">${icon('swap')}Bridge</button><button class="action" id="receive">${icon('receive')}Receive</button></section><section class="content"><div class="tabs"><button class="tab active" id="tokens">Tokens</button><button class="tab" id="collectibles">Collectibles</button><button class="icon-btn" id="refresh" aria-label="Refresh balances">${icon('refresh')}</button></div>${asset('sol','Solana',a?.sol?short(a.sol):'Add a Solana account',cache.sol==null?'— SOL':amount(cache.sol,9)+' SOL',cache.sol==null?(a?.sol?'Balance unavailable':'Not connected'):cache.solStale?'Last known balance':'Native balance',null,null,null,nativeUsd(cache.sol,9,cache.nativePrices?.sol))}${asset('xmr','Monero',a?.xmr?short(a.xmr):'Add a Monero account',cache.xmr==null?'— XMR':amount(cache.xmr.balanceRaw,12)+' XMR',cache.xmr==null?(a?.xmrSeed?'Tap to sync':'Private balance'):'Last synced '+new Date(cache.xmr.updatedAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),null,null,null,nativeUsd(cache.xmr?.balanceRaw,12,cache.nativePrices?.xmr))}${legacyRecoveryHTML(vault.receipts,a,{esc,amount})}<div id="token-sections">${cache.jointLoading?'<p class="subtle joint-busy" data-loading="true" role="status">Checking new bridge balance…</p>':''}${tokenSections()}</div>${pendingHTML()}<div class="status">${icon('info')}<span>${esc(cache.loading?'Refreshing balances…':cache.note||'Balances are read from the XMR20 index and network nodes.')}</span></div></section>`;
  }else if(screen==='activity'){body=`<section class="content"><h1 class="page-title">Activity</h1><p class="subtle">Transfers made from this extension.</p><button class="secondary wide" id="check-receipts">Check transfer status</button><button class="secondary wide" id="activity-bridges">View / resume bridges</button>${(vault.receipts||[]).filter(r=>r.accountId===a?.id).slice().reverse().map(receiptHTML).join('')||'<div class="empty">No transfers yet.</div>'}</section>`;}
  else if(screen==='explore'){body=`<section class="content"><h1 class="page-title">Inscriptions</h1><p class="subtle">Search your indexed holdings by name, ticker or mint.</p><input class="search" id="search" placeholder="Search inscriptions" aria-label="Search inscriptions"><div id="search-results"></div><a class="secondary wide explorer-link" href="https://xmr20.org/" target="_blank" rel="noopener noreferrer">Explore the XMR20 index ↗</a></section>`;}
  else{body=`<section class="content"><h1 class="page-title">Your wallet</h1><p class="subtle">XMR20 Wallet · Preview 0.1.14</p><button class="secondary wide" id="backup">Download encrypted backup</button><button class="secondary wide" id="recovery">Show recovery keys</button>${canLinkSolana(a)?'<button class="secondary wide" id="link-solana">Link Solana account</button>':''}<button class="secondary wide" id="new-account">Add account</button><button class="secondary wide" id="native-settings">Sync Monero balance</button><label class="setting-field" for="auto-lock">Auto-lock after inactivity<select id="auto-lock">${AUTO_LOCK_OPTIONS.map(minutes=>`<option value="${minutes}" ${preferences.autoLockMinutes===minutes?'selected':''}>${timeoutLabel(minutes)}</option>`).join('')}</select></label><div class="notice">Locks after ${timeoutLabel(preferences.autoLockMinutes)} without activity even when the popup is closed. Restarting Chrome or clicking Lock ends the session. Open the full wallet for long Monero scans.</div><p class="subtle">USD estimates use CoinGecko for SOL/XMR and Raydium LaunchLab or graduated-market prices for XMR20. Token mints are sent to Raydium and coin names to CoinGecko; wallet addresses and keys are not sent to price providers. Prices are checked every 15 seconds while this wallet is visible. Refresh requests fresh prices, with a five-second limit on repeated requests. The total includes SOL, last-synced XMR and confirmed XMR20. Pending inscriptions are excluded.</p><p class="subtle">XMR20 inscriptions are public records. Native XMR balances are scanned locally. XMR20 sends verify available balances with the transfer service before review.</p><a href="https://xmr20.org/docs/" target="_blank" rel="noopener noreferrer">Read the protocol docs ↗</a></section>`;}
- app.innerHTML=`<div class="shell">${header()}${body}${footer()}</div>`;bindShell();app.querySelectorAll('.token-image').forEach(img=>img.addEventListener('error',()=>img.remove(),{once:true}));on('bridge',()=>void bridgeUI.open());on('collectibles',()=>toast('Coming soon'));on('refresh',()=>void refresh({forcePrices:true}));on('send',sendMenu);on('receive',receive);on('asset-sol',()=>sendAsset('sol'));on('asset-xmr',()=>nativePanel());cache.rows.forEach((r,i)=>on('asset-token-'+i,()=>detail(r)));on('check-receipts',()=>void checkReceipts());on('activity-bridges',()=>void bridgeUI.open());on('backup',()=>void run(backup));on('recovery',recovery);on('new-account',accounts);on('link-solana',()=>linkSolana());on('native-settings',nativePanel);if($('#auto-lock'))$('#auto-lock').onchange=async event=>{const next=normalizePreferences({autoLockMinutes:Number(event.target.value)});try{await store.set('xmr20-preferences',next);preferences=next;toast('Auto-lock set to '+timeoutLabel(next.autoLockMinutes));}catch{toast('Could not save timeout. Try again.');render();}};if(screen==='explore'){const search=()=>{const query=$('#search').value.toLowerCase(),matches=cache.rows.filter(r=>(r.name+' '+r.ticker+' '+r.mint).toLowerCase().includes(query));$('#search-results').innerHTML=matches.map(inscriptionCard).join('')+pendingHTML(query)||'<div class="empty">No matching holdings.</div>';};$('#search').oninput=search;search();}
+ app.innerHTML=`<div class="shell">${header()}${body}${footer()}</div>`;bindShell();legacyBridgeRecoveries(vault.receipts,a).forEach((receipt,index)=>on('resume-legacy-'+index,()=>void bridgeUI.open({legacyReceiptId:receipt.intent})));app.querySelectorAll('.token-image').forEach(img=>img.addEventListener('error',()=>img.remove(),{once:true}));on('bridge',()=>void bridgeUI.open());on('collectibles',()=>toast('Coming soon'));on('refresh',()=>void refresh({forcePrices:true}));on('send',sendMenu);on('receive',receive);on('asset-sol',()=>sendAsset('sol'));on('asset-xmr',()=>nativePanel());cache.rows.forEach((r,i)=>on('asset-token-'+i,()=>detail(r)));on('check-receipts',()=>void checkReceipts());on('activity-bridges',()=>void bridgeUI.open());on('backup',()=>void run(backup));on('recovery',recovery);on('new-account',accounts);on('link-solana',()=>linkSolana());on('native-settings',nativePanel);if($('#auto-lock'))$('#auto-lock').onchange=async event=>{const next=normalizePreferences({autoLockMinutes:Number(event.target.value)});try{await store.set('xmr20-preferences',next);preferences=next;toast('Auto-lock set to '+timeoutLabel(next.autoLockMinutes));}catch{toast('Could not save timeout. Try again.');render();}};if(screen==='explore'){const search=()=>{const query=$('#search').value.toLowerCase(),matches=cache.rows.filter(r=>(r.name+' '+r.ticker+' '+r.mint).toLowerCase().includes(query));$('#search-results').innerHTML=matches.map(inscriptionCard).join('')+pendingHTML(query)||'<div class="empty">No matching holdings.</div>';};$('#search').oninput=search;search();}
 }
 function tokenSections(){
  const groups=tokenGroups(cache.rows);
+ if(!groups.length&&legacyBridgeRecoveries(vault?.receipts,account()).length)return '';
  if(!groups.length)return `<div class="section-label"><span>XMR20 & Solana tokens</span></div><div class="empty"><strong>${cache.loading?'Checking your inscriptions…':cache.complete?'No inscriptions yet':'Your inscriptions live here'}</strong>${cache.loading?'Reading the XMR20 index.':cache.complete?'Receive an XMR20 token to get started.':'Refresh to check the index for your addresses.'}</div>`;
  return groups.map(group=>`<section class="token-section" aria-label="${group.title}" data-network="${group.network}"><div class="section-label"><span>${group.title}</span><span>${group.items.length} ${group.items.length===1?'asset':'assets'}</span></div>${group.items.map(({row:r,index:i})=>asset('token-'+i,r.name||r.ticker,isJointHolding(r)?'On Monero · new bridge':r.network==='monero'?'Inscribed on Monero':'On Solana',amount(r.amountRaw)+' '+r.ticker,r.stale?'Last known balance':isJointHolding(r)?'Confirmed bridge balance':'Indexed balance',r.ticker,currentQuote(cache.prices,r.mint),r)).join('')}</section>`).join('');
 }
@@ -106,40 +110,47 @@ async function refreshPrices({force=false}={}){
 }
 async function refresh({forcePrices=false}={}){
  if(!account())return;
- const selected=account(),scope=selected.sol+':'+selected.xmr;
+ const a=account(),e=epoch,scope=a.sol+':'+a.xmr;
+ const current=()=>e===epoch&&account()?.sol===a.sol&&account()?.xmr===a.xmr;
  if(cache.displayScope!==scope){
-  cache.displayScope=scope;cache.portfolioDisplay=cachedPortfolio(selected);
-  for(const network of ['solana','monero']){const address=network==='solana'?selected.sol:selected.xmr;if(!address)continue;const saved=cachedWalletHoldings(address,{network});if(saved)cache.rows=replaceHoldingSource(cache.rows,saved.rows.map(r=>({...r,network})),{network});}
-  if(cache.sol===null&&/^\d{1,20}$/.test(cache.portfolioDisplay?.solRaw||'')){cache.sol=cache.portfolioDisplay.solRaw;cache.solStale=true;}
+  cache.displayScope=scope;cache.portfolioDisplay=cachedPortfolio(a);
+  for(const network of ['solana','monero']){const address=network==='solana'?a.sol:a.xmr;if(!address)continue;const saved=cachedWalletHoldings(address,{network});if(saved)cache.rows=replaceHoldingSource(cache.rows,saved.rows.map(r=>({...r,network})),{network});}
+  const savedSol=cachedSolBalance(a.sol)?.raw||cache.portfolioDisplay?.solRaw;
+  if(cache.sol===null&&/^\d{1,20}$/.test(savedSol||'')){cache.sol=savedSol;cache.solStale=true;}
+  if(jointHoldings&&!cache.rows.some(isJointHolding))cache.rows=[...cache.rows,...jointHoldings.cached({sol:a.sol,xmr:a.xmr},cache.rows)];
+  void bridgeUI.refreshAssets?.();
   paintBalances();
  }
- // Price requests begin immediately, even if a previous holdings scan is busy.
- void refreshPrices({force:forcePrices});if(cache.loading)return;
- const a=account(),e=epoch,id=++refreshId;cache.loading=true;
- if(jointHoldings&&!cache.rows.some(isJointHolding))cache.rows=[...cache.rows,...jointHoldings.cached({sol:a.sol,xmr:a.xmr},cache.rows)];
- paintBalances();
- const current=()=>e===epoch&&id===refreshId;
- const warnings=[],networks=['monero','solana'].filter(n=>n==='monero'?a.xmr:a.sol),jobs=[];
+ void refreshPrices({force:forcePrices});
+ const networks=['monero','solana'].filter(n=>n==='monero'?a.xmr:a.sol),jobs=[];
  function paint(){if(current()){cache.complete=networks.every(n=>cache.indexComplete?.[n]===true)&&(!jointHoldings||cache.jointComplete===true);paintBalances();}}
- if(jointHoldings)jobs.push((async()=>{
+ function read(source,load){return balanceReads.run(scope+':'+source,async signal=>{
+  if(!current())return;cache.loading=true;paint();
+  try{await load(signal);if(current()&&cache.sourceWarnings)delete cache.sourceWarnings[source];}
+  catch{if(current()){cache.sourceWarnings={...cache.sourceWarnings,[source]:source==='SOL'?'SOL unavailable':source+' delayed'};}}
+  finally{if(current()){const warnings=Object.values(cache.sourceWarnings||{});cache.note=warnings.length?warnings.join(' · ')+'. Saved balances remain available.':'Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});paint();}}
+ });}
+ if(jointHoldings)jobs.push(read('New bridge balances',async()=>{
   cache.jointLoading=true;paint();
-  const result=await jointHoldings.load({sol:a.sol,xmr:a.xmr},cache.rows,{force:forcePrices,onResult:r=>{if(current()){cache.rows=replaceHoldingSource(cache.rows,r.rows,{bridge:r.mint});paint();void refreshPrices();}}});
-  if(current()){cache.jointLoading=false;cache.jointComplete=result.complete;if(!result.complete)warnings.push('New bridge balance unavailable');paint();}
- })());
- if(a.sol)jobs.push((async()=>{try{
-  const requestId=crypto.randomUUID(),result=await jsonFetch('https://solana-rpc.publicnode.com',{jsonrpc:'2.0',id:requestId,method:'getBalance',params:[a.sol,{commitment:'finalized'}]},{timeout:10000}),b=result.result?.value;
-  if(result.id!==requestId||!Number.isSafeInteger(b)||b<0)throw Error();if(current()){cache.sol=String(b);cache.solStale=false;}
- }catch{if(current())cache.solStale=true;warnings.push('SOL unavailable');}paint();})());
- if(a.xmr)jobs.push((async()=>{try{
-  const result=await loadPending(a.xmr);if(current()){cache.pending=result.available?result.rows:[];cache.pendingStatus=result.available?(result.complete?'ready':'delayed'):'unsupported';}
- }catch{if(current()){cache.pending=(cache.pending||[]).map(r=>({...r,stale:true}));cache.pendingStatus='delayed';}}paint();})());
- for(const network of networks){const address=network==='monero'?a.xmr:a.sol;jobs.push((async()=>{
-  try{const result=await loadWalletHoldings(address,{network});if(current()){cacheWalletHoldings(address,result,{network});cache.rows=replaceHoldingSource(cache.rows,result.rows.map(r=>({...r,network})),{network});cache.indexComplete={...cache.indexComplete,[network]:result.complete};if(!result.complete)warnings.push(network+' index delayed');}}
-  catch{if(current()){cache.rows=cache.rows.map(r=>r.network===network&&!isJointHolding(r)?{...r,stale:true}:r);cache.indexComplete={...cache.indexComplete,[network]:false};warnings.push(network+' index unavailable');}}
-  paint();if(current())void refreshPrices();
- })());}
+  try{const result=await jointHoldings.load({sol:a.sol,xmr:a.xmr},cache.rows,{force:forcePrices,onResult:r=>{if(current()){cache.rows=replaceHoldingSource(cache.rows,r.rows,{bridge:r.mint});void bridgeUI.refreshAssets?.();paint();void refreshPrices();}}});
+   if(current()){cache.jointComplete=result.complete;if(!result.complete)throw Error('Bridge balance delayed');}
+  }finally{if(current())cache.jointLoading=false;}
+ }));
+ if(a.sol)jobs.push(read('SOL',async()=>{
+  try{const raw=await readSolBalance(a.sol);if(current()){cache.sol=raw;cache.solStale=false;saveSolBalance(a.sol,raw);}}
+  catch(error){if(current())cache.solStale=true;throw error;}
+ }));
+ if(a.xmr)jobs.push(read('Incoming transfers',async signal=>{
+  try{const result=await loadPending(a.xmr,{signal});if(current()){cache.pending=result.available?result.rows:[];cache.pendingStatus=result.available?(result.complete?'ready':'delayed'):'unsupported';}}
+  catch(error){if(current()){cache.pending=(cache.pending||[]).map(r=>({...r,stale:true}));cache.pendingStatus='delayed';}throw error;}
+ }));
+ for(const network of networks){const address=network==='monero'?a.xmr:a.sol;jobs.push(read(network+' index',async signal=>{
+  try{const result=await loadWalletHoldings(address,{network,signal});if(current()){cacheWalletHoldings(address,result,{network});cache.rows=replaceHoldingSource(cache.rows,result.rows.map(r=>({...r,network})),{network});cache.indexComplete={...cache.indexComplete,[network]:result.complete};if(!result.complete)throw Error('Index delayed');}}
+  catch(error){if(current()){cache.rows=cache.rows.map(r=>r.network===network&&!isJointHolding(r)?{...r,stale:true}:r);cache.indexComplete={...cache.indexComplete,[network]:false};}throw error;}
+  finally{if(current()){void bridgeUI.refreshAssets?.();void refreshPrices();}}
+ }));}
  await Promise.allSettled(jobs);if(!current())return;
- cache.loading=false;cache.note=warnings.length?warnings.join(' · ')+'. Missing data is not a zero balance.':'Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' · Indexed balances verified by the service.';paint();
+ cache.loading=balanceReads.size>0;paint();
 }
 function inscriptionCard(r){const quote=currentQuote(cache.prices,r.mint),value=tokenUsd(r,quote);return `<article class="inscription-card"><div class="inscription-heading"><strong>${esc(r.name)}</strong><span class="pill">${esc(r.ticker)}</span></div><div class="inscription-balance">${esc(amount(r.amountRaw))} <span>${esc(r.network==='monero'?'Monero':'Solana')}</span></div><div class="inscription-usd">${value===null?'Price unavailable':usd(value)+' estimated'+(quote.stale||r.stale?' · Last known':'')}</div><a class="proof-link" href="${isJointHolding(r)?esc(r.receipt.url):'https://xmr20.org/#inscription/'+encodeURIComponent(r.id)}" target="_blank" rel="noopener noreferrer">View inscription <span aria-hidden="true">↗</span></a><div class="mint-field"><span>Solana mint</span><code>${esc(r.mint)}</code></div></article>`;}
 function pendingHTML(query=''){
@@ -293,7 +304,7 @@ async function openWebsiteBridge(){
  try{const v=await request('view');if(!vault)throw Error('Unlock and reconnect from the website before bridging.');
   show('Bridge from website',`<p class="notice">${esc(v.origin)} wants to open a token bridge. No transaction has been approved.</p><label>Connected account</label><div class="address">${esc(v.account.name)}<br>${esc(v.account.solana)}</div><button class="primary wide" id="website-bridge-open">Use this account and review bridge</button><button class="text-btn wide" id="website-bridge-cancel">Cancel</button>`);
   on('website-bridge-cancel',()=>void request('reject').finally(()=>window.close()));
-  on('website-bridge-open',async()=>{const button=$('#website-bridge-open');button.disabled=true;try{await request('opened',{accountId:v.account.id});epoch++;endWorkers();activeId=v.account.id;rememberSession();render();await bridgeUI.open({mint:v.bridge.mint,amountRaw:v.bridge.amountRaw,direction:v.bridge.direction,from:v.origin});}catch(e){if($('#error'))$('#error').textContent=e.message;button.disabled=false;}});
+  on('website-bridge-open',async()=>{const button=$('#website-bridge-open');button.disabled=true;try{await request('opened',{accountId:v.account.id});epoch++;endWorkers();activeId=v.account.id;if(cache.displayScope!==account()?.sol+':'+account()?.xmr)cache={sol:null,xmr:sessionSnapshots[account()?.xmr]||null,rows:[],complete:false,loading:false,note:''};rememberSession();render();void refresh();await bridgeUI.open({mint:v.bridge.mint,amountRaw:v.bridge.amountRaw,direction:v.bridge.direction,from:v.origin});}catch(e){if($('#error'))$('#error').textContent=e.message;button.disabled=false;}});
  }catch(e){show('Bridge connection',`<p>${esc(e.message)}</p><p class="subtle">Reconnect from the requesting website after unlocking. Private keys stay in this extension.</p>`);}
 }
 

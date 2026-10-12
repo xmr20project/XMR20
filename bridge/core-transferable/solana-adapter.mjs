@@ -15,12 +15,17 @@ export function createSolanaAdapter({connection,manifest,privateTestPolicy}){
  const pinned=canonical(manifest),program=new PublicKey(manifest.program),mint=new PublicKey(manifest.mint),verifier=new PublicKey(manifest.verifier);
  need(PublicKey.isOnCurve(verifier.toBytes()),'Verifier signing wallet required.');
  const testPolicy=privateTestPolicy?validatePrivateTestPolicy(privateTestPolicy,manifest):null;
+ const dataKey=PublicKey.findProgramAddressSync([program.toBuffer()],LOADER)[0];
  const checkedConfig=c=>{need(c?.abi===3&&c.network===manifest.network&&c.program===manifest.program&&c.verifier===manifest.verifier&&c.mint===manifest.mint,'Wrong transferable deployment.');if(testPolicy)privateTestConfig(c,testPolicy);};
  async function verifyProgram(){
-  need(canonical(manifest)===pinned&&await connection.getGenesisHash()===MAINNET_GENESIS,'Changed deployment or Solana network.');
-  const p=await connection.getAccountInfo(program,'finalized');need(p?.executable&&p.owner.equals(LOADER)&&p.data.length===36&&p.data.readUInt32LE(0)===2,'Transferable program is not deployed.');
-  const dataKey=PublicKey.findProgramAddressSync([program.toBuffer()],LOADER)[0];need(new PublicKey(p.data.subarray(4)).equals(dataKey),'Changed program-data address.');
-  const d=await connection.getAccountInfo(dataKey,'finalized');need(d?.owner.equals(LOADER)&&!d.executable&&d.data.length>=45+BINARY_SIZE&&d.data.readUInt32LE(0)===3,'Reviewed transferable program-data required.');
+  need(canonical(manifest)===pinned,'Changed deployment or Solana network.');
+  // These fixed public addresses do not depend on a prior RPC result. Read
+  // them together, but retain every fresh network/code/authority check.
+  const [genesis,p,d]=await Promise.all([connection.getGenesisHash(),connection.getAccountInfo(program,'finalized'),connection.getAccountInfo(dataKey,'finalized')]);
+  need(genesis===MAINNET_GENESIS&&canonical(manifest)===pinned,'Changed deployment or Solana network.');
+  need(p?.executable&&p.owner.equals(LOADER)&&p.data.length===36&&p.data.readUInt32LE(0)===2,'Transferable program is not deployed.');
+  need(new PublicKey(p.data.subarray(4)).equals(dataKey),'Changed program-data address.');
+  need(d?.owner.equals(LOADER)&&!d.executable&&d.data.length>=45+BINARY_SIZE&&d.data.readUInt32LE(0)===3,'Reviewed transferable program-data required.');
   if(testPolicy)need(d.data[12]===1&&new PublicKey(d.data.subarray(13,45)).toBase58()===testPolicy.upgradeAuthority,'Private test requires the exact retained upgrade authority.');
   else need(d.data[12]===0,'Transferable program must be immutable.');
   need(digest(d.data.subarray(45,45+BINARY_SIZE))===BINARY_HASH&&d.data.subarray(45+BINARY_SIZE).every(x=>x===0),'Transferable deployed code differs from review.');
