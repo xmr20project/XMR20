@@ -7,11 +7,11 @@ import {publicReceiptStore} from '../bridge/core-transferable/browser-receipts.m
 import {PRIVATE_TEST_POLICY,WALLET_TEST_POLICY} from '../bridge/core-transferable/private-test.mjs';
 import {XMR20_MINT,XCAT_MINT} from '../src/joint-bridge-assets.js';
 const native='45cQVke2TNqcDi7dkQY3dRiMgVSF89V4reM1BsBeSXDrdmBdXpbrCCqTQ39zUcvyZgVYk7kGQFjNmRfnmvaACHYz3ZMwG5q';
-function setup(t,{ready,registered=false,verify=async()=>{},snapshotComplete=true,movesConfirmed=false,privateTest=false,authorizedAccount=true,configureClient,uiOptions={}}={}){
+function setup(t,{ready,registered=false,verify=async()=>{},snapshotComplete=true,movesConfirmed=false,privateTest=false,authorizedAccount=true,configureClient,holdings=[{network:'solana',mint:XMR20_MINT,amountRaw:'1000000'}],uiOptions={}}={}){
  const old=new Map();for(const k of ['document','localStorage','navigator'])old.set(k,Object.getOwnPropertyDescriptor(globalThis,k));const elements=new Map(),doc={hidden:false,activeElement:null,getElementById:id=>elements.get(id),addEventListener(){},removeEventListener(){}},disk=new Map();Object.defineProperty(globalThis,'document',{configurable:true,value:doc});Object.defineProperty(globalThis,'localStorage',{configurable:true,value:{getItem:k=>disk.get(k)??null,setItem:(k,v)=>disk.set(k,v)}});Object.defineProperty(globalThis,'navigator',{configurable:true,value:{locks:{request:async(k,o,f)=>f({})}}});
  const a={id:'disposable',name:'Disposable wallet',sol:privateTest&&authorizedAccount?PRIVATE_TEST_POLICY.owner:Keypair.generate().publicKey.toBase58(),solSecret:'fixture-unavailable',xmr:native,xmrSeed:'fixture-unavailable'},manifest=transferableManifest(XMR20_MINT);let html='',busy=false,renders=0,signs=0,approvals=0,legacy=0,previous=0;
  const previewTimers=new Map();let timerId=0;const previewOptions={setTimer:fn=>{previewTimers.set(++timerId,fn);return timerId;},clearTimer:id=>previewTimers.delete(id)};
- const errors=[],position=addresses({...manifest,owner:a.sol,binding:digest(native)}).position.toBase58(),d={account:()=>a,modal:{open:true},same(){},esc:v=>String(v),rows:()=>[],settings(){},isBusy:()=>busy,on:(id,f)=>{if(elements.has(id))elements.get(id).onclick=f;},show(title,body){html=body;renders++;elements.clear();for(const m of body.matchAll(/<([a-z0-9]+)\b([^>]*\bid="([^"]+)"[^>]*)>/g)){const el={id:m[3],tagName:m[1].toUpperCase(),disabled:/\bdisabled\b/.test(m[2]),selectionStart:0,selectionEnd:0,focus(){doc.activeElement=this;},setSelectionRange(start,end){this.selectionStart=start;this.selectionEnd=end;}};elements.set(el.id,el);}},async run(f){if(busy)return;busy=true;try{await f(1);}catch(e){errors.push(e);if(!configureClient)throw e;}finally{busy=false;}},oneShot(){signs++;throw Error('No signing in UI fixture.');}};
+ const errors=[],position=addresses({...manifest,owner:a.sol,binding:digest(native)}).position.toBase58(),d={account:()=>a,modal:{open:true},same(){},esc:v=>String(v),rows:()=>holdings,settings(){},isBusy:()=>busy,on:(id,f)=>{if(elements.has(id))elements.get(id).onclick=f;},show(title,body){html=body;renders++;elements.clear();for(const m of body.matchAll(/<([a-z0-9]+)\b([^>]*\bid="([^"]+)"[^>]*)>/g)){const el={id:m[3],tagName:m[1].toUpperCase(),disabled:/\bdisabled\b/.test(m[2]),selectionStart:0,selectionEnd:0,focus(){doc.activeElement=this;},setSelectionRange(start,end){this.selectionStart=start;this.selectionEnd=end;}};elements.set(el.id,el);}},async run(f){if(busy)return;busy=true;try{await f(1);}catch(e){errors.push(e);if(!configureClient)throw e;}finally{busy=false;}},oneShot(){signs++;throw Error('No signing in UI fixture.');}};
  const adapters={publicReceiptStore,createSolanaAdapter:()=>({verifyProgram:verify,fee:async amount=>(BigInt(amount)*15n/1000n).toString()}),createRuntimeHttpClient:()=>({readiness:async()=>ready?ready():{schema:'joint-readiness-v3',ready:true,manifest,...(privateTest?{privateTestPolicy:PRIVATE_TEST_POLICY}:{})}}),createWalletClient:options=>Object.assign({snapshot:async()=>({...((ready?await ready():null)??{ready:true,manifest,...(privateTest?{privateTestPolicy:PRIVATE_TEST_POLICY}:{})}),schema:'joint-index-v3',complete:snapshotComplete,pending:movesConfirmed?Object.entries(options.store.load()?.proofs||{}).filter(([,p])=>['transfer','burn'].includes(p.envelope.record.op)).map(([id,p])=>({operation:p.envelope.record.op,receipt:receiptAddress(recoveryState(options).config,id).toBase58()})):[],positions:registered?[{position,available:'98500000'}]:[]}),reviewRegistration:async nonce=>{approvals++;return {proposal:{operation:'register',nonce},envelope:{record:{owner:native}}};},reviewCredit:async input=>({proposal:{operation:input.recipient===native?'deposit':'donate',amount:input.amount,expectedFee:(BigInt(input.amount)*15n/1000n).toString(),nonce:input.nonce},envelope:{record:{owner:input.recipient}}}),receipt(){throw Error('No receipt.');}},configureClient?.(options))};
  const ui=createJointTransferableUI(d,{previewOptions,...uiOptions,adapters,privateTest,legacy:()=>legacy++,previous:()=>previous++});t.after(()=>{ui.clear();for(const [k,v] of old)if(v)Object.defineProperty(globalThis,k,v);else delete globalThis[k];});return {ui,elements,d,a,errors,async preview(){const [id,fn]=previewTimers.entries().next().value??[];assert.ok(fn,'preview scheduled');previewTimers.delete(id);await fn();},get html(){return html;},get renders(){return renders;},get signs(){return signs;},get approvals(){return approvals;},get legacy(){return legacy;},get previous(){return previous;}};
 }
@@ -308,8 +308,8 @@ test('lost native publication reply preserves the exact saved return instead of 
 test('saved Solana return approval is checked before any new release review',async t=>{
  let checks=0,reviews=0;
  const f=setup(t,{registered:true,configureClient:o=>{const state=recoveryState(o),id='ac'.repeat(32);state.proofs[id]={envelope:{record:{op:'burn',amount:'985000',nonce:id}},result:{txid:'ba'.repeat(32)}};state.operations.release={proposal:{operation:'release',nonce:id,amount:'985000'},phase:'submission-unknown'};o.store.save(state);return {async check(operation){checks++;assert.equal(operation,'release');return {pending:true};},async reviewMove(){reviews++;throw Error('Must not prepare another release');}};}});
- await f.ui.open({direction:'xmr-to-sol'});assert.match(f.html,/Check Solana confirmation/);await clicked(f,'j3-resume-move-0');
- assert.equal(checks,1);assert.equal(reviews,0);assert.equal(f.signs,0);assert.ok(!f.elements.has('j3-review'));assert.ok(!f.elements.has('j3-publish'));
+ await f.ui.open({direction:'xmr-to-sol'});assert.match(f.html,/Check Solana confirmation/);assert.equal(checks,1);await clicked(f,'j3-resume-move-0');
+ assert.equal(checks,2);assert.equal(reviews,0);assert.equal(f.signs,0);assert.ok(!f.elements.has('j3-review'));assert.ok(!f.elements.has('j3-publish'));
 });
 
 test('two old return records retain both receipts but continue the earliest without publishing another',async t=>{
@@ -381,7 +381,7 @@ test('a failed saved-return connection offers reconnect above the saved amount, 
 
 test('wallet testing exposes all token and holder actions for a different selected wallet',async t=>{
  const f=setup(t,{privateTest:true,authorizedAccount:false,registered:true,uiOptions:{walletTest:true},ready:async()=>({manifest:transferableManifest(XMR20_MINT),privateTestPolicy:WALLET_TEST_POLICY})});await f.ui.open({rows:[{mint:XCAT_MINT}]});
- assert.match(f.html,/Any linked wallet/);assert.match(f.html,/upgradeable/);assert.ok(f.html.includes(XCAT_MINT));for(const label of ['Airdrop to a registered','Send to another','Bridge back to my'])assert.ok(f.html.includes(label));await f.preview();assert.equal(f.elements.get('j3-bridge').disabled,false);assert.equal(f.signs,0);
+ assert.match(f.html,/Any linked wallet/);assert.match(f.html,/upgradeable/);assert.ok(!f.html.includes(XCAT_MINT));for(const label of ['Airdrop to a registered','Send to another','Bridge back to my'])assert.ok(f.html.includes(label));await f.preview();assert.equal(f.elements.get('j3-bridge').disabled,false);assert.equal(f.signs,0);
 });
 test('bridge controls and cached balances paint before a stalled history request; no cached approval is enabled',async t=>{
  let release;const stalled=new Promise(r=>release=r),f=setup(t,{registered:true,ready:()=>stalled});
@@ -395,4 +395,159 @@ test('bridge controls and cached balances paint before a stalled history request
 });
 test('Monero Max fills the exact available amount without signing',async t=>{
  const f=setup(t,{registered:true});await f.ui.open({direction:'xmr-to-xmr'});await f.elements.get('j3-amount-max').onclick();assert.match(f.html,/value="98.5"/);assert.equal(f.signs,0);assert.equal(f.approvals,0);
+});
+
+test('a saved Solana return is reconciled on open without waiting for a full history scan',async t=>{
+ let state,opts,historyReads=0,checks=0;
+ const f=setup(t,{configureClient:o=>{opts=o;state=recoveryState(o);const id='cd'.repeat(32);state.proofs[id]={envelope:{record:{op:'burn',amount:'985000',nonce:id}},result:{txid:'ab'.repeat(32)}};state.operations.release={proposal:{operation:'release',nonce:id,amount:'985000',expectedFee:'14775'},phase:'submission-unknown'};o.store.save(state);return {
+  async check(){checks++;return {pending:true};},
+  async snapshot(){historyReads++;throw Error('Full history is not needed to check a saved Solana approval');}
+ };}});
+ await f.ui.open({direction:'xmr-to-sol'});
+ assert.equal(checks,1);assert.equal(historyReads,0);assert.equal(f.elements.get('j3-resume-move-0').disabled,false);assert.equal(f.signs,0);
+});
+
+test('a finalized saved return is visible before slow history and never reoffers that return',async t=>{
+ let releaseHistory,historyReads=0;
+ const history=new Promise(r=>releaseHistory=r);
+ const f=setup(t,{configureClient:o=>{const state=recoveryState(o),id='dc'.repeat(32);state.proofs[id]={envelope:{record:{op:'burn',amount:'985000',nonce:id}},result:{txid:'ba'.repeat(32)}};state.operations.release={proposal:{operation:'release',nonce:id,amount:'985000',expectedFee:'14775'},phase:'submission-unknown'};o.store.save(state);return {
+  async check(){state.operations.release.phase='finalized';o.store.save(state);return {confirmed:true};},
+  async snapshot(){historyReads++;await history;return {schema:'joint-index-v3',complete:true,manifest:o.manifest,positions:[{position:addresses(state.config).position.toBase58(),available:'0'}]};}
+ };}});
+ const opening=f.ui.open();await new Promise(r=>setImmediate(r));
+ assert.equal(historyReads,1);assert.match(f.html,/Returned to Solana/);assert.match(f.html,/0\.970225/);assert.ok(!f.elements.has('j3-return'));assert.equal(f.signs,0);
+ releaseHistory();await opening;assert.match(f.html,/Returned to Solana/);assert.ok(!f.elements.has('j3-return'));assert.ok(!f.elements.has('j3-move-0'));assert.ok(!f.elements.has('j3-proof-0'));
+});
+
+test('history completing during amount entry preserves focus, selection and expanded recovery',async t=>{
+ let done;const waiting=new Promise(r=>done=r),f=setup(t,{registered:true,ready:()=>waiting});
+ const opening=f.ui.open();await new Promise(r=>setImmediate(r));
+ const input=f.elements.get('j3-amount');input.focus();input.selectionStart=2;input.selectionEnd=3;input.oninput({target:{value:'12.345'}});
+ const recovery=f.elements.get('j3-receipts');assert.ok(recovery);recovery.open=true;
+ done({manifest:transferableManifest(XMR20_MINT)});await opening;
+ assert.match(f.html,/value="12\.345"/);assert.equal(document.activeElement.id,'j3-amount');assert.equal(document.activeElement.selectionStart,2);assert.equal(document.activeElement.selectionEnd,3);assert.equal(f.elements.get('j3-receipts').open,true);
+});
+
+test('saved Solana checks poll without replaying native history and stop on close',async t=>{
+ const timers=new Map();let timerId=0,checks=0,finish;
+ const f=setup(t,{uiOptions:{setTimer:fn=>{timers.set(++timerId,fn);return timerId;},clearTimer:id=>timers.delete(id)},configureClient:o=>{const state=recoveryState(o),id='ed'.repeat(32);state.proofs[id]={envelope:{record:{op:'burn',nonce:id,amount:'985000'}}};state.operations.release={proposal:{operation:'release',nonce:id,amount:'985000'},phase:'submission-unknown'};o.store.save(state);return {
+  async check(){if(++checks===2)await new Promise(r=>finish=r);return {pending:true};},
+  async snapshot(){assert.fail('Pending Solana confirmation does not need history');}
+ };}});
+ await f.ui.open();assert.equal(checks,1);assert.equal(timers.size,1);
+ const [id,poll]=timers.entries().next().value;timers.delete(id);const polling=poll();await new Promise(r=>setImmediate(r));assert.equal(checks,2);
+ f.ui.clear();const renders=f.renders;finish();await polling;assert.equal(f.renders,renders);assert.equal(timers.size,0);assert.equal(f.signs,0);
+});
+
+test('a failed automatic Solana status check keeps the exact manual check available without signing',async t=>{
+ let checks=0;
+ const f=setup(t,{configureClient:o=>{const state=recoveryState(o),id='de'.repeat(32);state.proofs[id]={envelope:{record:{op:'burn',nonce:id,amount:'985000'}}};state.operations.release={proposal:{operation:'release',nonce:id,amount:'985000'},phase:'submission-unknown'};o.store.save(state);return {async check(){checks++;if(checks===1)throw Error('Synthetic connection failure');return {pending:true};},async snapshot(){assert.fail('No native replay during a saved approval check');}};}});
+ await f.ui.open();assert.equal(f.elements.get('j3-resume-move-0').disabled,false);assert.ok(!f.elements.has('j3-return'));assert.ok(!f.elements.has('j3-ready'));
+ await clicked(f,'j3-resume-move-0');assert.equal(checks,2);assert.equal(f.signs,0);assert.equal(f.approvals,0);assert.doesNotMatch(f.html,/joint-error/);
+});
+
+test('an index-sync response automatically retries only the read and then enables the verified form',async t=>{
+ const timers=new Map();let timerId=0,reads=0;const sync=()=>Object.assign(Error('Sanitized sync status'),{code:'index-sync'});
+ const f=setup(t,{uiOptions:{setTimer:(fn,delay)=>{assert.equal(delay,15000);timers.set(++timerId,fn);return timerId;},clearTimer:id=>timers.delete(id)},configureClient:o=>({async snapshot(){if(++reads===1)throw sync();return {schema:'joint-index-v3',complete:true,manifest:o.manifest,positions:[]};}})});
+ await f.ui.open();assert.match(f.html,/Bridge syncing recent Monero blocks/);assert.match(f.html,/updates automatically/);assert.ok(!f.elements.has('j3-ready'));assert.equal(timers.size,1);assert.equal(f.signs,0);assert.equal(f.approvals,0);
+ document.hidden=true;let [id,retry]=timers.entries().next().value;timers.delete(id);await retry();assert.equal(reads,1);assert.equal(timers.size,1);
+ document.hidden=false;[id,retry]=timers.entries().next().value;timers.delete(id);await retry();assert.equal(reads,2);assert.equal(f.elements.get('j3-register').disabled,false);assert.equal(timers.size,0);assert.equal(f.signs,0);assert.equal(f.approvals,0);assert.doesNotMatch(f.html,/syncing recent/);
+});
+
+test('sync retry stops on close and an ordinary network failure remains an explicit reconnect',async t=>{
+ const timers=new Map();let timerId=0,reads=0,offline=false;
+ const f=setup(t,{uiOptions:{setTimer:fn=>{timers.set(++timerId,fn);return timerId;},clearTimer:id=>timers.delete(id)},configureClient:()=>({async snapshot(){reads++;throw offline?Error('Synthetic offline'):Object.assign(Error('Sanitized sync status'),{code:'index-sync'});}})});
+ await f.ui.open();const retry=timers.values().next().value;f.ui.clear();assert.equal(timers.size,0);await retry();assert.equal(reads,1);
+ await f.ui.open();offline=true;const [id,next]=timers.entries().next().value;timers.delete(id);await next();assert.equal(timers.size,0);assert.equal(f.elements.get('j3-ready').disabled,false);assert.doesNotMatch(f.html,/syncing recent/);assert.equal(f.signs,0);
+});
+
+test('a syncing amount preview keeps the entered amount and requires fresh history and a fresh quote before approval',async t=>{
+ const timers=new Map();let timerId=0,reads=0;const amounts=[];
+ const f=setup(t,{registered:true,ready:async()=>{reads++;return {manifest:transferableManifest(XMR20_MINT)};},uiOptions:{setTimer:(fn,delay)=>{assert.equal(delay,15000);timers.set(++timerId,fn);return timerId;},clearTimer:id=>timers.delete(id)},configureClient:()=>({async reviewCredit(input){amounts.push(input.amount);if(amounts.length===1)throw Object.assign(Error('Sanitized synchronization'),{code:'index-sync'});return {proposal:{operation:'deposit',amount:input.amount,expectedFee:'30000',nonce:input.nonce},envelope:{record:{owner:native}}};}})});
+ await f.ui.open();await f.preview();assert.match(f.html,/Bridge syncing recent Monero blocks/);assert.equal(timers.size,1);assert.equal(f.elements.get('j3-bridge').disabled,true);
+ f.elements.get('j3-amount').oninput({target:{value:'2'}});assert.deepEqual(amounts,['1000000']);
+ const [id,retry]=timers.entries().next().value;timers.delete(id);await retry();assert.equal(reads,2);assert.equal(f.elements.get('j3-bridge').disabled,true);assert.deepEqual(amounts,['1000000']);
+ await f.preview();assert.deepEqual(amounts,['1000000','2000000']);assert.match(f.html,/value="2"/);assert.equal(f.elements.get('j3-bridge').disabled,false);assert.equal(timers.size,0);assert.equal(f.signs,0);assert.equal(f.approvals,0);
+});
+
+test('generic bridge opens the held token and a late launch catalog cannot add unowned tokens or reset typing',async t=>{
+ let catalog;const f=setup(t,{holdings:[{network:'solana',mint:XCAT_MINT,amountRaw:'9000'}],registered:true,uiOptions:{loadCatalog:()=>new Promise(resolve=>catalog=resolve)}});
+ await f.ui.open();assert.match(f.html,new RegExp('value="'+XCAT_MINT+'" selected'));assert.ok(!f.html.includes('value="'+XMR20_MINT+'"'));
+ const input=f.elements.get('j3-amount');input.focus();input.selectionStart=2;input.selectionEnd=3;input.oninput({target:{value:'12.34'}});
+ catalog([{mint:XMR20_MINT},{mint:XCAT_MINT}]);await new Promise(r=>setImmediate(r));
+ assert.match(f.html,/value="12\.34"/);assert.equal(document.activeElement.id,'j3-amount');assert.equal(document.activeElement.selectionStart,2);assert.ok(!f.html.includes('value="'+XMR20_MINT+'"'));assert.equal(f.signs,0);
+});
+
+test('empty bridge has no default tokens or financial reads, and late holdings populate it automatically',async t=>{
+ let reads=0;const holdings=[],f=setup(t,{holdings,configureClient:()=>({async snapshot(){reads++;return {schema:'joint-index-v3',complete:true,manifest:transferableManifest(XCAT_MINT),positions:[]};}})});
+ await f.ui.open();assert.match(f.html,/No bridgeable tokens found/);assert.ok(!f.elements.has('j3-token'));assert.ok(f.elements.has('j3-import-empty'));assert.equal(reads,0);
+ holdings.push({network:'solana',mint:XCAT_MINT,amountRaw:'1'});f.ui.refreshAssets();for(let i=0;i<8;i++)await new Promise(r=>setImmediate(r));
+ assert.equal(reads,1);assert.match(f.html,new RegExp('value="'+XCAT_MINT+'" selected'));assert.equal(f.signs,0);
+});
+
+test('holdings refresh preserves the selected token and input while adding another held token only',async t=>{
+ const holdings=[{network:'solana',mint:XCAT_MINT,amountRaw:'1'}],f=setup(t,{holdings,registered:true});
+ await f.ui.open();f.elements.get('j3-amount').oninput({target:{value:'0.75'}});
+ holdings[0].amountRaw='0';holdings.push({network:'monero',bridge:'joint-v3',mint:XMR20_MINT,amountRaw:'4'});f.ui.refreshAssets();
+ assert.match(f.html,/value="0\.75"/);assert.match(f.html,new RegExp('value="'+XCAT_MINT+'" selected'));assert.ok(f.html.includes('value="'+XMR20_MINT+'"'));
+ f.ui.clear();const renders=f.renders;f.ui.refreshAssets();assert.equal(f.renders,renders);assert.equal(f.signs,0);
+});
+
+test('an explicit positive portfolio row is preserved but an unowned catalog mint waits for a balance',async t=>{
+ const f=setup(t,{holdings:[]});await f.ui.open({mint:XCAT_MINT,rows:[{mint:XCAT_MINT}]});assert.match(f.html,/Waiting for this token’s balance/);assert.ok(!f.elements.has('j3-token'));
+ await f.ui.open({mint:XCAT_MINT,rows:[{network:'monero',bridge:'joint-v3',mint:XCAT_MINT,amountRaw:'1'}]});assert.match(f.html,new RegExp('value="'+XCAT_MINT+'" selected'));assert.equal(f.signs,0);
+});
+
+test('zero-balance saved return remains discoverable only for its linked wallet',async t=>{
+ let checks=0;const f=setup(t,{holdings:[],configureClient:()=>({check:async()=>{checks++;return {pending:true};}})});
+ const m=transferableManifest(XCAT_MINT),config={abi:3,network:m.network,program:m.program,mint:m.mint,verifier:m.verifier,owner:f.a.sol,binding:digest(native)},store=publicReceiptStore({config,moneroOwner:native});
+ store.save({schema:'joint-owner-v3',scope:digest(awaitCanonical(config)),config,moneroOwner:native,proofs:{},operations:{return:{proposal:{operation:'release',amount:'1',nonce:'ab'.repeat(32)},phase:'submission-unknown'}}});
+ await f.ui.open();assert.equal(checks,1);assert.ok(f.elements.has('j3-token'));assert.match(f.html,new RegExp('value="'+XCAT_MINT+'" selected'));
+ f.a.sol=Keypair.generate().publicKey.toBase58();await f.ui.open();assert.match(f.html,/No bridgeable tokens found/);assert.equal(checks,1);assert.equal(f.signs,0);
+});
+
+test('generic bridge selects the return direction when only new Monero holdings exist',async t=>{
+ const f=setup(t,{registered:true,holdings:[{network:'monero',bridge:'joint-v3',mint:XMR20_MINT,amountRaw:'985000'}]});
+ await f.ui.open();assert.match(f.html,/<option value="release" selected>/);assert.ok(f.elements.has('j3-return'));assert.equal(f.signs,0);
+});
+
+test('a held launch such as COVERT becomes the default instead of adding XMR20 or zero XCAT',async t=>{
+ const mint=Keypair.generate().publicKey.toBase58(),f=setup(t,{holdings:[{network:'solana',mint,amountRaw:'9000000000',ticker:'COVERT',name:'Covert'},{network:'solana',mint:XCAT_MINT,amountRaw:'0'}],configureClient:o=>({snapshot:async()=>({schema:'joint-index-v3',complete:true,manifest:o.manifest,positions:[]})})});
+ await f.ui.open();assert.match(f.html,new RegExp('value="'+mint+'" selected>COVERT'));assert.ok(!f.html.includes('value="'+XMR20_MINT+'"'));assert.ok(!f.html.includes('value="'+XCAT_MINT+'"'));assert.equal(f.signs,0);
+});
+
+test('an explicit delayed token waits for its own holding and preserves amount and direction when another holding arrives first',async t=>{
+ const mint=Keypair.generate().publicKey.toBase58(),holdings=[];let reads=0;
+ const f=setup(t,{holdings,configureClient:o=>({snapshot:async()=>{reads++;return {schema:'joint-index-v3',complete:true,manifest:o.manifest,positions:[{position:addresses(recoveryState(o).config).position.toBase58(),available:'12000000'}]};}})});
+ await f.ui.open({mint,amountRaw:'1234567',direction:'xmr-to-xmr'});assert.match(f.html,/Waiting for this token’s balance/);assert.equal(reads,0);
+ holdings.push({mint:XMR20_MINT,network:'solana',amountRaw:'500'});f.ui.refreshAssets();await new Promise(r=>setImmediate(r));assert.equal(reads,0);assert.ok(!f.elements.has('j3-token'));
+ holdings.push({mint,network:'monero',bridge:'joint-v3',amountRaw:'12000000',ticker:'COVERT'});f.ui.refreshAssets();for(let i=0;i<8;i++)await new Promise(r=>setImmediate(r));
+ assert.equal(reads,1);assert.match(f.html,new RegExp('value="'+mint+'" selected>COVERT'));assert.match(f.html,/value="1\.234567"/);assert.match(f.html,/<option value="transfer" selected>/);assert.equal(f.signs,0);
+});
+
+test('invalid and limited-policy explicit mints fail accurately before any balance lookup',async t=>{
+ const f=setup(t,{privateTest:true,holdings:[]});await assert.rejects(()=>f.ui.open({mint:'not-a-mint'}),/valid token mint/);await assert.rejects(()=>f.ui.open({mint:XCAT_MINT}),/private test supports XMR20 only/);assert.equal(f.signs,0);
+});
+
+test('generic opening chooses a held token before an unrelated zero-balance recovery token',async t=>{
+ const mint=Keypair.generate().publicKey.toBase58(),f=setup(t,{holdings:[{mint,network:'solana',amountRaw:'3',ticker:'COVERT'}]});
+ const m=transferableManifest(XMR20_MINT),config={abi:3,network:m.network,program:m.program,mint:m.mint,verifier:m.verifier,owner:f.a.sol,binding:digest(native)};
+ publicReceiptStore({config,moneroOwner:native}).save({schema:'joint-owner-v3',scope:digest(awaitCanonical(config)),config,moneroOwner:native,proofs:{},operations:{r:{proposal:{operation:'release',nonce:'ab'.repeat(32),amount:'1'},phase:'submission-unknown'}}});
+ await f.ui.open();assert.match(f.html,new RegExp('value="'+mint+'" selected>COVERT'));assert.ok(f.html.includes('value="'+XMR20_MINT+'"'));assert.equal(f.signs,0);
+});
+
+test('overlapping bridge panels keep input handlers, progress and passive focus inside their own host',async t=>{
+ let finish,stage;const pending=new Promise(resolve=>finish=resolve),listeners=new Set();
+ const f=setup(t,{registered:true,ready:()=>pending,configureClient:options=>{stage=options.onProgress;return {};}});
+ f.d.getElement=id=>f.elements.get(id);
+ const foreign=new Map(['j3-amount','j3-token','joint-stage','joint-elapsed','progress'].map(id=>[id,{id,tagName:'INPUT',textContent:'Other panel',dataset:{paused:'false'},selectionStart:3,selectionEnd:4}]));
+ document.getElementById=id=>foreign.get(id);document.addEventListener=(name,fn)=>{if(name==='visibilitychange')listeners.add(fn);};document.removeEventListener=(name,fn)=>{if(name==='visibilitychange')listeners.delete(fn);};
+ const opening=f.ui.open();await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(typeof f.elements.get('j3-amount').oninput,'function');assert.equal(typeof f.elements.get('j3-token').onchange,'function');assert.equal(foreign.get('j3-amount').oninput,undefined);assert.equal(foreign.get('j3-token').onchange,undefined);
+ stage('Checking this panel’s saved approval…');assert.equal(f.elements.get('joint-stage').textContent,'Checking this panel’s saved approval…');assert.equal(foreign.get('joint-stage').textContent,'Other panel');
+ f.elements.get('progress').dataset={};document.hidden=true;for(const update of listeners)update();assert.equal(f.elements.get('progress').dataset.paused,'true');assert.equal(foreign.get('progress').dataset.paused,'false');
+ document.hidden=false;for(const update of listeners)update();assert.match(f.elements.get('joint-elapsed').textContent,/^[0-9]+s$/);assert.equal(foreign.get('joint-elapsed').textContent,'Other panel');
+ document.activeElement=foreign.get('j3-amount');f.elements.get('j3-amount').oninput({target:{value:'12.34'}});f.ui.refreshAssets();assert.equal(document.activeElement,foreign.get('j3-amount'));
+ finish({manifest:transferableManifest(XMR20_MINT)});await opening;assert.match(f.html,/value="12\.34"/);assert.equal(document.activeElement,foreign.get('j3-amount'));assert.equal(listeners.size,0);
+ const own=f.elements.get('j3-amount');own.focus();own.selectionStart=1;own.selectionEnd=2;f.ui.refreshAssets();assert.equal(document.activeElement,f.elements.get('j3-amount'));assert.equal(document.activeElement.selectionStart,1);assert.equal(document.activeElement.selectionEnd,2);assert.equal(f.signs,0);assert.equal(f.approvals,0);
 });

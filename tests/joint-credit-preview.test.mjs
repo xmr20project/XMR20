@@ -40,3 +40,10 @@ test('foreground work pauses scheduled preparation and resumes without discardin
  f.p.request(input('1'));assert.equal(f.timers.size,1);await f.tick();
  f.p.pause();f.p.request(input('1'));assert.equal(f.timers.size,0);assert.equal(f.p.matches(input('1')),true);
 });
+test('only a current allowlisted index-sync error is classified for read-only recovery',async()=>{
+ let reject;const f=setup(()=>new Promise((resolve,no)=>reject=no));
+ f.p.request(input('1'));const old=f.tick();f.p.request(input('2'));reject(Object.assign(Error('Old sync response'),{code:'index-sync'}));await old;
+ assert.equal(f.p.state.status,'loading');assert.equal(f.p.state.errorCode,undefined);
+ const current=f.tick();reject(Object.assign(Error('Current sync response'),{code:'index-sync'}));await current;
+ assert.equal(f.p.state.errorCode,'index-sync');assert.equal(f.p.matches(input('2')),false);
+});

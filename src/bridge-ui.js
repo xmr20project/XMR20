@@ -6,6 +6,7 @@ import {bridgeSolReserve,prepareBridgeSolana,signBridgeSolana,signedAttemptResol
 import {createJointEscrowUI} from './joint-escrow-ui.js';
 import {createJointMainnetUI} from './joint-mainnet-ui.js';
 import {createJointTransferableUI} from './joint-transferable-ui.js';
+import {legacyReturnRoute} from './legacy-bridge-route.js';
 export function createBridgeUI(d){
  const joint=typeof __XMR20_JOINT_PREVIEW__!=='undefined'&&__XMR20_JOINT_PREVIEW__?createJointEscrowUI(d):null;
  const previous=typeof __XMR20_JOINT_MAINNET_REVIEW__!=='undefined'&&__XMR20_JOINT_MAINNET_REVIEW__?createJointMainnetUI(d,{legacy:openStandard}):null;
@@ -29,12 +30,20 @@ export function createBridgeUI(d){
  }
  function token(c,id){const l=c.catalog.find(l=>l.id===id);return bridgeToken({id,mint:l?.mint,deployment:l?.moneroTxid,ticker:l?.ticker||'Token',name:l?.name||'Token'},l);}
  async function reload(c){c.remote=await request(c,'account');if(!Array.isArray(c.remote.transfers))throw Error('Saved bridge lookup incomplete.');}
- async function open(options){if(mainnet)return mainnet.open(options);if(typeof __XMR20_JOINT_PREVIEW__!=='undefined'&&__XMR20_JOINT_PREVIEW__){clear();joint.clear();d.show('Bridge','<p>Choose a bridge flow.</p><button class="secondary wide" id="bridge-standard">Existing token bridge</button><button class="secondary wide" id="bridge-joint">Joint escrow test</button><p class="subtle">Joint escrow runs locally with temporary test keys and tokens.</p>');d.on('bridge-standard',()=>void openStandard());d.on('bridge-joint',()=>void joint.open());return;}return openStandard();}
- async function openStandard(){clear();joint?.clear();d.show('Bridge', '<p id="progress" class="busy">Loading bridge balances and saved transfers…</p>');await d.run(async epoch=>{
+ async function open(options){if(options?.legacyReceiptId)return openStandard({receiptId:options.legacyReceiptId});if(mainnet){await mainnet.open(options);const route=legacyReturnRoute(d.rows(),{requestedMint:options?.mint,emptyNewBridge:!!d.modal.querySelector('#j3-refresh-holdings'),receipts:d.vault()?.receipts,account:d.account()});if(route)return openStandard(route);return;}if(typeof __XMR20_JOINT_PREVIEW__!=='undefined'&&__XMR20_JOINT_PREVIEW__){clear();joint.clear();d.show('Bridge','<p>Choose a bridge flow.</p><button class="secondary wide" id="bridge-standard">Existing token bridge</button><button class="secondary wide" id="bridge-joint">Joint escrow test</button><p class="subtle">Joint escrow runs locally with temporary test keys and tokens.</p>');d.on('bridge-standard',()=>void openStandard());d.on('bridge-joint',()=>void joint.open());return;}return openStandard();}
+ async function openStandard(options={}){clear();joint?.clear();d.show('Bridge', '<p id="progress" class="busy">Loading bridge balances and saved transfers…</p>');await d.run(async epoch=>{
   const a=d.account();if(!a?.solSecret||!a.xmr||a.watch)throw Error('Select an account with a Solana key and a Monero address. Link both in Settings first.');
   const c={id:crypto.randomUUID(),a:{...a},epoch};ctx=c;c.token=await login(a);assert(c);
   const [remote,catalog]=await Promise.all([request(c,'account'),jsonFetch('https://api.xmr20.org/api/xmr20/tokens')]);assert(c);
-  if(!Array.isArray(remote.transfers)||!Array.isArray(catalog.tokens))throw Error('Bridge data unavailable. Retry before starting a transfer.');c.remote=remote;c.catalog=catalog.tokens;menu(c);
+  if(!Array.isArray(remote.transfers)||!Array.isArray(catalog.tokens))throw Error('Bridge data unavailable. Retry before starting a transfer.');c.remote=remote;c.catalog=catalog.tokens;
+  if(options.receiptId){
+   const transfer=remote.transfers.find(t=>t.id===options.receiptId&&t.owner===c.a.sol&&t.moneroAddress===c.a.xmr);
+   if(!transfer)throw Error('Saved bridge unavailable. Keep its receipt; no new bridge was started.');
+   status(c,await saved(c,transfer,token(c,transfer.launchId)));
+  }else if(options.direction==='xmr-to-sol'){
+   const row=options.mint?d.rows().find(r=>r.network==='monero'&&r.bridge!=='joint-v3'&&r.mint===options.mint&&BigInt(r.amountRaw)>0n):null;
+   if(row)await form(c,{...token(c,row.id),amountRaw:row.amountRaw},'xmr-to-sol');else await choose(c,'xmr-to-sol');
+  }else menu(c);
  });}
  function menu(c){
   const remote=c.remote.transfers.filter(t=>t.owner===c.a.sol&&t.moneroAddress===c.a.xmr&&bridgeOpen(t));
@@ -126,5 +135,5 @@ export function createBridgeUI(d){
   if(t.state==='complete'||t.sourceSignature&&s.operation==='Deposit'||t.destinationSignature&&s.operation==='Withdrawal')throw Error('A different submission is recorded. Keep the saved receipt for review.');
   progress('Resubmitting the same saved approval…');const next=await request(c,'submit'+s.operation,{id:r.intent,transaction:s.transaction,ticket:s.ticket});status(c,await saved(c,next,r.row));
  }
- return {open,clear(){clear();joint?.clear();if(ctx){ctx.a.solSecret='';ctx.a.xmrSeed='';ctx.token=null;}ctx=null;}};
+ return {open,refreshAssets:()=>mainnet?.refreshAssets?.(),clear(){clear();joint?.clear();if(ctx){ctx.a.solSecret='';ctx.a.xmrSeed='';ctx.token=null;}ctx=null;}};
 }
