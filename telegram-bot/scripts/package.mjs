@@ -1,0 +1,31 @@
+import {readFileSync,writeFileSync,mkdirSync,lstatSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {fileURLToPath} from 'node:url';
+import {resolve} from 'node:path';
+import {spawnSync} from 'node:child_process';
+const root=fileURLToPath(new URL('../',import.meta.url));
+const files=['package.json','package-lock.json','.gitignore','README.md','ARCHITECTURE.md','PRIVACY.md','VERIFICATION.md','Setup Telegram Test Bot.command','Start Telegram Test Bot.command','Try Local Bot.command','src/vault.mjs','src/engine.mjs','src/helius.mjs','src/turnkey.mjs','src/execution-journal.mjs','src/turnkey-setup.mjs','src/turnkey-check.mjs','scripts/turnkey_check.py','Check Turnkey Connection.command','scripts/turnkey_setup.py','Setup Turnkey Connection.command','src/telegram.mjs','src/main.mjs','src/setup.mjs','src/demo.mjs','scripts/setup.py','scripts/start.py','scripts/package.mjs','test/bot.test.mjs','test/turnkey.test.mjs','test/turnkey-setup.test.mjs','test/turnkey-check.test.mjs'];
+files.push(...[".npmrc", "mainnet-settings.example.json", "Check Mainnet Readiness.command", "Start Mainnet Pilot.command", "scripts/check_mainnet.py", "scripts/start_mainnet.py", "scripts/launch_gateway.py", "src/dependency-guard.mjs", "src/mainnet.mjs", "src/check-mainnet.mjs", "src/pilot-preflight.mjs", "src/pilot-engine.mjs", "src/image.mjs", "src/helius-mainnet.mjs", "src/launch-pilot.mjs", "src/trade-pilot.mjs", "src/launch-gateway.mjs", "src/turnkey-client.mjs", "test/pilot.test.mjs", "vendor/source-manifest.json", "vendor/shared/bridge/amounts.js", "vendor/shared/bridge/transaction.js", "vendor/shared/meteora/initial-buy.js", "vendor/shared/meteora/instructions.js", "vendor/shared/meteora/preset.js", "vendor/shared/meteora/quick-plan.js", "vendor/shared/meteora/quick-review.js", "vendor/shared/meteora/sol-conversion.js", "vendor/shared/xmr20/launch-policy.js", "vendor/shared/xmr20/quick-network-fees.js"]);
+files.push('MAINNET_PILOT.md','test/review.test.mjs','test/fixtures/xmr20-review.json');
+files.push('src/pilot-policy.mjs','src/activate-mainnet.mjs','scripts/activate_mainnet.py','Finish Mainnet Setup.command');
+files.push('LEGACY_PAPER.md','src/official-config.mjs','src/official.mjs','scripts/official.py','Setup XMR20 Bot.command','Start XMR20 Bot.command','test/official.test.mjs');
+files.push('.env.example','Edit XMR20 Connection.command');
+files.push('src/registration.mjs','src/state-path.mjs','test/registration.test.mjs','Enable Public XMR20 Bot.command','Connect Hosted XMR20 Bot.command','scripts/connect_hosted.py','scripts/check_host_transfer.mjs','hosting/run.py','hosting/owner_admin.py','hosting/xmr20-telegram.service');
+files.push('Enable Public Hosted XMR20 Bot.command','HOSTING.md');
+files.push('assets/default-token.png');
+files.push('src/launch-directory.mjs','test/launch-directory.test.mjs');
+const manifest=[];
+for(const name of files) {
+ const path=resolve(root,name);if(!lstatSync(path).isFile()||lstatSync(path).isSymbolicLink())throw Error('Unexpected source type');
+ const content=readFileSync(path);
+ if(/\b\d{6,12}:[A-Za-z0-9_-]{35}\b/.test(content.toString())||/-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/.test(content.toString()))throw Error('Possible embedded credential in '+name);
+ manifest.push({path:name,bytes:content.length,sha256:createHash('sha256').update(content).digest('hex')});
+}
+mkdirSync(resolve(root,'dist'),{recursive:true});
+writeFileSync(resolve(root,'dist/source-manifest.json'),JSON.stringify(manifest,null,2)+'\n');
+const code='import sys,json,pathlib,zipfile\nr=pathlib.Path(sys.argv[1]); names=json.loads(sys.stdin.read())\nwith zipfile.ZipFile(r/"dist/xmr20-telegram-source.zip","w",compression=zipfile.ZIP_DEFLATED) as z:\n for n in names: z.write(r/n,"xmr20-telegram/"+n)\nwith zipfile.ZipFile(r/"dist/xmr20-telegram-source.zip") as z:\n assert z.testzip() is None\n assert len(z.namelist())==len(names)\n for n in names: assert z.read("xmr20-telegram/"+n)==(r/n).read_bytes()';
+const result=spawnSync('python3',['-c',code,root],{input:JSON.stringify(files),encoding:'utf8'});
+if(result.status!==0)throw Error('Source archive verification failed');
+const hash=createHash('sha256').update(readFileSync(resolve(root,'dist/xmr20-telegram-source.zip'))).digest('hex');
+writeFileSync(resolve(root,'dist/SHA256SUMS.txt'),hash+'  xmr20-telegram-source.zip\n');
+console.log(`Prepared and verified ${files.length} allowlisted source files. No runtime state or credentials included. Not published.`);

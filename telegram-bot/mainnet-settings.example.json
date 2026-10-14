@@ -1,0 +1,14 @@
+{
+  "mode": "xmr20",
+  "executionEnabled": false,
+  "walletId": "",
+  "walletAddress": "",
+  "withdrawalAddress": "",
+  "reviewedPolicyDigest": "",
+  "gateway": {
+    "host": "xmr20-tg-pilot@launch-host.example",
+    "forcedCommand": true,
+    "identityFile": "/absolute/path/to/dedicated-ssh-identity",
+    "knownHostsFile": "/absolute/path/to/pinned-known-hosts"
+  }
+}

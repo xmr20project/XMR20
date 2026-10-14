@@ -1,5 +1,9 @@
 # XMR20 Wallet and Read Indexer
 
+## Telegram bot
+
+Launch and trade XMR20 tokens in [@XMR20_Bot](https://t.me/XMR20_Bot). [Bot source, setup and custody details](telegram-bot/README.md) are in `telegram-bot/`. Each user receives a separate Turnkey wallet; Helius handles Solana access.
+
 Open-source XMR20 Chrome wallet and experimental read-only token indexer.
 
 ## Current wallet — 0.1.28
