@@ -12,13 +12,14 @@ export function createBridgeUI(d){
  const previous=typeof __XMR20_JOINT_MAINNET_REVIEW__!=='undefined'&&__XMR20_JOINT_MAINNET_REVIEW__?createJointMainnetUI(d,{legacy:openStandard}):null;
  const mainnet=typeof __XMR20_JOINT_TRANSFERABLE_REVIEW__!=='undefined'&&__XMR20_JOINT_TRANSFERABLE_REVIEW__?createJointTransferableUI(d,{legacy:openStandard,previous:()=>previous.open()}):previous;
  let ctx=null,timer=null;
- function clear(){clearTimeout(timer);timer=null;mainnet?.clear();if(previous!==mainnet)previous?.clear();}
+ function clear(){clearTimeout(timer);timer=null;ctx?.verification?.abort();mainnet?.clear();if(previous!==mainnet)previous?.clear();}
  function assert(c){d.same(c.epoch);const a=d.account();if(ctx!==c||a.id!==c.a.id||a.sol!==c.a.sol||a.xmr!==c.a.xmr)throw Error('Wallet account changed. Reopen Bridge.');}
  const fmt=(n,ticker)=>`${amount(n)} ${ticker}`;
  function show(c,title,html){clear();assert(c);d.show(title,`<div data-bridge-view="${c.id}">${html}</div>`);}
  const live=c=>ctx===c&&d.modal.open&&d.modal.querySelector(`[data-bridge-view="${c.id}"]`);
  function bind(c,id,fn){d.on(id,()=>void d.run(async()=>{assert(c);await fn();}));}
  function progress(text){const el=document.getElementById('progress');if(el)el.textContent=text;}
+ function inlineError(c,text){if(!live(c))return;const el=d.modal.querySelector('#bridge-error');if(el){el.textContent=text;el.hidden=false;}}
  async function request(c,action,data={}){assert(c);const result=await walletRequest(c.token,action,data);assert(c);return result;}
  const local=c=>(d.vault().receipts||[]).filter(r=>r.kind==='bridge'&&r.accountId===c.a.id);
  async function saved(c,t,row){
@@ -100,7 +101,7 @@ export function createBridgeUI(d){
   const solReady=t.direction==='sol-to-xmr'&&t.state==='reserved'||t.direction==='xmr-to-sol'&&t.state==='source_finalized'&&!t.destinationSignature;
   const burnReady=t.direction==='xmr-to-sol'&&t.state==='reserved';
   const links=[['Monero',t.sourceTxid||t.destinationTxid,'https://xmrchain.net/tx/'],['Solana',t.destinationSignature||t.sourceSignature,'https://solscan.io/tx/']].filter(([,hash])=>typeof hash==='string'&&/^[1-9A-HJ-NP-Za-km-z]{64,90}$|^[a-f0-9]{64}$/.test(hash));
-  show(c,title,`<h3>${d.esc(fmt(t.amountRaw,row.ticker))}</h3><p class="subtle">${t.direction==='sol-to-xmr'?'Solana → Monero':'Monero → Solana'}</p><p>${d.esc(detail)}</p><div class="review-line"><span>You receive</span><strong>${d.esc(fmt(t.netReceivedRaw,row.ticker))}</strong></div><p id="progress" class="busy"></p>${r.signed?'<p class="notice">Your previous signed approval is saved. Check and resume it before requesting another approval.</p><button class="primary wide" id="bridge-retry">Check saved approval</button>':solReady?'<button class="primary wide" id="bridge-prepare">Prepare Solana approval</button>':burnReady?'<button class="primary wide" id="bridge-burn">Approve Monero step</button>':''}${links.map(([chain,hash,url])=>`<p><a target="_blank" rel="noopener noreferrer" href="${url+d.esc(hash)}">${chain} transaction ↗</a></p>`).join('')}<button class="secondary wide" id="bridge-check">Refresh status</button><button class="text-btn wide" id="bridge-home">All bridges</button>`);
+  show(c,title,`<h3>${d.esc(fmt(t.amountRaw,row.ticker))}</h3><p class="subtle">${t.direction==='sol-to-xmr'?'Solana → Monero':'Monero → Solana'}</p><p>${d.esc(detail)}</p><div class="review-line"><span>You receive</span><strong>${d.esc(fmt(t.netReceivedRaw,row.ticker))}</strong></div><p id="progress" class="busy" role="status"></p><p id="bridge-error" class="notice" role="alert" hidden></p>${r.signed?'<p class="notice">Your previous signed approval is saved. Check and resume it before requesting another approval.</p><button class="primary wide" id="bridge-retry">Check saved approval</button>':solReady?'<button class="primary wide" id="bridge-prepare">Prepare Solana approval</button>':burnReady?'<button class="primary wide" id="bridge-burn">Approve Monero step</button>':''}${links.map(([chain,hash,url])=>`<p><a target="_blank" rel="noopener noreferrer" href="${url+d.esc(hash)}">${chain} transaction ↗</a></p>`).join('')}<button class="secondary wide" id="bridge-check">Refresh status</button><button class="text-btn wide" id="bridge-home">All bridges</button>`);
   bind(c,'bridge-check',()=>check(c,r,true));bind(c,'bridge-home',async()=>{await reload(c);menu(c);});
   bind(c,'bridge-retry',()=>retry(c,r));bind(c,'bridge-prepare',()=>prepare(c,r));
   bind(c,'bridge-burn',async()=>{
@@ -120,12 +121,45 @@ export function createBridgeUI(d){
   const updated=await saved(c,t,r.row);if(live(c))status(c,updated);
  }
  async function prepare(c,r){
-  progress('Preparing and checking the Solana transaction…');const t=r.transfer,op=t.direction==='sol-to-xmr'?'Deposit':'Withdrawal';
-  const response=await request(c,'prepare'+op,{id:t.id}),p=await prepareBridgeSolana(response,t,c.a,r.row);assert(c);
+  if(r.signed||r.transfer.destinationSignature||r.transfer.state==='complete'){status(c,r);return;}
+  const errorView=d.modal.querySelector('#bridge-error');if(errorView){errorView.textContent='';errorView.hidden=true;}
+  progress('Checking your saved bridge and preparing the Solana transaction…');const t=r.transfer,op=t.direction==='sol-to-xmr'?'Deposit':'Withdrawal';
+  let p;c.verification=new AbortController();
+  try{
+   const response=await request(c,'prepare'+op,{id:t.id});assert(c);if(!live(c))throw Error('Bridge panel closed. Resume your saved bridge.');
+   if(r.signed||r.transfer.destinationSignature||r.transfer.state!==t.state){status(c,r);return;}
+   p=await prepareBridgeSolana(response,t,c.a,r.row,{signal:c.verification.signal,onStage:text=>{assert(c);if(live(c))progress(text);}});assert(c);if(!live(c))throw Error('Bridge panel closed. Resume your saved bridge.');
+   if(r.signed||r.transfer.destinationSignature||r.transfer.state!==t.state){status(c,r);return;}
+  }catch(error){
+   if(live(c)){const view=d.modal.querySelector('#bridge-error');if(view){view.textContent=(error.message||'Preparation could not finish.')+' Your saved bridge is kept. Retry this preparation; '+(op==='Withdrawal'?'no second Monero burn is needed.':'do not start another bridge.');view.hidden=false;}}
+   throw error;
+  }
   show(c,'Approve Solana '+(op==='Deposit'?'lock':'unlock'),`<p>${d.esc(fmt(t.amountRaw,r.symbol))}</p><p class="subtle">${op==='Deposit'?'Locks your tokens for the Monero credit.':'Unlocks tokens after the confirmed Monero burn.'}</p><label>Solana account</label><div class="address">${d.esc(c.a.sol)}</div><div class="review-line"><span>Estimated SOL cost</span><strong>${amount(p.feeRaw,9)} SOL</strong></div><p id="progress" class="busy"></p><button class="primary wide" id="bridge-sign">Approve & ${op==='Deposit'?'lock':'unlock'}</button><button class="text-btn wide" id="bridge-back">Back</button>`);
   bind(c,'bridge-back',()=>status(c,r));bind(c,'bridge-sign',async()=>{
-   const signed=signBridgeSolana(p,t,c.a,r.row);r.signed=signed;await d.persist();assert(c);progress('Submitting saved approval…');
-   const next=await request(c,'submit'+signed.operation,{id:t.id,transaction:signed.transaction,ticket:signed.ticket});status(c,await saved(c,next,r.row));
+   if(r.signed||r.transfer.destinationSignature||r.transfer.state!==t.state){status(c,r);return;}
+   try{
+    const signed=signBridgeSolana(p,t,c.a,r.row);r.signed=signed;await d.persist();assert(c);progress('Submitting saved approval…');
+    const next=await request(c,'submit'+signed.operation,{id:t.id,transaction:signed.transaction,ticket:signed.ticket});status(c,await saved(c,next,r.row));
+   }catch(error){
+    if(live(c)){
+     status(c,r);
+     const recorded=op==='Deposit'?r.transfer.sourceSignature:r.transfer.destinationSignature;
+     if(r.signed||recorded){
+      inlineError(c,'Your exact signed approval is kept. Its submission could not be confirmed here. Check its saved status; do not approve a new transaction.');
+      // Reconcile only with a public account receipt. Never submit or retry a
+      // payment automatically after a lost response.
+      const attempt=r.signed;
+      if(attempt)void request(c,'account').then(async remote=>{
+       if(!live(c)||r.signed!==attempt)return;
+       const next=remote.transfers?.find(value=>value.id===r.intent);
+       const signature=attempt.operation==='Deposit'?next?.sourceSignature:next?.destinationSignature;
+       if(!next||signature!==attempt.signature)return;
+       const updated=await saved(c,next,r.row);if(live(c))status(c,updated);
+      }).catch(()=>{});
+     }else inlineError(c,(error.message||'This unsigned approval could not be signed.')+' Prepare a fresh approval for this same saved bridge.');
+    }
+    throw error;
+   }
   });
  }
  async function retry(c,r){

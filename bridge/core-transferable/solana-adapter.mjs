@@ -2,6 +2,7 @@ import {PublicKey,VersionedTransaction} from '@solana/web3.js';
 import {unpackMint,getTransferFeeConfig,getExtensionTypes,TOKEN_2022_PROGRAM_ID} from '@solana/spl-token';
 import {ed25519} from '@noble/curves/ed25519';
 import bs58 from 'bs58';
+import {matchesWalletApproval,hasWalletGuards,verifyWalletGuardProgram} from './wallet-guards.mjs';
 import {MAINNET_GENESIS} from '../core-next/deployment-policy.mjs';
 import {addresses,receiptAddress,transaction,decodePosition,decodeReceipt} from './sdk.mjs';
 import {canonical,digest} from './records.mjs';
@@ -39,7 +40,7 @@ export function createSolanaAdapter({connection,manifest,privateTestPolicy}){
   const n=BigInt(amount),rounded=(n*BigInt(r.transferFeeBasisPoints)+9999n)/10000n,out=rounded<r.maximumFee?rounded:r.maximumFee;need(n>out,'Transfer fee consumes the amount.');return out.toString();
  }
  function validSigned(c,p,tx){
-  checkedConfig(c);if(testPolicy)privateTestOperation(c,p,testPolicy);const expected=transaction(c,p),msg=tx.message.serialize();need(Buffer.from(msg).equals(Buffer.from(expected.message.serialize())),'Changed reviewed transaction.');
+  checkedConfig(c);if(testPolicy)privateTestOperation(c,p,testPolicy);const expected=transaction(c,p),msg=tx.message.serialize();need(matchesWalletApproval(expected.message,tx.message,p.operation),'Changed reviewed transaction.');
   const keys=tx.message.staticAccountKeys.slice(0,tx.message.header.numRequiredSignatures),count=['register','transfer','release'].includes(p.operation)?2:1;
   need(keys.length===count&&tx.signatures.length===count&&keys.every((k,i)=>ed25519.verify(tx.signatures[i],msg,k.toBytes())),'Every required signature must be valid.');
   return bs58.encode(tx.signatures[0]);
@@ -55,11 +56,12 @@ export function createSolanaAdapter({connection,manifest,privateTestPolicy}){
   if((await connection.getSignatureStatuses([signature],{searchTransactionHistory:true})).value[0])return {kind:'pending',signature};
   need((await connection.isBlockhashValid(tx.message.recentBlockhash,{commitment:'finalized'})).value===false,'RPC expiry evidence disagrees.');return {kind:'expired',signature};
  }
- return Object.freeze({verifyProgram,readAccount,fee,
+ const verifyWalletGuards=async message=>{if(hasWalletGuards(message))await verifyWalletGuardProgram(connection);};
+ return Object.freeze({verifyProgram,readAccount,fee,verifyWalletGuards,
   async prepare(config,terms){checkedConfig(config);if(testPolicy)privateTestOperation(config,terms,testPolicy);await verifyProgram();const latest=await connection.getLatestBlockhash('confirmed'),proposal={network:config.network,...terms,blockhash:latest.blockhash,lastValidBlockHeight:latest.lastValidBlockHeight};return {config,proposal,transaction:transaction(config,proposal)};},
-  async submit(config,proposal,tx){await verifyProgram();validSigned(config,proposal,tx);if(proposal.operation!=='register'){const current=await fee(proposal.amount);if(proposal.operation!=='transfer')need(current===proposal.expectedFee,'Token fee changed.');}return connection.sendRawTransaction(tx.serialize(),{skipPreflight:false,preflightCommitment:'confirmed',maxRetries:2});},
+  async submit(config,proposal,tx){await verifyProgram();validSigned(config,proposal,tx);await verifyWalletGuards(tx.message);if(proposal.operation!=='register'){const current=await fee(proposal.amount);if(proposal.operation!=='transfer')need(current===proposal.expectedFee,'Token fee changed.');}return connection.sendRawTransaction(tx.serialize(),{skipPreflight:false,preflightCommitment:'confirmed',maxRetries:2});},
   async finalizedOperation({config,proposal,bytes}){
-   await verifyProgram();const tx=VersionedTransaction.deserialize(bytes),signature=validSigned(config,proposal,tx),r=await connection.getTransaction(signature,{commitment:'finalized',maxSupportedTransactionVersion:0});if(!r)return null;
+   await verifyProgram();const tx=VersionedTransaction.deserialize(bytes),signature=validSigned(config,proposal,tx);await verifyWalletGuards(tx.message);const r=await connection.getTransaction(signature,{commitment:'finalized',maxSupportedTransactionVersion:0});if(!r)return null;
    need(r.meta?.err===null&&r.transaction.signatures[0]===signature&&Buffer.from(r.transaction.message.serialize()).equals(Buffer.from(tx.message.serialize())),'Operation did not finalize with the exact approval.');
    const a=addresses(config);
    if(proposal.operation==='register'){
@@ -79,8 +81,8 @@ export function createSolanaAdapter({connection,manifest,privateTestPolicy}){
   async ownerApprovalOutcome({config,proposal,bytes}){
    await verifyProgram();checkedConfig(config);if(testPolicy)privateTestOperation(config,proposal,testPolicy);
    const tx=VersionedTransaction.deserialize(bytes),msg=tx.message.serialize(),expected=transaction(config,proposal),keys=tx.message.staticAccountKeys.slice(0,tx.message.header.numRequiredSignatures);
-   need(Buffer.from(msg).equals(Buffer.from(expected.message.serialize()))&&tx.signatures.length===keys.length&&keys.every((k,i)=>i>0&&tx.signatures[i].every(x=>x===0)||ed25519.verify(tx.signatures[i],msg,k.toBytes())),'Changed saved owner approval.');
-   return outcome(tx,proposal.lastValidBlockHeight);
+   need(matchesWalletApproval(expected.message,tx.message,proposal.operation)&&tx.signatures.length===keys.length&&keys.every((k,i)=>i>0&&tx.signatures[i].every(x=>x===0)||ed25519.verify(tx.signatures[i],msg,k.toBytes())),'Changed saved owner approval.');
+   await verifyWalletGuards(tx.message);return outcome(tx,proposal.lastValidBlockHeight);
   }
  });
 }
