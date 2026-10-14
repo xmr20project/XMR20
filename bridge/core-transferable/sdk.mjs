@@ -3,6 +3,7 @@ import {PublicKey,SystemProgram,TransactionInstruction,TransactionMessage,Versio
 import {TOKEN_2022_PROGRAM_ID as TOKEN,getAssociatedTokenAddressSync,createAssociatedTokenAccountIdempotentInstruction} from '@solana/spl-token';
 import {digest} from '../core-next/records.mjs';
 import {ed25519} from '@noble/curves/ed25519';
+import {matchesWalletApproval} from './wallet-guards.mjs';
 const need=(v,m)=>{if(!v)throw Error(m);};
 const pk=x=>new PublicKey(x),hex=x=>{need(typeof x==='string'&&/^[a-f0-9]{64}$/.test(x)&&!/^0+$/.test(x),'Nonzero public commitment required.');return Buffer.from(x,'hex');};
 const u64=x=>{need(typeof x==='string'&&/^(0|[1-9][0-9]{0,15})$/.test(x),'Exact integer amount required.');const b=Buffer.alloc(8);b.writeBigUInt64LE(BigInt(x));return b;};
@@ -58,5 +59,45 @@ export async function approveExternal(c,p,bytes,provider){
  const expected=transaction(c,p),tx=VersionedTransaction.deserialize(bytes),actor=pk(p.actor??c.owner),msg=expected.message.serialize();provider.assertCurrent?.();
  need(provider.publicKey?.toBase58()===actor.toBase58()&&Buffer.from(tx.message.serialize()).equals(Buffer.from(msg))&&tx.signatures.every(s=>s.every(n=>n===0)),'Unsigned review or selected wallet changed.');
  const signed=await provider.signTransaction(tx);provider.assertCurrent?.();
- need(provider.publicKey?.toBase58()===actor.toBase58()&&Buffer.from(signed.message.serialize()).equals(Buffer.from(msg))&&signed.signatures.length===expected.signatures.length&&ed25519.verify(signed.signatures[0],msg,actor.toBytes())&&signed.signatures.slice(1).every(s=>s.every(n=>n===0)),'Wallet approval differs from the exact custody review.');return signed;
+ // Keep the independent expected message: a provider may mutate the object it
+ // was given. Diagnostics never authorize those changed bytes or retain them.
+ const verify=(signature,data)=>{try{return ed25519.verify(signature,data,actor.toBytes());}catch{return false;}};
+ const diagnostic={reason:null,selectedOwnerMatches:provider.publicKey?.toBase58()===actor.toBase58(),messageMatches:false,signatureCountMatches:false,ownerSignatureValidForReviewed:false,ownerSignatureValidForReturned:false,extraSignaturesUnchanged:false,blockhashChanged:false,computeBudgetChanged:false,otherInstructionsChanged:false,accountsChanged:false,accountOrderOnlyChanged:false,addedSolTransfer:false,addedMemoInstruction:false,addedOtherProgramInstruction:false,addedProgramIds:[],messageVersionChanged:false,expectedMessageHash:digest(msg),returnedMessageHash:null};
+ let returned;
+ try{
+  returned=signed.message.serialize();diagnostic.returnedMessageHash=digest(returned);diagnostic.messageMatches=Buffer.from(returned).equals(Buffer.from(msg));
+  diagnostic.signatureCountMatches=signed.signatures.length===expected.signatures.length;
+  diagnostic.ownerSignatureValidForReviewed=verify(signed.signatures[0],msg);diagnostic.ownerSignatureValidForReturned=verify(signed.signatures[0],returned);diagnostic.extraSignaturesUnchanged=signed.signatures.slice(1).every(s=>s.every(n=>n===0));
+  const shape=m=>({version:m.version,header:[m.header.numRequiredSignatures,m.header.numReadonlySignedAccounts,m.header.numReadonlyUnsignedAccounts],keys:m.staticAccountKeys.map(k=>k.toBase58()),lookups:(m.addressTableLookups||[]).map(l=>({key:l.accountKey.toBase58(),writable:Array.from(l.writableIndexes),readonly:Array.from(l.readonlyIndexes)})),instructions:m.compiledInstructions.map(i=>({program:m.staticAccountKeys[i.programIdIndex]?.toBase58()??'lookup:'+i.programIdIndex,accounts:Array.from(i.accountKeyIndexes,n=>m.staticAccountKeys[n]?.toBase58()??'lookup:'+n),data:Buffer.from(i.data).toString('hex')}))});
+  const before=shape(expected.message),after=shape(signed.message),budget=ComputeBudgetProgram.programId.toBase58(),same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+  diagnostic.blockhashChanged=signed.message.recentBlockhash!==expected.message.recentBlockhash;
+  diagnostic.messageVersionChanged=before.version!==after.version;
+  diagnostic.accountsChanged=!same([before.header,before.keys,before.lookups],[after.header,after.keys,after.lookups]);
+  diagnostic.computeBudgetChanged=!same(before.instructions.filter(i=>i.program===budget),after.instructions.filter(i=>i.program===budget));
+  diagnostic.otherInstructionsChanged=!same(before.instructions.filter(i=>i.program!==budget),after.instructions.filter(i=>i.program!==budget));
+  // Resolve account indexes for diagnostics only. Even a semantic-only reorder
+  // remains rejected by the exact serialized-message predicate above.
+  const privileges=s=>s.keys.map((key,i)=>[key,i<s.header[0],i<s.header[0]?i<s.header[0]-s.header[1]:i<s.keys.length-s.header[2]]).sort((a,b)=>a[0].localeCompare(b[0]));
+  diagnostic.accountOrderOnlyChanged=diagnostic.accountsChanged&&!same(before.keys,after.keys)&&!diagnostic.messageVersionChanged&&!diagnostic.blockhashChanged&&same(before.lookups,after.lookups)&&same(before.keys.slice(0,before.header[0]),after.keys.slice(0,after.header[0]))&&same(privileges(before),privileges(after))&&same(before.instructions,after.instructions);
+  const counts=new Map();for(const i of before.instructions){const key=JSON.stringify(i);counts.set(key,(counts.get(key)||0)+1);}
+  const extra=after.instructions.filter(i=>{const key=JSON.stringify(i),count=counts.get(key)||0;if(count){counts.set(key,count-1);return false;}return true;});
+  const system=SystemProgram.programId.toBase58(),memo='MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr',programs=new Set(before.instructions.map(i=>i.program));
+  diagnostic.addedSolTransfer=extra.some(i=>i.program===system&&i.data.startsWith('02000000'));
+  diagnostic.addedMemoInstruction=extra.some(i=>i.program===memo);
+  diagnostic.addedOtherProgramInstruction=extra.some(i=>!programs.has(i.program)&&![system,memo,budget].includes(i.program));
+  diagnostic.addedProgramIds=Object.freeze([...new Set(extra.map(i=>i.program).filter(p=>/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(p)&&!programs.has(p)))].slice(0,8));
+ }catch{diagnostic.reason='invalid-wallet-response';}
+ if(!diagnostic.reason){
+  if(!diagnostic.selectedOwnerMatches)diagnostic.reason='selected-owner-changed';
+  else if(!diagnostic.messageMatches&&!matchesWalletApproval(expected.message,signed.message,p.operation))diagnostic.reason=diagnostic.addedSolTransfer?'added-sol-transfer':diagnostic.addedMemoInstruction?'added-memo-instruction':diagnostic.addedOtherProgramInstruction?'added-program-instruction':diagnostic.accountOrderOnlyChanged?'account-order-only-changed':diagnostic.otherInstructionsChanged||diagnostic.accountsChanged||diagnostic.messageVersionChanged?'instructions-or-accounts-changed':diagnostic.blockhashChanged&&!diagnostic.computeBudgetChanged?'blockhash-changed':diagnostic.computeBudgetChanged&&!diagnostic.blockhashChanged?'compute-budget-changed':'reviewed-message-changed';
+  else if(!diagnostic.signatureCountMatches)diagnostic.reason='signature-count-changed';
+  else if(!diagnostic.ownerSignatureValidForReturned)diagnostic.reason='owner-signature-invalid';
+  else if(!diagnostic.extraSignaturesUnchanged)diagnostic.reason='extra-signatures-changed';
+ }
+ if(diagnostic.reason){
+  const descriptions={'invalid-wallet-response':'Your wallet returned an invalid signed transaction.','selected-owner-changed':'Your selected Solana wallet changed during approval.','added-sol-transfer':'Your wallet added an unreviewed SOL transfer.','added-memo-instruction':'Your wallet added an unreviewed memo instruction.','added-program-instruction':'Your wallet added an unreviewed program instruction.','account-order-only-changed':'Your wallet reordered the reviewed transaction accounts.','instructions-or-accounts-changed':'Your wallet changed the reviewed transaction instructions or accounts.','blockhash-changed':'Your wallet changed the reviewed transaction blockhash.','compute-budget-changed':'Your wallet changed the reviewed transaction network fee or compute budget.','reviewed-message-changed':'Your wallet changed the reviewed transaction.','signature-count-changed':'Your wallet returned a different number of transaction signatures.','owner-signature-invalid':'Your wallet signature does not match the exact reviewed transaction.','extra-signatures-changed':'Your wallet added or changed another signer’s approval.'};
+  const detail=diagnostic.reason==='added-program-instruction'&&diagnostic.addedProgramIds.length?' Program: '+diagnostic.addedProgramIds.join(', ')+'.':'';
+  const error=Error(descriptions[diagnostic.reason]+detail+' Nothing was submitted.');error.code='WALLET_APPROVAL_MISMATCH';error.approvalDiagnostic=Object.freeze(diagnostic);throw error;
+ }
+ return signed;
 }

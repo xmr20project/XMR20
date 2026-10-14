@@ -1,4 +1,4 @@
-XMR20 Wallet — Bridge testing 0.1.26
+XMR20 Wallet — Bridge testing 0.1.28
 
 Update an existing wallet
 Keep the existing extension and its folder. Replace its installation files with
