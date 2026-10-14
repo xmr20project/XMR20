@@ -1,5 +1,13 @@
-# Bridge testing — 0.1.26
+# Bridge testing — 0.1.28
 
+
+## Current release — 14 October 2026 (0.1.28)
+
+- Includes the 0.1.27 saved-return preparation and recovery fixes: bounded public RPC checks, concurrent independent reads, expiry checked after simulation, visible errors, and preservation of an already signed approval after an uncertain submission reply.
+- Includes the latest shared wallet approval checks. Known read-only Lighthouse safety assertions may accompany an otherwise unchanged deposit or airdrop. Amount, fee, destination, accounts, signer, blockhash and compute-budget changes remain rejected. The actual signed assertions remain in the transaction. Other operations retain exact-message checks.
+- A real legacy Monero-to-Solana return completed after the preparation repair. That does not establish a funded two-holder round trip for the newer joint-v3 program. The latest Phantom compatibility retry is still awaiting user verification.
+- Release checks rebuild both extension variants and run the wallet and hosted-gateway fixture suites. The fixtures use disposable accounts; no real transaction or wallet storage is used by these checks. Counts and checksum are recorded in the release notes.
+- Extension identity, permissions, dependency versions and the separate indexer are preserved. Server credentials remain outside the extension. Publishing this package does not install a browser extension or deploy a website or service.
 
 ## Verification on 12 October 2026 (0.1.26)
 
@@ -51,4 +59,4 @@ Never uninstall an existing wallet to update it. Replace its existing installati
 
 The program is `8HWS1JoTRZYZEkdNvayDta3GRxCMQ2uDYEkaxD3Hs3bB`. Testing requires its exact reviewed bytes and retained upgrade authority. Ordinary/public admission still requires immutable code; this separate testing profile does not change that rule. Unknown tokens, invalid launch proofs, changed code, stale or incomplete history, changed fees and incorrect signatures remain rejected.
 
-The operator remains on loopback behind the hosted HTTPS gateway. The 0.1.25 extension uses that gateway directly; no local helpers need to stay open. Six gateway tests cover exact extension/website origins, bounded requests, preflight and read-only Solana RPC admission. Public HTTPS reads were checked from both trusted origins. A Chrome Web Store release, a funded two-holder test, independent security review, and production airdrop/sale/whitelist enforcement are not certified by these tests. No deployment or wallet operation runs during npm installation, build or tests.
+The operator remains on loopback behind the hosted HTTPS gateway. The current extension uses that gateway directly; no local helpers need to stay open. Six gateway tests cover exact extension/website origins, bounded requests, preflight and read-only Solana RPC admission. Public HTTPS reads were checked from both trusted origins. A Chrome Web Store release, a funded two-holder test, independent security review, and production airdrop/sale/whitelist enforcement are not certified by these tests. No deployment or wallet operation runs during npm installation, build or tests.

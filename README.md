@@ -1,18 +1,18 @@
 # XMR20 Wallet and Read Indexer
 
-Source repository for the XMR20 Chrome extension, developer preview **0.1.14** and opt-in bridge testing build **0.1.26**, and the experimental read-only token indexer **0.2.0**.
+Open-source XMR20 Chrome wallet and experimental read-only token indexer.
 
-## Read indexer
+## Current wallet — 0.1.28
 
-The standalone [indexer source and instructions](indexer/README.md) are in `indexer/`. It rebuilds its own state from public Monero records and finalized Solana account data, with local signature verification. Build it separately with Node.js 24+, Python 3.9+ and its own npm lockfile.
+**[Download wallet 0.1.28](https://github.com/xmr20project/XMR20/releases/download/v0.1.28/xmr20-wallet-bridge-0.1.28.zip)** · [Release notes](https://github.com/xmr20project/XMR20/releases/tag/v0.1.28) · [What changed](CHANGELOG.md)
 
-The reader discovers token declarations and escrow bindings from chain data, without the XMR20 website catalog or primary database. Operators can use their own node endpoints and compare checkpointed verification reports. The repository includes [published rules](indexer/PROTOCOL.md), [verification instructions and remaining trust assumptions](indexer/VERIFICATION.md), synthetic tests and GitHub checks.
+Use **`extension-bridge/`** for the current wallet with hosted bridge support. The separate `extension/` directory is the older **0.1.14** preview; it is kept for compatibility and is not the current bridge wallet.
 
-A mainnet rebuild from the published scan start completed on 7 October 2026 with project API access blocked. Its accepted ledger matched a replay of the preserved primary ledger source at the same Monero height and block hash. The runtime repair used by the live second indexer is included here; [dated verification evidence](indexer/LIVE_VERIFICATION.json) records its source fingerprint. **Complete parity with the running primary service, including its accepted events and backing at equal Solana slots, remains unverified.** Open source and matching reports do not certify bridge security: deployments and credits still require the configured authority, and withdrawals remain operator-attested. The reader does not sign or authorize withdrawals.
+For an existing wallet, replace the installation files in its current folder, then click **Reload** in `chrome://extensions`. **Do not uninstall**: keep the encrypted accounts and saved bridge receipts associated with the same extension. See the installation steps below.
 
-## Wallet
+This is a testing release, not an independently audited production wallet.
 
-## New bridge testing build — 0.1.26
+## Bridge wallet
 
 The latest bridge work is included in source and the installable `extension-bridge/` build. It supports any linked wallet and tokens whose XMR20 launch proofs and Token-2022 configuration pass verification. The earlier cumulative 1 XMR20 test limit does not apply to this build.
 
@@ -29,6 +29,8 @@ A real self round trip has completed; the two-holder path passes compiled-contra
 The testing build connects directly to the hosted gateway at `https://api.xmr20.org`. No local connector or SSH forward is needed. The gateway serves the website and the pinned XMR20 extension identity; it restricts routes, request size and public Solana read methods. Financial instructions still require their original signatures and proof validation. The testing program remains upgradeable.
 
 Version 0.1.24 refreshes SOL, indexed holdings and bridge balances independently, so a slow bridge read does not hold up every balance. It shows account-specific last-known balances immediately and checks fresh SOL using bounded public reads. Accounts without a funded bridge position can skip the full Monero-history replay after fresh deployment and finalized position checks. The bridge explains index catch-up and resumes status and amount checks automatically; incomplete history never enables approval. Max controls, exact fees, saved approvals and recovery receipts are preserved. Cached data never authorizes spending. Network and Monero confirmation delays still apply.
+
+Version **0.1.28** adds bounded Solana verification through the public wallet RPC proxy, clearer progress and preparation errors, safer recovery after an expired or uncertain approval, and the latest narrowly checked wallet-safety instruction compatibility. It retains held-token filtering, Max, exact token fees, cached balance display and recovery receipts. A funded Phantom retry for the latest compatibility change is still pending; this release does not claim all bridge delays or failures are resolved.
 
 ## Features
 
@@ -53,14 +55,14 @@ Build the new bridge candidate separately:
 npm run build:bridge
 ```
 
-Load `extension-bridge/` for version 0.1.26. The hosted gateway is used automatically. The optional local connector remains available only for explicit development profiles. `npm run build` continues to produce the ordinary `extension/` build.
+Load `extension-bridge/` for version 0.1.28. The hosted gateway is used automatically. The optional local connector remains available only for explicit development profiles. `npm run build` continues to produce the ordinary `extension/` build.
 
 Tests build the extension first. To build without running tests, use `npm run build`.
 The test suite uses disposable keys and mocked network responses; it does not move real funds.
 
 ## Install or update in Chrome
 
-Open `chrome://extensions`, enable Developer mode, and choose **Load unpacked** with `extension-bridge/` for bridge testing 0.1.26, or `extension/` for the ordinary preview. For an existing installation, replace the files in its current directory and click **Reload**. Do not uninstall an existing wallet just to update it. Keep recovery material backed up privately.
+Open `chrome://extensions`, enable Developer mode, and choose **Load unpacked** with the extracted wallet folder (containing `manifest.json`), or `extension-bridge/` from this repository, for bridge testing 0.1.28, or `extension/` for the ordinary preview. For an existing installation, replace the files in its current directory and click **Reload**. Do not uninstall an existing wallet just to update it. Keep recovery material backed up privately.
 
 The manifest contains a **public** key to preserve extension identity. It is not a wallet private key. Preserve this key when rebuilding.
 
@@ -88,6 +90,14 @@ The generic Bridge button opens the earlier return route when only earlier-custo
 ## Saved-return recovery 0.1.26
 
 An unfinished legacy return remains visible after the Monero burn consumes its token balance. The home screen shows the exact amount due on Solana and a Check and continue bridge button. Generic Bridge also resumes the saved return when no new-bridge asset is available. Resume re-reads the existing owner-bound server receipt and never creates another bridge or burn. Cached recovery state is labeled Last saved. Completed and cancelled receipts leave the recovery list.
+
+## Read indexer
+
+The standalone [indexer source and instructions](indexer/README.md) are in `indexer/`. It rebuilds its own state from public Monero records and finalized Solana account data, with local signature verification. Build it separately with Node.js 24+, Python 3.9+ and its own npm lockfile.
+
+The reader discovers token declarations and escrow bindings from chain data, without the XMR20 website catalog or primary database. Operators can use their own node endpoints and compare checkpointed verification reports. The repository includes [published rules](indexer/PROTOCOL.md), [verification instructions and remaining trust assumptions](indexer/VERIFICATION.md), synthetic tests and GitHub checks.
+
+A mainnet rebuild from the published scan start completed on 7 October 2026 with project API access blocked. Its accepted ledger matched a replay of the preserved primary ledger source at the same Monero height and block hash. The runtime repair used by the live second indexer is included here; [dated verification evidence](indexer/LIVE_VERIFICATION.json) records its source fingerprint. **Complete parity with the running primary service, including its accepted events and backing at equal Solana slots, remains unverified.** Open source and matching reports do not certify bridge security: deployments and credits still require the configured authority, and withdrawals remain operator-attested. The reader does not sign or authorize withdrawals.
 
 ## Published protocol and service sources
 

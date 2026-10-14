@@ -205,6 +205,26 @@ test('one funding button shows exact terms and submits once without a second app
  assert.ok(f.html.indexOf('<summary>Receipts and recovery')<f.html.indexOf('id="j3-background"'));assert.equal(f.errors.length,0);
 });
 
+test('Phantom deposit failure and real approval phase stay beside the funding button without automatic submission',async t=>{
+ let rejectWallet,requests=0,submits=0;
+ const f=setup(t,{registered:true,configureClient:o=>({async approveCredit(review){
+  o.onProgress('Signing your reviewed transaction…');requests++;
+  await new Promise((_,reject)=>rejectWallet=reject);
+  submits++;return {operationId:'must-not-submit'};
+ }})});
+ await f.ui.open();await f.preview();assert.equal(requests,0);assert.equal(submits,0);
+ const original=f.elements.get('j3-bridge');original.onclick();await new Promise(r=>setImmediate(r));
+ assert.equal(requests,1);assert.equal(submits,0);assert.equal(f.elements.get('j3-bridge').disabled,true);
+ const feedback=f.html.indexOf('id="j3-credit-feedback"'),button=f.html.indexOf('id="j3-bridge"');
+ assert.ok(f.html.indexOf('id="j3-amount"')<feedback);assert.ok(feedback<f.html.indexOf('id="progress"')&&f.html.indexOf('id="progress"')<button);
+ assert.equal(f.elements.get('joint-stage').textContent,'Signing your reviewed transaction…');assert.equal([...f.html.matchAll(/id="progress"/g)].length,1);assert.equal([...f.html.matchAll(/id="joint-stage"/g)].length,1);
+ rejectWallet(Error('Phantom could not approve this transaction. Check the wallet error before retrying.'));
+ for(let i=0;i<30&&f.d.isBusy();i++)await new Promise(r=>setImmediate(r));
+ const failure=f.html.indexOf('role="alert"');assert.ok(f.html.indexOf('id="j3-credit-feedback"')<failure&&failure<f.html.indexOf('id="j3-bridge"'));assert.match(f.html,/Phantom could not approve/);assert.equal([...f.html.matchAll(/role="alert"/g)].length,1);
+ assert.equal(requests,1);assert.equal(submits,0);assert.equal(f.signs,0);assert.ok(!f.elements.has('j3-confirm'));
+ await f.preview();assert.equal(f.elements.get('j3-bridge').disabled,false);assert.equal(requests,1);assert.equal(submits,0);assert.match(f.html,/Phantom could not approve/);
+});
+
 test('editing while a quote is pending preserves typing and cannot enable an obsolete amount',async t=>{
  let release,previews=0,submits=0;
  const f=setup(t,{registered:true,configureClient:()=>({async reviewCredit(input){previews++;if(previews===1)await new Promise(r=>release=r);return {proposal:{operation:'deposit',amount:input.amount,expectedFee:'15000'},envelope:{record:{owner:native}}};},async approveCredit(){submits++;throw Error('Must not approve');}})});
