@@ -1,0 +1,37 @@
+[Unit]
+Description=XMR20 Telegram bot
+After=network-online.target xmr20-mainnet.service
+Wants=network-online.target
+ConditionPathExists=/etc/credstore.encrypted/xmr20-telegram-unlock
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=xmr20-telegram
+Group=xmr20-telegram
+WorkingDirectory=/opt/xmr20-telegram/current
+Environment=XMR20_STATE_DIR=/var/lib/xmr20-telegram
+LoadCredentialEncrypted=unlock:/etc/credstore.encrypted/xmr20-telegram-unlock
+ExecStart=/usr/bin/python3 /opt/xmr20-telegram/current/hosting/run.py
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=30
+KillMode=control-group
+UMask=0077
+StateDirectory=xmr20-telegram
+StateDirectoryMode=0700
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/xmr20-tg-pilot
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+MemoryMax=1G
+TasksMax=128
+LimitCORE=0
+
+[Install]
+WantedBy=multi-user.target

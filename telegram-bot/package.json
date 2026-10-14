@@ -1,0 +1,36 @@
+{
+  "name": "xmr20bot",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "demo": "node src/demo.mjs",
+    "start": "python3 scripts/official.py",
+    "setup": "python3 scripts/official.py --setup",
+    "start:paper": "python3 scripts/start.py",
+    "release:check": "node scripts/package.mjs"
+  },
+  "dependencies": {
+    "@meteora-ag/cp-amm-sdk": "1.5.1",
+    "@raydium-io/raydium-sdk-v2": "0.2.72-alpha",
+    "@solana/spl-token": "0.4.15",
+    "@solana/spl-token-metadata": "0.1.6",
+    "@solana/web3.js": "1.98.4",
+    "@turnkey/api-key-stamper": "0.6.17",
+    "bn.js": "5.2.5",
+    "bs58": "6.0.0",
+    "buffer": "6.0.3",
+    "decimal.js": "10.6.0",
+    "sharp": "0.35.5"
+  },
+  "overrides": {
+    "uuid": "11.1.1",
+    "rpc-websockets": "9.2.0",
+    "toml": "4.2.0",
+    "stream-json": "3.7.0"
+  }
+}

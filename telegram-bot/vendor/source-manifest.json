@@ -1,0 +1,52 @@
+[
+  {
+    "source": "website/frontend/shared/bridge/amounts.js",
+    "path": "vendor/shared/bridge/amounts.js",
+    "sha256": "349916a38d0c0de5e0fda6c523b9e0b08b423d5e20bbc36ec82c3809d59bfed3"
+  },
+  {
+    "source": "website/frontend/shared/bridge/transaction.js",
+    "path": "vendor/shared/bridge/transaction.js",
+    "sha256": "8fa485376b2759c2888dd8bc7ff1666a2f7e79e4057eb75a356cb94f00582bf8"
+  },
+  {
+    "source": "website/frontend/shared/meteora/initial-buy.js",
+    "path": "vendor/shared/meteora/initial-buy.js",
+    "sha256": "10909942d98767dbca9930c91f2c37219698d6cfad9baf9fae4611b445f77f6b"
+  },
+  {
+    "source": "website/frontend/shared/meteora/instructions.js",
+    "path": "vendor/shared/meteora/instructions.js",
+    "sha256": "27b76b2281b77ba609e48232f8e714129e7fd84945b1b9882c9320a5b21800ab"
+  },
+  {
+    "source": "website/frontend/shared/meteora/preset.js",
+    "path": "vendor/shared/meteora/preset.js",
+    "sha256": "1d006ecafaad2644792c7620a07a5af8fe446ce5bc930ff1ab2130af66a4f6db"
+  },
+  {
+    "source": "website/frontend/shared/meteora/quick-plan.js",
+    "path": "vendor/shared/meteora/quick-plan.js",
+    "sha256": "dd9720286a3a771d5625c033943b44a25f781d1cbcfdd06ecea54e622e9c446d"
+  },
+  {
+    "source": "website/frontend/shared/meteora/quick-review.js",
+    "path": "vendor/shared/meteora/quick-review.js",
+    "sha256": "4f52f1b3cda121e9c2f3cf76e7d7c85fa6d142cd9ec7659ad2337fad13e55f21"
+  },
+  {
+    "source": "website/frontend/shared/meteora/sol-conversion.js",
+    "path": "vendor/shared/meteora/sol-conversion.js",
+    "sha256": "0a5bc8a7ca59e8fc1f5de6e990af3fb386549b52a05a2e1590ad9aff11a6a31f"
+  },
+  {
+    "source": "website/frontend/shared/xmr20/launch-policy.js",
+    "path": "vendor/shared/xmr20/launch-policy.js",
+    "sha256": "61b3ff517c0e9707442863178be2a5f9bc8ada0bbdf2ab5689bcd4c61a1ef151"
+  },
+  {
+    "source": "website/frontend/shared/xmr20/quick-network-fees.js",
+    "path": "vendor/shared/xmr20/quick-network-fees.js",
+    "sha256": "fc66d4dbf0118a1c6997c9619e723a448c91c2058197b41cddb46cf3c7efbfd2"
+  }
+]

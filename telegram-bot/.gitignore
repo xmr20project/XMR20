@@ -1,0 +1,11 @@
+state/
+dist/
+.env*
+*.vault
+*.lock
+*.tmp
+*.log
+__pycache__/
+node_modules/
+
+!.env.example
