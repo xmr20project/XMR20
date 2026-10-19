@@ -1,6 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {PublicKey} from '@solana/web3.js';
-import {createJointHoldings,jointHoldingRow,replaceHoldingSource,isJointHolding} from '../src/joint-holdings.js';
+import {createJointHoldings,jointHoldingRow,replaceHoldingSource,isJointHolding,jointIncomingRows} from '../src/joint-holdings.js';
 import {PRIVATE_TEST_POLICY as policy} from '../bridge/core-transferable/private-test.mjs';
 import {transferableManifest} from '../bridge/core-transferable/mainnet-config.mjs';
 import {addresses} from '../bridge/core-transferable/sdk.mjs';
@@ -13,10 +13,10 @@ function fixture(){
  return {report,link};
 }
 function data(report,link){const b=Buffer.alloc(169);b[0]=3;new PublicKey(account.sol).toBuffer().copy(b,1);new PublicKey(manifest.verifier).toBuffer().copy(b,33);new PublicKey(asset.mint).toBuffer().copy(b,65);Buffer.from(config.binding,'hex').copy(b,97);Buffer.from(commitment(link),'hex').copy(b,129);b.writeBigUInt64LE(BigInt(report.positions[0].chainBalance),161);return b;}
-function setup({snapshot,readAccount,verifyProgram,now=()=>at,storage}={}){
+function setup({snapshot,readAccount,verifyProgram,now=()=>at,storage,reportTtl}={}){
  const f=fixture(),disk=new Map();let calls=0,reads=0,checks=0;
  const store=storage??{getItem:k=>disk.get(k)??null,setItem:(k,v)=>disk.set(k,v)};
- const c=createJointHoldings({privateTest:true,storage:store,now,adapters:{runtime:()=>({snapshot:async()=>{calls++;return snapshot?await snapshot(f.report):f.report;}}),chain:()=>({verifyProgram:async()=>{checks++;if(verifyProgram)await verifyProgram();},readAccount:async key=>{reads++;assert.equal(key,position);return readAccount?await readAccount():{owner:manifest.program,finalized:true,executable:false,data:data(f.report,f.link)};}})}});
+ const c=createJointHoldings({privateTest:true,storage:store,now,...(reportTtl?{reportTtl}:{}),adapters:{runtime:()=>({snapshot:async()=>{calls++;return snapshot?await snapshot(f.report):f.report;}}),chain:()=>({verifyProgram:async()=>{checks++;if(verifyProgram)await verifyProgram();},readAccount:async key=>{reads++;assert.equal(key,position);return readAccount?await readAccount():{owner:manifest.program,finalized:true,executable:false,data:data(f.report,f.link)};}})}});
  return {...f,c,disk,store,get calls(){return calls;},get reads(){return reads;},get checks(){return checks;}};
 }
 test('confirmed credit becomes one Monero row with the net amount and exact paired wallet',()=>{
@@ -35,6 +35,24 @@ test('reader verifies deployment and matching finalized custody, then persists d
 });
 test('changed custody or program failure cannot be displayed as a current balance',async()=>{
  for(const options of [{verifyProgram:async()=>{throw Error('Changed code');}},{readAccount:async()=>undefined},{readAccount:async()=>({owner:manifest.program,executable:true,finalized:true,data:Buffer.alloc(169)})}]){const f=setup(options),r=await f.c.load(account);assert.equal(r.complete,false);assert.deepEqual(r.rows,[]);assert.equal(f.disk.size,0);}
+});
+test('positive finalized custody with an omitted replay position is unavailable, never verified zero',async()=>{
+ for(const positions of [[],[{position:manifest.verifier,moneroOwner:'another-wallet'}]]){
+  const f=setup({snapshot:r=>({...r,positions})}),result=await f.c.load(account);
+  assert.equal(result.complete,false);assert.deepEqual(result.rows,[]);assert.equal(f.disk.size,0);
+ }
+});
+test('missing funded position preserves the last verified holding as stale',async()=>{
+ const f=setup();await f.c.load(account);const saved=[...f.disk.values()][0];
+ const next=setup({storage:f.store,snapshot:r=>({...r,positions:[]})}),result=await next.c.load(account);
+ assert.equal(result.complete,false);assert.equal(result.rows[0].amountRaw,'985000');assert.equal(result.rows[0].stale,true);
+ assert.equal([...f.disk.values()][0],saved);
+});
+test('known pending credit and genuinely zero custody retain their empty-balance behavior',async()=>{
+ const pending=setup({snapshot:r=>{r.positions[0].balance='0';r.positions[0].available='0';r.accepted.pop();return r;}});
+ const waiting=await pending.c.load(account);assert.equal(waiting.complete,true);assert.deepEqual(waiting.rows,[]);
+ const empty=setup({snapshot:r=>({...r,positions:[],accepted:[]}),readAccount:()=>{const f=fixture();f.report.positions[0].chainBalance='0';return {owner:manifest.program,finalized:true,executable:false,data:data(f.report,f.link)};}});
+ const zero=await empty.c.load(account);assert.equal(zero.complete,true);assert.deepEqual(zero.rows,[]);
 });
 test('concurrent refreshes share one read and a slow read does not cause immediate repeated scans',async()=>{
  let release,time=at;const f=setup({now:()=>time,snapshot:r=>new Promise(resolve=>release=()=>resolve(r))});
@@ -72,7 +90,7 @@ test('a slow token does not block other tokens from reaching the portfolio',asyn
 });
 test('installed profile balance refresh reaches hosted service without a local connector',async()=>{
  const {WALLET_TEST_POLICY}=await import('../bridge/core-transferable/private-test.mjs');
- const calls=[],reader=createJointHoldings({walletTest:true,storage:{getItem:()=>null,setItem(){}},fetcher:async(url,o)=>{calls.push({url,o});return new Response(JSON.stringify({schema:'joint-index-v3',complete:true,manifest,privateTestPolicy:WALLET_TEST_POLICY,positions:[],accepted:[]}));},adapters:{chain:a=>({verifyProgram:async()=>{},readAccount:async()=>{const b=data(fixture().report,fixture().link);new PublicKey(a.mint).toBuffer().copy(b,65);return {owner:manifest.program,finalized:true,executable:false,data:b};}})}});
+ const calls=[],reader=createJointHoldings({walletTest:true,storage:{getItem:()=>null,setItem(){}},fetcher:async(url,o)=>{calls.push({url,o});return new Response(JSON.stringify({schema:'joint-index-v3',complete:true,manifest,privateTestPolicy:WALLET_TEST_POLICY,positions:[],accepted:[]}));},adapters:{chain:a=>({verifyProgram:async()=>{},readAccount:async()=>{const b=data(fixture().report,fixture().link);new PublicKey(a.mint).toBuffer().copy(b,65);b.writeBigUInt64LE(0n,161);return {owner:manifest.program,finalized:true,executable:false,data:b};}})}});
  const r=await reader.load(account);assert.equal(r.complete,true);assert.equal(calls.length,1);assert.equal(calls[0].url,'https://api.xmr20.org/api/joint-transferable/'+asset.mint+'/snapshot');assert.equal(calls[0].o.method,'POST');
 });
 
@@ -81,10 +99,10 @@ test('unregistered token skips native history after a fresh deployment and final
  const f=setup({readAccount:async()=>null});const r=await f.c.load(account);
  assert.equal(r.complete,true);assert.deepEqual(r.rows,[]);assert.equal(f.calls,0);assert.equal(f.checks,1);assert.equal(f.reads,1);
 });
-test('zero finalized custody clears a cached balance without waiting for native history',async()=>{
+test('linked zero custody still reads incoming history and clears an old balance',async()=>{
  const f=setup();await f.c.load(account);assert.equal(f.c.cached(account).length,1);
- const next=setup({storage:f.store,readAccount:async()=>{const x=fixture();x.report.positions[0].chainBalance='0';return {owner:manifest.program,finalized:true,executable:false,data:data(x.report,x.link)};}});
- const r=await next.c.load(account);assert.equal(r.complete,true);assert.deepEqual(r.rows,[]);assert.equal(next.calls,0);assert.deepEqual(next.c.cached(account),[]);
+ const next=setup({storage:f.store,snapshot:r=>{Object.assign(r.positions[0],{chainBalance:'0',balance:'0',available:'0'});return r;},readAccount:async()=>{const x=fixture();x.report.positions[0].chainBalance='0';return {owner:manifest.program,finalized:true,executable:false,data:data(x.report,x.link)};}});
+ const r=await next.c.load(account);assert.equal(r.complete,true);assert.deepEqual(r.rows,[]);assert.equal(next.calls,1);assert.deepEqual(next.c.cached(account),[]);
 });
 test('untrusted or mismatched zero custody cannot clear a cached holding',async()=>{
  const f=setup();await f.c.load(account);
@@ -92,4 +110,50 @@ test('untrusted or mismatched zero custody cannot clear a cached holding',async(
   const next=setup({storage:f.store,readAccount:async()=>{const x=fixture();x.report.positions[0].chainBalance='0';const v={owner:manifest.program,finalized:true,executable:false,data:data(x.report,x.link)};change(v);return v;}});
   const r=await next.c.load(account);assert.equal(r.complete,false);assert.equal(r.rows[0].stale,true);assert.equal(next.calls,0);
  }
+});
+
+function incomingFixture(){
+ const {report}=fixture();Object.assign(report.positions[0],{balance:'0',chainBalance:'0',available:'0'});
+ const sender='49DsRNquggMViexHSbSbE7C2TcV6rYBJkBQhEH3WqNV31QmJsyHAmP9MN2cw12PG5sDFZczxbLaeZ3aN4R5tL7ZDMVMokAZ';
+ const envelope={record:{p:'xmr20-joint',v:3,net:'mainnet',op:'transfer',mint:asset.mint,program:manifest.program,owner:sender,to:account.xmr,from:manifest.verifier,into:position,nonce:'ab'.repeat(32),amount:'15502018636656'},signature:'SigV2'+'1'.repeat(90)};
+ report.positions.push({position:manifest.verifier,moneroOwner:sender,available:'15502018636656'});
+ const item={txid:'ef'.repeat(32),envelope,reason:'finalized-backing-receipt-missing',confirmations:10};report.pending=[item];return {report,item};
+}
+test('incoming confirmed record is separate from spendable balance for a zero-balance recipient',()=>{
+ const {report}=incomingFixture();assert.equal(jointHoldingRow(report,account,asset,{privateTest:true}),null);
+ const rows=jointIncomingRows(report,account,asset,{privateTest:true});assert.equal(rows.length,1);assert.equal(rows[0].state,'approval');assert.equal(rows[0].amountRaw,'15502018636656');
+});
+test('relay observations are pending only; duplicates and finalized transfers disappear',()=>{
+ const {report,item}=incomingFixture();report.pending=[];report.observed=[item,item];let rows=jointIncomingRows(report,account,asset,{privateTest:true});assert.equal(rows.length,1);assert.equal(rows[0].state,'confirming');
+ report.pending=[item];rows=jointIncomingRows(report,account,asset,{privateTest:true});assert.equal(rows.length,1);assert.equal(rows[0].state,'approval');
+ report.accepted.push(item);assert.deepEqual(jointIncomingRows(report,account,asset,{privateTest:true}),[]);
+});
+test('wrong recipient, mint, position, unconfirmed status and malformed amounts never create incoming rows',()=>{
+ for(const change of [r=>r.to=r.owner,r=>r.into=manifest.verifier,r=>r.mint=manifest.verifier,r=>r.amount='1e9']){const {report,item}=incomingFixture();change(item.envelope.record);assert.deepEqual(jointIncomingRows(report,account,asset,{privateTest:true}),[]);}
+ const {report,item}=incomingFixture();item.confirmations=9;assert.deepEqual(jointIncomingRows(report,account,asset,{privateTest:true}),[]);
+});
+test('incoming rows are cached separately and remain nonspendable through an outage',async()=>{
+ const fixture=incomingFixture();let fail=false,time=at;
+ const f=setup({now:()=>time,snapshot:()=>{if(fail)throw Error('offline');return fixture.report;},readAccount:()=>({owner:manifest.program,finalized:true,executable:false,data:data(fixture.report,fixture.report.accepted[0].envelope)})});
+ let r=await f.c.load(account);assert.equal(r.complete,true);assert.deepEqual(r.rows,[]);assert.equal(r.pending.length,1);assert.deepEqual(f.c.cached(account),[]);assert.equal(f.c.cachedPending(account)[0].stale,true);
+ fail=true;time+=61000;r=await f.c.load(account);assert.equal(r.complete,false);assert.deepEqual(r.rows,[]);assert.equal(r.pending[0].stale,true);
+});
+
+test('unchanged finalized custody within the report window redisplays the last complete snapshot without another history request',async()=>{
+ let time=at;const f=setup({now:()=>time});
+ const first=await f.c.load(account);assert.equal(f.calls,1);assert.equal(f.reads,2);assert.equal(first.rows[0].amountRaw,'985000');
+ time+=15000;const second=await f.c.load(account);assert.equal(f.calls,1,'no new snapshot');assert.equal(f.reads,3,'one fresh custody read');assert.equal(second.complete,true);assert.equal(second.rows[0].amountRaw,'985000');assert.equal(second.rows[0].stale,false);assert.equal(second.rows[0].historyAt,at);
+ time+=15000;await f.c.load(account);assert.equal(f.calls,1);
+ time+=31000;const aged=await f.c.load(account);assert.equal(f.calls,2,'window expired: fresh snapshot');assert.equal(aged.rows[0].historyAt,time);
+ time+=15000;await f.c.load(account,[],{force:true});assert.equal(f.calls,3,'manual refresh always snapshots');
+});
+test('changed custody bytes, a failed read or a different position force a fresh snapshot',async()=>{
+ let time=at,balance='985000';const base=fixture();
+ const f=setup({now:()=>time,readAccount:()=>{const g=fixture();g.report.positions[0].chainBalance=balance;return {owner:manifest.program,finalized:true,executable:false,data:data(g.report,g.link)};},snapshot:r=>{r.positions[0].chainBalance=balance;r.positions[0].balance=balance;r.positions[0].available=balance;return r;}});
+ await f.c.load(account);assert.equal(f.calls,1);
+ time+=15000;balance='984000';const changed=await f.c.load(account);assert.equal(f.calls,2,'custody changed on chain');assert.equal(changed.rows[0].amountRaw,'984000');
+ time+=15000;await f.c.load(account);assert.equal(f.calls,2,'unchanged again: reused');
+ // A failed refresh clears the remembered report; the next cycle must snapshot.
+ const failing=setup({now:()=>time,snapshot:r=>{if(failing.fail)throw Error('offline');return r;}});failing.fail=false;await failing.c.load(account);time+=15000;failing.fail=true;const outage=await failing.c.load(account);assert.equal(outage.complete,true,'reused within window despite offline service');time+=46000;const after=await failing.c.load(account);assert.equal(after.complete,false);assert.equal(after.rows[0].stale,true);failing.fail=false;time+=15000;await failing.c.load(account);assert.equal(failing.calls,3);
+ void base;
 });

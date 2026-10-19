@@ -1,5 +1,15 @@
 # Wallet changelog
 
+## 0.1.57 source update — 19 October 2026
+
+- Link Solana and Monero wallets once for supported tokens, with separate preparation and final confirmation labels.
+- Resume saved wallet-link progress when reopening Bridge with no token balances; Back remains usable and explicit token recovery is preserved.
+- Share catalog/snapshot reads, bound connection checks, preserve cached balances for display, and coalesce popup updates.
+- Show compact token balances, token images and clearer bridge and Monero-send forms.
+- Keep exact signing amounts, one token fee, ten confirmations, both signatures and public recovery receipts.
+
+Source only: no replacement ZIP, website deployment or service deployment is included. Existing packaged 0.1.28 artifacts remain unchanged. Current source requires the compatible universal-link deployment; the build selects its public program pin explicitly. Full-wallet performance and funded end-to-end behavior are not established by unit tests.
+
 ## 0.1.28 — 14 October 2026
 
 Current installable wallet: `extension-bridge/`. The separate `extension/` output remains the older 0.1.14 developer preview.

@@ -1,6 +1,7 @@
 import {manifest} from '../bridge/core-next/mainnet-config.mjs';
 import {multiTokenManifest} from '../bridge/core-next/multi-token-config.mjs';
 import {XCAT_MINT,XMR20_MINT,supportedMint} from '../bridge/core-next/mint-policy.mjs';
+import {sharedCatalog} from './catalog-cache.js';
 export {XCAT_MINT,XMR20_MINT};
 export const jointAssets=Object.freeze([
  protocolAsset({mint:XMR20_MINT,symbol:'XMR20',name:'XMR20'}),
@@ -17,9 +18,7 @@ export function jointTokenLabel(asset,assets){if(asset.key==='previous-xcat')ret
 // The catalog discovers choices only. Runtime launch proofs still decide whether
 // the selected token may be registered, deposited, transferred or withdrawn.
 export async function loadJointCatalog({fetcher=fetch,signal}={}){
- const r=await fetcher('https://xmr20.org/api/xmr20/tokens',{credentials:'omit',redirect:'error',cache:'no-store',signal:signal?AbortSignal.any([signal,AbortSignal.timeout(15000)]):AbortSignal.timeout(15000)});
- if(!r.ok)throw Error('Token list unavailable.');const text=await r.text();if(text.length>4000000)throw Error('Token list too large.');const value=JSON.parse(text);
- if(value?.schema!=='xmr20-launches-v1'||!Array.isArray(value.tokens)||value.tokens.length>10000)throw Error('Token list unavailable.');
+ const value=await sharedCatalog(fetcher).load({signal:signal?AbortSignal.any([signal,AbortSignal.timeout(15000)]):AbortSignal.timeout(15000)});
  return discoveredAssets(value.tokens).filter(a=>a.key!=='previous-xcat');
 }
 const seenKey='xmr20-joint-discovered-assets-v3';

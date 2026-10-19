@@ -6,7 +6,17 @@ Launch and trade XMR20 tokens in [@XMR20_Bot](https://t.me/XMR20_Bot). [Bot sour
 
 Open-source XMR20 Chrome wallet and experimental read-only token indexer.
 
-## Current wallet — 0.1.28
+## Wallet source update — 0.1.57
+
+The current source includes universal wallet linking, clearer approval steps, saved-link recovery after closing the popup, faster shared reads, compact balances and the updated bridge/send interface. Run `npm ci`, `npm test`, then `npm run build:bridge` to build the updated client into `extension-bridge/`.
+
+Wallet linking does not move tokens. The linked addresses are public and the link is permanent. Link setup still requires explicit approvals and ten Monero confirmations. Transfer amounts, fee checks, independent verification and durable receipts remain mandatory. Saved balance displays never authorize a transaction. The program remains upgradeable and verifier-dependent; this is not a trustless or independently audited bridge.
+
+This publishes the bridge client and its tests. The retained `bridge/core-transferable/program/` is the earlier program source, not the universal-link program binary currently pinned by the client. This is not a complete operator/program source release.
+
+This is a source publication. The checked-in packaged build and downloadable release below remain **0.1.28** until a separate package release. The source build has been tested locally; this publication does not deploy the website or operator services, perform wallet approvals, or claim that bridge latency is eliminated. Website adapters share these client modules in the private project; the complete website and production operator configuration are outside this repository.
+
+## Packaged wallet — 0.1.28
 
 **[Download wallet 0.1.28](https://github.com/xmr20project/XMR20/releases/download/v0.1.28/xmr20-wallet-bridge-0.1.28.zip)** · [Release notes](https://github.com/xmr20project/XMR20/releases/tag/v0.1.28) · [What changed](CHANGELOG.md)
 
@@ -59,7 +69,7 @@ Build the new bridge candidate separately:
 npm run build:bridge
 ```
 
-Load `extension-bridge/` for version 0.1.28. The hosted gateway is used automatically. The optional local connector remains available only for explicit development profiles. `npm run build` continues to produce the ordinary `extension/` build.
+After `npm run build:bridge`, load `extension-bridge/` for source build 0.1.57. The unrebuilt checked-in package is 0.1.28. The hosted gateway is used automatically. The optional local connector remains available only for explicit development profiles. `npm run build` continues to produce the ordinary `extension/` build.
 
 Tests build the extension first. To build without running tests, use `npm run build`.
 The test suite uses disposable keys and mocked network responses; it does not move real funds.
