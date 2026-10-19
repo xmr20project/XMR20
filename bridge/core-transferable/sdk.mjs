@@ -3,7 +3,7 @@ import {PublicKey,SystemProgram,TransactionInstruction,TransactionMessage,Versio
 import {TOKEN_2022_PROGRAM_ID as TOKEN,getAssociatedTokenAddressSync,createAssociatedTokenAccountIdempotentInstruction} from '@solana/spl-token';
 import {digest} from '../core-next/records.mjs';
 import {ed25519} from '@noble/curves/ed25519';
-import {matchesWalletApproval} from './wallet-guards.mjs';
+import {matchesWalletApproval,LIGHTHOUSE_PROGRAM} from './wallet-guards.mjs';
 const need=(v,m)=>{if(!v)throw Error(m);};
 const pk=x=>new PublicKey(x),hex=x=>{need(typeof x==='string'&&/^[a-f0-9]{64}$/.test(x)&&!/^0+$/.test(x),'Nonzero public commitment required.');return Buffer.from(x,'hex');};
 const u64=x=>{need(typeof x==='string'&&/^(0|[1-9][0-9]{0,15})$/.test(x),'Exact integer amount required.');const b=Buffer.alloc(8);b.writeBigUInt64LE(BigInt(x));return b;};
@@ -44,16 +44,23 @@ export function transaction(c,p){
 }
 export function decodePosition(data){const b=Buffer.from(data);need(b.length===169&&b[0]===3,'Invalid transferable position.');return {owner:new PublicKey(b.subarray(1,33)).toBase58(),verifier:new PublicKey(b.subarray(33,65)).toBase58(),mint:new PublicKey(b.subarray(65,97)).toBase58(),binding:b.subarray(97,129).toString('hex'),linkProof:b.subarray(129,161).toString('hex'),balance:b.readBigUInt64LE(161).toString()};}
 export function decodeReceipt(data){const b=Buffer.from(data);need(b.length===153&&[2,3,4,5].includes(b[0]),'Invalid transferable receipt.');return {kind:b[0],from:new PublicKey(b.subarray(1,33)).toBase58(),to:new PublicKey(b.subarray(33,65)).toBase58(),nonce:b.subarray(65,97).toString('hex'),commitment:b.subarray(97,129).toString('hex'),gross:b.readBigUInt64LE(129).toString(),net:b.readBigUInt64LE(137).toString(),fee:b.readBigUInt64LE(145).toString()};}
-// Registration is fully checked and verifier-authorized before its short-lived
-// owner approval. Other custody operations retain the unsigned-review path.
+// Verifier-authorized messages are byte-exact: an added instruction would
+// invalidate the existing signature, even when it is a wallet safety assertion.
 export async function approveRegistrationExternal(c,p,bytes,provider){
  need(p.operation==='register','Preauthorized signing is registration-only.');
+ return approveAuthorizedExternal(c,p,bytes,provider);
+}
+export async function approveMoveExternal(c,p,bytes,provider){
+ need(['transfer','release'].includes(p.operation),'Preauthorized signing requires a holder move.');
+ return approveAuthorizedExternal(c,p,bytes,provider);
+}
+async function approveAuthorizedExternal(c,p,bytes,provider){
  const expected=transaction(c,p),tx=VersionedTransaction.deserialize(bytes),msg=expected.message.serialize(),owner=pk(c.owner),verifier=pk(c.verifier);
  provider.assertCurrent?.();
- need(provider.publicKey?.toBase58()===owner.toBase58()&&Buffer.from(tx.message.serialize()).equals(Buffer.from(msg))&&tx.signatures.length===2&&tx.signatures[0].every(n=>n===0)&&ed25519.verify(tx.signatures[1],msg,verifier.toBytes()),'Registration authorization or selected wallet changed.');
+ need(provider.publicKey?.toBase58()===owner.toBase58()&&Buffer.from(tx.message.serialize()).equals(Buffer.from(msg))&&tx.signatures.length===2&&tx.signatures[0].every(n=>n===0)&&ed25519.verify(tx.signatures[1],msg,verifier.toBytes()),'Verifier authorization or selected wallet changed.');
  const verifierSignature=Buffer.from(tx.signatures[1]);
  const signed=await provider.signTransaction(tx);provider.assertCurrent?.();
- need(provider.publicKey?.toBase58()===owner.toBase58()&&Buffer.from(signed.message.serialize()).equals(Buffer.from(msg))&&signed.signatures.length===2&&ed25519.verify(signed.signatures[0],msg,owner.toBytes())&&Buffer.from(signed.signatures[1]).equals(verifierSignature),'Wallet approval differs from the authorized registration.');return signed;
+ need(provider.publicKey?.toBase58()===owner.toBase58()&&Buffer.from(signed.message.serialize()).equals(Buffer.from(msg))&&signed.signatures.length===2&&ed25519.verify(signed.signatures[0],msg,owner.toBytes())&&Buffer.from(signed.signatures[1]).equals(verifierSignature),'Wallet approval differs from the exact verifier-authorized transaction.');return signed;
 }
 export async function approveExternal(c,p,bytes,provider){
  const expected=transaction(c,p),tx=VersionedTransaction.deserialize(bytes),actor=pk(p.actor??c.owner),msg=expected.message.serialize();provider.assertCurrent?.();
@@ -62,14 +69,22 @@ export async function approveExternal(c,p,bytes,provider){
  // Keep the independent expected message: a provider may mutate the object it
  // was given. Diagnostics never authorize those changed bytes or retain them.
  const verify=(signature,data)=>{try{return ed25519.verify(signature,data,actor.toBytes());}catch{return false;}};
- const diagnostic={reason:null,selectedOwnerMatches:provider.publicKey?.toBase58()===actor.toBase58(),messageMatches:false,signatureCountMatches:false,ownerSignatureValidForReviewed:false,ownerSignatureValidForReturned:false,extraSignaturesUnchanged:false,blockhashChanged:false,computeBudgetChanged:false,otherInstructionsChanged:false,accountsChanged:false,accountOrderOnlyChanged:false,addedSolTransfer:false,addedMemoInstruction:false,addedOtherProgramInstruction:false,addedProgramIds:[],messageVersionChanged:false,expectedMessageHash:digest(msg),returnedMessageHash:null};
+ const diagnostic={reason:null,selectedOwnerMatches:provider.publicKey?.toBase58()===actor.toBase58(),messageMatches:false,signatureCountMatches:false,ownerSignatureValidForReviewed:false,ownerSignatureValidForReturned:false,extraSignaturesUnchanged:false,walletGuardsAllowed:false,blockhashChanged:false,computeBudgetChanged:false,otherInstructionsChanged:false,accountsChanged:false,accountOrderOnlyChanged:false,addedSolTransfer:false,addedMemoInstruction:false,addedOtherProgramInstruction:false,addedProgramIds:[],messageVersionChanged:false,expectedMessageHash:digest(msg),returnedMessageHash:null};
  let returned;
  try{
   returned=signed.message.serialize();diagnostic.returnedMessageHash=digest(returned);diagnostic.messageMatches=Buffer.from(returned).equals(Buffer.from(msg));
   diagnostic.signatureCountMatches=signed.signatures.length===expected.signatures.length;
   diagnostic.ownerSignatureValidForReviewed=verify(signed.signatures[0],msg);diagnostic.ownerSignatureValidForReturned=verify(signed.signatures[0],returned);diagnostic.extraSignaturesUnchanged=signed.signatures.slice(1).every(s=>s.every(n=>n===0));
   const shape=m=>({version:m.version,header:[m.header.numRequiredSignatures,m.header.numReadonlySignedAccounts,m.header.numReadonlyUnsignedAccounts],keys:m.staticAccountKeys.map(k=>k.toBase58()),lookups:(m.addressTableLookups||[]).map(l=>({key:l.accountKey.toBase58(),writable:Array.from(l.writableIndexes),readonly:Array.from(l.readonlyIndexes)})),instructions:m.compiledInstructions.map(i=>({program:m.staticAccountKeys[i.programIdIndex]?.toBase58()??'lookup:'+i.programIdIndex,accounts:Array.from(i.accountKeyIndexes,n=>m.staticAccountKeys[n]?.toBase58()??'lookup:'+n),data:Buffer.from(i.data).toString('hex')}))});
-  const before=shape(expected.message),after=shape(signed.message),budget=ComputeBudgetProgram.programId.toBase58(),same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+  const before=shape(expected.message),budget=ComputeBudgetProgram.programId.toBase58(),same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);let after=shape(signed.message);
+  // For diagnostics only, distinguish permitted safety assertions from other
+  // changes. The original signed message still faces the exact approval check
+  // below; this projection is never signed, saved, returned or submitted.
+  if(signed.message.version===0&&!signed.message.addressTableLookups.length&&after.instructions.some(i=>i.program===LIGHTHOUSE_PROGRAM)){
+   const decoded=TransactionMessage.decompile(signed.message),projected=new TransactionMessage({payerKey:decoded.payerKey,recentBlockhash:decoded.recentBlockhash,instructions:decoded.instructions.filter(i=>i.programId.toBase58()!==LIGHTHOUSE_PROGRAM)}).compileToV0Message();
+   diagnostic.walletGuardsAllowed=matchesWalletApproval(projected,signed.message,p.operation);
+   if(diagnostic.walletGuardsAllowed)after=shape(projected);
+  }
   diagnostic.blockhashChanged=signed.message.recentBlockhash!==expected.message.recentBlockhash;
   diagnostic.messageVersionChanged=before.version!==after.version;
   diagnostic.accountsChanged=!same([before.header,before.keys,before.lookups],[after.header,after.keys,after.lookups]);

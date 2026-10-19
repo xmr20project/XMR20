@@ -1,3 +1,4 @@
+import {BINARY_HASH as IDENTITY_BINARY_HASH,BINARY_SIZE as IDENTITY_BINARY_SIZE,CAPABILITY} from '../core-universal-link/deployment-policy.mjs';
 import {PublicKey,VersionedTransaction} from '@solana/web3.js';
 import {unpackMint,getTransferFeeConfig,getExtensionTypes,TOKEN_2022_PROGRAM_ID} from '@solana/spl-token';
 import {ed25519} from '@noble/curves/ed25519';
@@ -11,25 +12,51 @@ import {privateTestPolicy as validatePrivateTestPolicy,privateTestConfig,private
 export {BINARY_HASH,BINARY_SIZE};
 const need=(v,m)=>{if(!v)throw Error(m);};
 const LOADER=new PublicKey('BPFLoaderUpgradeab1e11111111111111111111111');
+// ProgramData header: u32 state, u64 deployment slot, Option<Pubkey> authority.
+const PROGRAM_DATA_HEADER=45,verifiedDeployments=new Map();
 export function createSolanaAdapter({connection,manifest,privateTestPolicy}){
- need(manifest?.abi===3&&manifest.network==='mainnet-beta'&&manifest.genesisHash===MAINNET_GENESIS&&manifest.binaryHash===BINARY_HASH&&manifest.binarySize===BINARY_SIZE,'Reviewed ABI 3 manifest required.');
+ const identity=manifest?.profile==='transferable-v3-identity-v1'&&manifest.capability===CAPABILITY;
+ const binaryHash=identity?IDENTITY_BINARY_HASH:BINARY_HASH,binarySize=identity?IDENTITY_BINARY_SIZE:BINARY_SIZE;
+ need(manifest?.abi===3&&manifest.network==='mainnet-beta'&&manifest.genesisHash===MAINNET_GENESIS&&manifest.binaryHash===binaryHash&&manifest.binarySize===binarySize,'Reviewed ABI 3 manifest required.');
  const pinned=canonical(manifest),program=new PublicKey(manifest.program),mint=new PublicKey(manifest.mint),verifier=new PublicKey(manifest.verifier);
  need(PublicKey.isOnCurve(verifier.toBytes()),'Verifier signing wallet required.');
  const testPolicy=privateTestPolicy?validatePrivateTestPolicy(privateTestPolicy,manifest):null;
  const dataKey=PublicKey.findProgramAddressSync([program.toBuffer()],LOADER)[0];
  const checkedConfig=c=>{need(c?.abi===3&&c.network===manifest.network&&c.program===manifest.program&&c.verifier===manifest.verifier&&c.mint===manifest.mint,'Wrong transferable deployment.');if(testPolicy)privateTestConfig(c,testPolicy);};
+ // Verified program-data headers by RPC endpoint, manifest and policy. The
+ // upgradeable loader stores the deployment slot in this 45-byte header and
+ // refuses a second deployment in the same slot, so an unchanged header after a
+ // full code hash means unchanged bytes. Any difference re-reads and re-hashes
+ // the whole account. Network, program, authority and header checks still run
+ // on every call; nothing here caches readiness, balances or fees.
+ const registryKey=typeof connection.rpcEndpoint==='string'?connection.rpcEndpoint+'|'+pinned+'|'+canonical(testPolicy??null):null;
+ let verifying=null;
  async function verifyProgram(){
   need(canonical(manifest)===pinned,'Changed deployment or Solana network.');
-  // These fixed public addresses do not depend on a prior RPC result. Read
-  // them together, but retain every fresh network/code/authority check.
-  const [genesis,p,d]=await Promise.all([connection.getGenesisHash(),connection.getAccountInfo(program,'finalized'),connection.getAccountInfo(dataKey,'finalized')]);
+  // Concurrent callers on this adapter share one fresh verification.
+  if(!verifying){verifying=verifyDeployment(registryKey?verifiedDeployments.get(registryKey)??null:null).finally(()=>{verifying=null;});}
+  return verifying;
+ }
+ async function verifyDeployment(known){
+  const [genesis,p,d]=await Promise.all([connection.getGenesisHash(),connection.getAccountInfo(program,'finalized'),known?connection.getAccountInfo(dataKey,{commitment:'finalized',dataSlice:{offset:0,length:PROGRAM_DATA_HEADER}}):connection.getAccountInfo(dataKey,'finalized')]);
   need(genesis===MAINNET_GENESIS&&canonical(manifest)===pinned,'Changed deployment or Solana network.');
   need(p?.executable&&p.owner.equals(LOADER)&&p.data.length===36&&p.data.readUInt32LE(0)===2,'Transferable program is not deployed.');
   need(new PublicKey(p.data.subarray(4)).equals(dataKey),'Changed program-data address.');
-  need(d?.owner.equals(LOADER)&&!d.executable&&d.data.length>=45+BINARY_SIZE&&d.data.readUInt32LE(0)===3,'Reviewed transferable program-data required.');
-  if(testPolicy)need(d.data[12]===1&&new PublicKey(d.data.subarray(13,45)).toBase58()===testPolicy.upgradeAuthority,'Private test requires the exact retained upgrade authority.');
+  need(d?.owner.equals(LOADER)&&!d.executable&&d.data.length>=PROGRAM_DATA_HEADER&&d.data.readUInt32LE(0)===3,'Reviewed transferable program-data required.');
+  if(testPolicy)need(d.data[12]===1&&new PublicKey(d.data.subarray(13,PROGRAM_DATA_HEADER)).toBase58()===testPolicy.upgradeAuthority,'Private test requires the exact retained upgrade authority.');
   else need(d.data[12]===0,'Transferable program must be immutable.');
-  need(digest(d.data.subarray(45,45+BINARY_SIZE))===BINARY_HASH&&d.data.subarray(45+BINARY_SIZE).every(x=>x===0),'Transferable deployed code differs from review.');
+  const header=d.data.subarray(0,PROGRAM_DATA_HEADER).toString('hex');
+  if(!known||d.data.length>PROGRAM_DATA_HEADER){
+   // Full bytes in hand: always hash them, whether or not a header was known.
+   need(d.data.length>=PROGRAM_DATA_HEADER+binarySize,'Reviewed transferable program-data required.');
+   need(digest(d.data.subarray(PROGRAM_DATA_HEADER,PROGRAM_DATA_HEADER+binarySize))===binaryHash&&d.data.subarray(PROGRAM_DATA_HEADER+binarySize).every(x=>x===0),'Transferable deployed code differs from review.');
+   if(registryKey)verifiedDeployments.set(registryKey,{header});
+   return;
+  }
+  if(header===known.header)return;
+  // A new deployment slot or authority means different bytes: hash them again.
+  verifiedDeployments.delete(registryKey);
+  return verifyDeployment(null);
  }
  async function fee(amount){
   await verifyProgram();need(typeof amount==='string'&&/^[1-9][0-9]{0,13}$/.test(amount)&&BigInt(amount)<=50000000000000n,'Exact supported amount required.');
@@ -48,6 +75,12 @@ export function createSolanaAdapter({connection,manifest,privateTestPolicy}){
  // Replay verifies the deployment once before reading its account set. Avoid
  // re-downloading the entire binary for every holder and receipt account.
  async function readAccount(key){const a=await connection.getAccountInfo(new PublicKey(key),'finalized');return a?{owner:a.owner.toBase58(),executable:a.executable,finalized:true,data:Uint8Array.from(a.data)}:null;}
+ async function readAccounts(keys){
+  need(Array.isArray(keys)&&keys.length>0&&keys.length<=100&&new Set(keys).size===keys.length,'Bounded distinct account read required.');
+  const rows=await connection.getMultipleAccountsInfo(keys.map(key=>new PublicKey(key)),'finalized');
+  need(Array.isArray(rows)&&rows.length===keys.length,'Complete finalized account batch required.');
+  return rows.map(a=>a?{owner:a.owner.toBase58(),executable:a.executable,finalized:true,data:Uint8Array.from(a.data)}:null);
+ }
  async function outcome(tx,lastValidBlockHeight){
   need(Number.isSafeInteger(lastValidBlockHeight)&&lastValidBlockHeight>0,'Saved expiry required.');const signature=bs58.encode(tx.signatures[0]);
   const status=(await connection.getSignatureStatuses([signature],{searchTransactionHistory:true})).value[0];if(status)return {kind:status.confirmationStatus==='finalized'?(status.err?'failed':'finalized'):'pending',signature};
@@ -57,7 +90,22 @@ export function createSolanaAdapter({connection,manifest,privateTestPolicy}){
   need((await connection.isBlockhashValid(tx.message.recentBlockhash,{commitment:'finalized'})).value===false,'RPC expiry evidence disagrees.');return {kind:'expired',signature};
  }
  const verifyWalletGuards=async message=>{if(hasWalletGuards(message))await verifyWalletGuardProgram(connection);};
- return Object.freeze({verifyProgram,readAccount,fee,verifyWalletGuards,
+ return Object.freeze({verifyProgram,readAccount,...(typeof connection.getMultipleAccountsInfo==='function'?{readAccounts}:{}),fee,verifyWalletGuards,
+  async authorizationExpired(config,proposal){
+   checkedConfig(config);need(['transfer','release'].includes(proposal.operation)&&Number.isSafeInteger(proposal.lastValidBlockHeight)&&proposal.lastValidBlockHeight>0,'Exact saved holder authorization required.');
+   await verifyProgram();
+   const [height,valid]=await Promise.all([connection.getBlockHeight('finalized'),connection.isBlockhashValid(proposal.blockhash,{commitment:'finalized'})]);
+   need(Number.isSafeInteger(height)&&height>=0&&typeof valid?.value==='boolean','Authorization expiry verification unavailable.');
+   if(height<=proposal.lastValidBlockHeight)return false;
+   need(valid.value===false,'RPC expiry evidence disagrees.');return true;
+  },
+  async fundingReviewFresh(config,proposal){
+   checkedConfig(config);need(['deposit','donate'].includes(proposal.operation),'Funding-only freshness check required.');if(testPolicy)privateTestOperation(config,proposal,testPolicy);
+   need(Number.isSafeInteger(proposal.lastValidBlockHeight)&&proposal.lastValidBlockHeight>0,'Reviewed blockhash expiry required.');
+   const [current,height,valid]=await Promise.all([fee(proposal.amount),connection.getBlockHeight('confirmed'),connection.isBlockhashValid(proposal.blockhash,{commitment:'confirmed'})]);
+   need(current===proposal.expectedFee,'Token fee changed. Review again.');need(Number.isSafeInteger(height)&&height>=0&&typeof valid?.value==='boolean','Fresh blockhash verification unavailable.');
+   return valid.value&&proposal.lastValidBlockHeight-height>=80;
+  },
   async prepare(config,terms){checkedConfig(config);if(testPolicy)privateTestOperation(config,terms,testPolicy);await verifyProgram();const latest=await connection.getLatestBlockhash('confirmed'),proposal={network:config.network,...terms,blockhash:latest.blockhash,lastValidBlockHeight:latest.lastValidBlockHeight};return {config,proposal,transaction:transaction(config,proposal)};},
   async submit(config,proposal,tx){await verifyProgram();validSigned(config,proposal,tx);await verifyWalletGuards(tx.message);if(proposal.operation!=='register'){const current=await fee(proposal.amount);if(proposal.operation!=='transfer')need(current===proposal.expectedFee,'Token fee changed.');}return connection.sendRawTransaction(tx.serialize(),{skipPreflight:false,preflightCommitment:'confirmed',maxRetries:2});},
   async finalizedOperation({config,proposal,bytes}){

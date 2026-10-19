@@ -1,0 +1,22 @@
+{
+  "success": true,
+  "data": {
+    "rows": [
+      {
+        "mint": "9MwJfFGc3jNkAKLwma4kkUYivs19yJsWXuPD15RegXMR",
+        "poolId": "9A98cfTHJBBCRnsUPa7EswNQ78Ly8pVFRSztGtNAjm4A",
+        "platformInfo": {
+          "pubKey": "46otjKsDngkHBjScqHmVBkroPtbieJajPj8AC31cHzbW"
+        },
+        "mintB": {
+          "address": "WXMRyRZhsa19ety5erZhHg4N3xj3EVN92u94422teJp",
+          "chainId": 101
+        },
+        "decimals": 6,
+        "supply": 1000000000,
+        "marketCap": 4264.067568936076,
+        "finishingRate": 2.69
+      }
+    ]
+  }
+}

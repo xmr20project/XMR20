@@ -15,3 +15,18 @@ test('network errors explain recovery without hiding protocol validation failure
  assert.match(bridgeConnectionMessage(new TypeError('Failed to fetch')),/saved approvals are kept/);
  assert.equal(bridgeConnectionMessage(new Error('Changed bridge deployment.')),'Changed bridge deployment.');
 });
+test('an unlinked Monero recipient explains how to become eligible without claiming a submission',()=>{
+ const message=bridgeConnectionMessage(Error('Registered recipient required.'));
+ assert.match(message,/recipient must link their Monero wallet to a Solana wallet in Bridge/);
+ assert.match(message,/10 Monero confirmations/);
+ assert.doesNotMatch(message,/submitted|network error|try again/);
+ assert.equal(bridgeConnectionMessage(Error('Choose a different linked Monero wallet.')),'Choose a different linked Monero wallet.');
+});
+test('service verification failures and timeouts are not described as connection failures',()=>{
+ const service=bridgeConnectionMessage(new Error('Transferable service unavailable. Keep the public recovery receipt.'));
+ assert.match(service,/could not finish this request/);assert.doesNotMatch(service,/could not reach/);
+ const timeout=bridgeConnectionMessage(new DOMException('SYNTHETIC_PRIVATE_DETAIL','TimeoutError'));
+ assert.match(timeout,/took too long to respond/);assert.match(timeout,/Check status before approving again/);assert.doesNotMatch(timeout,/PRIVATE|Nothing was submitted/);
+ const verification='The bridge could not verify this request. Your saved approvals are kept. Check status before approving again.';
+ assert.equal(bridgeConnectionMessage(Object.assign(Error(verification),{code:'bridge-verification-unavailable'})),verification);
+});

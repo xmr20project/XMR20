@@ -5,6 +5,12 @@ import {createRefreshLanes} from '../src/refresh-lanes.js';
 const owner='11111111111111111111111111111111',other='22222222222222222222222222222222';
 const response=(options,value)=>new Response(JSON.stringify({id:JSON.parse(options.body).id,result:{value}}));
 const deferred=()=>{let resolve;const promise=new Promise(r=>resolve=r);return {promise,resolve};};
+test('installed balance reader uses the private Helius wallet proxy without public RPC fallback',async()=>{
+ const calls=[],read=createPublicBalanceReader({fetcher:async(url,options)=>{
+  calls.push(url);const {action,rpc}=JSON.parse(options.body);assert.equal(action,'walletRpc');assert.equal(rpc.method,'getBalance');assert.equal(rpc.params[1].commitment,'finalized');
+  return Response.json({jsonrpc:'2.0',id:rpc.id,result:{value:100000000}});
+ }});assert.equal(await read(owner),'100000000');assert.deepEqual(calls,['https://xmr20.org/api/wallet']);
+});
 test('a stalled primary yields to a fast balance source; concurrent same-wallet reads share it',async()=>{
  const calls=[];let aborted=false;
  const read=createPublicBalanceReader({endpoints:['primary','backup'],hedgeMs:5,timeoutMs:100,fetcher:async(url,options)=>{

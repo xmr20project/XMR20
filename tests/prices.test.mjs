@@ -1,6 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {launchPrice,createPriceClient,tokenUsd,tokenPortfolio,usd,currentQuote,XMR20_PLATFORM,WXMR_MINT} from '../src/prices.js';
+import {launchPrice,createPriceClient,tokenUsd,tokenPortfolio,usd,currentQuote,XMR20_PLATFORM,XMR20_TWEET_PLATFORM,WXMR_MINT} from '../src/prices.js';
 const mint='3FyCsVxQJwKhV6Gia9N9PpsrdPNALfhoetJSWxqNXXMR',other='Cy5TzDyJ4mo6MBAbpwUcAgdfNiXYKrYUPrvhPGVU6XMR',pool='owfMnKskbjppP6VYB9apgVMZoBAwJR9LZWokEkenwPB';
 const row={mint,poolId:pool,platformInfo:{pubKey:XMR20_PLATFORM},mintB:{address:WXMR_MINT,chainId:101},decimals:6,marketCap:250000,supply:1000000000,finishingRate:20};
 const launchResponse={success:true,data:{rows:[row]}};const response=data=>({ok:true,json:async()=>data});
@@ -16,3 +16,22 @@ test('six-decimal raw quantities remain unchanged and unsafe or wrong-mint input
 test('captured official API responses cover LaunchLab and graduated token pricing',()=>{const launch=JSON.parse(readFileSync(new URL('./fixtures/launchlab.json',import.meta.url))),spot=JSON.parse(readFileSync(new URL('./fixtures/spot.json',import.meta.url)));const curve=launch.data.rows.find(r=>r.mint===mint),graduated=launch.data.rows.find(r=>r.mint===other);assert.ok(launchPrice(curve,mint,spot,Date.now()).priceUsd>0);assert.equal(launchPrice(graduated,other,spot,Date.now()).priceUsd,Number(spot.data[other]));});
 test('manual token price refresh bypasses the minute cache with a five-second spam limit',async()=>{let at=100000,calls=0;const client=createPriceClient({now:()=>at,fetcher:async()=>{calls++;return response({...launchResponse,data:{rows:[{...row,marketCap:250000*calls}]}});}});assert.equal((await client.load([mint]))[mint].priceUsd,0.00025);at+=1000;await client.load([mint],{force:true});assert.equal(calls,1);at+=4000;assert.equal((await client.load([mint],{force:true}))[mint].priceUsd,0.0005);assert.equal(calls,2);});
 test('simultaneous forced token refreshes share the in-flight lookup',async()=>{let resolve,calls=0;const client=createPriceClient({fetcher:async()=>{calls++;await new Promise(r=>{resolve=r;});return response(launchResponse);}});const first=client.load([mint]);const second=client.load([mint],{force:true});resolve();const [a,b]=await Promise.all([first,second]);assert.equal(calls,1);assert.equal(a[mint].priceUsd,b[mint].priceUsd);});
+
+// Captured public LaunchLab response: the regression is platform identity, not
+// a promise that this price will stay current. Runtime still requires a fresh API read.
+test('tweet-launched EXTREMIST shows its exact-mint USD value on both token networks',async()=>{
+ const data=JSON.parse(readFileSync(new URL('./fixtures/tweet-launchlab.json',import.meta.url))),r=data.data.rows[0];
+ assert.equal(r.platformInfo.pubKey,XMR20_TWEET_PLATFORM);
+ const client=createPriceClient({fetcher:async()=>response(data)}),prices=await client.load([r.mint]),q=prices[r.mint];
+ assert.ok(q&&q.source==='LaunchLab');assert.equal(q.priceUsd,r.marketCap/r.supply);
+ const holding={mint:r.mint,amountRaw:'7530668912636',network:'solana'},value=tokenUsd(holding,q);
+ assert.equal(usd(value),'$32.11');assert.equal(tokenUsd({...holding,network:'monero'},q),value);
+ assert.equal(holding.amountRaw,'7530668912636');
+ for(const patch of [{mint:other},{platformInfo:{pubKey:other}},{mintB:{address:other,chainId:101}},{mintB:{address:WXMR_MINT,chainId:103}},{decimals:9},{supply:0},{marketCap:Infinity},{finishingRate:100}])assert.equal(launchPrice({...r,...patch},r.mint,null,Date.now()),null);
+});
+test('graduated tweet launches still require a current exact-mint Raydium quote',()=>{
+ const data=JSON.parse(readFileSync(new URL('./fixtures/tweet-launchlab.json',import.meta.url))),r={...data.data.rows[0],migrateAmmId:pool,finishingRate:100};
+ assert.equal(launchPrice(r,r.mint,null,Date.now()),null);
+ assert.equal(launchPrice(r,r.mint,{success:true,data:{[other]:'1'}},Date.now()),null);
+ assert.equal(launchPrice(r,r.mint,{success:true,data:{[r.mint]:'0.000004'}},Date.now()).priceUsd,0.000004);
+});

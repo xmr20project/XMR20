@@ -1,6 +1,6 @@
 {
   "name": "xmr20-wallet",
-  "version": "0.1.28",
+  "version": "0.1.57",
   "private": true,
   "type": "module",
   "scripts": {

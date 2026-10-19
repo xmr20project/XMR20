@@ -7,7 +7,8 @@ export function cachedSolBalance(owner,{storage=globalThis.localStorage,now=Date
 export function saveSolBalance(owner,raw,{storage=globalThis.localStorage,now=Date.now()}={}){
  if(!validRaw(raw))return;try{storage.setItem(SLOT+owner,JSON.stringify({owner,raw,checkedAt:now}));}catch{}
 }
-export function createPublicBalanceReader({fetcher=globalThis.fetch,endpoints=['https://api.xmr20.org/api/bridge-solana-read','https://solana-rpc.publicnode.com'],timeoutMs=4500,hedgeMs=350}={}){
+const HELIUS_WALLET='https://xmr20.org/api/wallet';
+export function createPublicBalanceReader({fetcher=globalThis.fetch,endpoints=[HELIUS_WALLET],timeoutMs=4500,hedgeMs=350}={}){
  const pending=new Map();
  return function read(owner){
   if(!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(owner))return Promise.reject(Error('Invalid Solana address'));
@@ -19,7 +20,8 @@ export function createPublicBalanceReader({fetcher=globalThis.fetch,endpoints=['
    async function attempt(){
     if(done||started>=endpoints.length)return;const endpoint=endpoints[started++],id=crypto.randomUUID();
     try{
-     const response=await fetcher(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id,method:'getBalance',params:[owner,{commitment:'finalized'}]}),credentials:'omit',redirect:'error',cache:'no-store',signal:controller.signal});
+     const rpc={jsonrpc:'2.0',id,method:'getBalance',params:[owner,{commitment:'finalized'}]};
+     const response=await fetcher(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(endpoint===HELIUS_WALLET?{action:'walletRpc',rpc}:rpc),credentials:'omit',redirect:'error',cache:'no-store',signal:controller.signal});
      if(!response.ok)throw Error('Balance service unavailable');const result=await response.json();
      if(result.id!==id||result.error||!Number.isSafeInteger(result.result?.value)||result.result.value<0)throw Error('Invalid SOL balance');
      finish(null,String(result.result.value));
