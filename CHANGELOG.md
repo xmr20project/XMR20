@@ -1,5 +1,13 @@
 # Wallet changelog
 
+## Server carrier own-node transport — 20 October 2026
+
+- Prefer the owned Monero node for native carrier synchronization and first publication, while retaining independent checkpoint verification and bounded fallback.
+- Connect the server's Docker carrier to the existing private SSH tunnel through a loopback-only connector with privilege dropping and automatic restart.
+- Preserve signed amounts, fee limits, input reservations, recovery records and confirmation requirements. No extension version or bundled client package changes in this update.
+- Publish the server source and 83 passing regression tests in `bridge/core-universal-link/carrier-host/`. Private configuration and operational receipts are excluded. Readiness checks remain several seconds; this is not an instant-startup claim.
+
+
 ## 0.1.57 source update — 19 October 2026
 
 - Link Solana and Monero wallets once for supported tokens, with separate preparation and final confirmation labels.

@@ -116,3 +116,7 @@ A mainnet rebuild from the published scan start completed on 7 October 2026 with
 ## Published protocol and service sources
 
 The transferable ABI 3 Rust program and pinned Cargo lock are in `bridge/core-transferable/program/`. Public record formats, SDK and wallet validation are in `bridge/core-transferable/`; the independent indexer and protocol rules are in `indexer/`. The read-only wallet adapter is in `services/wallet-index/`. The root MIT license covers original project code; third-party licenses remain unchanged. This release does not include the complete primary operator backend or the separate mining/NFT launch under development. Private keys, server settings and user data are excluded. Open source does not mean independently audited or production-ready.
+
+## Server carrier own-node transport
+
+The server carrier now uses the owned Monero node for synchronization and publication, while retaining independent verification and fallback. Its [source, tests and deployment boundary](bridge/core-universal-link/carrier-host/README.md) are included for review. This is server infrastructure: users do not need Docker or a bridge process on their laptop. It does not change the extension version or remove the ten-confirmation requirement.
