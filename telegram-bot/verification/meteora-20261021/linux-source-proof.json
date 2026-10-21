@@ -1,0 +1,16 @@
+{
+  "sourceCommit": "5398b5c7c534de014091132da37c6478cce671a8",
+  "sourceFiles": 202,
+  "sourceExactMatch": true,
+  "agaveVersion": "3.1.10",
+  "platformTools": "v1.52",
+  "host": "x86_64-unknown-linux-gnu",
+  "offlineUnprivilegedBuild": true,
+  "rebuiltBytes": 1430792,
+  "rebuiltSha256": "ca7a32627e284798de74eab2c8c3fe5c904c02b282f93a3314d5ad5bc92e5a67",
+  "rebuiltTrimmedSha256": "0712ca6d350757b9a71a0ea40da8fe9d5b48fca044f2deae0b65a33320e6a59b",
+  "mainnetTrimmedSha256": "0712ca6d350757b9a71a0ea40da8fe9d5b48fca044f2deae0b65a33320e6a59b",
+  "exactExecutableMatch": true,
+  "paddedFullPayloadMatch": true,
+  "paddedPayloadSha256": "967ff9fb161eec2e62f66d2c899100739fb747c445f697b8625c86b31b9a2022"
+}
