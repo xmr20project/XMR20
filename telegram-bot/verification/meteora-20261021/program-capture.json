@@ -1,0 +1,30 @@
+{
+  "checkedAt": "2026-10-21T12:01:27.697Z",
+  "readOnly": true,
+  "observations": [
+    {
+      "rpc": "https://solana-rpc.publicnode.com",
+      "slot": 459621583,
+      "program": "cpamdpZCGKUy5JxQXB4dcpGPiikHawvSWAd6mEn1sGG",
+      "programData": "AUh8bm2XsMfex3KjYGcM3G4uBqUNSDw6HEhWaWMYnyPH",
+      "upgradeSlot": "457080014",
+      "authority": "JADaUV8kvDpDbJr55wxXJHVaBS3VCj8thZZHjfeuCVLd",
+      "allocatedPayloadBytes": 2174352,
+      "sha256": "967ff9fb161eec2e62f66d2c899100739fb747c445f697b8625c86b31b9a2022",
+      "nonzeroPayloadEnd": 1430777,
+      "trimmedSha256": "0712ca6d350757b9a71a0ea40da8fe9d5b48fca044f2deae0b65a33320e6a59b"
+    },
+    {
+      "rpc": "https://api.mainnet-beta.solana.com",
+      "slot": 459621585,
+      "program": "cpamdpZCGKUy5JxQXB4dcpGPiikHawvSWAd6mEn1sGG",
+      "programData": "AUh8bm2XsMfex3KjYGcM3G4uBqUNSDw6HEhWaWMYnyPH",
+      "upgradeSlot": "457080014",
+      "authority": "JADaUV8kvDpDbJr55wxXJHVaBS3VCj8thZZHjfeuCVLd",
+      "allocatedPayloadBytes": 2174352,
+      "sha256": "967ff9fb161eec2e62f66d2c899100739fb747c445f697b8625c86b31b9a2022",
+      "nonzeroPayloadEnd": 1430777,
+      "trimmedSha256": "0712ca6d350757b9a71a0ea40da8fe9d5b48fca044f2deae0b65a33320e6a59b"
+    }
+  ]
+}
