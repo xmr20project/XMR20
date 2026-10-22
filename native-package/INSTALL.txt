@@ -1,0 +1,27 @@
+XMR20 Wallet — Bridge testing 0.1.65
+
+Update an existing wallet
+Keep the existing extension and its folder. Replace its installation files with
+this build, then open chrome://extensions and click Reload on XMR20 Wallet.
+Do not uninstall: that can remove saved encrypted accounts and recovery receipts.
+Reload locks the wallet. Unlock with your existing password; no key import is needed.
+
+First installation
+Extract into a folder you will keep. Open chrome://extensions, enable Developer
+mode, click Load unpacked, and select the folder containing manifest.json.
+
+Bridge testing
+This build supports any linked account and verified tokens launched through XMR20.
+Use Bridge, select the token, and follow the displayed account-link and bridge steps.
+Link a Solana/Monero wallet pair once for supported XMR20 tokens. Token account setup is a separate, explicit Solana rent approval; existing balances and recovery remain supported.
+Bridge actions and balances connect to https://api.xmr20.org automatically.
+No local connector or SSH forward is needed for this build.
+See BRIDGE-TESTING.md and README.md at https://github.com/xmr20project/XMR20.
+
+The program retains upgrade authority and is not independently audited.
+Token fees and network/account costs apply. Keep recovery material private.
+Monero transfers here are public XMR20 protocol records, not native private XMR.
+
+Coordinated Solana-settled send release.
+Sends settle ownership on Solana. Bridge confirmation rules are unchanged.
+Saved native sends can continue with the same recipient, amount and replay-protected nonce after a fresh Solana review.

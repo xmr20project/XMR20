@@ -6,6 +6,7 @@ export const isBridgeHolding=row=>positive(row?.amountRaw)&&(row.network==='sola
 // Preserve unresolved public approvals even when their debit has made the
 // portfolio balance zero. Completed returns alone do not create a holding.
 export function hasBridgeRecovery(receipt){
+ if(Object.values(receipt?.fastOperations??{}).some(j=>j.phase!=='finalized'))return true;
  const jobs=Object.values(receipt?.operations||{});
  if(jobs.some(j=>j?.proposal&&(j.phase!=='finalized'||['register','deposit','donate'].includes(j.proposal.operation)&&j.background?.phase!=='complete')))return true;
  return Object.entries(receipt?.proofs||{}).some(([id,p])=>['transfer','burn'].includes(p?.envelope?.record?.op)&&!jobs.some(j=>j?.phase==='finalized'&&j.proposal?.nonce===id&&j.proposal.operation===(p.envelope.record.op==='burn'?'release':'transfer')));

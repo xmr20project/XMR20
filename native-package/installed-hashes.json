@@ -1,0 +1,28 @@
+{
+  "version": "0.1.95",
+  "builtOutputs": {
+    "app.js": "f443aa8280dc0208a4f2f28de0ec18c18717e5e33afdf4474db0c80401d8b51d",
+    "background.js": "752ae0bb37c47ddd8fb82ad3ee6fdf9a45928859a3c069eb9eb6352b81fc97a3",
+    "approval.js": "a79f1f84c7c202ecd4719e53a90684da170f6a7867e8480193f7a2713d1d2b0b",
+    "market-entry.js": "4bc8f27750da6f5c0310ea3e56461ddfa4afb9e975112c3e63bafcda7888354d"
+  },
+  "files": {
+    "manifest.json": "5c260a31d25cd0007e7adc43e60cf990ea18ffdec76b144e7f06f499840d3235",
+    "market-entry.css": "3c876d9da02784c377666adcb1934438f02ceaa4e71e39f0c75e8bc50661138d",
+    "market.html": "553289da6db19c0c40dfe9ac2b0aa7a943876388e79176961d59ba87f740b3c3",
+    "market/market.css": "c2414b35acc8b52b62178e89bb3d996787e6b1b61081566cd4c3a77bb720057d",
+    "market/navigation.css": "87f8b5ce5003c74f3a34297e335eda5465deb31c7401129bba554289b80e9a14",
+    "site-theme.css": "0ff27602842d21041cea39ed5be035449f8de79901c6ffad9fb438a0609f013a",
+    "inscriptions/site-shell.css": "579a17028b03756977cf81c63f8dcd8be3d87f729432c084cf1d36a7f67bbd37",
+    "rewards/site-header.css": "b14857107d9cfcd497001d1e5ac0132270bc472d058cc417f045fcd28678ad23",
+    "INSTALL.txt": "b59d39ff79c6c9d62db7285f15337528fe226f12a583ce4541a41088d54311c6",
+    "MARKET-CANDIDATE.txt": "49d8e665862101b940947d022b7fe4ccb031a9575c2a4774c0faa5f5d3d9101c",
+    "market/native-wallet/build-hashes.json": "2b408bdc7b5bfbb503cc4e835ef2bdc04e4eab0d77f047c678864106ac98d85a",
+    "market/native-wallet/worker.js": "b2e060e67fc7afa2ea661e66fc86ae6e63f3f5c166bb6980c18985edcfa7e28f",
+    "market/native-wallet/runtime.js": "8762a65bbb1e0d508e2eb67456be6de3f0c93755d320d91d73ad2198653688cb",
+    "market/native-wallet/transport.js": "d1ba2bf1a9ee4d8a329caf13118de243da1ee2d7f6d4cccb5301dddce77ac791",
+    "market/native-wallet/monero-0.11.16.js": "f54e18d60fd582ad4b65d1d17c88a8300e0b3d4f556d43fe23adff67a491a5a2",
+    "market/native-wallet/xmr20_native_market_signer.js": "9f27ea760eaddaa6d9a7940adee8817a736890e990b4bff632438c2d0d6ec8d6",
+    "market/native-wallet/xmr20_native_market_signer_bg.wasm": "38716e3a158c5a202acdc2f1f3d79514c0f25fc201e3afff142018a3bc942640"
+  }
+}
