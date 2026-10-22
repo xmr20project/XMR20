@@ -9,6 +9,9 @@ import {addresses,receiptAddress,transaction,decodePosition,decodeReceipt} from 
 import {canonical,digest} from './records.mjs';
 import {BINARY_HASH,BINARY_SIZE} from './deployment-policy.mjs';
 import {privateTestPolicy as validatePrivateTestPolicy,privateTestConfig,privateTestOperation} from './private-test.mjs';
+import {FAST_SEND} from '../core-fast-send/records.mjs';
+import {createNativeConversionReader} from '../core-monero-send/legacy-conversions.mjs';
+import {BINARY_HASH as OPERATOR_HASH,BINARY_SIZE as OPERATOR_SIZE,CUSTODY_CAPABILITY} from '../core-monero-send/deployment-policy.mjs';
 export {BINARY_HASH,BINARY_SIZE};
 const need=(v,m)=>{if(!v)throw Error(m);};
 const LOADER=new PublicKey('BPFLoaderUpgradeab1e11111111111111111111111');
@@ -16,7 +19,9 @@ const LOADER=new PublicKey('BPFLoaderUpgradeab1e11111111111111111111111');
 const PROGRAM_DATA_HEADER=45,verifiedDeployments=new Map();
 export function createSolanaAdapter({connection,manifest,privateTestPolicy}){
  const identity=manifest?.profile==='transferable-v3-identity-v1'&&manifest.capability===CAPABILITY;
- const binaryHash=identity?IDENTITY_BINARY_HASH:BINARY_HASH,binarySize=identity?IDENTITY_BINARY_SIZE:BINARY_SIZE;
+ const operator=identity&&manifest.custodyCapability===CUSTODY_CAPABILITY;
+ need(manifest?.custodyCapability===undefined||operator,'Reviewed operator custody capability required.');
+ const binaryHash=operator?OPERATOR_HASH:identity?IDENTITY_BINARY_HASH:BINARY_HASH,binarySize=operator?OPERATOR_SIZE:identity?IDENTITY_BINARY_SIZE:BINARY_SIZE;
  need(manifest?.abi===3&&manifest.network==='mainnet-beta'&&manifest.genesisHash===MAINNET_GENESIS&&manifest.binaryHash===binaryHash&&manifest.binarySize===binarySize,'Reviewed ABI 3 manifest required.');
  const pinned=canonical(manifest),program=new PublicKey(manifest.program),mint=new PublicKey(manifest.mint),verifier=new PublicKey(manifest.verifier);
  need(PublicKey.isOnCurve(verifier.toBytes()),'Verifier signing wallet required.');
@@ -90,7 +95,21 @@ export function createSolanaAdapter({connection,manifest,privateTestPolicy}){
   need((await connection.isBlockhashValid(tx.message.recentBlockhash,{commitment:'finalized'})).value===false,'RPC expiry evidence disagrees.');return {kind:'expired',signature};
  }
  const verifyWalletGuards=async message=>{if(hasWalletGuards(message))await verifyWalletGuardProgram(connection);};
- return Object.freeze({verifyProgram,readAccount,...(typeof connection.getMultipleAccountsInfo==='function'?{readAccounts}:{}),fee,verifyWalletGuards,
+ async function readFastReceipts(positions){
+  need(manifest.fastSend===FAST_SEND&&typeof connection.getProgramAccounts==='function','Fast settlement is not enabled.');
+  need(Array.isArray(positions)&&positions.length<=2048&&new Set(positions).size===positions.length,'Bounded distinct positions required.');
+  const rows=[];
+  for(let i=0;i<positions.length;i+=3){
+   const results=await Promise.allSettled(positions.slice(i,i+3).map(position=>connection.getProgramAccounts(program,{commitment:'finalized',filters:[{dataSize:153},{memcmp:{offset:0,bytes:bs58.encode(Uint8Array.of(4))}},{memcmp:{offset:1,bytes:new PublicKey(position).toBase58()}}]})));
+   const failure=results.find(r=>r.status==='rejected');if(failure)throw failure.reason;
+   for(const result of results){need(Array.isArray(result.value),'Complete finalized receipt list required.');for(const r of result.value){
+    need(r.account?.owner.equals(program)&&!r.account.executable&&r.account.data.length===153,'Invalid program receipt list.');
+    rows.push({key:r.pubkey.toBase58(),account:{owner:r.account.owner.toBase58(),executable:false,finalized:true,data:Uint8Array.from(r.account.data)}});need(rows.length<=10000,'Fast-send history limit reached.');
+   }}
+  }
+  return rows;
+ }
+ return Object.freeze({verifyProgram,readAccount,...(typeof connection.getMultipleAccountsInfo==='function'?{readAccounts}:{}),...(manifest.fastSend===FAST_SEND?{readFastReceipts}:{}),...(manifest.nativeCustody?{readNativeConversions:createNativeConversionReader({connection,manifest})}:{}),fee,verifyWalletGuards,
   async authorizationExpired(config,proposal){
    checkedConfig(config);need(['transfer','release'].includes(proposal.operation)&&Number.isSafeInteger(proposal.lastValidBlockHeight)&&proposal.lastValidBlockHeight>0,'Exact saved holder authorization required.');
    await verifyProgram();
@@ -98,6 +117,11 @@ export function createSolanaAdapter({connection,manifest,privateTestPolicy}){
    need(Number.isSafeInteger(height)&&height>=0&&typeof valid?.value==='boolean','Authorization expiry verification unavailable.');
    if(height<=proposal.lastValidBlockHeight)return false;
    need(valid.value===false,'RPC expiry evidence disagrees.');return true;
+  },
+  async fastReviewFresh(config,proposal){
+   checkedConfig(config);need(manifest.fastSend===FAST_SEND&&proposal.operation==='transfer'&&proposal.expectedFee==='0'&&Number.isSafeInteger(proposal.lastValidBlockHeight),'Reviewed fast-send approval required.');if(testPolicy)privateTestOperation(config,proposal,testPolicy);
+   await verifyProgram();const [height,valid]=await Promise.all([connection.getBlockHeight('confirmed'),connection.isBlockhashValid(proposal.blockhash,{commitment:'confirmed'})]);
+   need(Number.isSafeInteger(height)&&height>=0&&typeof valid?.value==='boolean','Fresh blockhash verification unavailable.');return valid.value&&proposal.lastValidBlockHeight-height>=80;
   },
   async fundingReviewFresh(config,proposal){
    checkedConfig(config);need(['deposit','donate'].includes(proposal.operation),'Funding-only freshness check required.');if(testPolicy)privateTestOperation(config,proposal,testPolicy);

@@ -31,7 +31,7 @@ test('actual extension refresh timer uses custody reuse while both Refresh contr
  const timerLine=source.split('\n').find(line=>line.startsWith('setInterval(')&&line.endsWith(',15000);'));
  const focusLine=source.split('\n').find(line=>line.startsWith('function wakeRefresh('));
  const button=source.match(/on\('refresh',.*?\);/)[0];
- const context=vm.createContext({account:()=>f.account,epoch:1,vault:{},busy:false,screen:'home',document:{hidden:false},modal:{open:false},checkIdle:()=>false,cache:{displayScope:f.account.sol+':'+f.account.xmr,rows:[],indexComplete:{},jointPending:[]},jointHoldings:f.reader,replaceHoldingSource,
+ const context=vm.createContext({account:()=>f.account,nativeTokenSends:false,epoch:1,vault:{},busy:false,screen:'home',document:{hidden:false},modal:{open:false},checkIdle:()=>false,cache:{displayScope:f.account.sol+':'+f.account.xmr,rows:[],indexComplete:{},jointPending:[]},jointHoldings:f.reader,replaceHoldingSource,
   refreshPrices:async()=>{},paintBalances:noop,balanceReads:{size:0,run:(_key,read)=>read(new AbortController().signal)},loadPending:async()=>({available:true,complete:true,rows:[]}),readSolBalance:async()=>'0',saveSolBalance:noop,loadSolanaHoldings:async()=>({complete:true,rows:[]}),loadWalletHoldings:async()=>({complete:true,rows:[]}),solanaDisplayRows:(_old,result)=>result.rows,cacheWalletHoldings:noop,
   setInterval:(callback,ms)=>timers.push({callback,ms}),on:(id,fn)=>handlers.set(id,fn),createBridgeUI:options=>({...options,refreshAssets:noop}),tokenImage:noop,same:noop,show:noop,run:noop,record:noop,persist:noop,oneShot:noop,esc:noop,render:noop});
  vm.runInContext(bridgeLine+'\n'+source.slice(begin,end)+'\n'+timerLine+'\n'+focusLine+'\n'+button,context);

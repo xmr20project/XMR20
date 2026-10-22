@@ -8,12 +8,16 @@ import {identityAddresses,registerIdentity,decodeIdentity,activateAsset} from '.
 import {MAINNET_GENESIS} from '../core-next/deployment-policy.mjs';
 import {WALLET_TEST_POLICY} from '../core-transferable/private-test.mjs';
 import {BINARY_HASH,BINARY_SIZE,CAPABILITY} from './deployment-policy.mjs';
+import {BINARY_HASH as OPERATOR_HASH,BINARY_SIZE as OPERATOR_SIZE,CUSTODY_CAPABILITY} from '../core-monero-send/deployment-policy.mjs';
 const need=(v,m)=>{if(!v)throw Error(m);};
 const LOADER=new PublicKey('BPFLoaderUpgradeab1e11111111111111111111111');
 const PROGRAM_DATA_HEADER=45,verifiedDeployments=new Map();
 export function createIdentitySolanaAdapter({connection,manifest,privateTestPolicy}){
+ const operator=manifest?.custodyCapability===CUSTODY_CAPABILITY;
+ need(manifest?.custodyCapability===undefined||operator,'Reviewed operator custody capability required.');
+ const binaryHash=operator?OPERATOR_HASH:BINARY_HASH,binarySize=operator?OPERATOR_SIZE:BINARY_SIZE;
  need(manifest?.network==='mainnet-beta'&&manifest.genesisHash===MAINNET_GENESIS&&manifest.capability===CAPABILITY
-  &&manifest.binaryHash===BINARY_HASH&&manifest.binarySize===BINARY_SIZE,'Exact reviewed identity deployment required.');
+  &&manifest.binaryHash===binaryHash&&manifest.binarySize===binarySize,'Exact reviewed identity deployment required.');
  const pinned=canonical(manifest),program=new PublicKey(manifest.program),verifier=new PublicKey(manifest.verifier);
  need(PublicKey.isOnCurve(verifier.toBytes()),'Identity verifier signing key required.');
  const testPolicy=privateTestPolicy??null;
@@ -45,8 +49,8 @@ export function createIdentitySolanaAdapter({connection,manifest,privateTestPoli
   const header=d.data.subarray(0,PROGRAM_DATA_HEADER).toString('hex');
   if(!known||d.data.length>PROGRAM_DATA_HEADER){
    // Full bytes in hand: always hash them, whether or not a header was known.
-   need(d.data.length>=PROGRAM_DATA_HEADER+BINARY_SIZE,'Reviewed transferable program-data required.');
-   need(digest(d.data.subarray(PROGRAM_DATA_HEADER,PROGRAM_DATA_HEADER+BINARY_SIZE))===BINARY_HASH&&d.data.subarray(PROGRAM_DATA_HEADER+BINARY_SIZE).every(x=>x===0),'Transferable deployed code differs from review.');
+   need(d.data.length>=PROGRAM_DATA_HEADER+binarySize,'Reviewed transferable program-data required.');
+   need(digest(d.data.subarray(PROGRAM_DATA_HEADER,PROGRAM_DATA_HEADER+binarySize))===binaryHash&&d.data.subarray(PROGRAM_DATA_HEADER+binarySize).every(x=>x===0),'Transferable deployed code differs from review.');
    if(registryKey)verifiedDeployments.set(registryKey,{header});
    return;
   }

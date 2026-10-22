@@ -52,7 +52,7 @@ test('native approval displays live progress and receiver-link failure beside it
  assert.ok(f.html.indexOf('id="j3-review-title"')<f.html.indexOf('id="progress"'));assert.ok(f.html.indexOf('id="progress"')<f.html.indexOf('id="j3-publish"'));
  assert.equal([...f.html.matchAll(/id="progress"/g)].length,1);
  fail(Error('Registered recipient required.'));for(let i=0;i<30&&f.d.isBusy();i++)await new Promise(r=>setImmediate(r));
- assert.match(f.html,/recipient must link their Monero wallet to a Solana wallet in Bridge/);
+ assert.match(f.html,/Check the recipient’s wallet link and token account/);
  assert.ok(f.html.indexOf('id="j3-native-feedback"')<f.html.indexOf('role="alert"'));assert.ok(f.html.indexOf('role="alert"')<f.html.indexOf('id="j3-publish"'));
  assert.equal(f.elements.get('j3-cancel').disabled,false);assert.ok(!f.elements.has('j3-resume-move-0'));assert.equal(f.signs,0);
 });
@@ -874,4 +874,75 @@ test('closing between host run and saved-link routing cannot reopen the modal',a
  let opened=0;const f=setup(t,{holdings:[],uiOptions:{walletTest:true,linkOptions:{enabled:true,hasSaved:()=>true,createUI:()=>({clear(){},async open(){opened++;}})}}});
  const run=f.d.run;f.d.run=async fn=>{await run(fn);f.ui.clear();f.d.modal.open=false;};
  await assert.rejects(()=>f.ui.open(),/Wallet changed/);assert.equal(opened,0);assert.equal(f.signs,0);
+});
+
+const recipient='47zk7yrx6CeD1Xjxb6ogocPtpgrKN2wcXcUSynYUqn5xaxPL6h2Lu5Ndjs9o3gqfRbZKGsAGKiH2N42Jw4wm5ktbRa439Ee';
+function autoSetupFixture(t,{confirm,prepare,client,uiOptions={}}={}){
+ const events=[];let guard;
+ const f=setup(t,{registered:true,uiOptions:{...uiOptions,linkOptions:{enabled:true,createUI:()=>{throw Error('Separate setup screen must not open');},createRecipientSetup:(d,o)=>{guard=o.assertCurrent;return {
+  prepare:async input=>{events.push('review');return prepare?prepare(input):Object.freeze({...input,rentLamports:2500000});},
+  confirm:async plan=>{events.push('setup');if(confirm)await confirm(plan);guard();},needsReview:()=>false
+ };}}},configureClient:o=>({publishMove:async(review,{validateSnapshot})=>{events.push(['send',structuredClone(review)]);await validateSnapshot(await o.runtime.snapshot?.()??{schema:'joint-index-v3',complete:true,manifest:o.manifest,positions:[]});},...client?.(o,events)})});
+ return Object.assign(f,{events,async review(){await f.ui.open({direction:'xmr-to-xmr'});f.elements.get('j3-amount').oninput({target:{value:'1.234567'}});f.elements.get('j3-recipient').oninput({target:{value:recipient}});await clicked(f,'j3-review');}});
+}
+test('missing recipient account is included in one send review and continues automatically after explicit confirmation',async t=>{
+ const f=autoSetupFixture(t);await f.review();assert.deepEqual(f.events,['review']);assert.equal(f.signs,0);
+ assert.match(f.html,/0.002500000 SOL/);assert.match(f.html,/Confirm and send/);assert.match(f.html,/1.234567 XMR20/);assert.ok(!f.elements.has('j3-prepare-recipient'));
+ await clicked(f,'j3-publish');assert.deepEqual(f.events.slice(0,2),['review','setup']);assert.equal(f.events[2][0],'send');assert.equal(f.events[2][1].amount,'1234567');assert.equal(f.events[2][1].to,recipient);
+});
+test('recipient lookup failure shows inline review retry without signing or opening another screen',async t=>{
+ const f=autoSetupFixture(t,{prepare:async()=>{throw Error('Recipient has not linked yet');}});await f.review();assert.match(f.html,/Recipient has not linked yet/);assert.ok(f.elements.has('j3-review-recipient'));assert.ok(!f.elements.has('j3-publish'));assert.equal(f.signs,0);
+});
+test('late missing recipient check offers a fresh combined review even with readiness cleared',async t=>{
+ let prepares=0;const f=setup(t,{registered:true,uiOptions:{linkOptions:{enabled:true,createRecipientSetup:()=>({prepare:async input=>{prepares++;return {...input,rentLamports:2500000};}})}},configureClient:o=>({
+  snapshot:async()=>({schema:'joint-index-v3',complete:true,manifest:o.manifest,positions:[{position:addresses(recoveryState(o).config).position.toBase58(),moneroOwner:native,available:'98500000'}]}),
+  publishMove:async()=>{throw Error('Registered recipient required.');}
+ })});
+ await transferReview(f);await clicked(f,'j3-publish');assert.ok(f.elements.has('j3-review-recipient'));await clicked(f,'j3-review-recipient');assert.equal(prepares,1);assert.match(f.html,/Confirm and send/);assert.equal(f.signs,0);
+});
+test('existing token account skips recipient setup entirely',async t=>{
+ const f=setup(t,{registered:true,uiOptions:{linkOptions:{enabled:true,createRecipientSetup:()=>{throw Error('No account setup needed');}}},configureClient:o=>({snapshot:async()=>({schema:'joint-index-v3',complete:true,manifest:o.manifest,positions:[{position:addresses(recoveryState(o).config).position.toBase58(),moneroOwner:native,available:'98500000'}]})})});
+ await transferReview(f);assert.ok(f.elements.has('j3-publish'));assert.ok(!f.elements.has('j3-prepare-recipient'));assert.equal(f.signs,0);
+});
+test('closing during recipient setup stops automatic send and preserves receipt ownership',async t=>{
+ let finish;const f=autoSetupFixture(t,{confirm:()=>new Promise(r=>finish=r)});await f.review();f.elements.get('j3-publish').onclick();await new Promise(r=>setImmediate(r));assert.deepEqual(f.events,['review','setup']);f.ui.clear();finish();for(let i=0;i<5;i++)await new Promise(r=>setImmediate(r));assert.ok(!f.events.some(e=>Array.isArray(e)));
+});
+test('pending setup failure stays in send review and does not publish',async t=>{
+ const f=autoSetupFixture(t,{prepare:async input=>({...input,rentLamports:null}),confirm:async()=>{throw Error('Account setup still confirming. Approval is saved.');}});await f.review();assert.match(f.html,/Already approved/);await clicked(f,'j3-publish');assert.match(f.html,/Approval is saved/);assert.ok(!f.events.some(e=>Array.isArray(e)));assert.equal(f.signs,0);
+});
+test('balance changes and failed program verification stop before recipient account payment',async t=>{
+ let count=0;const f=autoSetupFixture(t,{client:o=>({snapshot:async()=>({schema:'joint-index-v3',complete:true,manifest:o.manifest,positions:[{position:addresses(recoveryState(o).config).position.toBase58(),available:++count===1?'98500000':'0'}]})})});await f.review();await clicked(f,'j3-publish');assert.deepEqual(f.events,['review']);assert.match(f.html,/Insufficient confirmed/);
+});
+test('activation finality is followed by fresh publish validation and bounded index catchup',async t=>{
+ let tries=0;const f=autoSetupFixture(t,{uiOptions:{setTimer:(fn,ms)=>{if(ms===2000){queueMicrotask(fn);return 0;}return setTimeout(fn,ms);}},client:(o,events)=>({publishMove:async review=>{if(++tries<3)throw Error('Registered recipient required.');events.push(['send',review]);}})});await f.review();await clicked(f,'j3-publish');assert.equal(tries,3);assert.equal(f.events.filter(e=>e==='setup').length,1);assert.equal(f.events.filter(e=>Array.isArray(e)).length,1);
+});
+
+test('fast send review states Solana settlement and uses one fast approval without native publication',async t=>{
+ let fastReviews=0,fastApprovals=0,published=0;
+ const f=setup(t,{registered:true,configureClient:o=>({publishMove:async()=>{published++;},fast:{review:async input=>{fastReviews++;return {intent:{...input,owner:o.provider.publicKey.toBase58()}};},approve:async r=>{fastApprovals++;const state=recoveryState(o),id='fast-fixture';state.fastOperations={[id]:{intent:{amount:r.intent.amount,nonce:r.intent.nonce},phase:'finalized',ownerSignature:'synthetic-signature'}};o.store.save(state);return {confirmed:true,operationId:id};}}})});
+ await transferReview(f);assert.match(f.html,/Settles on Solana/);assert.doesNotMatch(f.html,/allow about 20 minutes|Approve Monero record/);assert.equal(fastApprovals,0);await clicked(f,'j3-publish');assert.equal(fastReviews,1);assert.equal(fastApprovals,1);assert.equal(published,0);assert.match(f.html,/Send confirmed/);assert.match(f.html,/View Solana transaction/);
+});
+test('fast send lost reply reopens its durable recovery and checks Solana without native publication',async t=>{
+ const timers=new Map();let id=0,checks=0,approved=0,published=0,options;
+ const f=setup(t,{registered:true,uiOptions:{setTimer:(fn,ms)=>{timers.set(++id,{fn,ms});return id;},clearTimer:key=>timers.delete(key)},configureClient:o=>{options=o;return {publishMove:async()=>{published++;},fast:{review:async input=>({intent:input}),approve:async r=>{approved++;const state=recoveryState(o);state.fastOperations={saved:{intent:{amount:r.intent.amount,nonce:r.intent.nonce},phase:'submission-unknown',ownerSignature:'synthetic'}};o.store.save(state);throw Error('Lost reply');},check:async()=>{checks++;return {pending:true};}}};}});
+ await transferReview(f);await clicked(f,'j3-publish');assert.match(f.html,/Waiting for Solana confirmation/);assert.ok(!f.elements.has('j3-publish'));assert.equal(approved,1);assert.equal(published,0);assert.ok([...timers.values()].some(x=>x.ms===5000));
+ await f.ui.open({direction:'xmr-to-xmr'});assert.equal(checks,1);assert.match(f.html,/Your signed transaction is saved/);assert.equal(approved,1);assert.equal(options.store.load().fastOperations.saved.phase,'submission-unknown');
+});
+
+test('saved native send opens exact fast recovery review without deleting receipts or repeating native publication',async t=>{
+ const recipient='4AMg1kDaXkWckE3uyd1YqoBKvn4z8ATxmWQVdtjF6aGU4sT278XoyhUV1Ve88ZMCXNXQJpjW2553NWERfMZcNsBtCkMLiNM',toOwner=Keypair.generate().publicKey.toBase58(),nonce='72'.repeat(32);let options,original,approved=0,published=0;
+ const f=setup(t,{registered:true,configureClient:o=>{options=o;let state=o.store.load();if(!state){state=recoveryState(o);original={phase:'publication-unknown',envelope:{record:{p:'xmr20-joint',v:3,net:'mainnet',op:'transfer',owner:native,to:recipient,amount:'1000000',nonce,program:state.config.program,mint:state.config.mint,from:addresses(state.config).position.toBase58(),into:addresses({...state.config,owner:toOwner}).position.toBase58()},signature:'SigV2'+'1'.repeat(88)}};state.proofs[nonce]=original;o.store.save(state);}
+ return {publishMove:async()=>published++,fast:{review:async input=>{assert.equal(input.nonce,nonce);assert.equal(input.amount,'1000000');assert.equal(input.to,recipient);return {intent:{schema:'joint-solana-send-v1',network:state.config.network,program:state.config.program,mint:state.config.mint,verifier:state.config.verifier,owner:state.config.owner,recipient:toOwner,fromMonero:native,toMonero:recipient,amount:input.amount,nonce}};},approve:async review=>{approved++;state.fastOperations={recovered:{intent:review.intent,phase:'finalized',ownerSignature:'synthetic'}};o.store.save(state);return {confirmed:true,operationId:'recovered'};},check:async()=>({confirmed:true,operationId:'recovered'})}};}});
+ await f.ui.open({direction:'xmr-to-xmr'});assert.match(f.html,/Finish your send/);assert.ok(!f.elements.has('j3-resume-move-0'));assert.match(f.html,/class="bridge-secondary" hidden/);
+ await clicked(f,'j3-recover-fast-0');assert.match(f.html,/Review send/);assert.match(f.html,/Continues your saved send/);assert.equal(approved,0);await clicked(f,'j3-publish');assert.equal(approved,1);assert.equal(published,0);assert.match(f.html,/Send confirmed/);assert.deepEqual(options.store.load().proofs[nonce],original);
+ await f.ui.open({direction:'xmr-to-xmr'});assert.doesNotMatch(f.html,/Finish your send|Sending on Monero/);assert.deepEqual(options.store.load().proofs[nonce],original);
+});
+
+test('wallet-link setup is checked before amount entry and opens directly without approval',async t=>{
+ let release,opened=[];const waiting=new Promise(r=>release=r);
+ const f=setup(t,{ready:()=>waiting,uiOptions:{linkOptions:{enabled:true,hasSaved:()=>false,createUI:()=>({clear(){},async open(options){opened.push(options);}})}}});
+ const opening=f.ui.open();await new Promise(r=>setImmediate(r));
+ assert.ok(!f.elements.has('j3-amount'),'no amount field until link is known');assert.equal(opened.length,0);
+ release({schema:'joint-readiness-v3',ready:true,manifest:transferableManifest(XMR20_MINT)});await opening;
+ assert.equal(opened.length,1);assert.equal(opened[0].mint,XMR20_MINT);assert.equal(f.signs,0);assert.equal(f.approvals,0);
 });

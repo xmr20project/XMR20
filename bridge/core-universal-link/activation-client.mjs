@@ -1,5 +1,5 @@
 // Explicit account-rent approval; opening a wallet never invokes this client.
-import {VersionedTransaction} from '@solana/web3.js';
+import {PublicKey,VersionedTransaction} from '@solana/web3.js';
 import {ed25519} from '@noble/curves/ed25519';
 import bs58 from 'bs58';
 import {canonical,digest} from './records.mjs';
@@ -21,7 +21,9 @@ export function createActivationWalletClient({registry,runtime,provider,identity
    &&Number.isSafeInteger(p.rentLamports)&&p.rentLamports>=0&&p.rentLamports<=30000000&&r.operationId===idFor(r),'Exact activation wallets and bounded rent required.');
   need(same(msg,activateAsset(c,p).message.serialize())&&tx.signatures.length===2&&tx.message.staticAccountKeys[0].toBase58()===payer&&tx.message.staticAccountKeys[1].toBase58()===registry.verifier
    &&ed25519.verify(tx.signatures[1],msg,tx.message.staticAccountKeys[1].toBytes())
-   &&(signed?ed25519.verify(tx.signatures[0],msg,provider.publicKey.toBytes()):tx.signatures[0].every(b=>b===0)),'Exact activation transaction required.');
+   // Wallet adapters promise a base58 address, not the complete web3 PublicKey
+   // interface. Verify against the pinned payer, still checked by current().
+   &&(signed?ed25519.verify(tx.signatures[0],msg,new PublicKey(payer).toBytes()):tx.signatures[0].every(b=>b===0)),'Exact activation transaction required.');
  }
  async function identity(r){const entry=await identityClient.lookup(r.moneroOwner);current();need(entry&&entry.solanaOwner===r.config.owner&&entry.commitment===r.proposal.identityCommitment,'Confirmed recipient identity changed.');}
  async function review({mint,recipient}){
