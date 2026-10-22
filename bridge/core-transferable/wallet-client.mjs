@@ -1,3 +1,5 @@
+import {FAST_SEND} from '../core-fast-send/records.mjs';
+import {createFastWallet} from '../core-fast-send/wallet-client.mjs';
 import {verifyIdentityAsset} from '../core-universal-link/asset-proof.mjs';
 import {CAPABILITY} from '../core-universal-link/deployment-policy.mjs';
 import bs58 from 'bs58';
@@ -107,7 +109,8 @@ export function createWalletClient({manifest,runtime,provider,moneroSigner,signa
   onProgress('Sending your saved signed transaction…');
   const result=await runtime.submit({config:p.config,proposal:p.proposal,envelope:p.envelope,ownerSigned:tx.serialize()});s.operations[id].result=result;save(s);return {...result,operationId:id};
  }
- return Object.freeze({
+ const fast=manifest.fastSend===FAST_SEND?createFastWallet({manifest,runtime,provider,moneroAddress:moneroSigner.address,proofChain,verifyDeployment,verifyRecipient,signatureVerifier,load,save,current,run,onProgress}):undefined;
+ return Object.freeze({...(fast?{fast}:{}),
   async backgroundStatus(operationId){return run(async()=>{
    const s=load(),job=s.operations[operationId];need(job,'Saved owner approval required.');
    const r=await runtime.progress(operationId);current();
@@ -135,6 +138,7 @@ export function createWalletClient({manifest,runtime,provider,moneroSigner,signa
   async reviewCredit({recipient=moneroSigner.address,amount,nonce}){return run(async()=>{const operation=recipient===moneroSigner.address?'deposit':'donate';const p=await runtime.prepare({operation,actor:owner,recipient,amount,nonce});current();need(p.proposal.actor===owner&&p.proposal.amount===amount&&p.envelope.record.owner===recipient&&p.envelope.record.by===owner&&p.proposal.nonce===nonce&&p.config.binding===digest(recipient),'Funding review differs from the selected recipient.');terms(p);creditReviews.set(p,{fingerprint:creditFingerprint(p),receivedAt:now()});return p;});},
   async approveCredit(review){return run(async()=>{const creditReview=creditReviews.get(review);if(creditReview)need(creditFingerprint(review)===creditReview.fingerprint,'Funding review changed. Review again.');need(['deposit','donate'].includes(review.proposal.operation)&&review.proposal.actor===owner&&review.envelope.record.by===owner&&review.config.binding===digest(review.envelope.record.owner)&&(review.proposal.operation==='donate'||canonical(review.config)===canonical(config)),'Funding account or recipient changed.');return approve(review,{operation:review.proposal.operation,actor:owner,recipient:review.envelope.record.owner,amount:review.proposal.amount,nonce:review.proposal.nonce},creditReview);});},
   async publishMove({to,amount,nonce},{validateSnapshot}={}){return run(async()=>{
+   need(!Object.values(load().fastOperations??{}).some(j=>j.phase==='submission-unknown'),'Recover the saved fast send before a bridge move.');
    need(!load().proofs[nonce],'Recover this saved nonce before creating another proof.');
    onProgress('Checking confirmed balance and recipient…');
    const report=await runtime.snapshot();current();need(report.complete===true,'Confirmed native history required.');const from=addresses(config).position.toBase58(),source=report.positions.find(p=>p.position===from);need(source?.moneroOwner===moneroSigner.address&&source.solanaOwner===owner&&BigInt(source.available)>=BigInt(amount),'Confirmed selected-wallet balance required.');

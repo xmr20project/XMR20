@@ -157,3 +157,10 @@ test('changed custody bytes, a failed read or a different position force a fresh
  const failing=setup({now:()=>time,snapshot:r=>{if(failing.fail)throw Error('offline');return r;}});failing.fail=false;await failing.c.load(account);time+=15000;failing.fail=true;const outage=await failing.c.load(account);assert.equal(outage.complete,true,'reused within window despite offline service');time+=46000;const after=await failing.c.load(account);assert.equal(after.complete,false);assert.equal(after.rows[0].stale,true);failing.fail=false;time+=15000;await failing.c.load(account);assert.equal(failing.calls,3);
  void base;
 });
+test('a fast recipient holding needs no fabricated Monero credit and links to its Solana position',async()=>{
+ const {receiptCommitment}=await import('../bridge/core-fast-send/records.mjs');
+ const {report}=fixture();report.accepted.pop();const from=manifest.verifier,nonce='71'.repeat(32),receipt=PublicKey.findProgramAddressSync([Buffer.from('joint-v3-receipt'),new PublicKey(from).toBuffer(),Buffer.from(nonce,'hex')],new PublicKey(manifest.program))[0].toBase58();
+ const credit={kind:4,from,to:position,gross:'985000',net:'985000',fee:'0',nonce,receipt,settlement:'solana'};credit.commitment=receiptCommitment({...manifest,...credit});report.fastTransfers=[credit];
+ const row=jointHoldingRow(report,account,asset,{privateTest:true});assert.equal(row.amountRaw,'985000');assert.equal(row.settlement,'solana');assert.equal(row.fastReceipt,receipt);assert.equal(row.receipt.url,'https://solscan.io/account/'+position);assert.equal(row.receipt.label,'View Solana position');
+ report.fastTransfers[0].net='985001';assert.throws(()=>jointHoldingRow(report,account,asset,{privateTest:true}),/Confirmed token credit missing/);
+});

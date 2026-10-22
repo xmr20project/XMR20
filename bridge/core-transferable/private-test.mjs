@@ -1,3 +1,4 @@
+import {validateIntent,config as fastConfig} from '../core-fast-send/records.mjs';
 // Explicitly authorized, isolated mainnet canary. This policy is never supplied
 // by HTTP input and never weakens ordinary immutable-program admission.
 import {canonical,digest,validateRecord} from './records.mjs';
@@ -35,7 +36,11 @@ export function privateTestOperation(c,p,policy=PRIVATE_TEST_POLICY){
 export function privateTestRequest(action,input,policy=PRIVATE_TEST_POLICY){
  if(isWalletTest(policy)){
   need(input&&Object.getPrototypeOf(input)===Object.prototype,'Exact object request required.');
-  if(['readiness','snapshot'].includes(action))return;
+  if(['readiness','snapshot','fast-readiness','fast-snapshot'].includes(action))return;
+  if(action.startsWith('fast-')){
+   if(['fast-prepare','fast-submit'].includes(action)){validateIntent(input.intent);privateTestConfig(fastConfig(input.intent),policy);walletAmount(input.intent.amount);if(action==='fast-submit')privateTestOperation(fastConfig(input.intent),input.proposal,policy);}
+   else need(['fast-reconcile','fast-retry'].includes(action)&&typeof input.operationId==='string'&&/^[1-9A-HJ-NP-Za-km-z]{32,44}:fast-send:[a-f0-9]{64}$/.test(input.operationId),'Exact saved fast-send operation required.');return;
+  }
   if(action==='prepare'){
    need(['register','deposit','donate','transfer','release'].includes(input.operation),'Unsupported wallet test operation.');
    if(['deposit','donate'].includes(input.operation)){walletKey(input.actor);moneroOwner(input.recipient);walletAmount(input.amount);}

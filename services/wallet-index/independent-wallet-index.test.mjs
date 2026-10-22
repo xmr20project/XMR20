@@ -59,3 +59,67 @@ test('public transport pins index hosts, omits credentials, uses IPv4 and preser
  const response=await publicIndexFetch('https://indexer2.xmr20.org/health',{},stub);assert.deepEqual(await response.json(),{complete:true});assert.equal(options.family,4);assert.equal(options.rejectUnauthorized,undefined);assert.equal(options.headers.Authorization,undefined);
  for(const url of ['http://indexer2.xmr20.org/health','https://elsewhere.example/health','https://user:secret@indexer2.xmr20.org/health'])assert.throws(()=>publicIndexFetch(url,{},stub),/Verified wallet index unavailable/);
 });
+
+// Launches the independent reader does not track (tweet launches) are read directly.
+import {Keypair,PublicKey} from '@solana/web3.js';
+const TOKEN_PROGRAM='TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',TOKEN_2022_PROGRAM='TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb',ATA_PROGRAM=new PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL');
+const GENESIS='5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d';
+const ata=(owner,mint,program)=>PublicKey.findProgramAddressSync([owner.toBuffer(),new PublicKey(program).toBuffer(),mint.toBuffer()],ATA_PROGRAM)[0].toBase58();
+const mintData=(decimals=6)=>{const d=Buffer.alloc(82);d[44]=decimals;d[45]=1;return d;};
+const holdingData=(mint,owner,amount)=>{const d=Buffer.alloc(165);mint.toBuffer().copy(d,0);owner.toBuffer().copy(d,32);d.writeBigUInt64LE(amount,64);d[108]=1;return d;};
+const encoded=(owner,data)=>({lamports:1,owner,executable:false,rentEpoch:0,data:[data.toString('base64'),'base64']});
+function launchedFixture({extremist={},accounts=()=>({}),rpcFails=false,genesis=GENESIS,network='solana'}={}){
+ const owner=Keypair.generate().publicKey,mint=Keypair.generate().publicKey,deploy='cd'.repeat(32),id='c2c845cf-555b-53ea-a719-7ab815f77e34';
+ // The tracked XMR20 launch keeps its independent row; EXTREMIST is untracked and proof-unverified.
+ const tweet={id,moneroTxid:deploy,mint:mint.toBase58(),ticker:'EXTREMIST',name:'Monero Extremist',proofVerified:false,solanaFinalized:true,moneroNetwork:'mainnet',confirmations:16,state:'Inscribing',...extremist};
+ const data=network==='solana'?envelope(owner.toBase58(),'solana'):envelope(),calls=[],rpcCalls=[];
+ const store={[mint.toBase58()]:encoded(TOKEN_2022_PROGRAM,mintData()),[ata(owner,mint,TOKEN_2022_PROGRAM)]:encoded(TOKEN_2022_PROGRAM,holdingData(mint,owner,24113974003764n)),...accounts({owner,mint})};
+ const fetcher=async url=>{calls.push(url);return {ok:true,json:async()=>structuredClone(
+  url.startsWith('https://indexer2.xmr20.org/api/xmr20/tokens')?{schema:'xmr20-launches-v1',moneroNetwork:'mainnet',solanaNetwork:'mainnet-beta',tokens:[{moneroTxid:DEPLOY,state:'discovered',bridgeReady:true},{moneroTxid:deploy,state:'unbound',bridgeReady:false}]}:
+  url.includes('/api/xmr20/tokens')?{schema:'xmr20-launches-v1',moneroNetwork:'mainnet',solanaNetwork:'mainnet-beta',tokens:[TOKEN,tweet]}:data)};};
+ const solanaRpc=async body=>{rpcCalls.push(body);if(rpcFails)throw Error('Helius unavailable');
+  if(body.method==='getGenesisHash')return {jsonrpc:'2.0',id:body.id,result:genesis};
+  return {jsonrpc:'2.0',id:body.id,result:{context:{slot:460000000},value:body.params[0].map(k=>store[k]??null)}};};
+ return {reader:independentWalletIndex({fetcher,now:()=>TIME,solanaRpc}),owner:owner.toBase58(),mint:mint.toBase58(),id,deploy,calls,rpcCalls};
+}
+test('a launched token the independent reader does not track shows its exact finalized Solana balance',async()=>{
+ const f=launchedFixture(),result=await f.reader.read(f.owner,{network:'solana'});
+ assert.equal(result.complete,true);assert.deepEqual(result.rows.map(r=>r.ticker).sort(),['EXTREMIST','XMR20']);
+ const row=result.rows.find(r=>r.ticker==='EXTREMIST');
+ assert.deepEqual({id:row.id,mint:row.mint,deployment:row.deployment,amountRaw:row.amountRaw,stale:row.stale},{id:f.id,mint:f.mint,deployment:f.deploy,amountRaw:'24113974003764',stale:false});
+ // Only the untracked mint is read: one genesis check and one finalized batch of mint + both ATAs.
+ assert.deepEqual(f.rpcCalls.map(c=>c.method),['getGenesisHash','getMultipleAccounts']);
+ assert.equal(f.rpcCalls[1].params[0].length,3);assert.equal(f.rpcCalls[1].params[1].commitment,'finalized');assert.equal(f.rpcCalls[1].params[0][0],f.mint);
+});
+test('classic SPL launches use their own program account; zero and absent balances are omitted',async()=>{
+ const classic=launchedFixture({accounts:({owner,mint})=>({[mint.toBase58()]:encoded(TOKEN_PROGRAM,mintData()),[ata(owner,mint,TOKEN_PROGRAM)]:encoded(TOKEN_PROGRAM,holdingData(mint,owner,5n)),[ata(owner,mint,TOKEN_2022_PROGRAM)]:null})});
+ assert.equal((await classic.reader.read(classic.owner,{network:'solana'})).rows.find(r=>r.ticker==='EXTREMIST').amountRaw,'5');
+ const zero=launchedFixture({accounts:({owner,mint})=>({[ata(owner,mint,TOKEN_2022_PROGRAM)]:encoded(TOKEN_2022_PROGRAM,holdingData(mint,owner,0n))})});
+ const none=launchedFixture({accounts:({owner,mint})=>({[ata(owner,mint,TOKEN_2022_PROGRAM)]:null})});
+ for(const f of [zero,none]){const r=await f.reader.read(f.owner,{network:'solana'});assert.deepEqual(r.rows.map(x=>x.ticker),['XMR20']);assert.equal(r.complete,true);}
+});
+test('foreign, malformed or unavailable direct reads never hide or replace independent rows',async()=>{
+ const other=Keypair.generate().publicKey;
+ for(const f of [
+  launchedFixture({accounts:({mint,owner})=>({[ata(owner,mint,TOKEN_2022_PROGRAM)]:encoded(TOKEN_2022_PROGRAM,holdingData(mint,other,7n))})}),
+  launchedFixture({accounts:({mint})=>({[mint.toBase58()]:encoded(TOKEN_2022_PROGRAM,mintData(9))})}),
+  launchedFixture({accounts:({mint})=>({[mint.toBase58()]:encoded('11111111111111111111111111111111',mintData())})}),
+  launchedFixture({rpcFails:true}),launchedFixture({genesis:'4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpjk2NsNY'})
+ ]){
+  const r=await f.reader.read(f.owner,{network:'solana'});
+  assert.deepEqual(r.rows.map(x=>[x.ticker,x.amountRaw]),[['XMR20','2240000000000']]);assert.equal(r.complete,false);
+ }
+});
+test('hidden, halted, cancelled or unfinalized launches and Monero reads are never read directly',async()=>{
+ for(const extremist of [{hidden:true},{halted:true},{cancelledAt:TIME},{solanaFinalized:false},{moneroTxid:null}]){
+  const f=launchedFixture({extremist}),r=await f.reader.read(f.owner,{network:'solana'});
+  assert.deepEqual(r.rows.map(x=>x.ticker),['XMR20']);assert.equal(r.complete,true);
+  assert.ok(!f.rpcCalls.some(c=>c.method==='getMultipleAccounts'));
+ }
+ const f=launchedFixture({network:'monero'});assert.equal((await f.reader.read(ADDRESS)).rows.length,1);assert.equal(f.rpcCalls.length,0);assert.ok(!f.calls.some(u=>u.startsWith('https://indexer2.xmr20.org/api/xmr20/tokens')));
+});
+test('a slow direct Solana read is bounded and keeps the independent rows',async()=>{
+ const f=launchedFixture(),slow=independentWalletIndex({fetcher:async url=>({ok:true,json:async()=>structuredClone(url.startsWith('https://indexer2.xmr20.org/api/xmr20/tokens')?{schema:'xmr20-launches-v1',moneroNetwork:'mainnet',solanaNetwork:'mainnet-beta',tokens:[]}:url.includes('/api/xmr20/tokens')?{schema:'xmr20-launches-v1',moneroNetwork:'mainnet',solanaNetwork:'mainnet-beta',tokens:[TOKEN,{...TOKEN,id:'c2c845cf-555b-53ea-a719-7ab815f77e34',moneroTxid:'cd'.repeat(32),mint:f.mint,ticker:'EXTREMIST',proofVerified:false}]}:envelope(f.owner,'solana'))}),
+  now:()=>TIME,directTimeoutMs:20,solanaRpc:()=>new Promise(()=>{})});
+ const r=await slow.read(f.owner,{network:'solana'});assert.deepEqual(r.rows.map(x=>x.ticker),['XMR20']);assert.equal(r.complete,false);
+});

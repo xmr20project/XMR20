@@ -1,7 +1,8 @@
 // Public portfolio reads only. This module has no holder signer or submission API.
 import {Buffer} from 'buffer';
 import {commitment as identityCommitment} from '../bridge/core-universal-link/records.mjs';
-import {Connection} from '@solana/web3.js';
+import {Connection,PublicKey} from '@solana/web3.js';
+import {receiptCommitment,matchesReceipt} from '../bridge/core-fast-send/records.mjs';
 import {jointService} from './joint-service.js';
 import {discoveredAssets,savedJointAssets} from './joint-bridge-assets.js';
 import {walletManifest as transferableManifest,universalLinkEnabled} from './joint-deployment.js';
@@ -27,8 +28,9 @@ export function jointHoldingRow(report,account,asset,{privateTest=false,walletTe
  const link=report.accepted.find(e=>e.txid===p.linkTxid&&e.envelope?.record?.op==='link'&&e.envelope.record.owner===account.xmr&&e.envelope.record.to===account.sol&&(e.envelope.record.program===manifest.program&&e.envelope.record.mint===asset.mint||universalLinkEnabled&&e.envelope.record.p==='xmr20-identity'&&e.envelope.record.registry===manifest.program&&e.envelope.record.verifier===manifest.verifier&&p.identityCommitment===identityCommitment(e.envelope)));
  need(link,'Confirmed Monero link missing.');if(p.available==='0')return null;
  const latest=report.accepted.filter(e=>hash(e.txid)&&e.envelope?.record?.mint===asset.mint&&e.envelope.record.program===manifest.program&&(e.envelope.record.op==='credit'&&e.envelope.record.owner===account.xmr||e.envelope.record.op==='transfer'&&e.envelope.record.to===account.xmr)).at(-1);
- need(latest,'Confirmed Monero credit missing.');
- return {id:'joint-v3:'+asset.mint+':'+position,bridge:'joint-v3',network:'monero',mint:asset.mint,name:asset.name,ticker:asset.symbol,program:manifest.program,position,moneroOwner:account.xmr,solanaOwner:account.sol,amountRaw:p.available,chainBalance:p.chainBalance,linkTxid:p.linkTxid,receipt:{url:'https://xmrchain.net/tx/'+latest.txid,label:'View Monero record'},checkedAt:now,stale:false};
+ const fastCredit=(report.fastTransfers??[]).filter(r=>r?.settlement==='solana'&&r.kind===4&&r.to===position&&r.net===r.gross&&r.fee==='0'&&hash(r.nonce)&&r.commitment===receiptCommitment({...manifest,...r})&&r.receipt===PublicKey.findProgramAddressSync([Buffer.from('joint-v3-receipt'),new PublicKey(r.from).toBuffer(),Buffer.from(r.nonce,'hex')],new PublicKey(manifest.program))[0].toBase58()).at(-1);
+ need(latest||fastCredit,'Confirmed token credit missing.');
+ return {id:'joint-v3:'+asset.mint+':'+position,bridge:'joint-v3',network:'monero',mint:asset.mint,name:asset.name,ticker:asset.symbol,program:manifest.program,position,moneroOwner:account.xmr,solanaOwner:account.sol,amountRaw:p.available,chainBalance:p.chainBalance,linkTxid:p.linkTxid,...(fastCredit?{settlement:'solana',fastReceipt:fastCredit.receipt}:{}),receipt:fastCredit?{url:'https://solscan.io/account/'+position,label:'View Solana position'}:{url:'https://xmrchain.net/tx/'+latest.txid,label:'View Monero record'},checkedAt:now,stale:false};
 }
 // These rows are a separate display channel. Never merge them into holdings,
 // MAX amounts, USD totals or any authorization input.
@@ -67,7 +69,7 @@ export function createJointHoldings({privateTest=privateBuild,walletTest=walletT
  function cachedIncoming(a,asset){try{const v=JSON.parse(storage?.getItem(key(a,asset.mint))??'null');if(!v||v.savedAt>now()||now()-v.savedAt>86400000||v.sol!==a.sol||v.xmr!==a.xmr||v.mint!==asset.mint)return [];return jointIncomingRows(v.report,a,asset,{privateTest,walletTest,now:v.savedAt}).map(r=>({...r,stale:true}));}catch{return [];}}
  async function read(a,asset,signal,{force=false,verified=null,remember=()=>{}}={}){
   const manifest=transferableManifest(asset.mint),policy=walletTest?WALLET_TEST_POLICY:privateTest?PRIVATE_TEST_POLICY:undefined;
-  const runtime=adapters?.runtime?.(asset,{signal})??createRuntimeHttpClient({endpoint:'/api/joint-transferable/'+asset.mint,fetcher:(p,o)=>fetcher(endpoint+p,o),signal,shareKey:endpoint});
+  const runtime=adapters?.runtime?.(asset,{signal})??createRuntimeHttpClient({fastSettlement:manifest.fastSend==='solana-settlement-v1',endpoint:'/api/joint-transferable/'+asset.mint,fetcher:(p,o)=>fetcher(endpoint+p,o),signal,shareKey:endpoint});
   const chain=adapters?.chain?.(asset,{signal})??createSolanaAdapter({connection:new Connection(rpcEndpoint,{commitment:'finalized',fetch:(url,o)=>fetcher(url,{...o,signal})}),manifest,privateTestPolicy:policy});
   // Unregistered tokens skip native history. A linked account with zero custody
   // must still check for incoming transfers awaiting the sender’s final approval.
@@ -98,7 +100,8 @@ export function createJointHoldings({privateTest=privateBuild,walletTest=walletT
   // omits this position. Preserve last-known data instead of caching false zero.
   if(custodyBalance!==null&&BigInt(custodyBalance)>0n)need(report.positions.some(p=>p.position===position),'Bridge history is missing funded custody; refresh again.');
   let finalCustodyHex=custodyHex;
-  if(row){const value=await chain.readAccount(row.position);need(value?.finalized===true&&value.owner===manifest.program&&!value.executable,'Finalized bridge custody unavailable.');const p=decodePosition(value.data);need(p.owner===a.sol&&p.verifier===manifest.verifier&&p.mint===asset.mint&&p.binding===digest(a.xmr)&&p.balance===row.chainBalance&&p.linkProof===commitment(report.accepted.find(e=>e.txid===row.linkTxid).envelope),'Bridge custody changed; refresh again.');finalCustodyHex=Buffer.from(value.data).toString('hex');}
+  if(row){const value=await chain.readAccount(row.position);need(value?.finalized===true&&value.owner===manifest.program&&!value.executable,'Finalized bridge custody unavailable.');const p=decodePosition(value.data);need(p.owner===a.sol&&p.verifier===manifest.verifier&&p.mint===asset.mint&&p.binding===digest(a.xmr)&&p.balance===row.chainBalance&&p.linkProof===((e)=>e.record.p==='xmr20-identity'?identityCommitment(e):commitment(e))(report.accepted.find(e=>e.txid===row.linkTxid).envelope),'Bridge custody changed; refresh again.');finalCustodyHex=Buffer.from(value.data).toString('hex');}
+  if(row?.fastReceipt){const receipt=await chain.readAccount(row.fastReceipt);need(receipt?.finalized===true&&receipt.owner===manifest.program&&!receipt.executable&&matchesReceipt(manifest,row.fastReceipt,receipt.data)?.to===position,'Finalized fast-send credit unavailable.');}
   need(!signal.aborted,'Balance refresh cancelled.');try{storage?.setItem(key(a,asset.mint),JSON.stringify({sol:a.sol,xmr:a.xmr,mint:asset.mint,savedAt:now(),report}));}catch{/* Display cache is optional and never authorizes spending. */}
   remember({custodyHex:finalCustodyHex,position,reportAt,report});
   return {row:row?{...row,historyAt:reportAt}:null,pending:jointIncomingRows(report,a,asset,{privateTest,walletTest,now:now()}),reused:false};
