@@ -6,6 +6,10 @@ Launch and trade XMR20 tokens in [@XMR20_Bot](https://t.me/XMR20_Bot). [Bot sour
 
 Open-source XMR20 Chrome wallet and experimental read-only token indexer.
 
+## Wallet source update — 0.1.95
+
+The native Monero bridge wallet. `src/` is the extension source behind the installed XMR20 Wallet 0.1.95 package: Bridge to Monero and Bridge to Solana through the operator-verified native bridge, Monero token sends, the Tokens | SOL ↔ XMR bridge window with the ChangeNOW coin exchange, and the saved-setup recovery flows. `services/native-market/` and `bridge/core-monero-send/` hold the client-side bridge protocol code (custody and redemption clients, signature and funding journals, XN1 records and carrier replay). `native-package/` carries the pinned Monero engine files and the composed package assets; `npm run build:native` assembles `extension-native/` from them and prints which built outputs match the installed package hashes (`native-package/installed-hashes.json`). The engine signer is built from a separate Rust crate that is not published here. Funded bridge and exchange flows on this exact source are not verified by this repository's tests; see `CHANGELOG.md`.
+
 ## Wallet source update — 0.1.57
 
 The current source includes universal wallet linking, clearer approval steps, saved-link recovery after closing the popup, faster shared reads, compact balances and the updated bridge/send interface. Run `npm ci`, `npm test`, then `npm run build:bridge` to build the updated client into `extension-bridge/`.

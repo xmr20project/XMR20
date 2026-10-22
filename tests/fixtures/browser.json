@@ -1,0 +1,23 @@
+{
+  "scope": "Isolated watch-only extension. Holdings and pending fixtures; real Raydium APIs in final phase. No funds sent.",
+  "checks": {
+    "balancesAndPendingDoNotWaitForPrices": true,
+    "confirmedTotal290": true,
+    "pending900MillionExcluded": true,
+    "perTokenValues": true,
+    "minuteCache": true,
+    "detailSourceAndUnitPrice": true,
+    "layout390": true,
+    "layout340": true,
+    "explorerValues": true,
+    "missingPricePartialTotal": true,
+    "outageDoesNotPresentStaleAsCurrent": true,
+    "staleQuotesExpire": true,
+    "liveRaydiumAcceptedByExtension": true,
+    "liveDisplayedTotal": "$3.30",
+    "noWalletAddressOrPasswordSentToRaydium": true,
+    "noPageOrCspErrors": true
+  },
+  "priceRequestCount": 8,
+  "errors": []
+}

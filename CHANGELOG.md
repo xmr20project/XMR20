@@ -1,5 +1,15 @@
 # Wallet changelog
 
+## 0.1.95 source update — 22 October 2026
+
+- Publish the wallet source that the installed XMR20 Wallet 0.1.95 package was built from: the native (operator-verified) Monero bridge pages (Bridge to Monero, Bridge to Solana, Monero token send, finished-setup detection), the premium compact bridge panels, the Bridge window with Tokens | SOL ↔ XMR tabs and the ChangeNOW SOL ↔ XMR exchange page (quote → review → saved request → create → pay through the normal Send screen → status/recovery).
+- Publish the native-market client sources the pages depend on for the first time: `services/native-market/` (operator custody, credit preparation and redemption clients, signature/funding journals, XN1 records, carrier and replay), `bridge/core-monero-send/` and `bridge/core-fast-send/`, plus the shared address/protocol/amount helpers under `shared/`.
+- Native wallet engine files (`native-package/market/native-wallet/`) are shipped as pinned artifacts with their hashes; the signer is built from a separate Rust crate that is not in this repository. `npm run build:native` assembles the native package layout and reports which outputs match the installed package.
+- Wallet-side status fix: a saved bridge publication that only the unrestricted Monero peer can still see is reported as accepted (with relay proof) instead of a failed publish, so the UI no longer offers a misleading retry.
+- Website holdings reader (`services/wallet-index`): every launched token is read directly at finalized commitment when the independent reader does not track it, so tweet-launched tokens appear in website wallets.
+- 554 public tests pass (`npm test`); `build:bridge` passes. One extension test (native carrier worker) is not published because it loads `monero-ts` from the private website workspace.
+- Not verified here: a funded native bridge on this exact source, a funded ChangeNOW exchange, and the website wallet screens (not part of this repository). The published build is not byte-identical to the installed 0.1.95 package: that package was bundled from a multi-workspace dependency tree with a duplicated Solana client stack, and the source has two later edits (swap page `open(requestId)`, bridge page `resumeFrom` wording option) that are covered by tests.
+
 ## Server carrier own-node transport — 20 October 2026
 
 - Prefer the owned Monero node for native carrier synchronization and first publication, while retaining independent checkpoint verification and bounded fallback.

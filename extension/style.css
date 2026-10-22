@@ -32,3 +32,17 @@
 
 /* Exact amount shortcut shared by every send and bridge form. */
 .amount-label{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:20px 0 8px}.amount-label label{margin:0}.amount-max{flex:none;min-width:52px;min-height:36px;padding:6px 12px;border:1px solid var(--line,#3b3328);border-radius:10px;background:var(--surface,#211e18);color:var(--accent,#ff8133);font:inherit;font-size:13px;font-weight:700;cursor:pointer}.amount-max:hover:not(:disabled){background:#34271b}.amount-max:focus-visible{outline:2px solid #ff8133;outline-offset:3px}.amount-max:disabled{opacity:.45;cursor:default}
+/* Keep the established modal appearance; only its content scrolls. */
+dialog[open]:has(> .modal-body){--modal-inset:21px;display:flex;flex-direction:column;padding:0;overflow:hidden}
+dialog[open]:has(.joint-transferable){--modal-inset:22px}
+dialog:has(> .modal-body)>.modal-head{margin:var(--modal-inset) var(--modal-inset) 14px;padding:0;flex:none}
+dialog>.modal-body{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 var(--modal-inset)}
+dialog>.modal-foot{flex:none;padding:0 var(--modal-inset) var(--modal-inset);background:inherit}
+dialog>.modal-foot>.error{margin:10px 0 0}
+dialog>.modal-foot>.error:empty,dialog>.modal-foot>p.busy:empty{display:none}
+dialog>.modal-foot>p.subtle{margin:8px 0 0}
+.sync-track{height:4px;border-radius:4px;background:#241e18;overflow:hidden;margin:14px 0 8px}
+#sync-bar{height:100%;width:0;background:var(--orange);border-radius:4px;transition:width .4s ease}
+.amount-input::placeholder,input.amount-input::placeholder{color:#6f6a64;opacity:1}
+@media(max-width:380px){dialog[open]:has(.joint-transferable){--modal-inset:17px}}
+@media(prefers-reduced-motion:reduce){#sync-bar{transition:none}}

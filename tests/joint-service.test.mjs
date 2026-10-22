@@ -17,8 +17,8 @@ test('network errors explain recovery without hiding protocol validation failure
 });
 test('an unlinked Monero recipient explains how to become eligible without claiming a submission',()=>{
  const message=bridgeConnectionMessage(Error('Registered recipient required.'));
- assert.match(message,/recipient must link their Monero wallet to a Solana wallet in Bridge/);
- assert.match(message,/10 Monero confirmations/);
+ assert.match(message,/Check the recipient’s wallet link and token account/);
+ assert.match(message,/they do not need to link again/);
  assert.doesNotMatch(message,/submitted|network error|try again/);
  assert.equal(bridgeConnectionMessage(Error('Choose a different linked Monero wallet.')),'Choose a different linked Monero wallet.');
 });
