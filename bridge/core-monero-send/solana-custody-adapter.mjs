@@ -5,6 +5,7 @@ import {ed25519} from '@noble/curves/ed25519';
 import bs58 from 'bs58';
 import {createAssociatedTokenAccountIdempotentInstruction,getAssociatedTokenAddressSync,TOKEN_2022_PROGRAM_ID} from '@solana/spl-token';
 import {createSolanaAdapter} from '../core-transferable/solana-adapter.mjs';
+import {matchesWalletApproval,hasWalletGuards,verifyWalletGuardProgram} from '../core-transferable/wallet-guards.mjs';
 import {addresses,decodePosition} from '../core-transferable/sdk.mjs';
 import {bridgeInstruction,decodePolicy,decodeBridgeReceipt} from './bridge-sdk.mjs';
 import {marketCreditFromFinalizedReceipt} from './market-custody.mjs';
@@ -16,6 +17,39 @@ import {validateCustodyRefundPlan,assertCustodyRefundable} from '../../services/
 import {EXPIRING_CREDIT_PROFILE} from '../../services/native-market/xn1/records.mjs';
 import {inspectCarrier,decodeCarrier} from '../../services/native-market/xn1/carrier.mjs';
 
+// A browser wallet such as Phantom may add its own compute-budget (priority fee) and
+// Lighthouse assertion instructions to a transaction that only the holder signs. A
+// holder-only deposit accepts exactly those additions: without them the message must
+// equal the reviewed one, no reviewed account changes privilege, and the holder's
+// added fee stays bounded. Every other change is still rejected.
+const BUDGET='ComputeBudget111111111111111111111111111111',MAX_UNITS=1400000n,MAX_PRIORITY_LAMPORTS=5000000n;
+export function holderWalletAdditions(expected,actual){
+ try{
+  if(actual.version!==0||actual.addressTableLookups.length||actual.recentBlockhash!==expected.recentBlockhash||
+   actual.header.numRequiredSignatures!==expected.header.numRequiredSignatures)return false;
+  const before=expected.staticAccountKeys.map(k=>k.toBase58()),after=actual.staticAccountKeys.map(k=>k.toBase58());
+  if(after[0]!==before[0]||new Set(after).size!==after.length||before.some(k=>!after.includes(k)))return false;
+  for(let i=0;i<after.length;i++){
+   const j=before.indexOf(after[i]),signer=i<actual.header.numRequiredSignatures,writable=actual.isAccountWritable(i);
+   if(j<0?signer||writable:signer!==j<expected.header.numRequiredSignatures||writable!==expected.isAccountWritable(j))return false;
+  }
+  const decoded=TransactionMessage.decompile(actual),kept=[],used=new Set();let limit=null,price=null,loaded=null;
+  for(const ix of decoded.instructions){
+   used.add(ix.programId.toBase58());for(const k of ix.keys)used.add(k.pubkey.toBase58());
+   if(ix.programId.toBase58()!==BUDGET){kept.push(ix);continue;}
+   const d=Buffer.from(ix.data);if(ix.keys.length)return false;
+   if(d.length===5&&d[0]===2&&limit===null)limit=BigInt(d.readUInt32LE(1));
+   else if(d.length===9&&d[0]===3&&price===null)price=d.readBigUInt64LE(1);
+   else if(d.length===5&&d[0]===4&&loaded===null)loaded=d.readUInt32LE(1);
+   else return false;
+  }
+  if(after.some(k=>!before.includes(k)&&!used.has(k)))return false;
+  if((limit??0n)>MAX_UNITS||((price??0n)*(limit??MAX_UNITS)+999999n)/1000000n>MAX_PRIORITY_LAMPORTS)return false;
+  const rebuilt=new TransactionMessage({payerKey:decoded.payerKey,recentBlockhash:decoded.recentBlockhash,instructions:kept}).compileToV0Message();
+  if(Buffer.from(rebuilt.serialize()).equals(Buffer.from(expected.serialize())))return kept.length<decoded.instructions.length;
+  return matchesWalletApproval(expected,rebuilt,'deposit');
+ }catch{return false;}
+}
 export const createOperatorCustodyAdapter=options=>createCustodyAdapter(options,false);
 export const createOperatorRefundAdapter=options=>createCustodyAdapter(options,true);
 function createCustodyAdapter({connection,manifest,configuration,signer,privateTestPolicy,readRefundState,readEntryState},refund){
@@ -92,7 +126,8 @@ function createCustodyAdapter({connection,manifest,configuration,signer,privateT
   prepared(plan,value);
   need(typeof signedHex==='string'&&/^(?:[a-f0-9]{2})+$/.test(signedHex)&&signedHex.length<=4096,'Bounded custody approval required');
   const tx=VersionedTransaction.deserialize(Buffer.from(signedHex,'hex')),message=tx.message.serialize(),expected=transaction(plan,value.blockhash);
-  need(Buffer.from(tx.serialize()).toString('hex')===signedHex&&Buffer.from(expected.message.serialize()).equals(Buffer.from(message)),'Holder approval changed the exact custody transaction');
+  const reviewed=Buffer.from(expected.message.serialize()).equals(Buffer.from(message))||!refund&&plan.request.kind==='deposit'&&holderWalletAdditions(expected.message,tx.message);
+  need(Buffer.from(tx.serialize()).toString('hex')===signedHex&&reviewed,'Holder approval changed the exact custody transaction');
   const keys=tx.message.staticAccountKeys.slice(0,tx.message.header.numRequiredSignatures),count=plan.request.kind==='deposit'?1:2;
   need(keys.length===count&&tx.signatures.length===count&&keys[0].toBase58()===plan.request.owner,'Wrong custody holder or signer set');
   need(ed25519.verify(tx.signatures[0],message,keys[0].toBytes(),{zip215:false}),'Holder signature required before bridge co-signing');
@@ -174,6 +209,7 @@ function createCustodyAdapter({connection,manifest,configuration,signer,privateT
    const tx=approved(plan,value,signed.transaction,true);need(bs58.encode(tx.signatures[0])===signed.signature,'Saved custody signature changed');
    const done=await receipt(plan);if(done)return {status:'finalized',receipt:done};
    await fresh(plan);await blockhash(value);
+   if(hasWalletGuards(tx.message))await verifyWalletGuardProgram(connection);
    const signature=await connection.sendRawTransaction(tx.serialize(),{skipPreflight:false,preflightCommitment:'confirmed',maxRetries:2});
    need(signature===signed.signature,'Custody submission identity differs');return {status:'submitted',signature};
   },

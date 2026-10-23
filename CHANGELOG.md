@@ -1,5 +1,13 @@
 # Wallet changelog
 
+## 0.1.96 source update — 23 October 2026
+
+- Saved bridge screen: when XMR is reserved by a bridge you started but never approved on Solana, "Finish your saved bridge" shows that exact transfer (amount, route, what you receive, time left) with **Continue** and **Cancel bridge**. Cancel asks once ("Keep it" / "Yes, cancel"). The wallet engine then waits until every Solana approval made so far has expired (finalized height past the confirmed height at the start + 160 blocks), requires the custody receipt to be absent in a finalized read, and only then marks the saved bridge `cancelled` in the encrypted funding journal, which frees the unsigned fee coin. A bridge with a signed Monero transaction, or whose deposit reached Solana, cannot be cancelled. Saved entries show "Cancelled".
+- Bridge progress: one step tracker from Solana deposit → Monero transaction → send → 10 confirmations, with the xmrchain link once the network accepts the transaction. The finished Monero transaction step shows how long each part took (bridge service, wallet catch-up, building, signing); the service request and the wallet catch-up now run at the same time.
+- Phantom compatibility for holder deposits: the custody adapter accepts a holder approval to which the wallet added only a bounded priority fee (ComputeBudget) or pinned Lighthouse guards, with every reviewed instruction, account and signer unchanged; anything else is still refused.
+- Native engine artifact `native-package/market/native-wallet/runtime.js` 8762a65b… → 96b873b3… (cancel action, Solana height reads, the custody adapter change above, and the replay-guard digest reuse already published in `services/native-market/xn1/replay.mjs`). Engine sources outside this repository are unchanged otherwise; worker, transport, monero-ts and signer bytes are identical to 0.1.95.
+- Not verified here: a real Cancel of a reserved bridge, and the build-step timing on a funded bridge. The website wallet screens that share these pages are not part of this repository.
+
 ## 0.1.95 source update — 22 October 2026
 
 - Publish the wallet source that the installed XMR20 Wallet 0.1.95 package was built from: the native (operator-verified) Monero bridge pages (Bridge to Monero, Bridge to Solana, Monero token send, finished-setup detection), the premium compact bridge panels, the Bridge window with Tokens | SOL ↔ XMR tabs and the ChangeNOW SOL ↔ XMR exchange page (quote → review → saved request → create → pay through the normal Send screen → status/recovery).
