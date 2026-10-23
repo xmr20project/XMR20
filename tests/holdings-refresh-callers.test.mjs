@@ -8,7 +8,7 @@ import {PRIVATE_TEST_POLICY as policy} from '../bridge/core-transferable/private
 import {transferableManifest} from '../bridge/core-transferable/mainnet-config.mjs';
 import {addresses} from '../bridge/core-transferable/sdk.mjs';
 import {digest,commitment} from '../bridge/core-transferable/records.mjs';
-import {createHoldingsRefresh} from './support/holdings-refresh.js';
+import {createHoldingsRefresh} from '../website-wallet/src/holdings-refresh.js';
 
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
 function fixture(){
