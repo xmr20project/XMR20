@@ -1,0 +1,165 @@
+[
+ {
+  "at": "2026-10-23T18:15:13.599Z",
+  "step": "extension loaded",
+  "id": "jigbpnljnmbbkebaopbnnhmiafgnofla",
+  "profile": "recovery-A"
+ },
+ {
+  "at": "2026-10-23T18:15:16.874Z",
+  "step": "account imported; holder keys derived in the extension and registered by public token address",
+  "name": "Alpha"
+ },
+ {
+  "at": "2026-10-23T18:15:19.653Z",
+  "step": "account imported; holder keys derived in the extension and registered by public token address",
+  "name": "Beta"
+ },
+ {
+  "at": "2026-10-23T18:15:23.054Z",
+  "step": "TEST SERVICE: mined test XMR to this account for carrier fees",
+  "text": "Mined 1 coinbase output to this account (test service). It unlocks after 60 blocks; advance the chain. XMR for carrier fees: 0.000000 XMR spendable · 35.167565 XMR locked until block 310"
+ },
+ {
+  "at": "2026-10-23T18:15:25.121Z",
+  "step": "TEST SERVICE: mined test XMR to this account for carrier fees",
+  "text": "Mined 1 coinbase output to this account (test service). It unlocks after 60 blocks; advance the chain. XMR for carrier fees: 0.000000 XMR spendable · 35.167498 XMR locked until block 311"
+ },
+ {
+  "at": "2026-10-23T18:15:28.920Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T18:15:32.113Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T18:15:32.217Z",
+  "step": "fee review shown before proving",
+  "fee": "Carrier fee: 0.003024 XMR (2520 weight bytes × 1200000 piconero on the offline test chain). Paid from this account’s own XMR: input 35.167565 XMR, change 35.164541 XMR returns to you. The 996-byte rec"
+ },
+ {
+  "at": "2026-10-23T18:16:04.544Z",
+  "step": "A: transfer with change",
+  "text": "Published 09bac0ed97a7d235… (996-byte record, 1 input, change 78.5 X; proved locally in 29 s; carrier a3d33b0627e3165f… 2520 bytes, tx_extra 1056 bytes, fee 0.003024 XMR paid from this wallet). Advance the chain to confirm."
+ },
+ {
+  "at": "2026-10-23T18:16:05.598Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T18:16:07.234Z",
+  "step": "fee review shown before proving",
+  "fee": "Carrier fee: 0.003024 XMR (2520 weight bytes × 1200000 piconero on the offline test chain). Paid from this account’s own XMR: input 35.167498 XMR, change 35.164474 XMR returns to you. The 996-byte rec"
+ },
+ {
+  "at": "2026-10-23T18:16:40.338Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T18:16:40.442Z",
+  "step": "fee review shown before proving",
+  "fee": "Carrier fee: 0.003024 XMR (2520 weight bytes × 1200000 piconero on the offline test chain). Paid from this account’s own XMR: input 35.164474 XMR, change 35.161450 XMR returns to you. The 996-byte rec"
+ },
+ {
+  "at": "2026-10-23T18:17:10.877Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T18:17:10.996Z",
+  "step": "fee review shown before proving",
+  "fee": "Carrier fee: 0.003024 XMR (2520 weight bytes × 1200000 piconero on the offline test chain). Paid from this account’s own XMR: input 35.161450 XMR, change 35.158426 XMR returns to you. The 996-byte rec"
+ },
+ {
+  "at": "2026-10-23T18:17:41.446Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T18:18:14.296Z",
+  "step": "A: consolidation",
+  "text": "Consolidation published (3 inputs → 1 note of 86.5 X; 996-byte record proved locally in 29 s; carrier fbc72cc400180de9… paid 0.003024 XMR from this wallet). Advance the chain to confirm."
+ },
+ {
+  "at": "2026-10-23T18:18:15.861Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T18:18:39.735Z",
+  "step": "A: redemption proved locally",
+  "text": "Burn 8f24f229007cbe44… published (925-byte record, 1 input, proved locally in 22 s; carrier 310ad779f9fc0f11… fee 0.002938 XMR paid from this wallet). Payout to your Solana address after 10 confirmations."
+ },
+ {
+  "at": "2026-10-23T18:18:42.278Z",
+  "step": "A: final state before closing the profile (holder-local replay)",
+  "balance": "78.50 X",
+  "notes": 2,
+  "spent": 5,
+  "tip": 382
+ },
+ {
+  "at": "2026-10-23T18:18:42.605Z",
+  "step": "profile A closed; nothing copied"
+ },
+ {
+  "at": "2026-10-23T18:18:43.363Z",
+  "step": "extension loaded",
+  "id": "jigbpnljnmbbkebaopbnnhmiafgnofla",
+  "profile": "recovery-B"
+ },
+ {
+  "at": "2026-10-23T18:18:46.718Z",
+  "step": "account imported; holder keys derived in the extension and registered by public token address",
+  "name": "Alpha restored"
+ },
+ {
+  "at": "2026-10-23T18:18:47.301Z",
+  "step": "B: restored from phrase + public parameters + public chain (token notes, spent status AND native XMR outputs for carrier fees)",
+  "balance": "78.50 X",
+  "notes": 2,
+  "spent": 5,
+  "nativeOutputs": 4,
+  "registration": {
+   "registered": true,
+   "tokenAddress": "penumbra1zehla5mr96l76pmqs2k5s6am9ypl6y055u37g9p497suxrhyayd9egc6kwexcvq9z0nxph6vyr4tmlkx22qtfgmn60h542nfgtdpm9qcamkphrjeka60lry8tx3d628ukje8j3",
+   "existing": true,
+   "note": "Known holder (same private address): bridge-side facts reattached; no private state exists on this service."
+  }
+ },
+ {
+  "at": "2026-10-23T18:18:47.468Z",
+  "step": "fee review shown before proving",
+  "fee": "Carrier fee: 0.003024 XMR (2520 weight bytes × 1200000 piconero on the offline test chain). Paid from this account’s own XMR: input 35.158578 XMR, change 35.155554 XMR returns to you. The 996-byte rec"
+ },
+ {
+  "at": "2026-10-23T18:19:19.989Z",
+  "step": "B: private spend after restoration (two recovered inputs)",
+  "text": "Published baeda7a36147d2c3… (996-byte record, 2 inputs, change 1.5 X; proved locally in 29 s; carrier 7b581fbefeaa07d8… 2520 bytes, tx_extra 1056 bytes, fee 0.003024 XMR paid from this wallet). Advance the chain to confirm."
+ },
+ {
+  "at": "2026-10-23T18:19:21.097Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T18:19:24.351Z",
+  "step": "account imported; holder keys derived in the extension and registered by public token address",
+  "name": "Wrong phrase"
+ },
+ {
+  "at": "2026-10-23T18:19:25.130Z",
+  "step": "B: wrong recovery phrase derives another address and recovers nothing"
+ },
+ {
+  "at": "2026-10-23T18:19:28.317Z",
+  "step": "account imported; holder keys derived in the extension and registered by public token address",
+  "name": "Beta restored"
+ },
+ {
+  "at": "2026-10-23T18:19:29.093Z",
+  "step": "B: account separation holds"
+ },
+ {
+  "at": "2026-10-23T18:19:31.126Z",
+  "step": "B: viewing key shared explicitly; indexer sees 1.5 X, cannot spend",
+  "text": "Indexer view: 1.5 X, 2 note(s). It cannot spend."
+ }
+]

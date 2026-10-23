@@ -26,7 +26,7 @@ test('journal-vs-phrase recovery through two installations with the same phrase'
  const state=async(p)=>await p.evaluate(async()=>await globalThis.__pfDebug.state());
  const nativeTotal=async(p)=>{const n=(await state(p)).holder.native;return BigInt(n.unlocked)+BigInt(n.locked)+BigInt(n.reserved);};
  const pending=async(p)=>(await state(p)).journal?.pending||{};const history=async(p)=>(await state(p)).journal?.history||[];
- const unlock=async(p,password)=>{h.page=p;if(await p.$('#unlock-password')){await p.fill('#unlock-password',password);await p.click('#unlock');}await p.waitForSelector('#asset-private-0',{timeout:300000});await h.rowsReady();};
+ const unlock=async(p,password)=>{h.page=p;await p.waitForSelector('#unlock-password, #asset-private-0, #pf-loading',{timeout:120000});if(await p.$('#unlock-password')){await p.fill('#unlock-password',password);await p.click('#unlock');}await p.waitForSelector('#asset-private-0',{timeout:300000});await h.rowsReady();};
  const refreshUntil=async(p,cond,tries=40)=>{h.page=p;for(let i=0;i<tries;i++){if(await cond())return true;await p.waitForTimeout(2000);await h.uiRefresh();}return cond();};
  // Send through the popup with the fee review; `hook` interrupts after the given journal step.
  const send=async(p,to,amount,{hook=null}={})=>{h.page=p;if(hook)await p.evaluate(x=>{globalThis.__pfTest={crashAfter:x};},hook);await h.openDetail();await p.click('#pf-send');await p.fill('#pf-to',to);await p.fill('#pf-amount',amount);await p.click('#pf-send-go');await h.waitText('#pf-fee',/Carrier fee/);await p.click('#pf-approve');
