@@ -17,7 +17,17 @@ It is kept separate from the wallet and bridge sources of this repository and ch
 | 2 | `docs/stage2-carrier/` | Holder-funded Monero carriers: the holder's wasm engine scans its own XMR, quotes the exact network fee before proving, proves the record, signs the ordinary Monero carrier (record in `tx_extra`) and publishes it to the daemon; no relay. See `docs/stage2-carrier/CARRIER.txt`. |
 | 3 | `docs/stage3-review/` | Recovery from the phrase versus the original installation's journal (prepared / proved / signed / lost reply / rollback / stale backup / two installations), the matching reconcile hardening, a leak-regression test, and an external security-review package in `security-review/01..07`. See `docs/stage3-review/RECOVERY-CASES.txt`. |
 
-The code in `holder-wasm/`, `wallet-extension/src/`, `backend/` and the tests is the **stage-3 (cumulative)**
+| 4 | `docs/stage4-interop/` | Interoperability: a versioned experimental specification (`SPEC-XMR20-PRIVATE-TOKENS-v0.1-experimental.txt`), a small documented wallet library (`wallet-lib/`), a minimal CLI second wallet (`cli-wallet/`), an extension↔CLI interoperability test on one pool (`interop.test.mjs`), portable synthetic test vectors (`vectors/`) and an independent decoder written from the specification (`independent/`). |
+
+**Shared engine, scoped decoder.** The research extension and the CLI wallet are two applications over ONE
+cryptographic implementation: the same `holder-wasm` binary and the same host modules (scanner, parameter loader,
+carrier builder) and vendored upstream crates. They are not independent implementations. The separate decoder in
+`independent/` checks only what it actually implements from the specification with established JavaScript
+libraries — tx_extra framing, record layouts and ids, message preimages, manifest and ledger-domain rules, the
+key-derivation PRF — and explicitly lists what it cannot check (commitments, nullifiers, signatures, proofs,
+payload decryption, address derivation), which remain for independent security review.
+
+The code in `holder-wasm/`, `wallet-extension/src/`, `backend/` and the tests is the **stage-3/4 (cumulative)**
 version. Per-stage results, readiness verdicts, reproduction notes and frozen source hashes are under `docs/`.
 Measurements and synthetic run audits (step logs, network audits) are under `results/`; screenshots, daemon
 data, backend logs and browser profiles are deliberately not published.
@@ -41,6 +51,7 @@ data, backend logs and browser profiles are deliberately not published.
   the laboratory `setup` command as described in `docs/stage1-params/REPRODUCE.txt`.
 - `*.test.mjs`, `browser-harness.mjs` — Node engine tests and Playwright popup tests (see each stage's
   `REPRODUCE.txt` for ports, prerequisites and expected results).
+- `wallet-lib/`, `cli-wallet/`, `independent/`, `vectors/`, `SPEC-…txt` — stage 4 (see `docs/stage4-interop/README.md`; the CLI's `--seed` import needs `monero-ts@0.11.16`, `--root`/`--viewing-key` need nothing extra; the CLI stores its synthetic root in clear and is for synthetic use only).
 - `security-review/` — the security-review package: proof construction and trust model, what each observer learns, the
   original native source/key-image leak and its regression coverage, migration/cutover assumptions, the retained
   rollback-loss examples, an adversarial self-review (not an audit) and per-component readiness verdicts.
