@@ -1,0 +1,32 @@
+STAGENET CARRIER REHEARSAL — PREPARATION AND LOCAL CHECKS — research/privacy-stagenet-rehearsal-20261023
+23 October 2026. Nothing was broadcast to any public network; no blockchain was downloaded; the rehearsal itself has
+NOT been executed. Offline fakechain fees/decoys are not stagenet or mainnet measurements. Readiness unchanged (NO-GO).
+
+PREPARED (runnable): see README-STAGENET.txt — network-aware engine/scanner/carrier builder (manifest network.kind
+offline-fakechain | stagenet; sanity checks ON whenever the network is not the fakechain), params/stagenet-v0 (a
+disposable setup bound to the stagenet genesis 76ee3cc9…; manifest sha256 066d839bcd6b0f0145a9eeaa126bcabc0448c6371dde43f191986f756dbc4be2,
+ledger domain 5234ab34…), stagenet/make-stagenet-manifest.mjs, stagenet/rehearsal.mjs (refuses non-stagenet,
+unsynced or mainnet nodes; separates token-proof validity from native acceptance; uncertain-broadcast retry with the
+same blob; sizes/fees/timings/confirmations recorded to JSON), stagenet/local-checks.mjs.
+
+LOCAL CHECKS RUN (stagenet/local-checks.mjs, 12 checks, 0 failed; runs/stagenet-local-checks.json):
+  - stagenet manifest: independent structural checks pass; ledger domain recomputes; binds the stagenet genesis;
+    its ledger domain differs from the fakechain set's.
+  - engine accepts kind "stagenet"; refuses kind "mainnet"; refuses the fakechain parameters.json under the stagenet
+    manifest ("different ledger or version").
+  - scanner under a stagenet manifest refuses the offline fakechain daemon ("Stagenet daemon required by the
+    manifest (daemon reports fakechain)") — no accidental cross-network use.
+  - token proof valid locally before any broadcast; record admitted after mining.
+  - CORRECTION OF AN EARLIER ASSUMPTION: a carrier published to the offline fakechain WITH monerod's
+    do_sanity_checks ON was ACCEPTED in this run ({"ok":true,"status":"OK"}); stage 2 had disabled the sanity checks
+    for the fakechain as a precaution and described them as failing on a tiny chain — that was not observed here.
+    The fakechain concession is therefore unnecessary in at least some chain states; stagenet/mainnet runs keep the
+    checks ON regardless. (Measurements from this run: record 996 B, tx_extra 1,056 B, carrier 2,520 B, fakechain
+    fee 3,024,000,000 piconero — OFFLINE values only.)
+
+STILL REQUIRES EXECUTION ON STAGENET (not done; README-STAGENET.txt lists each item): a synced stagenet node the
+operator controls; a static parameter server for params/stagenet-v0; a stagenet-aware issuer/indexer (the lab
+native::guard still requires an offline fakechain) and a credit on the stagenet-anchored pool; faucet funding;
+the 1/2/3-note transfers with sanity checks ON; relay of a 1,056-byte extra by public nodes; fee at the stagenet
+dynamic rate; decoy sampling rounds; confirmation handling; uncertain-broadcast retries; many-small-output input
+selection; evidence recorded with the same discipline.

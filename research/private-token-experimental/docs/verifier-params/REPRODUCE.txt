@@ -1,0 +1,9 @@
+REPRODUCTION — research/privacy-verifier-params-20261023 (verifier-side parameter authentication)
+1. Build the hardened lab crate (copy of research/privacy-integration-20261022 with trusted-manifest loading):
+   cd research/privacy-verifier-params-20261023-lab && PATH=$HOME/.cargo/bin:$PATH cargo build --release --offline
+   Roles now require: xmr20-integration-lab <issuer|indexer|wallet> <params dir> --trusted-manifest <manifest path>
+   (optional XMR20_TRUSTED_MANIFEST_SHA256=<hex> pins the manifest file itself).
+2. The holder engine build is shared read-only from research/privacy-interop-20261023 (holder-wasm/target symlink).
+3. Negative matrix + end-to-end flow + restart recovery (≈20 min; ports 8948/30075):
+   cd research/privacy-verifier-params-20261023 && node --test verifier-params.test.mjs     # runs/verifier-params-results.json
+   Each refusal starts a fresh daemon and parameter copy, tampers it, and asserts both roles refuse to start.

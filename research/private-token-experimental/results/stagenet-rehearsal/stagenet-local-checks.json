@@ -1,0 +1,77 @@
+{
+ "checks": [
+  {
+   "name": "stagenet manifest: independent structural checks",
+   "ok": true,
+   "detail": []
+  },
+  {
+   "name": "stagenet manifest: ledger domain recomputation",
+   "ok": true
+  },
+  {
+   "name": "stagenet manifest binds the stagenet genesis",
+   "ok": true
+  },
+  {
+   "name": "stagenet and fakechain ledger domains differ",
+   "ok": true
+  },
+  {
+   "name": "engine accepts a stagenet manifest (kind stagenet)",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "name": "engine refuses kind mainnet",
+   "ok": true,
+   "detail": "This engine accepts offline-fakechain or stagenet parameters only (kind \"mainnet\")"
+  },
+  {
+   "name": "engine refuses fakechain parameters under the stagenet manifest",
+   "ok": true,
+   "detail": "The parameter server serves a different ledger or version (domain 759e56ff75367217…) than the parameters shipped with this build (domain 5234ab346f9ea1b1…)"
+  },
+  {
+   "name": "scanner under a stagenet manifest refuses the fakechain daemon",
+   "ok": true,
+   "detail": "Stagenet daemon required by the manifest (daemon reports fakechain)."
+  },
+  {
+   "name": "token proof valid locally (admission) before any native broadcast",
+   "ok": true
+  },
+  {
+   "name": "fakechain with sanity checks ON: node reply recorded (expected refusal: ring statistics of a tiny chain)",
+   "ok": true,
+   "detail": {
+    "ok": true,
+    "status": "OK"
+   }
+  },
+  {
+   "name": "note: the fakechain accepted the carrier even with sanity checks on in this run",
+   "ok": true,
+   "detail": {
+    "ok": true,
+    "status": "OK"
+   }
+  },
+  {
+   "name": "record admitted after mining",
+   "ok": true
+  }
+ ],
+ "sanityCheckReply": {
+  "ok": true,
+  "status": "OK"
+ },
+ "measurements": {
+  "recordBytes": 996,
+  "extraBytes": 1056,
+  "nativeBytes": 2520,
+  "fakechainFee": "3024000000",
+  "fakechainFeePerWeight": "1200000",
+  "note": "OFFLINE FAKECHAIN values; not stagenet, not mainnet"
+ }
+}

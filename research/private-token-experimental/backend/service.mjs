@@ -51,7 +51,8 @@ import {Operator,bindingFor,CONFIRMATIONS,EXPOSURE} from '../../privacy-integrat
 import {ORDER} from '../../../website/services/native-market/xn1/proofs.mjs';
 import {le} from '../../../website/services/native-market/xn1/bytes.mjs';
 const dir=fileURLToPath(new URL('./',import.meta.url)),lab=path.resolve(dir,'../../privacy-integration-20261022'),root=path.resolve(dir,'../../..');
-const bin=lab+'/target/release/xmr20-integration-lab';
+// Hardened lab roles (research/privacy-verifier-params-20261023-lab): every role requires --trusted-manifest and authenticates its parameter files against it.
+const bin=path.resolve(dir,'../../privacy-verifier-params-20261023-lab/target/release/xmr20-integration-lab');
 const G=ed25519.ExtendedPoint.BASE,point=hex=>ed25519.ExtendedPoint.fromHex(hex,false),Hs=b=>le(keccak_256(b))%ORDER;
 const varint=n=>{const out=[];let x=BigInt(n);while(x>=0x80n){out.push(Number(x&0x7fn)|0x80);x>>=7n;}out.push(Number(x));return Buffer.from(out);};
 const randomScalar=()=>{let k;do{k=le(randomBytes(64))%ORDER;}while(!k);return k;};
@@ -62,12 +63,15 @@ export function legacyOutputFor({A,B},r,index){const D=point(A).multiply(8n).mul
 // Two registered holders x 492,500,000 = 985,000,000 = the net legacy position migrated to reserve (1,000,000,000 gross, one fee). Register both test accounts before the first X operation.
 const LEGACY_LOT='492500000';
 export const PARAMS_ROOT=path.resolve(dir,'../params');
-export async function startBackend({rpcPort=30041,p2pPort=30040,httpPort=8940,log=()=>{},origins=[EXTENSION_ORIGIN],paramsSet='test-v1',faults={}}={}){
+// roleFaults (tests only): tamper the ROLES' local parameter copy / trusted manifest before the issuer and indexer start:
+//   {file:'normal'|'boundary'|'parameters', kind:'missing'|'truncate'|'corrupt-query'|'foreign'|'swap'} and/or {manifest:'foreign'|'tamper-genesis'|'tamper-hash'|'missing'|'pin-mismatch'}.
+export async function startBackend({rpcPort=30041,p2pPort=30040,httpPort=8940,log=()=>{},origins=[EXTENSION_ORIGIN],paramsSet='test-v1',faults={},roleFaults=null}={}){
  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
  const run=await mkdtemp((await mkdir(dir+'../runs',{recursive:true}),dir+'../runs/backend-'));await mkdir(run+'/chain');await writeFile(run+'/chain/config','');
  const audit=async(line)=>appendFile(run+'/requests.log',JSON.stringify({at:new Date().toISOString(),...line})+'\n');
  const rpc=async(method,params={})=>{const r=await fetch(`http://127.0.0.1:${rpcPort}/json_rpc`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:'b',method,params}),signal:AbortSignal.timeout(20000)});const v=await r.json();if(v.error)throw Error(JSON.stringify(v.error));return v.result;};
  const daemon=spawn(root+'/operations/native-market-20261016/local-chain/bin/monerod',['--regtest','--keep-fakechain','--offline','--fixed-difficulty','1','--no-igd','--hide-my-port','--no-zmq','--disable-dns-checkpoints','--check-updates','disabled','--non-interactive','--data-dir',run+'/chain/data','--config-file',run+'/chain/config','--log-file',run+'/chain/daemon.log','--rpc-bind-ip','127.0.0.1','--rpc-bind-port',String(rpcPort),'--p2p-bind-ip','127.0.0.1','--p2p-bind-port',String(p2pPort),'--max-concurrency','2',...(origins.length?['--rpc-access-control-origins',origins.join(',')]:[])],{stdio:'ignore'});
+ const stopDaemon=async()=>{if(daemon.exitCode!==null||daemon.signalCode!==null)return;const done=new Promise(r=>daemon.once('exit',r));daemon.kill('SIGKILL');await done;};
  let ready=false;for(let i=0;i<150;i++){try{const info=await rpc('get_info');assert.equal(info.nettype,'fakechain');assert.equal(info.offline,true);ready=true;break;}catch{await sleep(200);}}assert(ready,'daemon');
  const env={XMR20_INTEGRATION_LAB:'offline-synthetic-only',XMR20_INTEGRATION_RPC_PORT:String(rpcPort)};
  // Fixed parameter set: small files copied, proving keys linked read-only into the run folder for the lab roles.
@@ -75,9 +79,27 @@ export async function startBackend({rpcPort=30041,p2pPort=30040,httpPort=8940,lo
  for(const f of ['parameters.json','issuer.secret.json','manifest.json'])await copyFile(path.join(paramsDir,f),run+'/parameters/'+f);
  for(const f of ['normal.public-pk','boundary.public-pk'])await symlink(path.join(paramsDir,f),run+'/parameters/'+f);
  const config=JSON.parse(await readFile(run+'/parameters/parameters.json','utf8'));const manifest=JSON.parse(await readFile(run+'/parameters/manifest.json','utf8'));
+ // The roles' trusted manifest lives OUTSIDE the parameter directory (anchored independently of what they load).
+ await mkdir(run+'/trusted');await copyFile(path.join(paramsDir,'manifest.json'),run+'/trusted/manifest.json');const roleEnv={};
+ if(roleFaults){const {rm,writeFile:wf}=await import('node:fs/promises');const pd=run+'/parameters';
+  if(roleFaults.file){const name=roleFaults.file==='parameters'?'parameters.json':roleFaults.file+'.public-pk';const target=pd+'/'+name;await rm(target,{force:true});const k=roleFaults.kind;
+   if(k==='missing'){}
+   else if(k==='foreign')await copyFile(path.join(PARAMS_ROOT,'test-other',name),target);
+   else if(k==='swap')await copyFile(path.join(paramsDir,roleFaults.file==='normal'?'boundary.public-pk':'normal.public-pk'),target);
+   else{const b=await readFile(path.join(paramsDir,name));if(k==='truncate')await wf(target,b.subarray(0,Math.floor(b.length*0.9)));else if(k==='corrupt-query'){b[Math.floor(b.length/2)]^=1;await wf(target,b);}else throw Error('unknown role fault '+k);}}
+  if(roleFaults.manifest){const t=run+'/trusted/manifest.json';
+   if(roleFaults.manifest==='missing')await rm(t,{force:true});
+   else if(roleFaults.manifest==='foreign')await copyFile(path.join(PARAMS_ROOT,'test-other','manifest.json'),t);
+   else if(roleFaults.manifest==='tamper-genesis'){const m=JSON.parse(await readFile(t,'utf8'));m.network.genesis='00'.repeat(32);await wf(t,JSON.stringify(m));}
+   else if(roleFaults.manifest==='tamper-hash'){const m=JSON.parse(await readFile(t,'utf8'));m.files.normal.sha256='11'.repeat(32);await wf(t,JSON.stringify(m));}
+   else if(roleFaults.manifest==='pin-mismatch'){roleEnv.XMR20_TRUSTED_MANIFEST_SHA256='22'.repeat(32);}
+   else throw Error('unknown manifest fault');}}
  assert.equal((await rpc('get_block',{height:0})).block_header.hash,config.chain,'daemon genesis must match the fixed parameter set');
  const pkInfo={};for(const name of ['normal','boundary']){const file=paramsDir+'/'+name+'.public-pk';pkInfo[name]={bytes:(await stat(file)).size,sha256:createHash('sha256').update(await readFile(file)).digest('hex')};}
- const issuer=await service(bin,['issuer',run+'/parameters'],{env}),indexer=await service(bin,['indexer',run+'/parameters'],{env});const issuerNative=issuer.ready.issuerNativeAddress;
+ const roleArgs=p=>[p,run+'/parameters','--trusted-manifest',run+'/trusted/manifest.json'];const renv={...env,...roleEnv};
+ let issuer,indexer;try{issuer=await service(bin,roleArgs('issuer'),{env:renv});indexer=await service(bin,roleArgs('indexer'),{env:renv});}
+ catch(e){await issuer?.close().catch(()=>{});await stopDaemon();throw Error('ROLE REFUSED TO START: '+e.message);}
+ const issuerNative=issuer.ready.issuerNativeAddress;const roleManifests={issuer:issuer.ready.trustedManifest,indexer:indexer.ready.trustedManifest};
  const mineTo=async(address,n)=>{for(let left=n;left>0;left-=50)await rpc('generateblocks',{wallet_address:address,amount_of_blocks:Math.min(50,left)});};
  await mineTo(issuerNative,250);
  // Gamma decoy sampling on a short fakechain occasionally finds no usable ring members ("hit decoy selection round limit"); the failing calls build nothing durable, so they are simply retried.
@@ -168,6 +190,6 @@ export async function startBackend({rpcPort=30041,p2pPort=30040,httpPort=8940,lo
   if(fault==='abort-midway'){res.writeHead(200,{'content-type':'application/octet-stream','content-length':String(size),...cors});const n=Math.floor(size*0.4);const s=createReadStream(file,{start:0,end:n-1});s.on('end',()=>res.destroy());return s.pipe(res,{end:false});}
   res.writeHead(200,{'content-type':name.endsWith('.json')?'application/json':'application/octet-stream','content-length':String(size),...cors});return createReadStream(file).pipe(res);}
  await new Promise(r=>server.listen(httpPort,'127.0.0.1',r));
- return {url:`http://127.0.0.1:${httpPort}/`,rpcUrl:`http://127.0.0.1:${rpcPort}`,run,config,manifest,paramsDir,paramsSet,faults,pkInfo,state,actions,holders,aliases,assets,indexer,async close(){server.close();for(const s of [indexer,issuer])await s.close().catch(()=>{});daemon.kill();await sleep(500);}};
+ return {url:`http://127.0.0.1:${httpPort}/`,rpcUrl:`http://127.0.0.1:${rpcPort}`,run,config,manifest,paramsDir,paramsSet,faults,roleManifests,pkInfo,state,actions,holders,aliases,assets,indexer,issuer,bin,async close(){server.close();for(const s of [indexer,issuer])await s.close().catch(()=>{});await stopDaemon();await sleep(200);}};
 }
 if(process.argv[1]===fileURLToPath(import.meta.url)){const b=await startBackend({log:console.error});await writeFile(b.run+'/pid',String(process.pid));console.log(JSON.stringify({ready:true,url:b.url,rpcUrl:b.rpcUrl,run:b.run,pid:process.pid,note:'Synthetic private-holder test backend. Stop with: kill '+process.pid}));}

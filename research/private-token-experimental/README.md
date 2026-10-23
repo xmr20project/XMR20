@@ -19,6 +19,9 @@ It is kept separate from the wallet and bridge sources of this repository and ch
 
 | 4 | `docs/stage4-interop/` | Interoperability: a versioned experimental specification (`SPEC-XMR20-PRIVATE-TOKENS-v0.1-experimental.txt`), a small documented wallet library (`wallet-lib/`), a minimal CLI second wallet (`cli-wallet/`), an extension↔CLI interoperability test on one pool (`interop.test.mjs`), portable synthetic test vectors (`vectors/`) and an independent decoder written from the specification (`independent/`). |
 
+| V | `docs/verifier-params/` | Verifier-side parameter authentication: the issuer and indexer roles of the laboratory binary now require a trusted manifest path independent of their parameter directory, authenticate `parameters.json` and the proving keys (exact length and sha256) before parsing, check protocol/circuit/ledger/network identity and the daemon genesis, and refuse to start otherwise (no fallback). The two changed laboratory source files are included for review of the loading path; the laboratory crate itself is not published. |
+| S | `docs/stagenet-rehearsal/`, `stagenet/` | Stagenet carrier rehearsal: PREPARED, NOT EXECUTED (no blockchain download, no public broadcast). Network-aware engine/scanner/carrier (manifest network kind `offline-fakechain` or `stagenet`; monerod sanity checks ON off the fakechain), a stagenet-anchored disposable parameter manifest, the runnable harness and the local checks that were run (12/12). What still requires execution on stagenet is listed item by item. |
+
 **Shared engine, scoped decoder.** The research extension and the CLI wallet are two applications over ONE
 cryptographic implementation: the same `holder-wasm` binary and the same host modules (scanner, parameter loader,
 carrier builder) and vendored upstream crates. They are not independent implementations. The separate decoder in

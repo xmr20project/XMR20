@@ -1,0 +1,60 @@
+VERIFIER-SIDE PARAMETER AUTHENTICATION — research/privacy-verifier-params-20261023 (+ hardened lab crate
+research/privacy-verifier-params-20261023-lab), 23 October 2026. Synthetic, offline, isolated. Builds on stage 4
+(research/privacy-interop-20261023, unchanged) and the lab crate research/privacy-integration-20261022 (copied; the
+original is unchanged). Readiness unchanged: NO-GO; bridge payouts and native XMR trading gated; hash authentication
+does not resolve the disposable setup or the security-review blockers.
+
+THE GAP
+Stage 1 authenticated parameters on the HOLDER side only. The issuer and indexer roles (lab binary) loaded
+parameters.json and the proving keys from a directory with point validation and a verifying-key equality check, but
+no manifest: a substituted or corrupted parameter directory would have been accepted if internally consistent, and
+nothing bound the roles to the holder's parameter set, protocol version or network.
+
+PARAMETER-LOADING PATHS TRACED (lab crate)
+  src/chain.rs  Params::load(dir, prover)   parameters.json -> Config; prover roles: load_pk(normal/boundary) -> vk equality
+  src/chain.rs  load_pk(path)               deserialize_uncompressed_unchecked + full point/subgroup checks
+  src/main.rs   main()                      Params::load for wallet / indexer (no proving keys) / issuer (proving keys);
+                                            setup mode writes a set and is untouched
+  No other path reads parameter files; records are verified only through Params (normal_vk/boundary_vk/issuer_vk).
+
+WHAT CHANGED (hardened lab crate)
+- A trusted manifest (format XMR20-PARAMS-1) is REQUIRED for every role, given as `--trusted-manifest <path>`,
+  a path independent of the parameter directory; optionally its sha256 is pinned (XMR20_TRUSTED_MANIFEST_SHA256).
+  Without the flag the role refuses to start ("--trusted-manifest <path> is required (no unauthenticated parameter
+  loading)").
+- Manifest validation: format; protocol domain label; transfer/boundary circuit shapes compiled into the binary
+  (XM3 996/3/2, XB3 925/3/1); network kind offline-fakechain; genesis = config.chain; ledger domain = config.domain
+  and recomputed; issuer key and verifying keys consistent; well-formed pins.
+- parameters.json: exact length + sha256 against the manifest BEFORE parsing; then field-by-field equality with the
+  manifest's configuration ("describes another ledger or version").
+- Proving keys (issuer): exact length + sha256 BEFORE deserialization, then the existing point validation and
+  verifying-key equality. The indexer loads no proving keys and is bound through parameters.json + manifest.
+- Network identity at startup: the daemon's block-0 hash must equal the manifest's genesis.
+- The ready line reports the trusted manifest label and sha256; the test backend starts the roles with a manifest
+  copied OUTSIDE the parameter directory (run/trusted/manifest.json) and surfaces any refusal as
+  "ROLE REFUSED TO START: …" (startBackend throws; nothing runs on unauthenticated parameters).
+- Consistency with the holder: the holder's shipped manifest and the roles' trusted manifest are the same file
+  (params/test-v1/manifest.json); the holder refuses a server whose parameters.json differs, the roles refuse a
+  directory whose files differ, so a holder and the roles can only agree on one parameter set.
+
+TESTS — verifier-params.test.mjs (see the final line appended below)
+Negative matrix (each: both roles refuse to start; the backend throws with the role's reason):
+  normal.public-pk missing · truncated (90 %) · corrupted query byte · boundary.public-pk from another setup ·
+  normal/boundary swapped · parameters.json from another setup · parameters.json truncated · trusted manifest from
+  another setup · manifest genesis tampered · manifest hash pin tampered · manifest missing · manifest sha256 pin
+  mismatch · (indexer directly) manifest circuit shape 997 · no --trusted-manifest flag
+Positive flow with the hardened roles: deposit (Solana simulator) -> credit issued by the issuer -> holder scans and
+admits -> transfer proved/carried/published -> indexer admits -> redemption -> payout.
+Restart / cache recovery: after the good run the roles' on-disk copy (their only cache) is corrupted
+(parameters.json byte flipped; normal.public-pk replaced by another setup's): restarted roles refuse; restoring the
+files lets a restarted indexer start and replay the same pool state.
+Fixed during the run: the backend did not await daemon shutdown between consecutive backends (a refused role's
+daemon kept its port; the next daemon start then talked to the dying one) -> shutdown is awaited.
+
+NOT RESOLVED BY THIS WORK: the parameters remain a disposable single-party setup; no ceremony; no signed
+provenance; the manifest is as trustworthy as the file the operator supplies; no independent review.
+
+FINAL RUN: verifier-params.test.mjs PASSED 196 s (runs/verifier-params-test.log, runs/verifier-params-results.json): 14 refusals (12 backend-level
+faults + indexer manifest circuit-shape 997 + missing --trusted-manifest); flow with hardened roles: credit 57656c84…, transfer 9fec6f91…,
+redemption 15c17577…, payout paid, balances A 19.55 X / B 10 X; restart recovery: corrupted parameters.json and a substituted proving key refused
+on restart, restored files replayed the same pool state. Roles reported trusted manifest ae7ba302… (DISPOSABLE TEST SETUP — NOT PRODUCTION).
