@@ -84,7 +84,19 @@
   "memory erasure of JS strings/CryptoKey material"
  ],
  "tests": {
-  "PENDING": "filled in after the final runs"
+  "wasmHostUnit": "9/9 (runs/host-test.log)",
+  "extensionCopyUnit": "561/561",
+  "journal": "1/1",
+  "holderCarrierNode": "1/1 PASSED 303 s (stage-2 test on this build)",
+  "holderJournalRecoveryNode": "1/1 PASSED 410 s (cases 1, 2a, 2b-i, 2b-ii, 3, 4, 5; runs/holder-journal-recovery-results.json)",
+  "holderLeakRegression": "1/1 PASSED 147 s (1,395 checks, 0 hits)",
+  "browserJournalRecovery": "1/1 PASSED 316 s (verified-journal-recovery-2026-10-23T18-37-53)",
+  "browserCarrier": "1/1 PASSED 483 s",
+  "browserFlow": "1/1 PASSED 368 s",
+  "browserRecovery": "1/1 PASSED 308 s",
+  "browserParams": "1/1 PASSED 174 s",
+  "browserInterruptions": "1/1 PASSED 336 s (adapted to holder-funded carriers)",
+  "failedAttemptsKept": "evidence/failed-* (test-script fixes: rollback balance polling, popup render wait on reopen)"
  },
  "networkAudit": {
   "externalRequests": 0,
@@ -107,5 +119,47 @@
   "package": "review/01..07",
   "selfReview": "review/06-ADVERSARIAL-SELF-REVIEW.txt (implementer self-review, not an audit)",
   "verdicts": "review/07-READINESS-VERDICTS.txt"
+ },
+ "recoveryCases": {
+  "engineLevel": "see runs/holder-journal-recovery-results.json",
+  "browserLevel": {
+   "c2a": {
+    "staleStatus": "rejected",
+    "feePaid": "0",
+    "balanceA": 91.5
+   },
+   "c2b": {
+    "staleCarrierSent": false,
+    "feeSaved": "3024000000",
+    "balanceA": 88.5
+   },
+   "c4": {
+    "rolledBack": 12,
+    "resentSameTxid": "15a4c7eebc5472bf12dfd5fa9f1cc46bc0daa377b006d438447607e8a008beab",
+    "secondFee": "0"
+   },
+   "staleBackup": {
+    "broadcasts": 0,
+    "status": "rejected"
+   },
+   "c5": {
+    "outcomes": [
+     {
+      "amount": "500000",
+      "status": "rejected",
+      "error": "Notes already spent by another installation (or an earlier operation); this saved record was NOT sent and no carrier fee was paid (signed carrier discarded)."
+     },
+     {
+      "amount": "600000",
+      "status": "confirmed",
+      "error": null
+     }
+    ],
+    "credited": 0.6,
+    "feesPaidPiconero": "3025200000"
+   }
+  },
+  "phraseCannotRestore": "unpublished proofs and unsent carriers (original journal only); documented in RECOVERY-CASES.txt",
+  "reconcileHardening": "stale records whose notes another installation spent are marked rejected and never re-sent (no fee); the same carrier is re-sent after a rollback (no new fee); admission failure on carry marks rejected"
  }
 }

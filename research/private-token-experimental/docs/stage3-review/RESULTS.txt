@@ -89,3 +89,44 @@ wasm 5,032,305 B (sha256 in MANIFEST.sha256) · extension 0.1.93.
 ================================================================================================
 F. BROWSER RUNS — see "BROWSER RUN OUTCOMES" appended below
 ================================================================================================
+
+================================================================================================
+BROWSER RUN OUTCOMES (stage-3 build 0.1.93; evidence/verified-*/; failed attempts kept as evidence/failed-*/)
+================================================================================================
+browser-carrier.test.mjs PASSED 483 s  verified-carrier-2026-10-23T18-00-09  22 screenshots; 6178 requests (107 backend, 5996 daemon), 0 external, 0 secret leaks
+browser.test.mjs PASSED 368 s  verified-browser-2026-10-23T18-08-14  26 screenshots; 3263 requests (77 backend, 3130 daemon), 0 external, 0 secret leaks
+browser-recovery.test.mjs PASSED 308 s  verified-recovery-2026-10-23T18-14-24  12 screenshots; 3969 requests (76 backend, 3817 daemon), 0 external, 0 secret leaks
+browser-params.test.mjs PASSED 174 s  verified-params-2026-10-23T18-19-34  9 screenshots; 1510 requests (42 backend, 1433 daemon), 0 external, 0 secret leaks
+browser-interruptions.test.mjs PASSED 336 s  verified-interruptions-2026-10-23T18-22-30  10 screenshots; 5251 requests (88 backend, 5077 daemon), 0 external, 0 secret leaks
+browser-interruptions.test.mjs (adapted to holder-funded carriers):
+  a. broadcast reply lost after the daemon accepted the carrier
+  b. second send refused while the first operation reserves the note
+  c1. migration interrupted after preparation (test hook)
+  c1. retried migration credited once
+  c2. migration interrupted after signing (test hook)
+  c2. saved signed claim submitted on reconcile; credited once
+  d. popup closed while proving (fee approved, nothing signed)
+  d. nothing published; note and XMR reservations released; balance unchanged
+  e. interrupted after proving, before the carrier was signed (test hook)
+  e. after lock/reopen the saved record was carried once after an explicit fee approval
+  f. background service worker terminated through the browser CDP session (Target.closeTarget)
+  f. service worker stop did not lock the popup (session survived); the send continues
+  f. service worker terminated mid-proof (Target.closeTarget): the popup kept its session (background state restored on demand), the send completed with
+  g. Alpha notes before concurrent sends
+  g. concurrent sends from two popups
+  g. after mining: balances exact, no conflicting spend
+browser-journal-recovery.test.mjs: see the line appended after its final run.
+browser-journal-recovery.test.mjs PASSED 316 s  verified-journal-recovery-2026-10-23T18-37-53  7 screenshots; 21130 requests (334 backend, 20546 daemon), 0 external, 0 secret leaks
+  c2a: {"staleStatus": "rejected", "feePaid": "0", "balanceA": 91.5}
+  c2b: {"staleCarrierSent": false, "feeSaved": "3024000000", "balanceA": 88.5}
+  c4: {"rolledBack": 12, "resentSameTxid": "15a4c7eebc5472bf12dfd5fa9f1cc46bc0daa377b006d438447607e8a008beab", "secondFee": "0"}
+  staleBackup: {"broadcasts": 0, "status": "rejected"}
+  c5: {"outcomes": [{"amount": "500000", "status": "rejected", "error": "Notes already spent by another installation (or an earlier operation); this saved record was NOT sent and no carrier fee was paid (signed carrier discarded)."}, {"amount": "600000", "status": "confirmed", "error": null}], "credited":
+  2a. A: record proved, no carrier (interrupted)
+  2a. A reopened: stale proved record marked rejected, not carried, no fee
+  2b. A: carrier signed, never broadcast
+  2b. A reopened: stale signed carrier NOT re-sent (notes already spent); fee saved
+  TEST SERVICE: rolled the chain back 12 blocks and flushed the pool
+  4. rollback: balances reverted, same carrier re-sent once, no second fee
+  5. concurrent sends from two installations
+  5. outcome: one admitted at most; loser shown as rejected/conflicted; fee consequence recorded
