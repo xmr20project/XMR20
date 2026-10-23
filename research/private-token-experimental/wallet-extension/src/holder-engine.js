@@ -26,14 +26,15 @@ export async function createHolderEngine({wasm,random=b=>crypto.getRandomValues(
 // key images seen in inputs, and applies each transaction's extra to the token
 // pool. A hash mismatch at any cached height (reorganization) resets the engine
 // and replays from genesis.
-export function createChainScanner(engine,{rpc,fetch:f=globalThis.fetch,onProgress=()=>{},genesis}){
+// `network`: 'offline-fakechain' (default: the daemon must report nettype fakechain AND offline) or 'stagenet' (nettype stagenet, online allowed). Taken from the manifest.
+export function createChainScanner(engine,{rpc,fetch:f=globalThis.fetch,onProgress=()=>{},genesis,network='offline-fakechain'}){
  const json=async(method,params={})=>{const r=await f(rpc+'/json_rpc',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:'h',method,params})});if(!r.ok)throw Error('Daemon HTTP '+r.status);const v=await r.json();if(v.error)throw Error('Daemon: '+(v.error.message||JSON.stringify(v.error)));return v.result;};
  const other=async(path,body)=>{const r=await f(rpc+path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});if(!r.ok)throw Error('Daemon HTTP '+r.status);return r.json();};
  const known=[];// index = height -> hash (genesis included)
  let applied=0,received=0;
  async function reset(){engine.call({op:'reset'});known.length=0;applied=0;received=0;}
  async function sync(){
-  const info=await json('get_info');if(info.nettype!=='fakechain'||info.offline!==true)throw Error('Offline fakechain required for this test build.');
+  const info=await json('get_info');if(network==='stagenet'){if(info.nettype!=='stagenet')throw Error('Stagenet daemon required by the manifest (daemon reports '+info.nettype+').');}else if(info.nettype!=='fakechain'||info.offline!==true)throw Error('Offline fakechain required for this test build.');
   const tip=info.height-1;
   if(known.length){const h=known.length-1;const hdr=await json('get_block_header_by_height',{height:Math.min(h,tip)});if(h>tip||hdr.block_header.hash!==known[h]){await reset();}}
   for(let height=known.length;height<=tip;height++){

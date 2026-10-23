@@ -55,8 +55,8 @@ export async function openPrivateWallet(opts){
  const loader=createParameterLoader({manifest,engine,baseUrl:parameterServer,cache,fetch:f,onProgress});
  const served=await loader.loadServedConfig();
  engine.call({op:'params',manifest,served});
- const scanner=createChainScanner(engine,{rpc:daemonRpc,fetch:f,genesis:manifest.network.genesis,onProgress});
- const carrier=root?createCarrierBuilder({engine,rpc:daemonRpc,fetch:f,onProgress}):null;
+ const scanner=createChainScanner(engine,{rpc:daemonRpc,fetch:f,genesis:manifest.network.genesis,network:manifest.network.kind,onProgress});
+ const carrier=root?createCarrierBuilder({engine,rpc:daemonRpc,fetch:f,onProgress,sanityChecks:manifest.network.kind!=='offline-fakechain'}):null;
  const needSpend=()=>{if(!carrier)throw Error('viewing-only wallet: no spending authority');};
  return {
   protocol:PROTOCOL_VERSION,canSpend:Boolean(root),manifestLabel:manifest.label,ledgerDomain:manifest.ledgerDomain,

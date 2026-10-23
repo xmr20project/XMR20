@@ -175,7 +175,7 @@ impl Manifest {
         let b = &self.protocol.records.boundary;
         ensure!(t.magic == "XM3" && t.bytes == xm3::WIRE_BYTES && t.inputs == xm3::INPUTS && t.outputs == 2, "Parameter manifest transfer circuit does not match this engine");
         ensure!(b.magic == "XB3" && b.bytes == boundary::WIRE_BYTES && b.inputs == xm3::INPUTS && b.outputs == 1, "Parameter manifest boundary circuit does not match this engine");
-        ensure!(self.network.kind == "offline-fakechain", "This test engine only accepts offline-fakechain parameters");
+        ensure!(self.network.kind == "offline-fakechain" || self.network.kind == "stagenet", "This engine accepts offline-fakechain or stagenet parameters only (kind {:?})", self.network.kind);
         ensure!(self.network.genesis == self.config.chain, "Parameter manifest genesis differs from its configuration");
         ensure!(self.ledger_domain == self.config.domain, "Parameter manifest ledger domain differs from its configuration");
         ensure!(self.issuer_vk == self.config.issuer_vk, "Parameter manifest issuer key differs from its configuration");
