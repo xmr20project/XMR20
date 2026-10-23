@@ -22,7 +22,7 @@
 //     cache?: {get,put,delete}, fetch?: fn, random?: fn, onProgress?: fn,
 //     root?: hex32 | viewingKey?: 'penumbrafullviewingkey1…' (exactly one)
 //   }
-//   lib.address()            -> 'penumbra1…'            lib.nativeAddress() -> Monero address (spend wallets)
+//   lib.address()            -> 'penumbra1…'            lib.nativeAddress() -> Monero address for the manifest's network (spend wallets)
 //   lib.viewingKey()         -> 'penumbrafullviewingkey1…' (spend wallets; explicit export)
 //   lib.canSpend             -> boolean
 //   await lib.sync()         -> {tip, tipHash, applied, received}   (replays the public chain; handles rollbacks)
@@ -55,13 +55,13 @@ export async function openPrivateWallet(opts){
  const loader=createParameterLoader({manifest,engine,baseUrl:parameterServer,cache,fetch:f,onProgress});
  const served=await loader.loadServedConfig();
  engine.call({op:'params',manifest,served});
- const scanner=createChainScanner(engine,{rpc:daemonRpc,fetch:f,genesis:manifest.network.genesis,network:manifest.network.kind,onProgress});
+ const scanner=createChainScanner(engine,{rpc:daemonRpc,fetch:f,genesis:manifest.network.genesis,network:manifest.network.kind,startHeight:manifest.network.startHeight||0,onProgress});
  const carrier=root?createCarrierBuilder({engine,rpc:daemonRpc,fetch:f,onProgress,sanityChecks:manifest.network.kind!=='offline-fakechain'}):null;
  const needSpend=()=>{if(!carrier)throw Error('viewing-only wallet: no spending authority');};
  return {
   protocol:PROTOCOL_VERSION,canSpend:Boolean(root),manifestLabel:manifest.label,ledgerDomain:manifest.ledgerDomain,
   address(){return opened.tokenAddress;},
-  nativeAddress(){needSpend();return opened.nativeAddress;},
+  nativeAddress(){needSpend();return engine.call({op:'nativeAddress'}).nativeAddress;},  // formatted for the manifest's network (stagenet prefix on stagenet)
   viewingKey(){needSpend();return engine.call({op:'viewingKey'}).viewingKey;},
   async sync(){return scanner.sync();},
   status(){return engine.call({op:'status'});},

@@ -1,0 +1,76 @@
+STAGENET-AWARE ROLES, PARAMETER SERVICE AND REHEARSAL HARNESS v2 — research/privacy-stagenet-roles-20261023
+(+ lab crate research/privacy-stagenet-roles-20261023-lab), 23 October 2026. Synthetic, offline, isolated.
+Everything executed here ran on an offline zero-peer regtest fakechain: SIMULATED. Nothing ran on stagenet; no chain was
+downloaded; nothing was broadcast publicly; mainnet is refused by every component. Readiness unchanged: NO-GO; bridge
+payouts and native XMR trading gated; the disposable setup, the independent-review and the rollback-loss blockers stand.
+
+WHAT CHANGED
+Lab crate (issuer / indexer / wallet binary; copied from the verifier-params lab, which is unchanged):
+- Manifest::validate accepts network.kind "offline-fakechain" or "stagenet" and refuses everything else ("Unsupported
+  network … mainnet refused"). ManifestNetwork gained startHeight (default 0).
+- native::guard(daemon, kind): mainnet refused unconditionally from the daemon's own get_info; fakechain needs nettype
+  fakechain + offline + zero peers; stagenet needs nettype stagenet. All five call sites pass the manifest's kind; the
+  reconnect path too. native::rpc_url(): XMR20_INTEGRATION_RPC_URL (operator node) or the loopback port.
+- Chain::scan and the issuer's native Wallet::refresh replay from max(1, startHeight); a start above the tip yields an
+  empty pool and no error; the daemon genesis check at startup is kept.
+- Addresses are formatted for the selected network (Wallet::address_for; stagenet prefix on stagenet).
+Holder engine / library:
+- lib.rs: Network.startHeight; op nativeStart{height, rctOutputs} (fresh wallet only); op nativeAddress (formatted for
+  the manifest's network). native.rs: NativeWallet::start_at, address_for.
+- holder-engine.js scanner: startHeight/base; seeds the RingCT index count from get_output_distribution(cumulative) up to
+  base-1 once the daemon has reached base-1 (before that: nothing scanned, waitingForStart); replays from base.
+- wallet-lib: passes manifest.network.startHeight; nativeAddress() uses the network-aware op.
+New: stagenet/roles.mjs (startRoles with a JS-level network/genesis/mainnet refusal BEFORE any process starts; credit;
+scans; startFakechain), stagenet/param-server.mjs (static service, three files only), stagenet/rehearsal.mjs v2 (module
++ CLI; --mode local|stagenet), stagenet/make-stagenet-manifest.mjs --start-height/--out, stagenet-roles.test.mjs.
+
+TESTS — stagenet-roles.test.mjs (node --test; SIMULATED; ports 8951-8953, 30080-30083)
+1. Static parameter service: parameters.json, normal.public-pk and boundary.public-pk served with the manifest's exact
+   lengths and sha256 (GET and HEAD); refused with 404: /params/manifest.json, /params/issuer.secret.json, traversal
+   (../, ..%2F), wallet roots, journals, directory paths, case variants; POST 405; /params info says "not a trust anchor".
+2. A tampered server cannot substitute parameters: a second service with a byte-flipped normal.public-pk (query vector)
+   -> the wallet library's loadProvingKey rejects (hash check against its own manifest); the same manifest loads the
+   genuine file from the honest service; a foreign parameters.json served under the manifest is refused at open time.
+3. Network selection by the roles (fakechain daemon running):
+   - stagenet manifest vs fakechain daemon: refused by roles.mjs before any process ("REFUSED: the trusted manifest
+     selects stagenet…") AND by the binary when started directly ("Stagenet daemon required by the trusted manifest
+     (daemon reports nettype "fakechain")").
+   - manifest kind "mainnet": refused at both layers ("Unsupported network "mainnet" (offline-fakechain or stagenet
+     only; mainnet refused)").
+   - manifest genesis mismatch: refused before any process. A non-daemon URL (the parameter server): refused.
+   - positive: fakechain manifest + XMR20_INTEGRATION_RPC_URL (a wrong legacy port variable is ignored): both roles
+     start, report the trusted manifest sha256, mainnet-format addresses on the fakechain.
+   - startHeight 1000 above the tip: roles start, indexer replays nothing (0 canonical blocks), no error.
+4. Rehearsal harness, --mode local, start height 40 (the complete simulated flow; figures below are from
+   runs/rehearsal-local.json of the passing run; OFFLINE fakechain values, not stagenet, not mainnet):
+   - roles started at tip 0 with startHeight 40 (pool in the future); wallets synced with startHeight 40 (waitingForStart,
+     then seeded from get_output_distribution); funding mined to issuer, A and B; 250 further blocks for the decoy sampler.
+   - three issuer credits to A (5,000,000 / 3,000,000 / 2,000,000): XB3 985-byte extra, 2,449-byte carriers, issuer fee
+     2,938,800,000 piconero each (ISSUER-funded, not holder-funded); indexer admitted all three; A exactly {5M,3M,2M}.
+   - T1 A->B 4,000,000 with ONE input (5M), change 1,000,000: proof 996 B in 32.1 s, sign 84 ms, extra 1,056 B, carrier
+     2,520 B, holder fee 3,024,000,000 piconero shown before approval; same-blob re-send OK and in pool; A's native total
+     moved by exactly the fee; sender, recipient and indexer all "accepted"; A {3M,2M,1M}, B {4M}.
+   - recovery: A and B closed, reopened from their roots in fresh instances (memory cache), resynced: identical balances
+     and note counts (6,000,000 / 3 notes; 4,000,000 / 1 note). Nothing was pending, so no journal was needed; a root
+     cannot reconstruct unpublished pending transactions (RECOVERY-CASES.txt, stage 3).
+   - T2 recovered A->B 5,500,000 with THREE inputs (3M+2M+1M), change 500,000: proof 31.2 s; fee exact; admitted everywhere.
+   - T3 recovered B->A 9,000,000 with TWO inputs (5.5M+4M), change 500,000: proof 31.0 s; fee exact; admitted everywhere.
+   - final: A {500,000, 9,000,000} = 9,500,000; B {500,000}; three holder-paid fees of 3,024,000,000 piconero (offline
+     rate 1,200,000 piconero/byte x 2,520 bytes); engine memory ≈386 MB during proving.
+   Fixed on the way (all harness/scanner defects, none in the roles): seeding before the daemon reached the start height
+   failed ("Failed to get output distribution") -> seed deferred; the gamma decoy sampler on a ~120-block chain hit its
+   round limit -> the local mode mines 250 extra blocks (irrelevant on stagenet); an empty balance compared as undefined.
+
+PREREQUISITE CHECK (read-only; no wallets or credentials inspected): no monerod process, no ~/.bitmonero or stagenet data
+directory, no synced stagenet node, no known synthetic stagenet funds on this machine. Nothing was downloaded.
+
+WHAT IS STILL NEEDED TO RUN THE REAL STAGENET REHEARSAL: README-STAGENET.txt (synced owner node; trusted manifest with
+startHeight = node height; faucet coins on the three printed stagenet addresses; ~40+ stagenet blocks of waiting; then the
+relay/sanity/fee/decoy/timing facts that only stagenet can show).
+
+FINAL RUN: node --test --test-concurrency=1 stagenet-roles.test.mjs PASSED 4/4 in 237.7 s (runs/stagenet-roles-test.log,
+runs/stagenet-roles-results.json, runs/rehearsal-local.json): parameter-service scope; tampered/foreign served parameters
+refused by the client; role network selection (stagenet-vs-fakechain and mainnet refused at both layers, genesis mismatch,
+non-daemon URL, URL override, start height above tip); simulated rehearsal with inputs [1,3,2], exact change, three
+holder-paid fees of 3,024,000,000 piconero (OFFLINE rate), proving 32.2 / 31.3 / 31.4 s, both wallets recovered from their
+roots, every record admitted by sender, recipient and indexer. All processes started by the tests were stopped (0 left).

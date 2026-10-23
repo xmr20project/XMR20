@@ -194,8 +194,21 @@ impl NativeWallet {
         let pair = ViewPair::new(Point::from(G * spend_pub), Zeroizing::new(view)).map_err(|e| anyhow::anyhow!("View pair: {e:?}"))?;
         Ok(Self { spend: Zeroizing::new(spend), scanner: Scanner::new(pair.clone()), pair, rct_outputs: 0, outputs: BTreeMap::new(), spent: BTreeMap::new(), seen_keys: BTreeSet::new(), reserved: BTreeSet::new(), quotes: BTreeMap::new(), tip: 0, blocks: 0 })
     }
+    // Begin at `height` with `rct_outputs` RingCT outputs already on the chain (from the daemon's
+    // cumulative distribution at height-1). Only valid before any block was applied.
+    pub fn start_at(&mut self, height: usize, rct_outputs: u64) -> Result<()> {
+        ensure!(self.blocks == 0 && self.outputs.is_empty(), "start_at is only valid on a fresh wallet");
+        self.blocks = height;
+        self.rct_outputs = rct_outputs;
+        self.tip = height.saturating_sub(1);
+        Ok(())
+    }
     pub fn address(&self) -> String {
         self.pair.legacy_address(Network::Mainnet).to_string()
+    }
+    // Address for the explicitly selected network (stagenet prefix for "stagenet"; the regtest fakechain uses the mainnet format).
+    pub fn address_for(&self, network: &str) -> String {
+        self.pair.legacy_address(if network == "stagenet" { Network::Stagenet } else { Network::Mainnet }).to_string()
     }
     pub fn reset(&mut self) {
         self.scanner = Scanner::new(self.pair.clone());
