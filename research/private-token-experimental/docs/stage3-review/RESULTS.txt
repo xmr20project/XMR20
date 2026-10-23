@@ -1,0 +1,91 @@
+PRIVATE XMR20 — STAGE 3: RECOVERY FROM PHRASE vs JOURNAL; EXTERNAL SECURITY-REVIEW PACKAGE
+23 October 2026. Additive candidate research/privacy-review-20261023, re-synced from the final
+research/privacy-carrier-20261023 (stage 2, unchanged) with the changes listed in REPRODUCE.txt.
+Nothing under the repository's wallet-extension/, website/, backend/, NFTs, keys or running
+services was touched; no one was contacted; nothing was deployed. Synthetic wallets, offline
+fakechain, LiteSVM, disposable Chromium profiles only. NO-GO for real funds; bridge payouts and
+native XMR trading gated (readiness.json; review/07-READINESS-VERDICTS.txt).
+
+================================================================================================
+A. CODE CHANGES (stage 3)
+================================================================================================
+wallet-extension/src/private-format.js (reconcile):
+ - a saved record (proved, or proved+signed) whose reserved notes are already SPENT on chain by
+   another record is marked `rejected` ("Notes already spent by another installation … NOT sent,
+   no carrier fee paid"), moved to history, its native input released; it is never carried or
+   re-sent (closes the fee-loss path shown by engine case 2b-ii);
+ - after a chain rollback, a settled (confirmed/mined) history entry whose record is no longer on
+   chain returns to pending as its SAME signed carrier and is re-sent (no new fee);
+ - "Approve carrier fee and publish" on a stale record: the engine's admission check refuses
+   ("fails local admission; no carrier built"); the entry is marked rejected, nothing paid.
+backend/service.mjs: TEST SERVICE `pop` action (monerod /pop_blocks + flush_txpool).
+Tests: holder-journal-recovery.test.mjs, holder-leak-regression.test.mjs,
+browser-journal-recovery.test.mjs; browser-interruptions.test.mjs adapted to holder-funded carriers.
+review/01..07: the external security-review package (see section D).
+
+================================================================================================
+B. ENGINE-LEVEL RECOVERY CASES — holder-journal-recovery.test.mjs, PASSED 410 s
+   (runs/holder-journal-recovery-test.log, runs/holder-journal-recovery-results.json)
+================================================================================================
+Two "installations" of one holder = two engines from the same root (A original, A2 fresh), Beta
+as recipient; real offline daemon; exact balances and fee consequences asserted at every step.
+ 1  prepared, not proved (quoted) ........ phrase sees nothing; cancel releases; fee 0.
+ 2a proved, not carried; the fresh install spends the same note first ........ A's saved record
+    fails local admission: NO carrier built, fee 0; balances A 91.5 / Beta 7 identical in both
+    installs; no inflation.
+ 2b-i proved AND signed (never broadcast); the other install spends the same note using the SAME
+    XMR input (largest-first in the same wallet) ........ when A later broadcasts, the daemon
+    refuses the stale carrier as a double spend of the XMR input: fee 0, record never on chain.
+ 2b-ii same, but the other install used a different XMR input ........ A's stale carrier is a valid
+    Monero transaction: it MINES (fee 3,024,000,000 piconero LOST) and the pool rejects its record
+    (duplicate nullifier); Beta credited once; A's balance follows the chain (unchanged). Local
+    admission already rejected the record before the broadcast - the wallet must consult it; the
+    popup now does (section A).
+ 3  broadcast, reply lost ........ same blob re-sent (2 broadcasts), 1 fee; the fresh install sees
+    the record from the chain once mined.
+ 4  confirmed, then a 12-block rollback (pop_blocks 395 -> 383, pool flushed) ........ both
+    installs reset and replay: record gone, spent notes unspent again, recipient's credit gone,
+    the carrier's XMR input unspent again; the same signed carrier is accepted again and re-mined
+    (same txid); second fee 0; balances exactly as before the rollback afterwards.
+ 5  two installs spending the same note concurrently (both carriers broadcast before mining) ....
+    outcomes [rejected, accepted]: exactly one record admitted; Beta credited once; both wallets
+    agree with the chain; BOTH carrier fees paid (loser's fee 3,025,200,000 lost). Unavoidable
+    without a shared journal; the loser is shown as rejected, never as a success.
+What the phrase cannot do: reconstruct an unpublished proof or signed carrier (fresh randomness,
+fresh ring); those exist only in the original journal. Documented in RECOVERY-CASES.txt.
+
+================================================================================================
+C. LEAK REGRESSION — holder-leak-regression.test.mjs, PASSED 147 s (runs/holder-leak-regression-results.json)
+================================================================================================
+3 published records (transfer, self-consolidation, redemption) carried by 3 holder-funded carriers.
+155 forbidden values (every carrier key image, output key and commitment, tx pubkey, every ring
+member's key/mask/txid for all 48 ring positions, the wallet's own key images) checked against each
+record's bytes forward, byte-reversed and across every aligned 32-byte window: 1,395 checks, 0 hits.
+The public indexer state contains no key image. The record is tied to its notes, not its carrier
+(re-verifying an already-mined record is rejected as a duplicate nullifier, not as a carrier fact).
+
+================================================================================================
+D. REVIEW PACKAGE (review/)
+================================================================================================
+01 proof construction (XM3/XB3 layouts, circuits, admission), trusted-setup assumptions, parameter
+   distribution trust model (stage 1 hashes), key derivation, runtime secret boundary, dependencies
+02 what the public observer, indexer (with/without viewing key), relay (none), node, bridge operator
+   and recipients can learn; what is not claimed
+03 the original XN1 native-source/key-image leak and the regression coverage across new-format paths
+04 migration/cutover assumptions and remaining legacy disclosure paths (product decisions)
+05 the retained rollback-loss examples for the bridge and native trading, unweakened
+06 adversarial self-review: attacks tried, issues found and fixed in stages 1-3, open questions
+   ranked for the reviewer (NOT an independent audit)
+07 readiness verdicts per component with the evidence needed to close each blocker and whether it
+   needs code, a product decision, research or independent review
+Frozen hashes: MANIFEST.sha256; dependency pins: holder-wasm/Cargo.lock, wallet-extension/package.json.
+
+================================================================================================
+E. UNIT / BUILD CHECKS ON THIS CANDIDATE
+================================================================================================
+host (holder-wasm cargo test --release) 9/9 · extension copy 561/561 · journal 1/1 ·
+wasm 5,032,305 B (sha256 in MANIFEST.sha256) · extension 0.1.93.
+
+================================================================================================
+F. BROWSER RUNS — see "BROWSER RUN OUTCOMES" appended below
+================================================================================================

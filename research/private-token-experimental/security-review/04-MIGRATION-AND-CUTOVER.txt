@@ -1,0 +1,51 @@
+EXTERNAL SECURITY REVIEW PACKAGE — 04 MIGRATION / CUTOVER ASSUMPTIONS AND REMAINING LEGACY DISCLOSURE PATHS
+research/privacy-review-20261023 (stage 3). Source of the rules: research/privacy-integration-20261022
+(legacy/cutover-indexer.mjs, migration.mjs, DESIGN.txt "Cutover rules"); exercised here through the
+synthetic legacy snapshot of the test backend (one lot per registered holder).
+
+ASSUMPTIONS THE CUTOVER MAKES
+1. A snapshot height H is chosen; `cutover()` fixes every holder's migratable right at the legacy
+   tip: every unconsumed lot, including lots stranded by an ordinary native spend (explicit policy).
+   Lots consumed by an accepted old-format MOVE/BURN at or before H are excluded; the MOVE's new lot
+   is included.
+2. After H the legacy replay keeps ACCEPTING old-format records (old software keeps publishing them)
+   but the wrapper logs them as post-cutoff activity: visible, auditable, honoured by nothing. The
+   successor and the bridge recognise only the snapshot rights.
+3. A rewind of the legacy chain below the checkpoint is refused pending migration suspension and
+   full reconciliation (operator action, not automatic).
+4. Each right is consumed once by a claim that binds snapshot id, claim id, exact amount and the
+   private token address, signed under the legacy output key P (Monero generate_signature; no key
+   image). The bridge counts legacy liability only as UNCLAIMED snapshot rows; the claim's XB3
+   MIGRATION credit mints the private note.
+5. Holders are given both views: the live legacy balance (what old software shows) and the fixed
+   migratable right; legacy balances are never reinterpreted as private balances; migration is
+   explicit ("Legacy X (not migrated)" row -> "Migrate to private").
+6. Interrupted claims: before the journal write nothing survives (retry from scratch); after the
+   registry row is consumed the journal recovers (row re-consumed on restart, credit republished).
+   Verified in the popup (claim-prepared / claim-signed interruption hooks) and by replay rejection.
+
+WHAT THE RULES CANNOT DO
+- Stop old software from publishing old-format proofs after H, nor the key images those proofs
+  disclose. The leak path stays open as long as the old path is usable and promoted.
+- Decide ownership disputes where the same lot was moved by an old-format record after H (the
+  successor ignores it; the old chain's view differs; the bridge honours the snapshot).
+
+REMAINING LEGACY DISCLOSURE PATHS (product decisions, not code)
+a. Continued use of old-format MOVE/BURN (website/native-market XN1): each publishes a P -> key-image
+   relation. Decision needed: stop promoting the path at cutover; keep read-only history.
+b. The migration claim itself discloses that the signer owns P (not its key image). For holders who
+   want to break the link between P and their new token address, a two-step (claim to a throwaway
+   address, then private transfer) is possible but the first credit is public (XB3 MIGRATION amount
+   and the claim's P are in the operator's records). Decision: document, or offer the two-step.
+c. The operator's migration ledger maps P -> token address -> (later) Solana address if the holder
+   bridges. Inherent to the custodial bridge (02-OBSERVERS).
+d. Snapshot publication: a public snapshot (claim ids, amounts, P) is needed for auditability of
+   liabilities; it is also a public list of legacy output keys with amounts (already public in the
+   old format).
+
+WHAT THIS CANDIDATE DOES NOT DO
+- No production snapshot exists; the test backend's legacy rows are synthetic (one lot per holder).
+- No live balances are migrated; nothing here authorises deployment, a snapshot height or a claim
+  window.
+- The Solana program/bridge compatibility of the private credit/redemption adapter is only shown
+  against the compiled program in LiteSVM, not against the live program and liquidity.

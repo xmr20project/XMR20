@@ -1,0 +1,115 @@
+EXTERNAL SECURITY REVIEW PACKAGE — 01 PROOF CONSTRUCTION, KEY DERIVATION, PARAMETER TRUST
+research/privacy-review-20261023 (stage 3), 23 October 2026. Everything here is UNREVIEWED
+engineering output on synthetic chains. This package prepares an independent review; it is not one.
+
+1. RECORDS
+----------
+Two fixed-size application records travel in the tx_extra of ordinary Monero transactions
+(framing: transport.rs; 254-byte nonce chunks each prefixed by the 0x7f arbitrary-data marker; the
+complete extra is <= 1,060 bytes, monerod's relay limit; exactly one tx pubkey; nothing else admitted).
+
+XM3 private transfer (holder-wasm/src/xm3.rs; 996 bytes; magic "XM3\xfe")
+  anchor (Penumbra TCT root, 32) · 3 inputs x {value commitment cv 32, nullifier nf 32} ·
+  rk (randomized spend-auth verification key, 32) · 2 outputs x {cv 32, compact payload 176}
+  · auth (decaf377-rdsa SpendAuth signature, 64) · Groth16 proof (192) · binding signature (64).
+  Circuit `Combined` = THREE unchanged penumbra-sdk-shielded-pool SpendCircuits + TWO unchanged
+  OutputCircuits in one R1CS (decaf377 / BLS12-377, arkworks 0.4, penumbra-sdk 2.1.1 pinned).
+  One randomizer is shared by all three spends, so one rk/auth covers them; conservation
+  (sum of input cvs - sum of output cvs = 0 in value, blinding folded into the Binding key) is
+  enforced by the binding signature over the domain-bound message. Fewer than three real inputs
+  are padded with zero-value notes the prover owns (unchanged from the multi-input lab).
+XB3 boundary record (holder-wasm/src/boundary.rs; 925 bytes; magic "XB3\xfe"; kinds DEPOSIT=1,
+  MIGRATION=2, REDEEM=3)
+  anchor · 3 inputs · rk · 1 output {cv, payload} · kind 1 · asset id 32 · PUBLIC amount 8 ·
+  binding commitment 32 (deposit nonce / claim id / redemption request binding) · auth 64 · proof 192
+  · conservation signature 64 · issuer signature 64 (credits only; zero for redemptions).
+  Circuit = the same three SpendCircuits + one OutputCircuit. The public amount enters ONLY the
+  conservation (binding) signature as a zero-blinding commitment; it is not a circuit input. For a
+  credit the issuer's decaf377-rdsa signature over the domain-bound body authorizes minting; for a
+  redemption the public amount is burned and the binding ties it to the operator's payout request.
+Authorization message (both): hash("XMR20-MULTI-INPUT-LAB-AUTH-v1\0" || ledgerDomain || public body).
+The ledger domain binds the chain genesis, both verifying keys and the issuer key (Config in lib.rs).
+The compact payload (xm3/compact.rs, 176 bytes) is an authenticated note encryption to the recipient
+(clue key, ephemeral key, rseed/amount/asset ciphertext); host tests show that wrong fields,
+mismatched commitments or an unsupported clue key never credit a wallet.
+
+Admission (pool.rs, identical in the public indexer, the issuer and the holder's engine): a record is
+admitted iff the proof verifies against the pinned verifying key, auth and binding signatures verify,
+the anchor is any KNOWN historical root, every nullifier is new and distinct, (XB3) kind/amount/asset
+are well formed and the issuer signature verifies for credits. A rejected record changes nothing; the
+Monero carrier still mined and its fee was still paid.
+
+What the records do NOT contain: any native Monero output key, key image, ring position, amount or
+mask. The only native association is the carrier transaction's own ring (see 03-OBSERVERS).
+
+2. TRUSTED SETUP ASSUMPTIONS (the biggest open item)
+------------------------------------------------------
+The proving/verifying keys in params/test-v1 are a single-party Groth16 setup
+(ark-groth16 generate_random_parameters_with_reduction, OsRng) made on the owner's machine by the
+lab `setup` command. Whoever ran it could have kept the toxic waste. For a Groth16 system that means:
+  - SOUNDNESS: the setup party can forge proofs (mint tokens, spend others' notes) undetectably.
+  - ZERO KNOWLEDGE is unaffected by the setup party's knowledge in Groth16's standard analysis, but
+    the PROVING KEY's integrity matters: an adversarial proving key with the correct verifying key
+    can make an honest prover emit proofs that leak witness bits (stage 1 closed the distribution
+    side of this; see 3.).
+Stage 1 made the parameter DISTRIBUTION authenticated; it did NOT change the setup. Reviewers should
+treat the test parameters as "demo only". Production needs: frozen, reviewed circuits (the Penumbra
+circuits are upstream-reviewed; the COMPOSITION, the shared randomizer, the compact codec, the
+public-amount-in-binding construction and the issuer authorization are new and unreviewed); a
+multi-party setup with published transcripts; signed parameter provenance; verifier-side manifest
+checks (indexer/issuer/operator currently validate points but not a manifest).
+
+3. PARAMETER DISTRIBUTION TRUST MODEL (stage 1, research/privacy-params-20261023/PARAMETERS.txt)
+-------------------------------------------------------------------------------------------------
+Trust anchor: the manifest (format XMR20-PARAMS-1) shipped INSIDE the extension build, sha256
+compiled into the holder worker. It pins exact length + sha256 of each proving key file and of
+parameters.json, each verifying key, ledger domain, issuer key, genesis, network kind, protocol
+label, key scheme, record shapes. Every file is authenticated over its complete contents before
+parsing (loader, then again inside wasm before deserialization); cached files are re-authenticated
+on each read; the server's configuration must equal the manifest's; its checksums are never used.
+Tested rejections: missing, truncated, interrupted, altered query vector with the expected vk,
+foreign setup, swapped circuit, corrupted/foreign/truncated cache, server from another ledger.
+Residual: a modified BUILD can ship a modified manifest; the wasm trusts the manifest its host
+passes (the host pins it); no verifier-side manifest checks yet.
+  manifest sha256    ae7ba302194ca3e6f85bd045a653f58026a4fcda9141b1ed8a86600f31611e66
+  normal.public-pk   82,675,440 B  8152016c33b1f4bb10da5c2de242b38763bb7461fac3d611dcbee0306326aced
+  boundary.public-pk 64,409,328 B  b9b5c8269adf6377480b4713c8449bc28170eb4b3ad5ed00c08b981886bc6120
+  ledger domain      759e56ff75367217038d9b5f85f6b878bf3212016922bb2a3891ea4fa6726eb8
+
+4. KEY DERIVATION (KEY-SCHEME.txt, scheme XMR20-TKD1)
+-----------------------------------------------------
+root = the account's 32-byte Monero private spend key (what the 25-word phrase encodes; obtained in
+the worker from the shipping monero-ts build, wiped after use).
+Token spend key tsk = BLAKE2b-256(key = root, personal = "XMR20-TKD1",
+                                   msg = "xmr20/private-token/spend-key" || LE32(account)).
+Penumbra key schedule from SpendKeyBytes(tsk): full viewing key, incoming viewing key, nullifier key,
+payment address 0 (bech32m penumbra1…). Viewing key exported only on the explicit share action.
+Native keys for carriers (stage 2, native.rs): spend = root reduced mod l (identity for a real
+wallet's already-reduced key), view = Hs(spend) = keccak256(root) mod l — the standard Monero
+schedule — so the derived address must equal the account's address (checked; mismatch refuses open).
+Properties: keyed BLAKE2b is a PRF, so tsk is unpredictable without root and reveals nothing about
+it; token and native keys are related only through the secret root; no public value links them.
+Reviewer questions: is deriving token keys from the Monero spend key (rather than an independent
+seed) acceptable for the product (one phrase recovers both; compromise of either key does not reveal
+the other, but compromise of the phrase reveals both)? Is account index 0 only sufficient?
+
+5. SECRET BOUNDARY AT RUNTIME
+-----------------------------
+Inside the holder worker's wasm memory while unlocked: root (briefly), tsk, fvk, nullifier key,
+decrypted notes, proof witnesses and randomizers, the Monero spend/view scalars, owned native
+outputs with key offsets, decoy rings, the carrier before publication. The popup holds the vault
+(phrase, Solana secret) and the journal key as in the existing extension. Leaves the worker: token
+address, balances/notes (to the popup), finished records, signed carriers (to the daemon), the
+viewing key on explicit share. On lock the worker is terminated (memory freed, not scrubbed); the
+password-encrypted vault and journal remain in chrome.storage.local. JS strings and CryptoKey
+material cannot be zeroed deterministically. No constant-time claim for any path.
+
+6. DEPENDENCIES (exact pins; full lists in holder-wasm/Cargo.lock, wallet-extension/package.json)
+----------------------------------------------------------------------------------------------
+penumbra-sdk-* 2.1.1 (shielded-pool locally vendored from research/privacy-single-tx-20261022 with
+the FMD/IBC parts stubbed; see that lab), decaf377 0.10.1 (r1cs), decaf377-rdsa 0.11.0, arkworks
+0.4.x (ark-groth16 0.4.0), blake2b_simd 1.0.5, getrandom 0.2.17 (vendored, js backend disabled),
+monero-wallet 0.2.0 (monero-oxide, locally vendored at proof-of-concepts/native-market-local/vendor/
+monero-wallet with the `from_local_ring` test helper), curve25519-dalek 4.1.3, rand_chacha 0.3.1.
+Extension: @solana/web3.js 1.98.4, @noble/curves 1.9.7, @noble/hashes 1.8.0, esbuild 0.28.2; the
+pinned monero-ts 0.11.16 build (vendor/monero-0.11.16.js) for phrase -> keys only.
