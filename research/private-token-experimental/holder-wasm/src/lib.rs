@@ -851,6 +851,15 @@ mod tests {
         assert_ne!(*a, *d);
         assert_ne!(*a, root, "token key is not the native key");
     }
+    // Portable vector (SPEC 3.2): BLAKE2b-256, key = root, personal = "XMR20-TKD1" zero-padded to 16
+    // bytes, message = "xmr20/private-token/spend-key" || LE32(account). Cross-checked with an
+    // independent JavaScript BLAKE2b (vectors/make-vectors.mjs).
+    #[test]
+    fn key_derivation_matches_the_published_vectors() {
+        assert_eq!(hex::encode(*derive_token_spend_key(&[1u8; 32], 0)), "bc5f6d2613bc46a09c0e0eadf4d63e35ef9779ed24250cbefa8bf9704c3b4c10");
+        assert_eq!(hex::encode(*derive_token_spend_key(&[1u8; 32], 1)), "c3e548f9b035035ce7f139ca5962bcee5882fd82c7ca7d53d59d6cd79540a780");
+        assert_eq!(hex::encode(*derive_token_spend_key(&[7u8; 32], 0)), "26d8d840e6db882041e955f10c3186bc8c611d046d94d8b6e1cfbd10a5d66bfe");
+    }
     #[test]
     fn engine_derives_and_exports_only_public_data() {
         let mut e = Engine::default();

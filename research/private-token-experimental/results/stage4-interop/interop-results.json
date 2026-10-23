@@ -1,0 +1,63 @@
+{
+ "shared": [
+  "holder-wasm engine (identical binary)",
+  "holder-engine.js scanner",
+  "holder-params.js loader",
+  "holder-carrier.js daemon RPC",
+  "vendored upstream crates",
+  "monero-ts 0.11.16 for phrase→key (CLI) / pinned build (extension)"
+ ],
+ "transfers": [
+  {
+   "from": "extension A",
+   "to": "CLI B",
+   "amount": "20",
+   "inputs": 1,
+   "change": "78.5"
+  },
+  {
+   "from": "CLI B",
+   "to": "extension A",
+   "amount": "5",
+   "inputs": 1,
+   "change": "15",
+   "carrier": {
+    "txid": "4feb0b8d63854aabf6635072e78edb836118fa985eff5bfb2b0f6f2298f4c2b9",
+    "fee": "3024000000",
+    "nativeBytes": 2520,
+    "extraBytes": 1056
+   }
+  },
+  {
+   "from": "CLI B",
+   "to": "extension A",
+   "amount": "17",
+   "inputs": 2,
+   "change": "1"
+  },
+  {
+   "from": "CLI B",
+   "to": "extension A",
+   "amount": "6.5",
+   "inputs": 3,
+   "change": "0.5"
+  }
+ ],
+ "recovery": {
+  "address": true,
+  "balance": "98000000",
+  "notes": 4
+ },
+ "viewOnly": {
+  "balance": "500000",
+  "sendRefused": true
+ },
+ "negative": {
+  "malformed": "Spent or duplicate token input",
+  "duplicate": "Spent or duplicate token input"
+ },
+ "mismatchedParameters": "error: Served parameters.json rejected: sha256 413c0356e2339763… differs from the shipped manifest (d00c64cb5df55136…). The parameter server serves another vers",
+ "pool": {
+  "accepted": 8
+ }
+}

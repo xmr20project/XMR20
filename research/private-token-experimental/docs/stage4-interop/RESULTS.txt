@@ -1,0 +1,87 @@
+PRIVATE XMR20 — STAGE 4: WALLET INTEROPERABILITY (specification, library, second wallet, vectors, independent decoder)
+23 October 2026. Additive candidate research/privacy-interop-20261023, copied from research/privacy-review-20261023
+(stage 3, unchanged). Synthetic wallets, offline fakechain, disposable parameters, disposable browser profiles. Nothing
+production touched; nothing deployed; NOT PUBLISHED (prepared locally for later publication per the stage-4 brief).
+Readiness gates unchanged: NO-GO for real funds; bridge payouts and native XMR trading gated; no independent security
+review. Wallet interoperability does not resolve bridge settlement, native trading or the need for review.
+
+================================================================================================
+A. DELIVERABLES
+================================================================================================
+SPEC-XMR20-PRIVATE-TOKENS-v0.1-experimental.txt  versioned, explicitly experimental contract: version identity; address
+  variants and limits (index 0 only; no custom clue keys; not Penumbra-native; not Monero addresses); key derivation
+  (XMR20-TKD1 with the 16-byte zero-padded personalization and a published vector), account 0 only, recovery, viewing-only
+  (token viewing key vs Monero view key); record layouts byte by byte (XM3 996, XB3 925), compact payload codec, messages,
+  admission rules; parameters/network/version identity (XMR20-PARAMS-1, ledger domain recomputation); scanning, spent
+  detection, rollback, publication; sending; what the phrase restores vs the journal; compatibility limitations; shared-
+  components disclosure; what is independently checkable.
+wallet-lib/private-wallet.mjs (+README.md)  documented interface: open (root or viewing key), address, nativeAddress,
+  viewingKey, sync, status, native, select, loadProvingKey, prove, verify, quoteCarrier, signCarrier, cancelQuote, publish,
+  inPool, reserve/releaseNative, close. No UI, no bridge-operator logic; secrets stay in the engine; callers own persistence.
+cli-wallet/xmr20-private-cli.mjs  minimal second wallet application on the library: init (root hex | 25-word phrase via
+  monero-ts 0.11.16 | token viewing key), address, balance, notes, viewing-key, verify, send (shows the exact carrier fee and
+  asks for approval), test-service register/fund/mine. SYNTHETIC ONLY (state file stores the root in clear).
+interop.test.mjs  extension A (real popup) <-> CLI B on ONE pool.
+vectors/make-vectors.mjs -> vectors/vectors.json  portable synthetic vectors (key derivation x3 with addresses; manifest/
+  ledger domain; three real records: XB3 DEPOSIT credit, XM3 transfer, XB3 REDEEM with raw extra, independent parse, record
+  ids, message preimages; framing rule; a synthetic mnemonic vector).
+independent/decode.mjs + check.mjs  decoder written from the specification with Node crypto (+ @noble BLAKE2b); vector check.
+holder-wasm: unchanged engine; one new host test pins the key-derivation vectors (10/10 host tests).
+
+================================================================================================
+B. TWO-WALLET INTEROPERABILITY — interop.test.mjs (real popup + CLI; see the final line appended below)
+================================================================================================
+First run PASSED 298 s (evidence/superseded-interop-2026-10-23T18-43-11; superseded only because the CLI's `verify` command
+was then changed to sync before verifying so the negative cases are rejected for the right reason).
+  extension A -> CLI B      20 X   1 input   change 78.5   (B decrypted the extension's note; balance exact)
+  CLI B -> extension A       5 X   1 note    change 15     carrier by the CLI: 2,520 B, tx_extra 1,056 B, fee 3,024,000,000 piconero (own XMR)
+  extension A -> CLI B      3 X and 2 X (B holds three notes)
+  CLI B -> extension A      17 X   2 notes   change 1
+  extension A -> CLI B       4 X;  CLI B -> extension A 6.5 X  3 notes  change 0.5
+  extension A final balance 98 X; every amount exact in both wallets.
+  Recovery: the CLI initialised from A's 25-word phrase derives the SAME token address and Monero address and, from the public
+  chain alone, the same balance (98 X) and the same 4 note commitments as the extension shows.
+  Viewing-only: B's token viewing key in a third CLI state recovers B's balance (0.5 X) and refuses to send ("viewing-only").
+  Wrong keys: a random root sees no balance. Malformed record: rejected locally. Duplicate spend: an already-spent record is
+  rejected ("Spent or duplicate token input"). Mismatched parameters: a CLI built with the OTHER manifest refuses this
+  server's parameters.json ("another version or ledger").
+  One pool: the public indexer admitted all 8 records (1 credit + 7 transfers) from both wallets; no per-wallet pool.
+  Audit: 517 requests (39 backend, 465 daemon), 0 external, 0 secret leaks; neither root nor phrase reached the backend.
+SHARED COMPONENTS (recorded in runs/interop-results.json): holder-wasm engine (identical binary), holder-engine.js scanner,
+holder-params.js loader, holder-carrier.js daemon RPC, vendored upstream crates, monero-ts 0.11.16 (CLI phrase import) /
+the pinned monero-ts build (extension). Two applications over one engine: NOT independent cryptographic implementations.
+
+================================================================================================
+C. INDEPENDENT DECODING — independent/check.mjs on vectors/vectors.json: 42 checks passed, 0 failed
+================================================================================================
+Reproduced from the specification without the engine: manifest sha256 and structure; ledger domain recomputation (SPEC
+4.1) equals config.domain; XMR20-TKD1 token spend keys for three roots (independent BLAKE2b; also pinned by a Rust host
+test); token addresses have the index-0 penumbra1 form; Monero addresses of the same roots; tx_extra unframing reproduces
+each record byte for byte and the tx pubkey; XM3/XB3 layout parse, record ids (sha256), size rules, XB3 kind/amount/binding
+rules, redemption issuer field all zero / credit issuer present, three distinct nullifiers, non-zero ephemeral keys,
+authorization-message preimages; mnemonic vector: 25 words, engine Monero address equals monero-ts's.
+NOT checkable without a decaf377/Poseidon/decaf377-rdsa/Groth16/decaf377-ka implementation in JavaScript (none
+established): note commitments, nullifiers, value commitments, all signatures, proofs, payload decryption, address
+derivation from the token spend key, and mnemonic word decoding (Electrum wordlist not vendored; the rule is written).
+These remain verified only by the shared engine and are the core of the pending security review.
+Undocumented assumption found and fixed while writing the decoder: the BLAKE2b personalization is zero-padded to 16 bytes
+(now stated in SPEC 3.2).
+
+================================================================================================
+D. WHAT COMPATIBILITY IS DEMONSTRATED / WHAT REMAINS INCOMPLETE
+================================================================================================
+Demonstrated: a second application, written against the documented library interface and the specification, exchanges
+tokens with the extension in both directions with 1-, 2- and 3-note inputs and exact change, pays its own carrier fees,
+recovers the same account from the same phrase and the public chain, offers viewing-only access, and rejects wrong keys,
+malformed records, duplicate spends and mismatched parameters, all on one pool.
+Incomplete: an implementation that does not reuse the engine (needs decaf377/Poseidon/Penumbra circuits in another
+language or a published Rust crate split out of holder-wasm); sub-addresses/accounts; a memo; mainnet network identity;
+a vendored Electrum wordlist for fully independent phrase decoding; publication of the library and CLI (deliberately
+withheld in this stage); and everything in stages 1-3's blockers (disposable setup, no audit, settlement finality).
+
+================================================================================================
+E. UNIT / BUILD CHECKS
+================================================================================================
+host 10/10 (incl. key_derivation_matches_the_published_vectors) · engine wasm and extension 0.1.93 rebuilt in this candidate.
+
+FINAL RUN: interop.test.mjs PASSED 296 s  verified-interop-2026-10-23T18-48-38  1 screenshots; 522 requests (40 backend, 469 daemon), 0 external, 0 secret leaks; negatives: malformed and already-spent records both rejected by local admission ("Spent or duplicate token input": the tampered byte sits in an input of a record whose other inputs are already spent; a tampered FRESH record would fail on its proof/signature instead), parameter mismatch refused; 8 records admitted by the one indexer.
