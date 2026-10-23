@@ -1,0 +1,183 @@
+{
+ "transfers": [
+  {
+   "from": "Alpha",
+   "to": "Beta",
+   "amount": "20000000",
+   "inputs": 1,
+   "change": "78500000",
+   "recordBytes": 996,
+   "extraBytes": 1056,
+   "nativeBytes": 2520,
+   "fee": "3024000000",
+   "feeXmr": "0.003024",
+   "feePerWeight": "1200000",
+   "illustrativeMainnetFee": "50400000",
+   "provingMs": 31068,
+   "carrierSignMs": 91,
+   "quoteRounds": 5,
+   "txid": "cdf439a4bb7457c5f18d11758f31207cedcfd1cb0d807c9425f64a42a6a2eb9f",
+   "memoryBeforeBuild": 193265664,
+   "memoryAfterSign": 385941504
+  },
+  {
+   "from": "Beta",
+   "to": "Alpha",
+   "amount": "5000000",
+   "inputs": 1,
+   "change": "15000000",
+   "recordBytes": 996,
+   "extraBytes": 1056,
+   "nativeBytes": 2520,
+   "fee": "3024000000",
+   "feeXmr": "0.003024",
+   "feePerWeight": "1200000",
+   "illustrativeMainnetFee": "50400000",
+   "provingMs": 30647,
+   "carrierSignMs": 75,
+   "quoteRounds": 4,
+   "txid": "34873b3591a8f3a6c24746bfde9c7efffe47f2d7de8256d0a7dc464d7b6b12f8",
+   "memoryBeforeBuild": 193265664,
+   "memoryAfterSign": 385941504
+  },
+  {
+   "from": "Beta",
+   "to": "Alpha",
+   "amount": "3000000",
+   "inputs": 1,
+   "change": "12000000",
+   "recordBytes": 996,
+   "extraBytes": 1056,
+   "nativeBytes": 2520,
+   "fee": "3024000000",
+   "feeXmr": "0.003024",
+   "feePerWeight": "1200000",
+   "illustrativeMainnetFee": "50400000",
+   "provingMs": 29736,
+   "carrierSignMs": 67,
+   "quoteRounds": 3,
+   "txid": "7d166e4332ea06f10542e2fe9a3e95c3c0126b069cb94e058e6a0f40f12b5048",
+   "memoryBeforeBuild": 385941504,
+   "memoryAfterSign": 385941504
+  },
+  {
+   "from": "Alpha",
+   "to": "Beta",
+   "amount": "80000000",
+   "inputs": 2,
+   "change": "3500000",
+   "recordBytes": 996,
+   "extraBytes": 1056,
+   "nativeBytes": 2520,
+   "fee": "3024000000",
+   "feeXmr": "0.003024",
+   "feePerWeight": "1200000",
+   "illustrativeMainnetFee": "50400000",
+   "provingMs": 30310,
+   "carrierSignMs": 66,
+   "quoteRounds": 7,
+   "txid": "6885c2a924b3ceeab6581023c32ff1d8335f2af1f505f5a5c5555059af1e9a59",
+   "memoryBeforeBuild": 385941504,
+   "memoryAfterSign": 385941504
+  },
+  {
+   "from": "Beta",
+   "to": "Alpha",
+   "amount": "2000000",
+   "inputs": 1,
+   "change": "78000000",
+   "recordBytes": 996,
+   "extraBytes": 1056,
+   "nativeBytes": 2520,
+   "fee": "3024000000",
+   "feeXmr": "0.003024",
+   "feePerWeight": "1200000",
+   "illustrativeMainnetFee": "50400000",
+   "provingMs": 30643,
+   "carrierSignMs": 67,
+   "quoteRounds": 3,
+   "txid": "d8446277eb0b03cddc12afe03480aface9fc1d2d32ab980543def8819be59e6c",
+   "memoryBeforeBuild": 385941504,
+   "memoryAfterSign": 385941504
+  },
+  {
+   "from": "Alpha",
+   "to": "Beta",
+   "amount": "8000000",
+   "inputs": 3,
+   "change": "500000",
+   "recordBytes": 996,
+   "extraBytes": 1056,
+   "nativeBytes": 2520,
+   "fee": "3024000000",
+   "feeXmr": "0.003024",
+   "feePerWeight": "1200000",
+   "illustrativeMainnetFee": "50400000",
+   "provingMs": 30598,
+   "carrierSignMs": 67,
+   "quoteRounds": 2,
+   "txid": "f5a086fca92e0fb65c2067d4858dff1e9d5a96ce1ec3ec565ee8aed1a3c6c155",
+   "memoryBeforeBuild": 385941504,
+   "memoryAfterSign": 385941504
+  }
+ ],
+ "rejections": [
+  "no XMR",
+  "locked coinbase",
+  "tampered record: no carrier"
+ ],
+ "initialScanMs": 209,
+ "coinbaseAmount": "35166827479920",
+ "quote": {
+  "changeAmount": "35163870555449",
+  "fee": "3024000000",
+  "feePerWeight": "1200000",
+  "illustrativeMainnetFee": "50400000",
+  "inputAmount": "35166894555449",
+  "inputHeight": 261,
+  "keyImage": "fc743c67d3011aa667710446b29a78af160eec4a8018e6226ac3a258aca3cf08",
+  "kind": "send",
+  "quoteId": "8d275824b972c8fb",
+  "ready": true,
+  "recordBytes": 996,
+  "ringSize": 16,
+  "weight": 2520,
+  "feeRate": {
+   "perWeight": "1200000",
+   "mask": "10000"
+  },
+  "tip": 325,
+  "rounds": 7
+ },
+ "changeUnlockRule": {
+  "height": 336,
+  "unlockedAt": 345,
+  "tip": 345
+ },
+ "lostReplyRetries": {
+  "broadcasts": 3,
+  "feesPaid": 1,
+  "fee": "3024000000"
+ },
+ "concurrent": {
+  "distinctInputs": true
+ },
+ "restart": {
+  "outputs": 6,
+  "spent": 4
+ },
+ "redemption": {
+  "recordBytes": 925,
+  "extraBytes": 985,
+  "nativeBytes": 2449,
+  "fee": "2938800000",
+  "provingMs": 23328,
+  "txid": "e7c91e7fc7d6f0ec6e43a7ecbf859da28b1790a1b694a60714eb3ee2a967b881"
+ },
+ "backendAudit": {
+  "keyImagesChecked": 10,
+  "hits": 0
+ },
+ "engineMemoryBytes": 406978560,
+ "wasmBytes": 5032305
+}

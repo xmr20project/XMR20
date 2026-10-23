@@ -1,0 +1,48 @@
+EXTERNAL SECURITY REVIEW PACKAGE — 05 RETAINED ROLLBACK-LOSS EXAMPLES (bridge and native trading)
+research/privacy-review-20261023 (stage 3). These are kept verbatim in intent; nothing in stages 1-3
+weakens, fixes or hides them. They remain the reason bridging payouts and native XMR trading are gated.
+
+A. BRIDGE: PAYOUT ON A BURN THAT IS LATER ROLLED BACK (loss falls on operator backing)
+Evidence: research/privacy-integration-20261022/runs/verified-oSuMwR (native-chain reproduction, one
+paid burn); research/privacy-extension-20261022/ERRATUM-exposure-window.txt and its
+exposure-accounting test (schedule below).
+Mechanism: a ten-confirmed XB3 redemption burn is paid out on Solana (irreversible). A controlled
+rollback deeper than CONFIRMATIONS removes the burn; a wallet instance without the pending
+reservation (e.g. a backup) re-spends the notes. The payout cannot be revoked; asset backing is short
+by exactly the paid amount; both backing invariants fail; the operator latches and halts. Preventing
+the backup-wallet workflow is wallet convenience, not protocol security, and is not a fix.
+Corrected exposure statement (ERRATUM): maxPaidPerWindow is a PAYOUT-RATE control; maxSinglePayout a
+per-event cap. Neither bounds the loss from a reorganization. Counterexample under lab limits
+(single 100, window 200 over 20 blocks, 10 confirmations): two 100 payouts at tip 100 (burns at 91),
+two more at tip 120 (burns at 111), one rollback from 121 to 90 removes all four -> 400 exposed under
+a 200 cap, every payout having respected both caps and the depth when submitted. A loss bound exists
+only under an ASSUMED maximum rollback depth D: loss <= ceil((D-CONFIRMATIONS+1)/windowBlocks) x
+maxPaidPerWindow. Monero guarantees no maximum reorganization depth (18-block reorg Sept 2025; DNS
+checkpoint issue #10064 open). No depth bound is claimed. No construction investigated binds a Solana
+payout to Monero burn finality without native source disclosure (privacy-market-repair FINALITY-SPEC).
+Stage-2/3 effect: none on this case. Holder-funded carriers change who pays the carrier fee, not
+settlement finality. Stage 3 adds the rollback case to the WALLET's recovery tests (balances and
+republication after pop_blocks), which is about wallet consistency, not about the operator's loss.
+
+B. NATIVE XMR TRADING: BUYER PAYS, RECEIVES NO TOKENS (research/privacy-settlement-policy-20261022)
+Evidence: runs/verified-nejEGH/retained-finality-counterexample.json in that lab; VERDICT.txt of
+research/privacy-readiness-20261022.
+Mechanism: a buyer releases a signed native purchase after the seller's token reservation has ten
+confirmations. A controlled rollback removes the reservation; a genuine conflicting token spend
+becomes canonical; the captured purchase still mines: the seller receives XMR, the buyer receives no
+tokens. Honest wallets can halt but cannot revoke the captured signature. The lab's limits (10
+confirmations, two payments / 0.25 XMR exposure) are laboratory settings, not reviewed operating
+limits. This is a controlled rollback, not a mined heavier-work fork or a mainnet probability
+estimate; it is not evidence of the same loss while the accepted prefix is retained.
+Why it is unresolved: making the XMR payment depend on token state requires a verifiable link between
+the native payment and the token record, which is the key-image/source association the new format
+exists to avoid (03). Native trading therefore stays GATED (nativeXmrTradingGated: true) in every
+readiness file of stages 1-3.
+
+C. WHAT WOULD CLOSE THEM (for the verdict table in 07)
+- A: a reviewed settlement construction for the bridge (e.g. payout only after a reviewed
+  probabilistic-finality policy with incident controls and a funded loss reserve sized to an
+  explicitly assumed depth), accepted as a PRODUCT decision with that assumption stated; plus
+  independent review. Code alone cannot remove the loss.
+- B: either a new settlement primitive that binds native payment to token state WITHOUT the P -> I
+  disclosure (research), or a product decision to keep native trading off the private format.

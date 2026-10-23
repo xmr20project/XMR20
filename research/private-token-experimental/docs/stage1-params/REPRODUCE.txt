@@ -1,0 +1,46 @@
+REPRODUCTION — research/privacy-params-20261023 (stage 1: parameter authentication; synthetic, offline, isolated)
+Nothing here touches the installed extension, the website, the bridge, the backend, NFTs,
+real keys or funds. All processes are started by the tests and stopped by them.
+
+Prerequisites (already present on this machine)
+- Rust stable (rustup) with the wasm32-unknown-unknown target; no wasm-bindgen needed.
+- Built integration lab binary: research/privacy-integration-20261022/target/release/xmr20-integration-lab
+  (used for the issuer/indexer roles; `setup` was used ONCE to make params/test-v1 and params/test-other).
+- Offline monerod: operations/native-market-20261016/local-chain/bin/monerod
+- Playwright 1.56.1 + bundled Chromium in wallet-cli/node_modules (headless, disposable profiles).
+- Loopback ports: 8940 / 30041 / 30040 (browser tests); 8942 / 30061 / 30060 (engine test);
+  8943 / 30063 / 30062 (parameter test).
+
+0. Parameter sets (already generated; regenerate only to make a NEW version — hashes change)
+   XMR20_INTEGRATION_LAB=offline-synthetic-only research/privacy-integration-20261022/target/release/xmr20-integration-lab \
+     setup params/<new-set> 418015bb9ae982a1975da7d79277c2705727a56894ba0fb246adaabb1f4632e3
+   node params/make-manifest.mjs params/<new-set> "<label>"      # writes <set>/manifest.json, prints hashes
+   The build ships params/test-v1/manifest.json (override with XMR20_PARAMS_SET=<set>).
+
+1. Build the holder wasm engine
+   cd research/privacy-params-20261023/holder-wasm
+   PATH=$HOME/.cargo/bin:$PATH cargo build --offline --release --target wasm32-unknown-unknown
+   PATH=$HOME/.cargo/bin:$PATH cargo test --offline --release      # 9 host tests incl. the altered-query-vector case
+   Output: target/wasm32-unknown-unknown/release/xmr20_holder_wasm.wasm (sha256 in MANIFEST.sha256)
+
+2. Build the isolated test extension (copies holder.wasm and the manifest; pins the manifest hash into the worker)
+   cd research/privacy-params-20261023/wallet-extension
+   XMR20_PRIVATE_HOLDER_TEST=local node build.mjs      # -> extension-private-holder-test/ (0.1.92)
+   npm test                                              # existing unit tests, 561
+
+3. Parameter authentication without a browser (≈4 min; fault injection in the transport)
+   cd research/privacy-params-20261023
+   node --test holder-params.test.mjs                    # writes runs/holder-params-results.json
+
+4. Engine test (unchanged flows on the authenticated parameters; ≈5 min)
+   node --test holder-engine.test.mjs                    # writes runs/holder-engine-results.json
+
+5. Real browser flows (each starts its own backend + daemon; sequential)
+   node --test browser-params.test.mjs          # refusals in the popup, cache corruption, restart from cache, foreign config
+   node --test browser.test.mjs                 # deposit→credit→send→redeem→payout, migration, viewing key, fragmentation, short popup, lock/reopen
+   node --test browser-recovery.test.mjs        # profile A activity, then fresh profile B restore + spend
+   Evidence: evidence/verified-*/ (screenshots, steps.json, network-audit.json); backend run folders
+   under runs/backend-*/ (requests.log is the backend audit log, including every parameter file served and the fault used).
+
+Processes: the tests stop the daemon, indexer and issuer they started (backend.close()). If a test is
+killed, stop only those processes: `pgrep -fl "xmr20-integration-lab|monerod.*privacy-params"`.

@@ -1,0 +1,119 @@
+PRIVATE XMR20 — STAGE 2: HOLDER-FUNDED MONERO CARRIERS (relay removed)
+23 October 2026. Additive candidate research/privacy-carrier-20261023, copied from research/
+privacy-params-20261023 (stage 1, unchanged). Session start runs/start-time.txt. Nothing under the
+repository's wallet-extension/, website/, backend/, NFTs, keys or running services was touched.
+Synthetic wallets, offline fakechain, LiteSVM, disposable Chromium profiles only. NO-GO for real
+funds (readiness.json) unchanged; native XMR trading gated; bridge payouts gated; no audit claim.
+Design, trust boundary and retry semantics: CARRIER.txt. Reproduction: REPRODUCE.txt.
+
+================================================================================================
+A. WHAT CHANGED
+================================================================================================
+The lab's implicitly funded relay path is gone. The holder's extension now: scans its own XMR
+outputs (view key, local RingCT index count, key-image spent tracking); quotes the exact network fee
+BEFORE proving (monero-oxide weight model, daemon fee rate); shows it for approval (Approve/Cancel);
+proves the record; builds and signs the ordinary Monero carrier (16-ring CLSAG, Bulletproof+, the
+record in tx_extra, change to itself plus a wallet2-like 0-amount dummy output); publishes it to the
+daemon directly; pays the fee from its own XMR. The test backend has no relay process and no relay
+action; it refuses any field named like a key image, carrier, blob, ring or record wire; a labelled
+TEST SERVICE `fund` action mines coinbase rewards to the holder's public Monero address so the
+synthetic wallet has XMR at all. Everything secret (Monero spend/view keys, owned outputs, input
+selection, decoy sampling, signing) runs inside the holder's wasm; the worker only performs daemon
+RPC calls (holder-carrier.js). monero-wallet (monero-oxide 0.2.0, vendored locally) is compiled into
+the holder wasm (now 5,032,305 bytes).
+
+================================================================================================
+B. NODE TEST — holder-carrier.test.mjs, PASSED 302 s (runs/holder-carrier-test.log, runs/holder-carrier-results.json)
+================================================================================================
+Two isolated holders (Alpha, Beta), real offline daemon, no relay.
+Transfers (all: record 996 B, tx_extra 1,056 B, carrier 2,520 B, fee 3,024,000,000 piconero =
+0.003024 XMR at the fakechain rate 1,200,000 piconero/byte; XMR balance fell by EXACTLY the fee;
+token debit exact; one carrier per record; daemon accepted into the pool; mined; record admitted):
+  Alpha->Beta 20 X   1 input   change 78.5   prove 30.1 s  carrier sign 84 ms  decoy rounds 4
+  Beta->Alpha  5 X   1 input   change 15     prove 30.0 s  sign 74 ms  rounds 4
+  Beta->Alpha  3 X   1 input   change 12     prove 29.7 s  sign 67 ms  rounds 3
+  Alpha->Beta 80 X   2 inputs  change 3.5    prove 30.2 s  sign 68 ms  rounds 4
+  Beta->Alpha  2 X   1 input   change 78     prove 30.3 s  sign 68 ms  rounds 5   (largest-first)
+  Alpha->Beta  8 X   3 inputs  change 0.5    prove 30.8 s  sign 67 ms  rounds 2
+Redemption (XB3): record 925 B, tx_extra 985 B, carrier 2,449 B, fee 2,938,800,000 piconero, prove
+23.2 s; paid once by the operator at 10 confirmations.
+Memory (wasm linear memory): 193 MB after the transfer proving key, 386 MB after both proving keys;
+carrier construction adds nothing measurable (386 MB before and after signing); 407 MB at the end.
+Initial native+token scan of ~260 blocks: 170 ms.
+Refusals (precise text, nothing reserved/proved/published): no XMR ("unlocked 0 piconero … locked 0"),
+locked coinbase ("locked N (unlocks by block H)"), tampered record ("fails local admission; no
+carrier built"), too-small outputs excluded ("of which N too small for any carrier at R piconero/byte").
+Unlock rule verified against monerod: change spendable when tip + 1 >= height + 10 (unlockedAt =
+height + 9); coinbase after 60 blocks.
+Lost broadcast reply: the same signed carrier broadcast three times (before mining, after mining):
+daemon reports OK each time, exactly ONE fee paid.
+Concurrency: two engines of the same holder quote with a shared exclusion -> distinct XMR inputs;
+with both inputs excluded -> refused ("reserved by pending carriers").
+Restart: a fresh engine from the same root reproduces 6 native outputs / 4 spent and the token state.
+Cancellation releases the quote; a second cancel reports nothing to cancel.
+Audit: 10 key images known to the wallets, 0 occurrences in the backend request log; a request with a
+`keyImage` field is refused by the backend; carrier txids reach the backend only in the explicit
+payout request.
+
+================================================================================================
+C. BROWSER RUNS (real popup, disposable profiles) — see "BROWSER RUN OUTCOMES" appended below
+================================================================================================
+browser-carrier.test.mjs: fee review before proving, approve/cancel, 1/2/3-input sends with exact
+change, no-XMR and locked-XMR refusals, interrupted approval, lost broadcast reply (same carrier
+re-sent, one fee), restart with a signed carrier (same txid), two popups concurrently (distinct
+native inputs), 320x440 review layout, redemption carrier, audits.
+browser.test.mjs / browser-recovery.test.mjs: the stage-1 suites on holder-funded carriers (funding
+step added; fee approval in every send/redeem/consolidation; recovery also compares native outputs).
+browser-params.test.mjs: stage-1 parameter refusals (unchanged code path).
+
+================================================================================================
+D. FEES: OFFLINE CHAIN vs MAINNET (not an estimate)
+================================================================================================
+Fakechain dynamic rate 1,200,000 piconero/byte -> 0.003024 XMR per 2,520-byte carrier. Mainnet rates
+come from the node at send time; at an illustrative 20,000 piconero/byte the same carrier would cost
+50,400,000 piconero (0.0000504 XMR). The popup shows the real quote and the labelled illustration.
+Consolidation: merging n notes into one needs ceil((n-1)/2) carriers, each with its own fee (shown).
+
+================================================================================================
+E. FAILURES FIXED (stage 2) AND REMAINING BLOCKERS
+================================================================================================
+Fixed: synthetic roots not reduced mod l (reduce; identity for real keys); `ProvidesUnvalidatedDecoys`
+import; the first carrier shape paid 0.000001 XMR to itself and the dust was later picked as an input
+(NotEnoughFunds) -> wallet2-like 0-amount dummy output + minimum-input rule + precise error; unlock
+rule one block stricter than monerod -> aligned; test expectations (largest-first selection, change
+lock, refusal text); process hygiene (two test runs started at once collided on ports/log).
+Open: mainnet fee/decoy behaviour unmeasured (offline chain; publish uses do_sanity_checks:false
+because the fakechain's ring statistics fail monerod's sanity check); change-chain linkage and the
+carrier's extra-size fingerprint are inherent and only documented; a holder with a single XMR output
+can send one carrier per 10 blocks; no relay means holders without XMR cannot transact (product
+decision); everything else from stages 0-1 (disposable setup, no audit, bridge finality, trading).
+
+================================================================================================
+BROWSER RUN OUTCOMES (final build; evidence/verified-*/; earlier attempts kept as evidence/failed-*/)
+================================================================================================
+browser-carrier.test.mjs PASSED 480 s  verified-carrier-2026-10-23T17-14-53  22 screenshots; 6184 requests (107 backend, 6002 daemon), 0 external, 0 secret leaks
+browser.test.mjs PASSED 376 s  verified-browser-2026-10-23T17-40-29  26 screenshots; 3254 requests (76 backend, 3122 daemon), 0 external, 0 secret leaks
+browser-recovery.test.mjs PASSED 317 s  verified-recovery-2026-10-23T17-47-06  12 screenshots; 3972 requests (76 backend, 3820 daemon), 0 external, 0 secret leaks
+browser-params.test.mjs PASSED 178 s  verified-params-2026-10-23T17-52-33  9 screenshots; 1496 requests (41 backend, 1424 daemon), 0 external, 0 secret leaks
+
+browser-carrier.test.mjs, two wallets through the real popup:
+  alpha-1-input        20 X  1 input(s) change  78.5  record 996 B  tx_extra 1056 B  carrier 2520 B  fee 0.003024 XMR  proof 29 s
+  beta-1-input          5 X  1 input(s) change    15  record 996 B  tx_extra 1056 B  carrier 2520 B  fee 0.003024 XMR  proof 29 s
+  alpha-2-inputs       80 X  2 input(s) change   3.5  record 996 B  tx_extra 1056 B  carrier 2520 B  fee 0.003024 XMR  proof 29 s
+  beta-return-3         3 X  1 input(s) change    77  record 996 B  tx_extra 1056 B  carrier 2520 B  fee 0.003024 XMR  proof 29 s
+  beta-return-2         2 X  1 input(s) change    75  record 996 B  tx_extra 1056 B  carrier 2520 B  fee 0.003024 XMR  proof 29 s
+  alpha-3-inputs        8 X  3 input(s) change   0.5  record 996 B  tx_extra 1056 B  carrier 2520 B  fee 0.003024 XMR  proof 30 s
+  no-XMR refusal, locked-XMR refusal, cancellation at the review (nothing reserved), interruption after approval
+  (quoted entry released, no fee), lost broadcast reply (same carrier re-sent, one fee, tokens exact), restart after
+  a signed-but-unsent carrier (lock/unlock -> same txid re-sent once), two popups concurrently: {"published": 1, "r1": "Published bd29e26ff1a2bbb1\u2026 (996-byte record, 1 input, change 5.8 X; proved locally in 29 s; carrier 04749df852ce9e5a\u2026 2520 bytes, tx_extra 1056 bytes, fee 0.003024 XMR paid from this wallet). Advance the chain to confirm. | ", "r2": "Those notes were just reserved by another wallet window. Refresh and try again."},
+  fee review approve/cancel visible at 320x440 (buttons placed in the pinned footer), redemption carrier {"nativeBytes": 2449, "extraBytes": 985, "fee": "2938800000"},
+  audit: key images never in backend requests, 0 relay requests, 0 external, 0 leaks.
+browser.test.mjs: deposit -> automatic private credit -> send 40 X with fee review (change 58.5) -> migration -> redemption with fee
+  review -> payout once -> viewing key once -> 5 x 1 X sends -> fragmentation refused -> consolidation with fee review -> 34 X 3-input
+  send -> 320x440 -> lock/reopen; key images never sent to the backend; no relay requests.
+browser-recovery.test.mjs: profile A (funded) receive/transfer/consolidate/redeem; fresh profile B from the phrase restores the same
+  address, balance, notes, spent status AND native XMR outputs with their spent flags, then spends 77 X (2 recovered inputs) paying
+  its own carrier fee; wrong phrase recovers nothing; Beta restored sees only Beta's notes; viewing-only share.
+browser-params.test.mjs: stage-1 refusals (corrupted query vector, truncated, missing, interrupted) now reached AFTER the fee approval and
+  before proving; after each refusal the note and XMR reservations are released; cache corruption / restart-from-cache / foreign
+  configuration as in stage 1.

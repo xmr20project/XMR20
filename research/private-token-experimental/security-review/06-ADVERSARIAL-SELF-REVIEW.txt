@@ -1,0 +1,89 @@
+EXTERNAL SECURITY REVIEW PACKAGE — 06 ADVERSARIAL SELF-REVIEW (engineering issues found and fixed; open questions)
+research/privacy-review-20261023 (stage 3). THIS IS A SELF-REVIEW BY THE IMPLEMENTER, NOT AN INDEPENDENT
+SECURITY AUDIT. It lists what was attacked, what broke, what was fixed and what remains open, so a
+reviewer can start from the attack surface rather than from the happy path. Nobody was contacted.
+
+A. ATTACKS TRIED AGAINST THE HOLDER ENGINE (wasm) — results
+1. Parameter substitution (stage 1): missing / truncated / interrupted / foreign setup / swapped
+   circuit / altered query vector with the expected verifying key / corrupted cache / server from
+   another ledger. ALL refused before parsing, nothing proved or published. FOUND+FIXED: the previous
+   check (embedded vk only) accepted an altered query vector; shipped-hash authentication closes it.
+2. Engine accepts any internally valid manifest -> OPEN by design: the host (worker) pins the manifest
+   hash. A compromised build is out of scope of this control.
+3. Carrier fee quote vs signed fee: the engine refuses to sign if the fee differs from the quote the
+   holder approved (byte-exact weight model). Not observed to differ in any run.
+4. Pre-sign admission: the engine re-verifies the record against its own replica before paying a fee.
+   FOUND (stage 3 design): a saved record whose notes were spent by another installation would have
+   cost a carrier fee for nothing if re-sent blindly; the pre-sign check refuses it ("fails local
+   admission; no carrier built"). Reconcile must consult it before re-sending SIGNED carriers too
+   (see B.3).
+5. Dust inputs (stage 2): FOUND+FIXED. The first carrier design paid 0.000001 XMR to itself, creating a
+   dust output per carrier; the input selector later picked a dust output and construction failed with
+   NotEnoughFunds. Fixed by (a) a wallet2-like 0-amount dummy output to a fresh random address instead
+   of a self-payment, (b) never selecting outputs below fee_rate x 1,500 bytes, (c) a precise error
+   naming the fee when the largest output cannot pay.
+6. Unlock rule: FOUND+FIXED. The first rule (tip >= height + 10) was one block stricter than monerod's
+   (tip + 1 >= height + 10) and would have refused a spend monerod accepts; aligned.
+7. Local RingCT index: the engine counts outputs itself and refuses a daemon distribution whose total
+   differs; monero-oxide refuses a node whose view of the real output differs. A malicious node can
+   still bias decoys (standard wallet exposure).
+8. Record/native separation: no native field exists in XM3/XB3; byte-containment regression test
+   (stage 3) over every published record against every carrier's key image, ring member keys and tx
+   pubkey. See 03.
+9. Randomness: wasm randomness is the worker's crypto.getRandomValues through the single import;
+   the decoy RNG is ChaCha20 seeded from it per quote (replayed deterministically only within one
+   quote). OPEN: no review of RNG use inside the vendored Penumbra/arkworks/monero-oxide code paths.
+
+B. ATTACKS TRIED AGAINST THE POPUP / JOURNAL
+1. Concurrent windows: notes and native inputs are reserved in the encrypted journal with heartbeats
+   and leased writes; the second window excludes them or is refused. FOUND+FIXED earlier (holder
+   candidate): a journal lost-update race and a double relay; stage 2 adds native-input reservations.
+2. Lost replies and restarts: the SAME signed carrier is re-sent (idempotent on monerod); a proved
+   record without a carrier waits for an explicit fee approval. Verified in Node and the popup.
+3. Stale journal re-send (stage 3): FOUND+FIXED. A stale installation could re-send a signed carrier
+   whose token notes were already spent by another installation; the carrier mines (fee lost) and the
+   pool rejects the record. Reconcile now checks the replica first: if any reserved note is already
+   spent on chain, the entry is marked rejected ("notes spent by another installation; carrier not
+   sent, fee saved") and never re-sent; the engine's pre-sign check covers the 'built' case.
+4. Stale success: an installation must never report a conflicting send as successful. Status comes
+   from the chain replica (records map keyed by record id) on every refresh; a rejected record shows
+   'rejected' with the fee consequence in the pending list / history.
+5. Interrupted approval: the quoted entry is released after its heartbeat; the native input is
+   released in the engine and the journal. Verified.
+6. Lock: terminates the worker (keys freed, not scrubbed); vault/journal remain encrypted at rest.
+   OPEN: memory erasure limits (JS strings, CryptoKey), no constant-time claims.
+7. Phishing-style UI concerns: the fee review shows amount, rate, input, change, record size, ring
+   size and an illustrative mainnet figure labelled as such; it never implies sponsorship. OPEN:
+   a reviewer should check the wording against the product's fee disclosure policy.
+
+C. ATTACKS NOT TRIED / OUT OF SCOPE HERE
+- Malicious or colluding node (decoy bias, eclipse); network-level IP correlation.
+- Side channels in wasm proving (timing/memory); constant-time behaviour of any component.
+- Browser extension platform attacks (compromised build, malicious co-installed extension, devtools).
+- Economic attacks on the bridge beyond the retained rollback cases (05).
+- The Solana program itself (compiled artifact pinned by the earlier labs; not re-reviewed).
+
+D. ENGINEERING ISSUES FIXED IN STAGES 1-3 (chronological)
+stage 1: wrong test assumption about manifest pinning (documented instead); same-process keep-alive
+         sockets during 30 s proofs (connection: close); compile errors (Debug derive, borrow).
+stage 2: scalar reduction of synthetic roots; `ProvidesUnvalidatedDecoys` import; dust inputs and
+         self-payment outputs (dummy 0-amount output + minimum-input rule); unlock rule aligned with
+         monerod; tests: largest-first selection expectations, lock expectation, refusal-text regex,
+         test runs colliding on ports/logs when two were started at once (process hygiene).
+stage 3: see RESULTS.txt of this candidate (reconcile hardening against stale re-sends; rollback
+         replay; rejected-record presentation).
+
+E. QUESTIONS FOR THE INDEPENDENT REVIEWER (ranked)
+1. Soundness of the XM3/XB3 composition: three Penumbra SpendCircuits + Output circuits in one Groth16
+   relation with a SHARED randomizer and ONE rk/auth; public amount only in the binding signature for
+   XB3; issuer authorization. Is anything about the composition unsound or malleable?
+2. Compact payload codec (176 bytes): confidentiality/integrity of amount, asset, rseed; clue key.
+3. Key derivation from the Monero spend key (XMR20-TKD1): acceptable coupling? Account/sub-address
+   plans?
+4. Parameter trust: review the manifest format and the plan for a ceremony + signed provenance.
+5. Carrier construction in wasm: decoy sampling faithfulness, fee model, fingerprintability of the
+   dummy-output pattern versus wallet2, change-chain linkage.
+6. Journal/recovery semantics (RECOVERY-CASES.txt): anything that could cause inflation, a lost note
+   or a falsely reported success beyond the documented fee-loss cases?
+7. Bridge finality and native trading (05): confirm the retained counterexamples and the absence of a
+   construction that binds payout to burn finality without native source disclosure.

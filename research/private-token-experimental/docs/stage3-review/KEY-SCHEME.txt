@@ -1,0 +1,78 @@
+XMR20 PRIVATE TOKEN KEY DERIVATION AND RECOVERY — SCHEME "XMR20-TKD1"
+22 October 2026. Candidate research/privacy-holder-20261022. UNREVIEWED; synthetic test only.
+
+Purpose
+-------
+One recovery phrase (the wallet's existing 25-word Monero phrase) must recover the
+private token wallet on a fresh install, while token keys stay separate from the
+native Monero ownership keys and no public relationship between a native output
+and a token address exists.
+
+Inputs
+------
+root      32 bytes: the account's Monero private spend key. The 25-word phrase
+          encodes exactly these bytes (24 data words + checksum), so the phrase is
+          the complete recovery material. The holder worker obtains root from the
+          phrase through the shipping monero-ts build (create_full_wallet ->
+          get_private_spend_key), the same path the extension already uses for
+          native scanning; the phrase is wiped from the worker afterwards.
+account   u32 index, 0 in this candidate.
+
+Derivation (holder-wasm/src/lib.rs, derive_token_spend_key)
+-------------------------------------------------------------
+tsk = BLAKE2b(hash_length = 32,
+              key      = root,
+              personal = "XMR20-TKD1",
+              message  = "xmr20/private-token/spend-key" || LE32(account))
+SpendKey  = penumbra_sdk_keys::keys::SpendKey::from(SpendKeyBytes(tsk))
+FullViewingKey, IncomingViewingKey, nullifier key, payment address (index 0):
+          the unchanged Penumbra key schedule (penumbra-sdk-keys 2.1.1).
+Token address = fvk.payment_address(0) (bech32m "penumbra1…").
+Viewing key   = fvk (bech32m "penumbrafullviewingkey1…"), exported only on the
+                explicit share action.
+
+Properties
+----------
+- Keyed BLAKE2b with a 32-byte key is a PRF: without root, tsk is unpredictable;
+  the derivation is one-way (tsk reveals nothing about root).
+- Separation: tsk != root; the native keys (spend = root, view = Hs(root)) and the
+  token keys are related only through the secret root. No public value (token
+  address, viewing key, records, native outputs, key images) links them.
+- No publicly verifiable native-output relationship is introduced: token
+  addresses are not derived from, and do not commit to, native addresses or
+  outputs. Legacy migration binds a token address to a legacy output only inside
+  the claim the holder chooses to sign (unchanged from the integration lab).
+- Whoever holds the Monero spend key can derive the token key. This is inherent
+  to single-phrase recovery and is the intended recovery property.
+- Versioning: the personalization string carries the scheme version. A future
+  scheme uses a new personalization and a new account-derivation document; wallets
+  must try the scheme recorded with the account (here: implicit v1).
+
+What the phrase recovers (and what it does not)
+-----------------------------------------------
+Recovers: the token spend key, viewing key, address; by local replay of the
+public chain with the public parameters (ledger domain, verifying keys, issuer
+key): every note ever sent to the address, and each note's spent status (its
+nullifier, derived locally, present in the public nullifier set). The
+browser-recovery test proves this with a fresh profile and no copied database.
+Does NOT recover: in-flight operations that were proved but not yet published
+(the encrypted journal on the original install holds them), local reservations,
+and the "viewing key shared" indicator (a bridge-side fact). A record published
+before the interruption is recovered from the chain like any other.
+
+Secret material and lock state
+------------------------------
+While unlocked: the account seed/phrase and Solana secret are in the popup's
+vault object (existing extension design, unchanged); root exists only briefly in
+the holder worker during `open`; tsk, fvk, decrypted notes and proof witnesses
+exist only in the worker's wasm linear memory; the journal AES key is in the
+popup. On lock: the holder worker is terminated (its wasm memory is released),
+the journal key reference is dropped, the vault object is dropped. What remains
+accessible after lock: the password-encrypted vault (chrome.storage.local, as
+before), the password-encrypted operation journal and its salt
+(chrome.storage.local), and the background session state the existing extension
+keeps for its auto-lock window. Memory-erasure limits: JavaScript strings
+(phrase, password) and CryptoKey material cannot be zeroed deterministically;
+wasm memory is zeroized for root and the spend key bytes we control but not for
+every intermediate the Penumbra/arkworks code allocates; terminating the worker
+frees but does not scrub the memory. No constant-time claim is made.

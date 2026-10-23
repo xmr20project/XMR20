@@ -1,0 +1,118 @@
+PRIVATE XMR20 — STAGE 1: PARAMETER AUTHENTICATION (shipped, versioned hashes)
+23 October 2026. Autonomous session from 15:13Z (runs/start-time.txt). Additive candidate
+research/privacy-params-20261023, copied from research/privacy-holder-20261022 (unchanged; its runs,
+evidence and manifest are preserved). Nothing under the repository's wallet-extension/, website/,
+backend/, NFTs, keys or running services was touched. Synthetic wallets, offline fakechain, LiteSVM,
+disposable Chromium profiles only. NO-GO for real funds (readiness.json) is unchanged. Native XMR
+trading stays gated. No audit, no constant-time claim, no Monero-equivalent privacy claim.
+
+Private-by-default behaviour, holder-only keys and explicit viewing-key sharing are unchanged from
+the holder candidate (the flow and recovery suites were re-run on this build and pass; section D).
+
+================================================================================================
+A. THE GAP AND WHAT CLOSED IT (details: PARAMETERS.txt)
+================================================================================================
+Before: the extension downloaded the 83 MB / 64 MB Groth16 proving keys from the test backend and
+checked only the embedded verifying key against the ledger domain. Query vectors were not
+authenticated; the backend's per-run sha256 was information from the same server, not a trust anchor.
+Now:
+  - params/test-v1/ is ONE fixed, labelled test parameter set ("DISPOSABLE TEST SETUP — NOT
+    PRODUCTION"); the backend serves its files unchanged instead of generating a setup per run.
+  - params/test-v1/manifest.json (format XMR20-PARAMS-1) pins exact byte length + sha256 of
+    normal.public-pk, boundary.public-pk and parameters.json, each proving key's verifying key, the
+    ledger domain, issuer key, chain genesis, network kind, protocol/domain label, key scheme and the
+    record shapes (XM3 996 B 3-in/2-out, XB3 925 B 3-in/1-out).
+      manifest sha256    ae7ba302194ca3e6f85bd045a653f58026a4fcda9141b1ed8a86600f31611e66
+      normal.public-pk   82,675,440 B  8152016c33b1f4bb10da5c2de242b38763bb7461fac3d611dcbee0306326aced
+      boundary.public-pk 64,409,328 B  b9b5c8269adf6377480b4713c8449bc28170eb4b3ad5ed00c08b981886bc6120
+      ledger domain      759e56ff75367217038d9b5f85f6b878bf3212016922bb2a3891ea4fa6726eb8
+  - The manifest ships INSIDE the extension build (vendor/parameters-manifest.json) and its sha256
+    is compiled into the holder worker bundle (__PARAMS_MANIFEST_SHA256__). The worker refuses a
+    manifest whose hash differs from the compiled constant.
+  - wasm engine (`params` op) requires the manifest, validates it (format, protocol label, scheme,
+    compiled record shapes, network, genesis, recomputed domain, consistent verifying keys) and
+    refuses a server configuration that differs in any field ("different ledger or version").
+  - Every parameter file, downloaded or cached, is authenticated over its COMPLETE contents (exact
+    length, then sha256) BEFORE any parsing: once in the loader (holder-params.js) and again inside
+    the engine's set_blob before deserialization. Rejected bytes are never cached; a cached entry
+    that fails is deleted and re-downloaded; an interrupted download is discarded whole.
+  - Order in a send/redeem: select -> reserve -> AUTHENTICATE+LOAD proving key -> prove -> publish.
+    A refused file stops with "Parameters refused: … Nothing was proved or published." and the
+    journal reservation is released.
+Still true: the shipped setup is disposable and single-party; authenticating its distribution does
+not make it production-safe. The separate production work (circuit freeze, MPC ceremony, signed
+provenance, verifier-side manifest checks) is listed in PARAMETERS.txt.
+
+================================================================================================
+B. TESTS (all on the final build; logs in runs/)
+================================================================================================
+Host unit tests (holder-wasm, cargo test --release): 9/9 (runs/host-test.log)
+  - shipped manifest validates; served config must match (other setup refused); no manifest refused;
+    tampered manifest fields refused; genuine boundary file accepted
+  - empty / truncated (1 byte, 50 %) / padded / swapped circuit / FOREIGN setup (same length, hash
+    differs) refused BEFORE parsing with nothing loaded; build refused without a key; genuine accepted
+  - ALTERED QUERY VECTOR (one byte in a_query[5]) with the expected verifying key: deserializes to
+    the SAME vk (the previous check would have accepted it); refused on sha256 before parsing; a proof
+    made with the altered key does NOT verify (demonstrating the class of damage).
+Extension copy unit tests: 561/561 (runs/extension-unit-tests.log)
+Parameter test in Node, real backend + fault injection (holder-params.test.mjs, PASSED, 216 s,
+runs/holder-params-test.log, runs/holder-params-results.json):
+  rejections (8, each: nothing loaded, nothing cached, ParameterRejected before use)
+    missing (404) · truncated 90 % (74,407,896 B received) · interrupted at 40 % (33,070,176 B) ·
+    corrupted query byte at offset 41,337,720 (sha256 e3c91f16…) · foreign setup (1e3cb9d4…) ·
+    swapped circuit in slot 0 and slot 1 · corrupted boundary key
+  served parameters.json: foreign / truncated / missing refused ("another version or ledger")
+  cache: bit-flipped entry, foreign file under the right key, truncated entry -> each detected on
+    read (reason sha256 / sha256 / length), deleted, re-downloaded; cache repaired with the
+    authenticated file
+  restart: new engine + intact cache loads in 1,191 ms with the server returning 404
+  interrupted download leaves nothing behind; retry downloads 64 MB and caches it
+  a backend serving the OTHER setup is refused end to end (config and file)
+  genuine authenticated transfer proof: 29,703 ms; 1-input send published and confirmed
+  authenticated load from download: 1,265 ms (83 MB hash in the loader + hash in the engine)
+Engine test (holder-engine.test.mjs, PASSED, 304 s): unchanged flows on authenticated parameters
+  proving 1-input 29.8 s, 3-input 30.1 s, redemption 23.0 s; second engine loads the transfer key
+  from the shared cache (source: cache); recovery reproduces 2 unspent / 4 spent; viewing-only engine
+  cannot spend; engine memory 398 MB after both keys.
+
+================================================================================================
+C. BROWSER RUNS (real popup, disposable profiles; evidence/verified-*/)
+================================================================================================
+browser-params.test.mjs  PASSED 210 s  evidence/verified-params-2026-10-23T15-32-23 (9 shots)
+  124 requests (34 backend, 59 daemon), 0 external, 0 secret leaks.
+  - detail view shows the shipped manifest label + pinned hash ("authenticated against the manifest
+    shipped in this build")
+  - REFUSED visibly, no reservation left, zero relay requests, no proving key loaded:
+    corrupted query vector / truncated / missing / interrupted download
+  - genuine parameters authenticated and used; send published (source: download)
+  - IndexedDB cache entry corrupted from the popup origin, lock/unlock -> "cache-rejected sha256",
+    re-downloaded, send succeeded
+  - lock/unlock with the server unable to serve -> loaded from the verified cache (source: cache)
+  - server serving another ledger's parameters.json -> row-level refusal "Served parameters.json
+    rejected … another version or ledger"; cleared -> recovers
+browser.test.mjs         PASSED 403 s  evidence/verified-browser-2026-10-23T15-43-23 (24 shots)
+  304 requests (75 backend, 181 daemon), 0 external, 0 leaks. Full flow unchanged: deposit ->
+  automatic private credit -> send with change -> migration -> redemption -> payout once ->
+  viewing-key share -> fragmentation/consolidation -> 320x440 -> lock/reopen.
+browser-recovery.test.mjs PASSED 350 s evidence/verified-recovery-2026-10-23T15-50-08 (12 shots)
+  333 requests (72 backend, 193 daemon), 0 external, 0 leaks. Fresh profile B restores the same
+  address/balance/notes/spent status from the phrase + shipped parameters + public chain and spends.
+
+================================================================================================
+D. FAILURES DURING THE SESSION (fixed) AND REMAINING BLOCKERS
+================================================================================================
+Fixed: a wrong test assertion (the engine accepts any internally valid manifest; pinning is the
+host's job and the worker does it: documented); stale keep-alive sockets in the same-process Node
+tests (all loader fetches now `connection: close`); borrow/Debug compile errors.
+Unresolved / not claimed:
+  - The parameters are a disposable single-party setup; soundness/zero-knowledge against the party
+    who ran it is not claimed. Production needs an MPC ceremony and reviewed circuits.
+  - The manifest is only as trustworthy as the build; a modified bundle can ship a modified
+    manifest. The wasm itself does not pin the manifest (the host does).
+  - Verifier-side roles (indexer/issuer/operator) still load parameters from disk with point
+    validation but without a manifest check.
+  - Bridge finality / rollback-loss counterexample unchanged (research/privacy-extension-20261022/
+    ERRATUM-exposure-window.txt): window cap is a payout-rate control, 400 exposed under a 200 cap.
+  - No security review; proving ≈30 s single-threaded; 147 MB of parameters per install; relay-paid
+    carriers (addressed in stage 2, research/privacy-carrier-20261023).
+Processes: none left running (all stopped by the tests). runs/backend-*/ hold fakechain data.

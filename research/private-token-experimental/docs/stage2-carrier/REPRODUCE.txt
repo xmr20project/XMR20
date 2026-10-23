@@ -1,0 +1,46 @@
+REPRODUCTION — research/privacy-carrier-20261023 (stage 2: holder-funded Monero carriers; synthetic, offline, isolated)
+Nothing here touches the installed extension, the website, the bridge, the backend, NFTs, real keys
+or funds. All processes are started by the tests and stopped by them. No relay exists in this build.
+
+Prerequisites (already present on this machine)
+- Rust stable (rustup) with the wasm32-unknown-unknown target; no wasm-bindgen needed. The holder
+  crate now also compiles the locally vendored monero-wallet (monero-oxide 0.2.0,
+  proof-of-concepts/native-market-local/vendor/monero-wallet) to wasm.
+- Built integration lab binary (issuer/indexer roles only): research/privacy-integration-20261022/target/release/xmr20-integration-lab
+- Offline monerod: operations/native-market-20261016/local-chain/bin/monerod
+- Playwright 1.56.1 + bundled Chromium in wallet-cli/node_modules (headless, disposable profiles).
+- Parameter set params/test-v1 (+ test-other) copied from stage 1 with its manifest (same hashes).
+- Loopback ports: 8940 / 30041 / 30040 (browser tests); 8944 / 30065 / 30064 (Node carrier test);
+  8942 / 30061 (engine test, stage 1 version); 8943 / 30063 (parameter test).
+
+1. Build the holder wasm engine (now with the native carrier module)
+   cd research/privacy-carrier-20261023/holder-wasm
+   PATH=$HOME/.cargo/bin:$PATH cargo build --offline --release --target wasm32-unknown-unknown
+   PATH=$HOME/.cargo/bin:$PATH cargo test --offline --release      # 9 host tests (stage-1 parameter tests)
+   Output: target/wasm32-unknown-unknown/release/xmr20_holder_wasm.wasm (≈5.0 MB; sha256 in MANIFEST.sha256)
+
+2. Build the isolated test extension
+   cd research/privacy-carrier-20261023/wallet-extension
+   XMR20_PRIVATE_HOLDER_TEST=local node build.mjs      # -> extension-private-holder-test/
+   npm test                                              # existing unit tests, 561
+   cd .. && node --test private-journal.test.mjs         # journal (1)
+
+3. Holder-funded carriers without a browser (two engines, real daemon; ≈8 min)
+   cd research/privacy-carrier-20261023
+   node --test holder-carrier.test.mjs                   # writes runs/holder-carrier-results.json
+   (1/2/3-input transfers with exact change and exact XMR fee accounting, no-XMR / locked-XMR refusals,
+    cancellation, tampered record -> no carrier, three broadcasts -> one fee, two engines of one holder ->
+    distinct inputs, restart replay, redemption carrier, backend audit for key images)
+
+4. Real browser flows (each starts its own backend + daemon; sequential)
+   node --test browser-carrier.test.mjs         # fee review before proving, approve/cancel, 1/2/3 inputs,
+                                                # no/locked XMR, lost broadcast reply, restart with a signed
+                                                # carrier, two popups, 320x440 review, redemption, audit
+   node --test browser.test.mjs                 # full flow on holder-funded carriers
+   node --test browser-recovery.test.mjs        # fresh-profile restore incl. native outputs, then spend
+   node --test browser-params.test.mjs          # stage-1 parameter refusals (unchanged code path)
+   Evidence: evidence/verified-*/ (screenshots, steps.json, network-audit.json). The backend audit log
+   runs/backend-*/requests.log never contains a key image or carrier.
+
+Processes: the tests stop the daemon, indexer and issuer they started. If a test is killed, stop only
+those: `pgrep -fl "xmr20-integration-lab|monerod.*privacy-carrier"`.
