@@ -20,7 +20,7 @@ const nonce=()=>Array.from(crypto.getRandomValues(new Uint8Array(32)),b=>b.toStr
 export function createNativeConversionPage({client,account,signCustody,assertCurrent,token={symbol:'XMR20'},setup=false,savedOnly=false,initialSource='deposit',onComplete,
  bridge=createOperatorCustodyClient({configuration:NATIVE_MARKET_CONFIGURATION,assertCurrent}),
  api=createNativeSendClient({operation:'credit',assertCurrent}),readBalance=createConversionBalanceReader({assertCurrent}),container=document.body,onClose=()=>window.close(),setupStore,setupManifest=NATIVE_MARKET_CONFIGURATION?.manifestId,onSwitch,
- resumeFrom='Activity → Finish Monero setup'}){
+ resumeFrom='Activity → Finish Monero setup',onBridgeState}){
  // Where a saved bridge is resumed differs between the extension and the website.
  const resumePath=String(resumeFrom).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
  const symbol=String(token.symbol||'XMR20').replace(/^\$/,'');
@@ -30,7 +30,7 @@ export function createNativeConversionPage({client,account,signCustody,assertCur
  container.replaceChildren(root);root.querySelector('[data-close]').onclick=onClose;
  const content=root.querySelector('.native-send-content'),message=root.querySelector('.native-send-message'),error=root.querySelector('.native-send-error');
  const layout=createNativePageLayout(root,client);
- let closed=false,busy=false,timer,nativeTerminal=false,saved=[],finished=new Set(),tokenImage,prepared,plan,custody,review,assembled,signAttempted=false,refundPlan,refund,quotePreview,autoComplete=null,completed=false,draftAmount='';
+ let closed=false,busy=false,timer,nativeTerminal=false,saved=[],finished=new Set(),tokenImage,prepared,plan,custody,review,assembled,signAttempted=false,refundPlan,refund,quotePreview,autoComplete=null,completed=false,draftAmount='',timing={},builtNote='';
  const current=()=>{if(closed)throw Error('Bridge window closed.');assertCurrent();};
  const text=(selector,value)=>{content.querySelector(selector).textContent=value;};
  async function run(fn){
@@ -49,6 +49,7 @@ export function createNativeConversionPage({client,account,signCustody,assertCur
  async function fundingReady(){
   const funding=await client.feeFundingStatus();current();
   if(funding?.address!==account.monero||typeof funding.ready!=='boolean')throw Error('The fee balance did not match this Monero wallet. Nothing was signed.');
+  if(!funding.ready&&funding.reason==='reserved'){saved=await client.operatorCreditPreparations();current();if(reservedTransfers(funding))return false;}
   return !showNativeFundingSetup({funding,account,layout,content,message,retry:()=>void run(recheckFunding)});
  }
  async function recheckFunding(){await sync();if(await fundingReady())await form();}
@@ -59,22 +60,74 @@ export function createNativeConversionPage({client,account,signCustody,assertCur
   for(const row of saved){
    const button=document.createElement('button');button.type='button';button.className='native-secondary';
    const done=finished.has(row.preparationId);
-   button.textContent=compactTokenBalance(row.quote.net)+' '+symbol+(row.completion?' · Refunded':done?' · Complete':' · Resume');button.title=exact(row.quote.net)+' '+symbol;
+   button.textContent=compactTokenBalance(row.quote.net)+' '+symbol+(row.completion?(row.completion.evidence?.status==='cancelled'?' · Cancelled':' · Refunded'):done?' · Complete':' · Resume');button.title=exact(row.quote.net)+' '+symbol;
    button.disabled=Boolean(row.completion)||done;if(button.disabled)button.dataset.disabled='true';
-   button.onclick=()=>run(async()=>{
-    prepared=await client.recoverOperatorCreditPreparation({preparationId:row.preparationId});plan=prepared.plan;
-    root.querySelector('h1').textContent=plan.request.kind==='migrate-output'?'Finish Monero setup':'Bridge to Monero';
-    const recover=()=>client.recoverPreparedCarrier({preparationId:row.preparationId,kind:'issuance'});
-    let prior;try{prior=await recover();}catch(e){
-     if(e.message!=='Sync native history before carrier reassembly')throw e;
-     await sync();prior=await recover();
-    }
-    if(prior.state==='signed'){assembled=prior;progress();await checkNative();startChecks(checkNative);return;}
-    if(prior.state==='signing-unknown'){recoveryOptions();throw Error('A signing attempt was interrupted. Keep this wallet’s encrypted recovery file; do not create another bridge for these funds.');}
-    await sync();
-    custody=await bridge.prepare(plan);await showCustody();
-   });list.append(button);
+   button.onclick=()=>run(()=>resume(row));list.append(button);
   }layout.append(list);
+ }
+ async function resume(row){
+  prepared=await client.recoverOperatorCreditPreparation({preparationId:row.preparationId});plan=prepared.plan;
+  root.querySelector('h1').textContent=plan.request.kind==='migrate-output'?'Finish Monero setup':'Bridge to Monero';
+  const recover=()=>client.recoverPreparedCarrier({preparationId:row.preparationId,kind:'issuance'});
+  let prior;try{prior=await recover();}catch(e){
+   if(e.message!=='Sync native history before carrier reassembly')throw e;
+   await sync();prior=await recover();
+  }
+  if(prior.state==='signed'){assembled=prior;progress();await checkNative();startChecks(checkNative);return;}
+  if(prior.state==='signing-unknown'){recoveryOptions();throw Error('A signing attempt was interrupted. Keep this wallet’s encrypted recovery file; do not create another bridge for these funds.');}
+  await sync();
+  custody=await bridge.prepare(plan);await showCustody();
+ }
+ // XMR reserved by a bridge this wallet started but never signed on Monero: show that
+ // exact transfer so it can be continued instead of a generic "reserved" notice.
+ function reservedTransfers(funding){
+  const rows=saved.filter(row=>!row.completion&&!finished.has(row.preparationId)&&row.claims?.issuance===row.preparationId);
+  if(!rows.length)return false;
+  root.querySelector('h1').textContent='Bridge to Monero';
+  const height=Number(funding.height),grouped=v=>{const [whole,fraction]=exact(v).split('.');return whole.replace(/\B(?=(\d{3})+(?!\d))/g,',')+(fraction?'.'+fraction:'');};
+  layout.render('<h2 class="native-funding-title">Finish your saved bridge</h2><p class="native-send-help">Your XMR fee is reserved for a bridge you already started. Continue it to send these tokens to Monero, or cancel it to start a new one.</p><div class="native-reserved-list" data-reserved></div>');
+  const list=content.querySelector('[data-reserved]');
+  for(const row of rows){
+   const card=document.createElement('div');card.className='native-reserved-transfer';
+   card.innerHTML='<div class="native-reserved-head"><span class="native-token-mark native-reserved-mark"></span><div><p class="native-reserved-amount"></p><p class="native-reserved-route"></p></div></div><dl class="native-send-costs"><div><dt>You receive on Monero</dt><dd data-net></dd></div><div><dt>Status</dt><dd data-status></dd></div></dl><div class="native-send-actions"><button type="button" class="native-secondary" data-cancel-saved>Cancel bridge</button><button type="button" class="native-primary" data-continue>Continue</button></div>';
+   const mark=card.querySelector('.native-reserved-mark');
+   if(tokenImage){const img=document.createElement('img');img.src=tokenImage;img.alt='';mark.replaceChildren(img);}else mark.textContent=symbol.slice(0,1);
+   card.querySelector('.native-reserved-amount').textContent=grouped(row.quote.gross)+' '+symbol;
+   card.querySelector('.native-reserved-route').textContent='Solana → Monero · '+(account.monero?account.monero.slice(0,6)+'…'+account.monero.slice(-6):'this Monero wallet');
+   card.querySelector('[data-net]').textContent=grouped(row.quote.net)+' '+symbol;
+   const left=Number(row.quote.creationDeadline)-20-height,button=card.querySelector('[data-continue]');
+   const expired=Number.isSafeInteger(left)&&row.quote.creationDeadline&&left<=0;
+   card.querySelector('[data-status]').textContent=expired?'Expired before Solana approval':'Waiting for your Solana approval'+(Number.isSafeInteger(left)&&row.quote.creationDeadline?' · about '+Math.max(1,Math.round(left*2/60))+' h left':'');
+   if(expired){button.disabled=true;button.dataset.disabled='true';button.textContent='Expired';}
+   else button.onclick=()=>run(()=>resume(row));
+   card.querySelector('[data-cancel-saved]').onclick=()=>confirmCancel(card,row);
+   list.append(card);
+  }
+  message.textContent='';return true;
+ }
+ // Cancel needs one confirmation; the wallet then proves the Solana deposit never
+ // happened and can no longer happen before it frees the reserved XMR.
+ function confirmCancel(card,row){
+  const actions=card.querySelector('.native-send-actions');
+  actions.innerHTML='<button type="button" class="native-secondary" data-keep>Keep it</button><button type="button" class="native-primary" data-confirm-cancel>Yes, cancel</button>';
+  const note=document.createElement('p');note.className='native-send-help';note.dataset.cancelNote='';
+  note.textContent='Cancel this bridge? Your '+symbol+' stays in your Solana wallet and the reserved XMR is freed. Checking Solana takes about 2 minutes.';
+  actions.before(note);
+  actions.querySelector('[data-keep]').onclick=()=>void run(async()=>{if(await fundingReady())await form();});
+  actions.querySelector('[data-confirm-cancel]').onclick=()=>run(()=>cancelSaved(row));
+ }
+ async function cancelSaved(row){
+  message.textContent='Checking your saved bridge…';
+  const recovered=await client.recoverOperatorCreditPreparation({preparationId:row.preparationId});current();
+  // The service's view only gives a clearer message; the wallet checks Solana itself.
+  const status=await bridge.status(recovered.plan).catch(()=>null);current();
+  if(status?.status==='finalized')throw Error('Your deposit already reached Solana, so this bridge can’t be cancelled. Press Continue to receive your tokens on Monero.');
+  await sync();current();
+  message.textContent='Making sure your Solana approval can no longer go through…';layout.setWaiting(true);
+  try{await client.cancelOperatorCreditPreparation({preparationId:row.preparationId});current();}finally{layout.setWaiting(false);}
+  saved=await client.operatorCreditPreparations();current();
+  if(await fundingReady())await form();
+  message.textContent='Bridge cancelled. Your reserved XMR is free and your '+symbol+' stayed on Solana.';
  }
  async function form(){
   message.textContent='';
@@ -137,7 +190,7 @@ export function createNativeConversionPage({client,account,signCustody,assertCur
   if(prepared.quote.creationDeadline){const checkpoint=await sync();if(Number(checkpoint.height)+20>=prepared.quote.creationDeadline)throw Error('This bridge preparation expired. Reopen its saved receipt before approving again.');}
   message.textContent='Submitting your bridge approval…';
   const signed=await signCustody({plan,proposal:custody.proposal});current();
-  custodyProgress();custody=await bridge.approve(plan,signed.transaction);current();await showCustody();
+  custodyProgress();custody=await bridge.approve(plan,signed.transaction);current();report({stage:'solana'});await showCustody();
  }
  async function showCustody(){
   current();clearInterval(timer);
@@ -152,23 +205,42 @@ export function createNativeConversionPage({client,account,signCustody,assertCur
   content.querySelector('[data-cancel]').onclick=onClose;
   content.querySelector('[data-approve]').onclick=()=>run(async()=>{autoComplete={planId:plan.id,maximumFee:prepared.quote.nativeFee};await approveCustody();});
  }
+ // One tracker from Solana approval to Monero confirmations, so a long in-browser build
+ // or a pending publish is visible before the explorer link exists.
+ const STEPS=[['Solana deposit','Waiting for Solana to confirm your deposit…','Confirmed on Solana'],
+  ['Monero transaction','Building and signing it in this browser. This can take 1–2 minutes; keep this tab open.','Built and signed'],
+  ['Send to Monero','Sending it to the Monero network…','Accepted by the Monero network'],
+  ['Monero confirmations','Waiting for 10 confirmations, about 20 minutes.','Confirmed']];
+ const steps=(active,detail)=>'<ol class="native-bridge-steps">'+STEPS.map(([title,doing,done],i)=>'<li class="'+(i<active?'done':i===active?'active':'pending')+'"'+(i===active?' aria-current="step"':'')+'><span class="native-step-mark" aria-hidden="true">'+(i<active?'✓':i+1)+'</span><div><strong>'+title+'</strong>'+(i<=active?'<span>'+(i<active?done+(i===1?builtNote:''):detail||doing)+'</span>':'')+'</div></li>').join('')+'</ol>';
+ // Display-only progress for the host wallet's pending row; never affects the bridge.
+ const report=update=>{try{if(prepared?.preparationId&&plan?.record?.amount)onBridgeState?.({preparationId:prepared.preparationId,amountRaw:plan.record.amount,...update});}catch{}};
+ const setSteps=(active,detail)=>{const list=content.querySelector('.native-bridge-steps');if(list)list.outerHTML=steps(active,detail);};
+ // How long each part of the Monero step took, shown once it is built, so slow parts can be found.
+ async function timed(name,work){const start=Date.now();try{return await work();}finally{timing[name]=Date.now()-start;}}
+ const span=ms=>{const s=Math.max(1,Math.round(ms/1000));return s<60?s+' s':Math.floor(s/60)+' min '+s%60+' s';};
+ const timingNote=t=>[t.service,t.catchUp,t.build,t.sign].every(Number.isFinite)?' in '+span(Math.max(t.service,t.catchUp)+t.build+t.sign)+
+  ' (bridge service '+span(t.service)+' · wallet catch-up '+span(t.catchUp)+' · building '+span(t.build)+' · signing '+span(t.sign)+')':'';
  function custodyProgress(){
   message.textContent='Waiting for Solana to confirm your approval.';layout.setWaiting(true);
-  layout.render('<p class="native-send-help">This one-time conversion enables Monero sends and trades; later transfers need only your Monero wallet.</p><p class="native-send-help">Your approval is saved. Keep this wallet open, or resume from '+resumePath+' later.</p><div class="native-send-actions"><button class="native-secondary" data-check type="button">Check status</button><button class="native-primary" data-resume type="button" aria-label="Resume saved bridge">Resume</button></div>');
+  layout.render(steps(0)+'<p class="native-send-help">Your approval is saved. Keep this wallet open, or resume from '+resumePath+' later.</p><div class="native-send-actions"><button class="native-secondary" data-check type="button">Check status</button><button class="native-primary" data-resume type="button" aria-label="Resume saved bridge">Resume</button></div>');
   content.querySelector('[data-check]').onclick=()=>run(checkCustody);
   content.querySelector('[data-resume]').onclick=()=>run(async()=>{custody=await bridge.prepare(plan);if(!custody.proposal&&custody.status!=='finalized')custody=await bridge.retry(plan);await showCustody();});
  }
  async function checkCustody(){custody=await bridge.status(plan);current();if(custody.status==='finalized'){clearInterval(timer);await nativeReview();}else if(['failed','expired'].includes(custody.status)){clearInterval(timer);layout.setWaiting(false);message.textContent='This Solana attempt expired or failed. Resume to review a fresh approval.';}}
  async function nativeReview(){
-  layout.setWaiting(false);message.textContent='Requesting the credit for your saved approval…';
+  // Keep Check status / Resume on screen: a failed build is retried from here.
+  if(!content.querySelector('.native-bridge-steps'))custodyProgress();
+  setSteps(1);report({stage:'building'});layout.setWaiting(false);message.textContent='Requesting the credit for your saved approval…';
   try{
-   const issued=await bridge.issue(plan);current();
    // Custody confirmation/issuance can outlast the signing checkpoint, and a
    // prior verification error closes the worker. Reopen and incrementally
    // refresh before reviewing the same saved preparation; never reserve anew.
-   await sync();current();
+   // The service request and the wallet catch-up are independent, so they run
+   // together; both settle before any failure is shown, so the wallet is idle.
+   timing={};const [issued,synced]=await Promise.allSettled([timed('service',()=>bridge.issue(plan)),timed('catchUp',sync)]);current();
+   for(const outcome of [issued,synced])if(outcome.status==='rejected')throw outcome.reason;
    message.textContent='Checking your saved approval and preparing the Monero record…';
-   review=await client.constructOperatorIssuedCredit({preparationId:prepared.preparationId,signature:issued.signature});current();
+   review=await timed('build',()=>client.constructOperatorIssuedCredit({preparationId:prepared.preparationId,signature:issued.value.signature}));current();
   }catch(e){recoveryOptions();throw e;}
   if(autoComplete?.planId===plan.id&&!signAttempted){checkNativeFee(review,autoComplete.maximumFee);await publishCredit();return;}
   layout.render('<p class="native-send-review-amount"></p><p class="native-send-help">Your backing is saved on Solana. Publish the matching Monero record to receive your tokens. After 10 confirmations, you can send and trade using only your Monero wallet.</p><dl class="native-send-costs"><div><dt>Monero network fee</dt><dd></dd></div></dl><div class="native-send-actions"><button class="native-primary" data-publish type="button">Complete bridge</button></div>');
@@ -178,15 +250,15 @@ export function createNativeConversionPage({client,account,signCustody,assertCur
  }
  async function publishCredit(){
   current();if(signAttempted)throw Error('Reopen the saved bridge to recover the previous signing attempt.');
-  signAttempted=true;const signed=await client.signCarrier({reviewHandle:review.handle});current();
-  assembled=await client.assembleCarrier({reviewHandle:review.handle,reservationId:signed.reservationId});current();
-  progress();const result=await api.publish({transaction:assembled.transaction,retry:false});renderNative(result);if(result.confirmed)await completeBridge();startChecks(checkNative);
+  signAttempted=true;const signing=Date.now(),signed=await client.signCarrier({reviewHandle:review.handle});current();
+  assembled=await client.assembleCarrier({reviewHandle:review.handle,reservationId:signed.reservationId});current();timing.sign=Date.now()-signing;
+  builtNote=timingNote(timing);
+  report({stage:'sending',txid:assembled.txid});progress();const result=await api.publish({transaction:assembled.transaction,retry:false});renderNative(result);if(result.confirmed)await completeBridge();startChecks(checkNative);
  }
  function progress(){
   clearInterval(timer);nativeTerminal=false;layout.setWaiting(true);message.textContent='Publishing your saved Monero record…';
-  layout.render('<p class="native-send-review-amount"></p><dl class="native-send-costs"><div><dt>Monero confirmations</dt><dd>—</dd></div></dl><a class="native-send-explorer" target="_blank" rel="noopener noreferrer">View Monero transaction ↗</a><p class="native-send-help">The exact signed transaction is saved. You can close this window and resume it from '+resumePath+'.</p><div class="native-send-actions"><button class="native-secondary" data-check type="button">Check status</button><button class="native-primary" data-retry type="button" hidden>Publish</button></div>');
+  layout.render(steps(2)+'<p class="native-send-review-amount"></p><dl class="native-send-costs" hidden><div><dt>Monero confirmations</dt><dd>—</dd></div></dl><p class="native-send-help">The exact signed transaction is saved. You can close this window and resume it from '+resumePath+'.</p><div class="native-send-actions"><button class="native-secondary" data-check type="button">Check status</button><button class="native-primary" data-retry type="button" hidden>Publish</button></div>');
   text('.native-send-review-amount',exact(plan.record.amount)+' '+symbol);
-  content.querySelector('a').href='https://xmrchain.net/tx/'+assembled.txid;
   content.querySelector('[data-check]').onclick=()=>run(checkNative);
   recoveryOptions();
  }
@@ -194,6 +266,12 @@ export function createNativeConversionPage({client,account,signCustody,assertCur
 	  const tracked=['accepted','mempool','confirming','confirmed','rejected'].includes(value.status);
 	  const retryableStage=value.failureStage===undefined||/^(?:peer-admission|state-changed|validate-peer-[01]-(?:transport|rejected)|relay-peer-0-(?:transport|rejected))$/.test(value.failureStage);
 	  const fixedRejection=value.status==='submission-unknown'&&!retryableStage;
+	  const accepted=['accepted','mempool','confirming','confirmed'].includes(value.status);
+	  if(assembled?.txid)report({stage:value.confirmed?'confirmed':value.status==='rejected'?'rejected':accepted?'confirming':'sending',txid:assembled.txid,...(accepted&&Number.isSafeInteger(value.confirmations)?{confirmations:value.confirmations,required:value.requiredConfirmations}:{})});
+	  setSteps(value.confirmed?4:accepted?3:2,accepted&&!value.confirmed&&value.confirmations!==undefined?Math.min(value.confirmations,value.requiredConfirmations)+' of '+value.requiredConfirmations+' confirmations · about '+Math.max(2,2*(value.requiredConfirmations-value.confirmations))+' min left':undefined);
+	  // The explorer link appears on the "Send to Monero" step once a node has the transaction.
+	  const sent=content.querySelector('.native-bridge-steps li:nth-child(3)>div>span');
+	  if(tracked&&sent&&assembled?.txid){const link=document.createElement('a');link.className='native-send-explorer';link.href='https://xmrchain.net/tx/'+assembled.txid;link.target='_blank';link.rel='noopener noreferrer';link.textContent='View on xmrchain ↗';sent.append(' · ',link);}
 	  text('dd',tracked&&value.confirmations!==undefined?Math.min(value.confirmations,value.requiredConfirmations)+' / '+value.requiredConfirmations:'Not seen');
 	  message.textContent=value.confirmed?'Bridge complete. Your tokens are available on Monero.':value.status==='rejected'?'The Monero transaction was mined, but its token credit was not accepted. Check recovery below.':value.status==='not-found'?'Your signed credit is saved. Publish it to continue.':fixedRejection?'The saved transaction was not accepted by the Monero node. Keep this receipt and check recovery below.':value.status==='submission-unknown'?'The last publish could not be verified. Retry the same saved transaction.':value.status==='unavailable'?'Monero status is temporarily unavailable. Your signed transaction is saved; check again before retrying.':'Waiting for '+value.requiredConfirmations+' Monero confirmations. Each new block moves this forward.';
 	  layout.setWaiting(!value.confirmed&&['accepted','mempool','confirming'].includes(value.status));
@@ -251,7 +329,7 @@ export function createNativeConversionPage({client,account,signCustody,assertCur
  function startChecks(fn){clearInterval(timer);if(fn===checkNative&&nativeTerminal)return;timer=setInterval(()=>{if(!document.hidden)void run(fn);},5000);}
  return Object.freeze({
   async open(){if(savedOnly)root.querySelector('h1').textContent='Finish Monero setup';await run(async()=>{if(!account.solana||typeof signCustody!=='function')throw Error('Bridge entry needs the Solana holder. Monero sends and trades do not.');await client.unlock();saved=await client.operatorCreditPreparations();finished=await finishedSetups({manifest:setupManifest,rows:saved,store:setupStore});current();if(savedOnly){root.querySelector('h1').textContent='Finish Monero setup';message.textContent='';layout.render('<p class="native-send-help">'+(saved.length?'Choose your saved entry to finish moving the tokens to Monero. They may not appear in your balance until this finishes.':'No saved setup was found for this wallet on this device. Select the wallet you used when enabling Monero sends.')+'</p>');recoveryList();return;}await form();});},
-  setTokenImage(image){if(closed||typeof image!=='string'||!/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(image)||image.length>700000)return;tokenImage=image;setPanelImage(content,image);const img=document.createElement('img');img.src=image;img.alt='';root.querySelector('.native-token-mark').replaceChildren(img);},
+  setTokenImage(image){if(closed||typeof image!=='string'||!/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(image)||image.length>700000)return;tokenImage=image;setPanelImage(content,image);const img=document.createElement('img');img.src=image;img.alt='';root.querySelector('.native-token-mark').replaceChildren(img);for(const mark of root.querySelectorAll('.native-reserved-mark'))mark.replaceChildren(img.cloneNode());},
   close(){closed=true;autoComplete=null;quotePreview?.close();clearInterval(timer);layout.close();}
  });
 }
