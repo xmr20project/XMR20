@@ -18,3 +18,5 @@ extension-joint-review/
 extension-transferable-review/
 extension-transferable-private-test/
 extension-native/
+website-wallet/dist/
+website-wallet/test-output/
