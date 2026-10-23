@@ -1,0 +1,28 @@
+import React,{useEffect,useRef,useState} from 'react';
+import {localMoneroBackup} from './monero-local-backup.js';
+import {MONERO_NODES,nativeRestoreHeight,createNativeBalanceClient} from './native-wallet-client.js';
+const amount=s=>{const n=BigInt(s);return `${n/1000000000000n}.${String(n%1000000000000n).padStart(12,'0')}`.replace(/\.?0+$/,'')||'0';};
+export default function NativeBalance({owner,address,workerPath='/monero-native/balance.worker.js'}){
+ const [node,setNode]=useState(MONERO_NODES[0].url),[seed,setSeed]=useState(''),[password,setPassword]=useState(''),[height,setHeight]=useState(()=>String(nativeRestoreHeight(address))),[balance,setBalance]=useState(null),[opened,setOpened]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState(''),[progress,setProgress]=useState(null),[form,setForm]=useState(false);
+ const client=useRef(null),revision=useRef(0),context={owner,network:'mainnet',address};
+ let backedUp=false;try{backedUp=localMoneroBackup().has(context);}catch{}
+ const [useBackup,setUseBackup]=useState(backedUp);
+ function lock(){revision.current++;client.current?.dispose();client.current=null;setSeed('');setPassword('');setOpened(false);setBusy(false);setBalance(null);setProgress(null);}
+ useEffect(()=>()=>{revision.current++;client.current?.dispose();},[owner,address]);
+ useEffect(()=>{let timer;const hide=()=>{clearTimeout(timer);if(document.hidden)timer=setTimeout(lock,300000);};document.addEventListener('visibilitychange',hide);return()=>{clearTimeout(timer);document.removeEventListener('visibilitychange',hide);};},[]);
+ async function sync(){if(busy||!client.current)return;const current=revision.current;setBusy(true);setError('');setBalance(null);setProgress({phase:'syncing'});try{const b=await client.current.sync(node);if(current===revision.current){setBalance(b);setProgress(null);}}catch(e){if(current===revision.current)setError(e.message);}finally{if(current===revision.current)setBusy(false);}}
+ async function unlock(){if(busy)return;const current=++revision.current;setBusy(true);setError('');setBalance(null);try{
+  if(!/^\d+$/.test(height)||!Number.isSafeInteger(Number(height)))throw Error('Enter a valid restore height.');
+  let phrase=useBackup?await localMoneroBackup().load(context,password):seed.trim();if(current!==revision.current){phrase='';return;}setSeed('');setPassword('');
+  client.current?.dispose();client.current=createNativeBalanceClient({workerFactory:()=>new Worker(workerPath),onProgress:p=>{if(current===revision.current)setProgress(p);}});
+  const opening=client.current.open({seed:phrase,address,restoreHeight:Number(height),node});phrase='';await opening;
+  if(current!==revision.current)return;setOpened(true);setForm(false);setProgress({phase:'syncing'});
+  const b=await client.current.sync(node);if(current===revision.current){setBalance(b);setProgress(null);}
+ }catch(e){if(current===revision.current)setError(e.message);}finally{if(current===revision.current)setBusy(false);}}
+ return <section className="native-wallet" aria-label="Native Monero balance"><strong>{balance?`${amount(balance.balanceRaw)} XMR`:busy?'Syncing XMR…':opened?'Balance unavailable':'Sync XMR wallet to view balance'}</strong>{balance&&<small>{amount(balance.unlockedRaw)} XMR unlocked · {new Date(balance.updatedAt).toLocaleTimeString()}</small>}
+ <details className="monero-connection"><summary>Connection settings</summary><label>Remote node<select disabled={busy} value={node} onChange={e=>{setNode(e.target.value);setBalance(null);}}>{MONERO_NODES.map(n=><option value={n.url} key={n.url}>{n.name}</option>)}</select></label></details>
+ {progress&&<p role="status" className="small">{progress.height?`Scanning block ${progress.height.toLocaleString()} of ${progress.target.toLocaleString()}`:'Checking wallet history… The first sync can take time.'}</p>}
+ {!opened&&!form&&<button onClick={()=>setForm(true)}>Sync XMR wallet</button>}
+ {form&&!opened&&<div className="native-unlock">{backedUp&&<label><input type="checkbox" checked={useBackup} disabled={busy} onChange={e=>{setUseBackup(e.target.checked);setSeed('');setPassword('');}}/> Use this device’s encrypted backup</label>}{useBackup?<label>Backup password<input type="password" autoComplete="off" value={password} disabled={busy} onChange={e=>setPassword(e.target.value)}/></label>:<label>Monero recovery phrase<input type="password" autoComplete="off" spellCheck={false} maxLength={400} value={seed} disabled={busy} onChange={e=>setSeed(e.target.value)}/></label>}<p className="small" role="status">{Number(height)>0?`Wallet scan starts at block ${Number(height).toLocaleString()}. Your saved restore height is loaded automatically.`:'No creation height was saved for this wallet. Its full history will be scanned automatically so earlier deposits are included.'}</p><details><summary>Advanced scan settings</summary><label>Restore height<input inputMode="numeric" value={height} disabled={busy} onChange={e=>setHeight(e.target.value)}/></label><p className="small">New wallets save their creation height with a 20-block safety margin. Only change this if you know your original wallet’s restore height; a later block can miss deposits. Use 0 to scan all history.</p></details><p className="small">Neither your phrase nor backup password is stored by this sync session.</p><button disabled={busy||!(useBackup?password:seed)} onClick={unlock}>{busy?'Unlocking & syncing…':'Unlock on this device'}</button></div>}
+ {opened&&<button disabled={busy} onClick={sync}>Refresh XMR</button>}{(opened||busy)&&<button onClick={lock}>Lock wallet</button>}{error&&<p role="alert" className="form-error">{error}</p>}</section>;
+}
