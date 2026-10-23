@@ -1,0 +1,28 @@
+REPRODUCE — research/privacy-stagenet-roles-20261023 (stagenet-aware roles, parameter service, rehearsal harness v2)
+Everything below runs OFFLINE on a regtest fakechain (SIMULATED). Nothing contacts stagenet or mainnet. Ports used:
+8951 (parameter server inside the local rehearsal), 8952/8953 (parameter-server tests), 30081/30080 (rehearsal fakechain),
+30083/30082 (negative-test fakechain). Nothing is deployed; no real funds; bridge payouts and native trading stay gated.
+
+Prerequisites (already present in this workspace; not downloaded by these steps)
+  Rust toolchain with the wasm32-unknown-unknown target (~/.cargo/bin), Node 24, the offline monerod binary at
+  operations/native-market-20261016/local-chain/bin/monerod, the disposable parameter sets params/test-v1,
+  params/test-other and params/stagenet-v0 (147 MB of proving keys each; not published), the lab helper
+  research/privacy-integration-20261022/rpc.mjs (process wrapper only).
+
+1. Build the network-aware lab roles (issuer/indexer/wallet binary):
+     cd research/privacy-stagenet-roles-20261023-lab && PATH=$HOME/.cargo/bin:$PATH cargo build --release --offline
+     -> target/release/xmr20-integration-lab
+2. Build the holder engine (adds the nativeStart / nativeAddress ops):
+     cd research/privacy-stagenet-roles-20261023/holder-wasm && PATH=$HOME/.cargo/bin:$PATH cargo build --offline --release --target wasm32-unknown-unknown
+     -> target/wasm32-unknown-unknown/release/xmr20_holder_wasm.wasm
+3. Run the local integration and negative tests (≈3-6 minutes; the last test is the complete simulated rehearsal):
+     cd research/privacy-stagenet-roles-20261023 && node --test --test-concurrency=1 stagenet-roles.test.mjs
+     Results: runs/stagenet-roles-results.json, runs/rehearsal-local.json (every step with execution mode and fee basis).
+4. Run the simulated rehearsal on its own (same flow, start height 40):
+     node stagenet/rehearsal.mjs --mode local --start-height 40 --out runs/rehearsal-local.json
+5. Serve parameters statically (transport only; clients authenticate against their own manifest):
+     node stagenet/param-server.mjs --dir params/stagenet-v0 --port 8951
+6. The REAL stagenet rehearsal is NOT reproducible from this workspace alone: it needs an owner-controlled synced
+   stagenet node and faucet coins. README-STAGENET.txt lists the exact commands and what would still have to be shown.
+
+Hashes: MANIFEST.sha256 (sha256sum -c MANIFEST.sha256 from the candidate root).

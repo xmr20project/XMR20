@@ -136,6 +136,9 @@ pub struct Protocol {
 pub struct Network {
     pub kind: String,
     pub genesis: String,
+    // Pool start height: records below it are ignored and scanning starts there (0 = from genesis).
+    #[serde(rename = "startHeight", default)]
+    pub start_height: u64,
 }
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Files {
@@ -508,6 +511,20 @@ impl Engine {
                 }
                 self.tip = self.tip.max(height);
                 Ok(json!({"height":height,"records":records,"native":native_stats}))
+            }
+            // Start scanning at the manifest's start height instead of genesis (stagenet rehearsal):
+            // the RingCT output count up to the previous block is taken from the daemon's distribution.
+            "nativeStart" => {
+                let height = q["height"].as_u64().context("height")?;
+                let rct = q["rctOutputs"].as_u64().context("rctOutputs")?;
+                self.native.as_mut().context("No native wallet")?.start_at(height as usize, rct)?;
+                self.tip = self.tip.max(height.saturating_sub(1));
+                Ok(json!({"startHeight":height,"rctOutputs":rct}))
+            }
+            // Native address formatted for the manifest's network (requires `params`; `derive` reports the mainnet format).
+            "nativeAddress" => {
+                let kind = self.params()?.manifest.network.kind.clone();
+                Ok(json!({"network":kind,"nativeAddress":self.native.as_ref().context("No native wallet")?.address_for(&kind)}))
             }
             "nativeStatus" => {
                 let exclude = hexset(&q["exclude"])?;
