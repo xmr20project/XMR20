@@ -1,0 +1,21 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✖ interruptions, lost replies, concurrency through the actual popup (974255.682208ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 976204.518209
+
+✖ failing tests:
+
+test at browser-interruptions.test.mjs:16:1
+✖ interruptions, lost replies, concurrency through the actual popup (974255.682208ms)
+  page.waitForFunction: Timeout 900000ms exceeded.
+      at h.errorText (<workspace>/research/privacy-stagenet-wallet-20261024/browser-harness.mjs:31:52)
+      at TestContext.<anonymous> (<workspace>/research/privacy-stagenet-wallet-20261024/browser-interruptions.test.mjs:37:96) {
+    name: 'TimeoutError'
+  }
+exit 1

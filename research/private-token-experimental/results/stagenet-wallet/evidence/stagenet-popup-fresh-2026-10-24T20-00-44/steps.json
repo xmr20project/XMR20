@@ -1,0 +1,29 @@
+[
+ {
+  "at": "2026-10-24T20:00:45.137Z",
+  "step": "extension loaded",
+  "id": "blimjfnfilgalllddpdlcpnikkfagfhd",
+  "profile": "stagenet-fresh"
+ },
+ {
+  "at": "2026-10-24T20:00:49.165Z",
+  "step": "account imported; holder keys derived in the extension and registered by public token address",
+  "name": "Bob-fresh"
+ },
+ {
+  "at": "2026-10-24T20:00:53.624Z",
+  "step": "account imported; holder keys derived in the extension and registered by public token address",
+  "name": "Alice-fresh"
+ },
+ {
+  "at": "2026-10-24T20:00:54.439Z",
+  "step": "fresh installation from phrases only: same addresses, same balances, nothing pending",
+  "A": 15,
+  "B": 5,
+  "sameAddresses": true,
+  "pending": {
+   "pending": 0,
+   "history": 0
+  }
+ }
+]

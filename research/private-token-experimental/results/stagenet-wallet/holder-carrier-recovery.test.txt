@@ -1,0 +1,15 @@
+✔ lost reply: daemon knows the txid -> recovered by lookup, nothing re-sent (1.333625ms)
+✔ lost request: daemon does not know the txid -> the SAME blob is re-sent once and accepted (1.590958ms)
+✔ daemon refusal is final: no lookup, no retry, no "accepted" (0.129916ms)
+✔ everything uncertain -> UNCERTAIN, bounded attempts, never ok (7.084666ms)
+✔ lookup distinguishes pool, chain and unknown (0.197709ms)
+✔ quote excludes key images spent in the daemon pool (pool-aware input selection) (0.335041ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 48.15525
+holder-carrier-recovery.test.mjs exit 0

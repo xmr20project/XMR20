@@ -1,0 +1,42 @@
+[
+ {
+  "at": "2026-10-24T17:24:34.941Z",
+  "step": "extension loaded",
+  "id": "jigbpnljnmbbkebaopbnnhmiafgnofla",
+  "profile": "interruptions"
+ },
+ {
+  "at": "2026-10-24T17:24:38.381Z",
+  "step": "account imported; holder keys derived in the extension and registered by public token address",
+  "name": "Alpha"
+ },
+ {
+  "at": "2026-10-24T17:24:41.377Z",
+  "step": "account imported; holder keys derived in the extension and registered by public token address",
+  "name": "Beta"
+ },
+ {
+  "at": "2026-10-24T17:24:47.182Z",
+  "step": "TEST SERVICE: mined test XMR to this account for carrier fees",
+  "text": "Mined 1 coinbase output to this account (test service). It unlocks after 60 blocks; advance the chain. XMR for carrier fees: 0.000000 XMR spendable · 35.170504 XMR locked until block 310"
+ },
+ {
+  "at": "2026-10-24T17:24:47.839Z",
+  "step": "TEST SERVICE: mined test XMR to this account for carrier fees",
+  "text": "Mined 1 coinbase output to this account (test service). It unlocks after 60 blocks; advance the chain. XMR for carrier fees: 0.000000 XMR spendable · 70.338002 XMR locked until block 311"
+ },
+ {
+  "at": "2026-10-24T17:24:48.505Z",
+  "step": "TEST SERVICE: mined test XMR to this account for carrier fees",
+  "text": "Mined 1 coinbase output to this account (test service). It unlocks after 60 blocks; advance the chain. XMR for carrier fees: 0.000000 XMR spendable · 105.505433 XMR locked until block 312"
+ },
+ {
+  "at": "2026-10-24T17:24:50.715Z",
+  "step": "TEST SERVICE: mined test XMR to this account for carrier fees",
+  "text": "Mined 1 coinbase output to this account (test service). It unlocks after 60 blocks; advance the chain. XMR for carrier fees: 0.000000 XMR spendable · 35.167364 XMR locked until block 313"
+ },
+ {
+  "at": "2026-10-24T17:24:54.907Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ }
+]

@@ -49,6 +49,6 @@ export function createPrivateJournal({store,subtle=crypto.subtle,random=b=>crypt
  return {unlock,lock,read,write,account,get unlocked(){return Boolean(key);}};
 }
 // Note commitments currently reserved by live operations (any window).
-export function reservedCommitments(acc,except=null){const out=new Set();for(const [id,p] of Object.entries(acc.pending||{})){if(id===except)continue;if(['selected','quoted','built','signed','published','missing','conflicted'].includes(p.status))for(const c of p.reserved||[])out.add(c);}return out;}
+export function reservedCommitments(acc,except=null){const out=new Set();for(const [id,p] of Object.entries(acc.pending||{})){if(id===except)continue;if(['selected','quoted','built','signed','broadcasting','uncertain','published','mined','missing','conflicted','refused'].includes(p.status))for(const c of p.reserved||[])out.add(c);}return out;}
 // Native (XMR) inputs held by pending carriers: a quoted or signed carrier owns its input until the record is confirmed or the carrier is known to conflict.
-export function reservedKeyImages(acc,except=null){const out=new Set();for(const [id,p] of Object.entries(acc.pending||{})){if(id===except)continue;if(['quoted','signed','published','missing'].includes(p.status)){const k=p.carrier?.keyImage||p.nativeInput;if(k)out.add(k);}}return out;}
+export function reservedKeyImages(acc,except=null){const out=new Set();for(const [id,p] of Object.entries(acc.pending||{})){if(id===except)continue;if(['quoted','signed','broadcasting','uncertain','published','mined','missing'].includes(p.status)){const k=p.carrier?.keyImage||p.nativeInput;if(k)out.add(k);}}return out;}

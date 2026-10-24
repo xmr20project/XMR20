@@ -1,5 +1,5 @@
 // INTERRUPTION AND CONCURRENCY through the real test extension (stage 3: holder-funded carriers, no relay):
-//  a. daemon broadcast reply lost after the daemon accepted the carrier (route aborted): the SAME carrier is re-sent;
+//  a. daemon broadcast reply lost after the daemon accepted the carrier (route aborted): the popup asks the daemon first and re-sends NOTHING;
 //  b. duplicate/second send while the first operation still reserves the notes;
 //  c. migration interrupted after preparation and after signing (test hook);
 //  d. popup closed during proving (nothing published; stale reservation released);
@@ -34,11 +34,12 @@ test('interruptions, lost replies, concurrency through the actual popup',{timeou
   // a. Lost reply: the daemon accepts the carrier, the popup never hears back.
   let relaysBefore=await relayedCount();
   await page.route('**/send_raw_transaction',async route=>{await route.fetch();await route.abort('connectionreset');});
-  await h.openDetail();assert.ok(await sendApproved(page,betaAddress,'10'));const lost=await h.errorText(/daemon did not answer .* re-sent as the same transaction/,900000);h.log('a. broadcast reply lost after the daemon accepted the carrier',{error:lost});await h.shot('a-lost-reply-error');
-  await page.unroute('**/send_raw_transaction');let pend=await pending();let entries=Object.values(pend);assert.equal(entries.length,1);assert.equal(entries[0].status,'signed');assert.ok(entries[0].wire&&entries[0].carrier?.blob,'proved record and signed carrier saved in the encrypted journal');const lostTxid=entries[0].carrier.txid;
+  // Lookup-before-retry (ported 24 Oct 2026): the popup sees a transport failure, asks the daemon, finds the carrier and re-sends nothing.
+  await h.openDetail();assert.ok(await sendApproved(page,betaAddress,'10'));const lost=await h.progress(/Published .*nothing was re-sent/,900000);h.log('a. broadcast reply lost after the daemon accepted the carrier: recovered by lookup, nothing re-sent',{text:lost.slice(0,240)});await h.shot('a-lost-reply-recovered');
+  await page.unroute('**/send_raw_transaction');let pend=await pending();let entries=Object.values(pend);assert.equal(entries.length,1);assert.equal(entries[0].status,'published');assert.equal(entries[0].recovered,true);assert.ok(entries[0].wire&&entries[0].carrier?.blob,'proved record and signed carrier saved in the encrypted journal');const lostTxid=entries[0].carrier.txid;
   // b. A second send now: the only note is reserved by the saved operation.
   await page.fill('#pf-amount','5');await page.click('#pf-send-go');const reserved=await h.errorText(/Insufficient unreserved balance|reserved/i,120000);h.log('b. second send refused while the first operation reserves the note',{error:reserved});await h.shot('b-reserved-refused');
-  await h.back();await h.closeModal();await h.uiRefresh();pend=await pending();entries=Object.values(pend);for(let i=0;i<60&&!(entries.length===1&&entries[0].status==='published');i++){await page.waitForTimeout(3000);await h.uiRefresh();pend=await pending();entries=Object.values(pend);}assert.equal(entries.length,1);assert.equal(entries[0].status,'published','reconcile re-sent the saved carrier');assert.equal(entries[0].carrier.txid,lostTxid,'the SAME carrier, not a new one');
+  await h.back();await h.closeModal();await h.uiRefresh();pend=await pending();entries=Object.values(pend);for(let i=0;i<60&&!(entries.length===1&&entries[0].status==='published');i++){await page.waitForTimeout(3000);await h.uiRefresh();pend=await pending();entries=Object.values(pend);}assert.equal(entries.length,1);assert.equal(entries[0].status,'published','still the published carrier after refresh (no re-send needed)');assert.equal(entries[0].carrier.txid,lostTxid,'the SAME carrier, not a new one');
   assert.equal(await relayedCount(),relaysBefore+1,'exactly one carrier (one fee) for the record');
   await h.mine();alphaBal-=10;betaBal+=10;assert.equal(bal(await h.balanceText()),alphaBal);await h.switchAccount(1);assert.equal(bal(await h.balanceText()),betaBal);await h.switchAccount(0);h.log('a/b. after mining: Beta credited exactly once',{alpha:alphaBal,beta:betaBal});
   pend=await pending();assert.equal(Object.keys(pend).length,0,'settled operation left the pending list');

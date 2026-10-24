@@ -1,0 +1,18 @@
+[
+ {
+  "at": "2026-10-24T17:02:17.330Z",
+  "step": "service",
+  "message": "{\"role\":\"issuer\",\"ready\":{\"issuerNativeAddress\":\"57niMTvoAZ5GigRF1mQVXxVAmGwJihSSsDLjwPX9vH8hcxA3cyFUP3SjaJefz4ty19iSzfFmWTmoPC6Wg59i9ufTV8p4FQM\",\"issuerTokenAddress\":\"penumbra13dsttnlshskauhg9dr9wvs4uhhlazf9eqhv86g2l46c0zkwqqcxt0093ue0e95njr40939cluyw6fz2852y6ten6duhrzvvu7vl9utmt6j5v26g7eynz6aml508"
+ },
+ {
+  "at": "2026-10-24T17:02:17.469Z",
+  "step": "service",
+  "message": "{\"role\":\"indexer\",\"ready\":{\"domain\":\"5234ab346f9ea1b181e2879f9512b537ad6d595a529d9a0e7ccad87368acba2d\",\"mode\":\"indexer\",\"ready\":true,\"trustedManifest\":{\"label\":\"DISPOSABLE TEST SETUP — STAGENET REHEARSAL — NOT PRODUCTION\",\"sha256\":\"ed12e12441ab4f6d5cc6ad02e3839d9c14b3346b953ebfc277a66d3053903e9b\"}}}"
+ },
+ {
+  "at": "2026-10-24T17:02:18.195Z",
+  "step": "extension loaded",
+  "id": "blimjfnfilgalllddpdlcpnikkfagfhd",
+  "profile": "stagenet-popup"
+ }
+]
