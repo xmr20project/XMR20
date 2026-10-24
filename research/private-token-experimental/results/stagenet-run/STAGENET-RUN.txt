@@ -113,4 +113,19 @@ RESULTS — attempt 3, EXECUTED ON STAGENET, 04:03:43Z–07:05:42Z 24 Oct 2026 (
     single-party Groth16 setup; constant-time safety; an independent security review; the bridge/native-trading rollback
     loss. Verdicts unchanged: NO-GO for private transfers, migration, bridging and native XMR trading; bridge payouts and
     native trading gated.
-  Node left running (mining stopped 07:06Z) so the rehearsal can be repeated: stop with kill $(cat operations/stagenet-node-20261023/monerod.pid).
+  Node left running (mining stopped 07:06Z) for the recovery cases below; it was then stopped CLEANLY by its disk-space watchdog
+    at 13:01:57Z (free space < 12 GB; node data unchanged at 6.3 GB). Restart with operations/stagenet-node-20261023/start.sh only
+    once free space is comfortably above the 12 GB reserve.
+
+RECOVERY CASES ON STAGENET (second execution, 11:15:34Z-13:00:47Z 24 Oct 2026; stagenet/recovery-cases.mjs --mode stagenet)
+  Report runs/stagenet/recovery-cases-stagenet.json (57/57 checks, exit 0), proxy log runs/stagenet/recovery-run/proxy-faults.json,
+  journals runs/stagenet/recovery-run/installs/<case>-orig/ (public data only: records, signed carriers, txids; roots stay in
+  runs/stagenet/wallets and are never logged), observation runs/stagenet/recovery-public-observation.json. Full case-by-case
+  account in RESULTS.txt ("RESTART, LOST-REPLY AND RECOVERY CASES" -> STAGENET). Ordinary authorised test transactions only.
+    LR   36946f8ce49b207c90461d98fcd4a57099f9192fdfc7c5c66ab9a1b1dd0164b1  block 2,235,873  fee 50,760,000  A->B 1,000,000  actual lost reply, recovered by lookup, 0 re-sends
+    R1b  8c9777ef27aaed015127615b7e7f7b82d36155ef24c3dbadae4909d8154f3962  block 2,235,873  fee 50,740,000  B->A   200,000  killed after proving, signed once on resume
+    R2   7732fd7784c4f0f4893a259806823db80d3d5dea20762e075eee6f4304e89e59  block 2,235,873  fee 50,760,000  A->B 2,000,000  killed after signing, same blob/txid sent on resume
+    R3   d4c3d94bc39dd6cead0ec4180b7b742ae14486b4fd4eb2e838eff442a84a763e  block 2,235,884  fee 50,680,000  B->A   100,000  lost reply + crash, found in pool on resume, 0 sends
+    R1a  no carrier (killed after the quote; released, no fee).  S: stale signed backup settled without a re-send; stale built backup conflicted (no send, no fee).
+  Third-party node node.monerodevs.org:38089 at height 2,235,894 (13:02:06Z): all four mined, 21/21/21/10 confirmations.
+  Not shown here (offline chain only, by design): lost request (ordinary repeat broadcast), two installations with one phrase, rollback.

@@ -24,12 +24,17 @@ export function createCarrierBuilder({engine,rpc,fetch:f=globalThis.fetch,onProg
  async function quote({kind,excludeKeyImages=[]}){
   onProgress({phase:'carrier',text:'Reading the fee rate and output distribution from the test daemon…'});
   const info=await json('get_info');const tip=info.height-1;const rate=await feeRate();const dist=await distribution(tip);
-  let r=engine.call({op:'carrierQuote',kind,feeRate:rate,distribution:dist,exclude:excludeKeyImages});let rounds=0;
+  // Pool awareness (fix from the restart cases): an output already spent by an UNCONFIRMED transaction in the daemon's pool
+  // (for example this wallet's own carrier published by another installation, or before a restart) must not be chosen
+  // again; the daemon would refuse the new carrier as a double spend. Key images spent in the pool are excluded here.
+  const poolSpent=await poolSpentKeyImages();
+  let r=engine.call({op:'carrierQuote',kind,feeRate:rate,distribution:dist,exclude:[...new Set([...excludeKeyImages,...poolSpent])]});let rounds=0;
   while(!r.ready){if(++rounds>12)throw Error('Decoy selection did not converge');
    onProgress({phase:'carrier',text:`Sampling ring members for the carrier (round ${rounds}, ${r.need.length} outputs)…`});
    const got=await other('/get_outs',{outputs:r.need.map(index=>({amount:0,index})),get_txid:false});if(got.status!=='OK'||!Array.isArray(got.outs)||got.outs.length!==r.need.length)throw Error('Daemon get_outs failed: '+(got.status||'?'));
    r=engine.call({op:'carrierOuts',quoteId:r.quoteId,outs:got.outs.map((o,i)=>({index:r.need[i],key:o.key,mask:o.mask,unlocked:Boolean(o.unlocked)}))});}
-  return {...r,feeRate:rate,tip,rounds};}
+  return {...r,feeRate:rate,tip,rounds,poolSpentExcluded:poolSpent.length};}
+ async function poolSpentKeyImages(){const p=await other('/get_transaction_pool',{});return (p.spent_key_images||[]).map(k=>String(k.id_hash).toLowerCase());}
  function sign(quoteId,wire){const t0=Date.now();const out=engine.call({op:'carrierSign',quoteId,wire});return {...out,signMs:Date.now()-t0};}
  function cancel(quoteId){return engine.call({op:'carrierCancel',quoteId});}
  // Publish to the daemon. Re-sending the same blob is idempotent on monerod
@@ -39,7 +44,32 @@ export function createCarrierBuilder({engine,rpc,fetch:f=globalThis.fetch,onProg
   if(r.status==='OK')return {ok:true,status:'OK'};
   const reason=r.reason||r.status||'rejected';return {ok:false,status:r.status,reason,doubleSpend:Boolean(r.double_spend),invalidInput:Boolean(r.invalid_input),lowMixin:Boolean(r.low_mixin),tooBig:Boolean(r.too_big),feeTooLow:Boolean(r.fee_too_low),notRelayed:Boolean(r.not_relayed)};}
  async function inPool(txid){const p=await other('/get_transaction_pool_hashes',{});return (p.tx_hashes||[]).includes(txid);}
- return {quote,sign,cancel,publish,inPool,feeRate,set onProgress(fn){onProgress=fn;}};
+ // Does the daemon know this transaction (pool or chain)? Used BEFORE any retry of an uncertain broadcast: a lost reply does
+ // not mean a lost transaction. {known:false} only when the daemon positively reports the hash as missing.
+ async function lookup(txid){const r=await other('/get_transactions',{txs_hashes:[txid],decode_as_json:false,prune:true});
+  const t=(r.txs||[]).find(x=>x.tx_hash===txid)||(r.txs||[])[0]||null;
+  if(!t)return {known:false,inPool:false,blockHeight:null,confirmations:0,status:r.status||null};
+  return {known:true,inPool:Boolean(t.in_pool),blockHeight:t.in_pool?null:(t.block_height??null),confirmations:t.in_pool?0:Number(t.confirmations??0),status:r.status||null};}
+ // Publish with LOST-REPLY recovery. A transport failure (connection reset, timeout) after the blob left the wallet is an
+ // UNCERTAIN outcome, not a refusal: the daemon may hold the transaction. The wallet first asks the daemon whether it knows
+ // the txid; only if the daemon positively does not, the SAME blob is re-sent (never a new carrier, never a second fee).
+ // Every attempt is reported so a caller can show "outcome unknown" rather than "sent" or "failed". `onAttempt` may persist
+ // state before each network call (a journal), so a crash between send and reply is recoverable by the same procedure.
+ async function publishWithRecovery(blob,txid,{attempts=3,lookupRetries=3,delayMs=1500,onAttempt=async()=>{}}={}){
+  const trail=[];let last=null;
+  for(let i=0;i<attempts;i++){
+   await onAttempt({attempt:i,action:'send'});
+   try{const r=await publish(blob);trail.push({attempt:i,action:'send',outcome:r.ok?'accepted':'refused',status:r.status,reason:r.reason||null});if(r.ok)return {ok:true,status:r.status,uncertainReplies:trail.filter(t=>t.outcome==='uncertain').length,resends:i,trail,recovered:false};
+    // A refusal that is only "already have it" never occurs on monerod (it answers OK); any other refusal is final.
+    return {...r,resends:i,trail,recovered:false};}
+   catch(e){trail.push({attempt:i,action:'send',outcome:'uncertain',error:String(e.cause?.code||e.cause?.message||e.message).slice(0,160)});last=e;}
+   // Uncertain: did it reach the daemon? Ask (a few times: the daemon may be the one that is briefly unreachable).
+   for(let j=0;j<lookupRetries;j++){try{await onAttempt({attempt:i,action:'lookup'});const l=await lookup(txid);trail.push({attempt:i,action:'lookup',...l});
+     if(l.known)return {ok:true,status:l.inPool?'KNOWN_IN_POOL':'KNOWN_IN_CHAIN',uncertainReplies:trail.filter(t=>t.outcome==='uncertain').length,resends:i,trail,recovered:true,lookup:l};
+     break;}catch(e2){trail.push({attempt:i,action:'lookup',error:String(e2.cause?.code||e2.message).slice(0,160)});await new Promise(r=>setTimeout(r,delayMs));}}
+   await new Promise(r=>setTimeout(r,delayMs));}
+  return {ok:false,status:'UNCERTAIN',reason:'no reply from the daemon and the transaction is not known to it after '+attempts+' attempts: '+(last?.message||''),uncertain:true,resends:attempts-1,trail,recovered:false};}
+ return {quote,sign,cancel,publish,inPool,lookup,publishWithRecovery,poolSpentKeyImages,feeRate,set onProgress(fn){onProgress=fn;}};
 }
 export const PICONERO=1_000_000_000_000n;
 export function xmr(piconero,digits=6){const n=BigInt(piconero);const whole=n/PICONERO,frac=n%PICONERO;return `${whole}.${frac.toString().padStart(12,'0').slice(0,digits)}`;}

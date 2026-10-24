@@ -1,0 +1,66 @@
+{
+ "note": "every fault and every /send_raw_transaction (with the daemon answer) seen by the loopback proxy over the whole run",
+ "reconstructedFrom": "recovery-cases-stagenet.stderr.log ({\"proxy\":\u2026} lines written by the proxy log callback at the time of each event); the file first written by the harness held only the trailing pass-through traffic (preserved as proxy-events-tail.json) because the cases reset the per-case event view \u2014 writer fixed in recovery-cases.mjs/lossy-proxy.mjs",
+ "faults": 2,
+ "sendRequests": 4,
+ "events": [
+  {
+   "at": "2026-10-24T11:16:13.423Z",
+   "path": "/send_raw_transaction",
+   "bytes": 5137,
+   "fault": "drop-reply",
+   "forwarded": true,
+   "upstreamStatus": 200,
+   "daemon": {
+    "status": "OK",
+    "reason": null,
+    "double_spend": false,
+    "not_relayed": false
+   },
+   "replyDroppedAfterDaemonAnswered": true
+  },
+  {
+   "at": "2026-10-24T11:16:57.537Z",
+   "path": "/send_raw_transaction",
+   "bytes": 5135,
+   "fault": null,
+   "forwarded": true,
+   "upstreamStatus": 200,
+   "daemon": {
+    "status": "OK",
+    "reason": null,
+    "double_spend": false,
+    "not_relayed": false
+   }
+  },
+  {
+   "at": "2026-10-24T11:17:37.846Z",
+   "path": "/send_raw_transaction",
+   "bytes": 5137,
+   "fault": null,
+   "forwarded": true,
+   "upstreamStatus": 200,
+   "daemon": {
+    "status": "OK",
+    "reason": null,
+    "double_spend": false,
+    "not_relayed": false
+   }
+  },
+  {
+   "at": "2026-10-24T12:08:01.475Z",
+   "path": "/send_raw_transaction",
+   "bytes": 5129,
+   "fault": "drop-reply",
+   "forwarded": true,
+   "upstreamStatus": 200,
+   "daemon": {
+    "status": "OK",
+    "reason": null,
+    "double_spend": false,
+    "not_relayed": false
+   },
+   "replyDroppedAfterDaemonAnswered": true
+  }
+ ]
+}

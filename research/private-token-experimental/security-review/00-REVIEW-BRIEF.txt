@@ -1,0 +1,124 @@
+EXTERNAL SECURITY REVIEW PACKAGE — 00 REVIEW BRIEF (start here)
+research/privacy-stagenet-roles-20261023, 24 October 2026. Continues the stage-3 package (01-07, research/privacy-review-20261023)
+in place; 08 (production parameters) and this brief are new; 06/07 are updated with what stagenet and the restart cases found.
+
+STATUS OF THIS PACKAGE
+  Prepared by the implementer for an INDEPENDENT security review that has NOT been commissioned, scheduled or paid for.
+  Nobody outside the project has been contacted. Nothing in this package — the self-review (06), the passing test suites,
+  the executed stagenet rehearsal, the locally generated parameters, or any AI-assisted review that produced or checked this
+  code — is an independent security audit or a substitute for one. All verdicts remain NO-GO for real funds (07).
+
+1. WHAT IS TO BE REVIEWED (scope)
+  Private fungible XMR20 tokens carried by ordinary Monero transactions: fixed-size XM3 transfer / XB3 boundary records in
+  tx_extra, Groth16 proofs over Penumbra shielded-pool circuits (BLS12-377), holder-controlled keys derived from the
+  Monero spend key, a holder wasm engine (scanning, proving, carrier construction and signing), an authenticated parameter
+  manifest, laboratory issuer/indexer roles, a wallet library, a CLI second wallet, an encrypted pending-operation journal,
+  and the recovery semantics around publication. Out of scope here: the existing public XMR20 bridge and wallet code paths,
+  the Solana program (pinned artifact, not re-reviewed), the website.
+  Protocol version   XMR20-PRIVATE-v0.1-experimental   (SPEC-XMR20-PRIVATE-TOKENS-v0.1-experimental.txt,
+                     sha256 9c473c9d532bb8dbcbc718b8537c7d4c05b62d96a772f1d4ec275a04d9986621)
+  Key scheme         XMR20-TKD1 (KEY-SCHEME.txt; 01 §4)             Manifest format  XMR20-PARAMS-1 (PARAMETERS.txt; 01 §3)
+  Records            XM3 996 B (3 inputs, 2 outputs), XB3 925 B (3 inputs, 1 output, public kind/asset/amount/binding)
+  Circuits           normal = 3 x penumbra-sdk-shielded-pool 2.1.1 SpendCircuit + 2 x OutputCircuit, one R1CS, shared randomizer
+                     boundary = the same 3 SpendCircuits + 1 OutputCircuit; ark-groth16 0.4.0; decaf377 0.10.1 (01 §1, §6)
+  Circuit identity   (disposable stagenet-v0 set; vk bytes) normal vk sha256 161c7d25c4bcc488ae8e4175c1d3230404e394c12325d22e73e03fc0e0979bcc
+                     boundary vk sha256 f250dd90184f4098fe2eaf24abfc2dcfda9c1c68ca606f0d4f8c969c4d69683e
+                     proving keys: normal 82,675,440 B a11b2f05ecc33001fed7515e9824d2dfc5b7349f099e90a49a007c3de6e1aea0;
+                     boundary 64,409,328 B (sha256 in params/stagenet-v0/manifest.json). Every set is single-party, disposable (08).
+
+2. SOURCE AND BUILD IDENTITY (exact)
+  Candidate tree      research/privacy-stagenet-roles-20261023 — every published file hashed in MANIFEST.sha256 (regenerate with
+                      make-manifest.sh; verify with `shasum -a 256 -c MANIFEST.sha256`).
+  Holder engine wasm  holder-wasm/target/wasm32-unknown-unknown/release/xmr20_holder_wasm.wasm 5,035,317 B
+                      sha256 2c866f39e64f40a209842fb5c4d59d6fe2bbf9ad910dd9aed65bc06fb396a86f   (Cargo.lock sha256 6e146b7d…0a4b)
+  Laboratory binary   research/privacy-stagenet-roles-20261023-lab/target/release/xmr20-integration-lab 13,996,848 B
+                      sha256 375a49e2d0208acd35d25d41ad158cd16dbcc28d50ffca360417cef9905a160e   (Cargo.lock sha256 dd0919f5…958c;
+                      the crate is not published — its three changed sources are under docs/stagenet-roles/lab-src/ in the publication)
+  Toolchain           rustc 1.99.0 (b940084d7 2026-09-28), Node v24.1.0, Monero v0.18.5.3 monerod (binary sha256
+                      28c233e0a92c09c422b8b309062f332f3138babdc097388a9ac9c93ea2e66518, archive 7a083ed2…54ab verified against
+                      binaryFate's GPG-signed hashes, fingerprint 81AC 591F E9C4 B65C 5806 AFC3 F0AF 4D46 2A0B DF92)
+  Manifests           params/test-v1/manifest.json  ae7ba302194ca3e6f85bd045a653f58026a4fcda9141b1ed8a86600f31611e66 (offline fakechain)
+                      params/stagenet-v0/manifest.json 066d839bcd6b0f0145a9eeaa126bcabc0448c6371dde43f191986f756dbc4be2 (stagenet genesis)
+                      runs/stagenet/trusted-manifest.json ed12e12441ab4f6d5cc6ad02e3839d9c14b3346b953ebfc277a66d3053903e9b (startHeight 2,235,745)
+  Publication         GitHub xmr20project/XMR20, draft PR #8, branch claude/private-token-research-20261023, directory
+                      research/private-token-experimental/ (the commit hash of each publication is in publication.json there).
+
+3. TRUST ASSUMPTIONS (summary; details in 01)
+  - Groth16 soundness depends on the setup party having destroyed its randomness: FALSE for every existing set (single party,
+    owner machine). Soundness is therefore NOT claimed. Zero knowledge holds only if the proving key is the honest one for the
+    verifying key: distribution is authenticated (01 §3), the setup itself is not production-safe (08).
+  - The ledger domain binds genesis, both verifying keys and the issuer key; all admission (indexer, issuer, holder) is the
+    same pool.rs. A record is admitted iff proof, auth and binding signatures verify, the anchor is a known root, every
+    nullifier is new.
+  - The issuer key is a synthetic file; credits are trusted to the issuer. Redemptions/payouts are gated (05).
+  - The daemon is trusted as any Monero wallet trusts its node (decoy bias, eclipse); the holder additionally cross-checks the
+    RingCT output count against its own replay.
+  - The holder trusts the manifest its build ships; a modified build is out of scope of the manifest control.
+  - The journal is a per-installation convenience; the nullifier set is what prevents double spends; two installations with
+    one phrase CAN conflict (the loser's carrier fee is lost) — documented, not fixable by the protocol.
+
+4. KEY DERIVATION AND SECRET BOUNDARY (01 §4-5, KEY-SCHEME.txt)
+  root = the account's 32-byte Monero private spend key; token spend key = keyed BLAKE2b-256(root, "XMR20-TKD1", "xmr20/private-
+  token/spend-key"||LE32(account)); Penumbra key schedule from it; native keys = the standard Monero schedule from root. The
+  viewing key leaves the engine only on explicit export. Secrets live in wasm linear memory while unlocked; no constant-time
+  claim; memory not scrubbed on lock. In the research harnesses the "phrase" is a synthetic 32-byte root file (never a real seed).
+
+5. PUBLIC METADATA (02; measured on stagenet 24 Oct 2026)
+  Carrier transactions are recognisable: 1,056-byte tx_extra (XM3) / 985-byte (XB3), carriers 2,533-2,539 B / 2,462-2,466 B,
+  stagenet fee 20,000 piconero/byte (50,660,000-50,780,000 piconero per transfer; NOT a mainnet figure). Public per record:
+  anchor, nullifiers, value commitments, rk, ciphertexts, proof, signatures; for XB3 also kind, asset, amount, binding, issuer
+  signature. The carrier's ring/key image/change chain is standard Monero metadata; the record contains no native field
+  (03 regression: 1,395 checks, 0 hits). Nothing hides that a transaction is a carrier.
+
+6. WHAT WAS EXERCISED FOR REAL, WHAT WAS SIMULATED, WHAT WAS MOCKED (precise)
+  EXERCISED on a REAL network (Monero stagenet, worthless faucet coins, 24 Oct 2026):
+    monerod v0.18.5.3 relay with sanity checks ON; third-party public node observation (node.monerodevs.org:38089) of relay
+    and confirmation; real fee estimation and decoy selection against the stagenet output set; the complete two-wallet flow
+    (4 credits, T1 one-input, recovery of both wallets from roots, T2 three-input, T3 two-input; runs/stagenet/STAGENET-RUN.txt);
+    the recovery cases that are ordinary transactions (lost reply, restarts before signing / before broadcast / with unknown
+    outcome, stale backups) — see RESULTS.txt "RECOVERY CASES" for the executed set and their txids.
+  EXERCISED with real code on SYNTHETIC inputs (offline zero-peer regtest fakechain, synthetic roots):
+    the wasm engine (scan, prove, sign), the parameter loader and its rejections, the lab issuer/indexer/wallet roles, the wallet
+    library and CLI, the encrypted journal module (chrome.storage replaced by localStorage / a file-backed store), the holder
+    process restart cases including the deliberate 12-block rollback and the two-installation conflict (offline chain only),
+    the extension popup flows under Playwright with a disposable profile and a separate test extension build.
+  SIMULATED / MOCKED:
+    Solana: LiteSVM local simulator and a laboratory bridge/operator service (backend/service.mjs); no live program, no Helius,
+    no real deposits or payouts. Issuer key: synthetic file. Parameters: disposable single-party sets. Prices, fees shown as
+    "illustrative mainnet" figures: labels only. The faucet, the lossy proxy and the fakechain are test fixtures. CONFIRMATIONS=10
+    is a laboratory setting, not a reviewed depth. Mainnet: refused by every component; never contacted.
+  NOT EXERCISED AT ALL: real seeds or wallets, the shipped extension, production endpoints, bridge payouts, native XMR trading,
+    any reorganization on a public network (only on the offline chain), mainnet fees/decoys/miner policies.
+
+7. UNRESOLVED FINDINGS AND OPEN QUESTIONS (ranked; details 06 §E and §F, 07)
+  1. Soundness/malleability of the XM3/XB3 composition (shared randomizer, one rk/auth, public amount in the binding
+     signature, issuer authorization) — REVIEW.
+  2. Disposable single-party setups — ceremony per 08 — PRODUCT + CODE + REVIEW.
+  3. Compact payload codec confidentiality/integrity — REVIEW.
+  4. XMR20-TKD1 coupling of token keys to the Monero spend key — REVIEW/PRODUCT.
+  5. Carrier construction in wasm: decoy faithfulness, fee model, dummy-output fingerprint, change-chain linkage — REVIEW.
+  6. Journal/recovery semantics: anything causing inflation, lost notes or a false "completed" beyond the documented fee-loss
+     cases (two installations; stale signed carrier re-sent elsewhere) — REVIEW of RECOVERY-CASES.txt + holder-process.mjs.
+  7. Rollback loss for bridge payouts and native trading (05) — unchanged; additional confirmations or wallet reservations do
+     not eliminate it — PRODUCT/RESEARCH.
+  8. No constant-time or side-channel review of wasm proving/signing; memory erasure limits — REVIEW/PRODUCT.
+  9. Verifier-side: the indexer/issuer trust one daemon (no independent chain observation in the roles) — CODE.
+
+8. REPRODUCTION (all offline unless marked; exact commands also in REPRODUCE.txt)
+  build   cd research/privacy-stagenet-roles-20261023-lab && cargo build --release --offline
+          cd research/privacy-stagenet-roles-20261023/holder-wasm && cargo build --offline --release --target wasm32-unknown-unknown
+  roles   node --test --test-concurrency=1 stagenet-roles.test.mjs                 (4 tests; ≈4 min; ports 8951-8953, 30080-30083)
+  recovery node stagenet/recovery-cases.mjs --mode local --out runs/recovery-cases-local.json   (offline chain; LR, LRQ, R1a, R1b,
+          R2, R3, S, TWO, RB; nonzero exit on any failed check; ports 8955, 30084-30085)
+  stagenet (needs an owner-controlled synced stagenet node and faucet coins; README-STAGENET.txt)
+          node stagenet/rehearsal.mjs --mode stagenet --rpc http://127.0.0.1:38091 --manifest runs/stagenet/trusted-manifest.json \
+               --params-dir params/stagenet-v0 --wallet-dir runs/stagenet/wallets --param-port 8954 --out runs/stagenet/rehearsal-stagenet.json
+          node stagenet/recovery-cases.mjs --mode stagenet --rpc http://127.0.0.1:38091 --manifest runs/stagenet/trusted-manifest.json \
+               --params-dir params/stagenet-v0 --wallet-dir runs/stagenet/wallets --param-port 8956 --out runs/stagenet/recovery-cases-stagenet.json
+  earlier stages: docs under research/privacy-{params,carrier,review,interop,verifier-params,stagenet-rehearsal}-20261023/REPRODUCE.txt.
+
+9. DELIVERABLES REQUESTED FROM THE REVIEWER
+  A written report answering §7 item by item with severity, exploitability under the stated trust model and concrete
+  recommendations; a verdict on whether the composition is sound enough to be worth a ceremony (08 R1.c); a review of the
+  ceremony design before it runs; and a list of what the reviewer could not assess (so it is not claimed as reviewed).
+  Engagement, scope confirmation and payment are owner decisions; this brief authorises none of them.

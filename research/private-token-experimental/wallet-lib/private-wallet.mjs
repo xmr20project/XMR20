@@ -37,6 +37,9 @@
 //   lib.cancelQuote(quoteId)
 //   await lib.publish(blob)  -> {ok, status, reason?, doubleSpend?}   (idempotent on monerod for the same blob)
 //   await lib.inPool(txid)
+//   await lib.lookup(txid)   -> {known, inPool, blockHeight, confirmations}   (ask the daemon BEFORE retrying an uncertain broadcast)
+//   await lib.publishWithRecovery(blob, txid, {attempts?, onAttempt?}) -> {ok, status, recovered, resends, trail[]}
+//                            (transport failure = UNCERTAIN: lookup first, re-send the SAME blob only if the daemon does not know it)
 //   lib.reserveNative(keyImages[]) / lib.releaseNative(keyImages[])
 //   lib.memoryBytes()
 //   lib.close()
@@ -75,6 +78,8 @@ export async function openPrivateWallet(opts){
   cancelQuote(quoteId){needSpend();return carrier.cancel(quoteId);},
   async publish(blob){needSpend();return carrier.publish(blob);},
   async inPool(txid){needSpend();return carrier.inPool(txid);},
+  async lookup(txid){needSpend();return carrier.lookup(txid);},
+  async publishWithRecovery(blob,txid,opts){needSpend();return carrier.publishWithRecovery(blob,txid,opts);},
   reserveNative(keyImages){needSpend();return engine.call({op:'nativeReserve',keyImages});},
   releaseNative(keyImages){needSpend();return engine.call({op:'nativeRelease',keyImages});},
   engineVersion(){return engine.call({op:'version'});},

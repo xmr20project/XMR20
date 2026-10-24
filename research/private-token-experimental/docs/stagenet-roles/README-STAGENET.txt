@@ -97,3 +97,12 @@ NOT CHANGED BY THIS MILESTONE
 - The need for an independent security review (package in research/privacy-review-20261023/review).
 - The bridge rollback-loss example and the native-trading asymmetric-finality loss; both gates stay closed.
 - The verdicts: NO-GO for private transfers, migration, bridging and native XMR trading.
+
+RESTART, LOST-REPLY AND RECOVERY CASES ON STAGENET (24 Oct 2026)
+stagenet/recovery-cases.mjs --mode stagenet runs only ORDINARY authorised test transactions on the public network: an actual lost
+broadcast reply (the daemon's answer dropped by a loopback proxy after the daemon accepted the carrier), restarts killed after the
+quote / after proving / after signing / after an unanswered send, and stale-backup checks. Deliberate rollbacks and conflicting
+histories (two installations spending the same note; pop_blocks) run ONLY on the offline chain (--mode local). Every installation is
+a separate process (stagenet/holder-process.mjs) with its own encrypted journal; a fresh installation has only the root. Results:
+runs/stagenet/recovery-cases-stagenet.json; RESULTS.txt "RESTART, LOST-REPLY AND RECOVERY CASES". The retained bridge/native-trading
+rollback-loss examples (review/05) are not changed by any of this: more confirmations or wallet reservations do not remove them.

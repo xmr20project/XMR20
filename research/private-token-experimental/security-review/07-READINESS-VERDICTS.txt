@@ -1,5 +1,6 @@
 EXTERNAL SECURITY REVIEW PACKAGE — 07 READINESS VERDICTS PER COMPONENT (with the evidence needed to close each blocker)
-research/privacy-review-20261023 (stage 3). Real funds stay DISABLED wherever evidence is missing.
+research/privacy-review-20261023 (stage 3); updated 24 Oct 2026 by research/privacy-stagenet-roles-20261023 (verifier-side
+manifest checks, public-stagenet execution, restart/lost-reply cases). Real funds stay DISABLED wherever evidence is missing.
 Legend for "closes with": CODE = engineering work with tests; PRODUCT = an owner decision with stated
 assumptions; REVIEW = independent security review / audit; RESEARCH = no known construction yet.
 (Test tallies and evidence paths: RESULTS.txt and readiness.json of this candidate.)
@@ -16,9 +17,15 @@ assumptions; REVIEW = independent security review / audit; RESEARCH = no known c
    c. Proving cost (~30 s single-threaded, 83 MB key in the worker) ... CODE (threads/wasm SIMD, smaller circuits) or PRODUCT (accept)
       evidence needed: measured proving time on target devices; memory budget decision
    d. No constant-time / side-channel review of wasm proving and signing ... REVIEW
-   e. Verifier-side (indexer/issuer) parameter manifest checks ....... CODE (small) + test
-   f. Mainnet fee/decoy behaviour unmeasured (offline fakechain only) .. CODE (stagenet rehearsal with a real node)
-      evidence needed: stagenet carriers accepted by public nodes with monerod sanity checks ON; fee rates observed
+   e. Verifier-side (indexer/issuer) parameter manifest checks ....... CLOSED 23 Oct (verifier-params milestone: roles require
+      --trusted-manifest, authenticate every parameter byte, refuse on mismatch; verifier-params.test.mjs)
+   f. Mainnet fee/decoy behaviour unmeasured (offline fakechain only) .. PARTLY CLOSED 24 Oct: EXECUTED ON STAGENET — carriers
+      accepted with sanity checks ON, relayed to and confirmed by a third-party node, fee 20,000 piconero/byte observed
+      (runs/stagenet/STAGENET-RUN.txt). STILL OPEN: mainnet rates, decoy statistics and miner policies — CODE/PRODUCT (a
+      mainnet measurement is a product decision; nothing here authorises it)
+   i. Restart / lost-reply / stale-backup / two-installation behaviour .. CODE DONE 24 Oct in the reference holder process
+      (recovery-cases.mjs: offline chain all cases incl. rollback and conflict; stagenet the ordinary cases) — REVIEW of the
+      semantics (06.F.5-7) and CODE to port lookup-before-retry and pool-aware selection into the popup flow remain
    g. Change-chain linkage and carrier fingerprint (extra size) ...... PRODUCT (accept + document) / REVIEW
    h. Memory-erasure limits in the browser ............................ PRODUCT (accept + document)
 
@@ -56,3 +63,25 @@ assumptions; REVIEW = independent security review / audit; RESEARCH = no known c
    - Real-fund readiness ............................................................... false everywhere until 1a-1b, 3a and the audit are closed
    - Isolation: everything in stages 1-3 ran on synthetic wallets, an offline fakechain, LiteSVM and
      disposable browser profiles; nothing was deployed; no live wallet, balance, NFT or service touched.
+   - 24 Oct 2026: the stagenet execution used worthless faucet coins on an isolated owner node; mainnet was never contacted.
+
+6. READINESS TABLE — WHAT CLOSES EACH REMAINING ITEM (24 Oct 2026)
+   REMAINING ENGINEERING (CODE)
+     - port lookup-before-retry (publishWithRecovery) and pool-aware native input exclusion into the extension popup flow
+       (private-format.js) and re-run the stage-3 browser suites
+     - independent chain observation for the roles (second daemon / gating on a third-party view instead of recording it)
+     - ceremony tooling: constraint-system digest, transcript verifier, deterministic finalisation (08 R1.b, R2.c)
+     - proving cost (≈35 s single-threaded, ≈400 MB) if the product does not accept it
+   INDEPENDENT REVIEW (REVIEW) — none commissioned; 00-REVIEW-BRIEF.txt is the input
+     - XM3/XB3 composition soundness and malleability; compact codec; XMR20-TKD1 coupling (06.E.1-3)
+     - carrier construction and fingerprint; journal/recovery semantics (06.E.5-6, 06.F)
+     - ceremony design and the independent verification of its transcript (08 R4)
+     - constant-time / side-channel review; the Solana adapter path when it exists
+   PRODUCT DECISIONS (PRODUCT)
+     - whether to fund a multi-party ceremony and who coordinates/contributes (08)
+     - finality policy with numbers, loss reserve and incident controls for bridge payouts (05.A) — additional confirmations
+       or wallet reservations do NOT eliminate the loss case
+     - keep native XMR trading off the private format (05.B) or fund research into a settlement primitive
+     - accept/document: change-chain linkage, carrier fingerprint, memory-erasure limits, confirmation latency
+     - whether to run any mainnet measurement (not authorised by this research)
+   Until the REVIEW column is closed, every verdict above stays NO-GO regardless of test results.

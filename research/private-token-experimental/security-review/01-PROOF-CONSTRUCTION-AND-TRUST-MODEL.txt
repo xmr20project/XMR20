@@ -57,7 +57,9 @@ treat the test parameters as "demo only". Production needs: frozen, reviewed cir
 circuits are upstream-reviewed; the COMPOSITION, the shared randomizer, the compact codec, the
 public-amount-in-binding construction and the issuer authorization are new and unreviewed); a
 multi-party setup with published transcripts; signed parameter provenance; verifier-side manifest
-checks (indexer/issuer/operator currently validate points but not a manifest).
+checks (DONE 23 Oct 2026: the issuer and indexer roles require a trusted manifest path and authenticate
+every parameter byte against it before parsing; verifier-params milestone). The requirements for the
+production setup are listed in 08-PRODUCTION-PARAMETERS-REQUIREMENTS.txt.
 
 3. PARAMETER DISTRIBUTION TRUST MODEL (stage 1, research/privacy-params-20261023/PARAMETERS.txt)
 -------------------------------------------------------------------------------------------------
@@ -70,11 +72,19 @@ on each read; the server's configuration must equal the manifest's; its checksum
 Tested rejections: missing, truncated, interrupted, altered query vector with the expected vk,
 foreign setup, swapped circuit, corrupted/foreign/truncated cache, server from another ledger.
 Residual: a modified BUILD can ship a modified manifest; the wasm trusts the manifest its host
-passes (the host pins it); no verifier-side manifest checks yet.
+passes (the host pins it). Verifier-side manifest checks exist since 23 Oct 2026 (roles refuse to
+start on any mismatch); the manifest also carries network.kind/genesis/startHeight since then, and
+"mainnet" is refused by every component of the research code.
   manifest sha256    ae7ba302194ca3e6f85bd045a653f58026a4fcda9141b1ed8a86600f31611e66
   normal.public-pk   82,675,440 B  8152016c33b1f4bb10da5c2de242b38763bb7461fac3d611dcbee0306326aced
   boundary.public-pk 64,409,328 B  b9b5c8269adf6377480b4713c8449bc28170eb4b3ad5ed00c08b981886bc6120
   ledger domain      759e56ff75367217038d9b5f85f6b878bf3212016922bb2a3891ea4fa6726eb8
+Second disposable set bound to the Monero STAGENET genesis (params/stagenet-v0; used 24 Oct 2026):
+  manifest sha256    066d839bcd6b0f0145a9eeaa126bcabc0448c6371dde43f191986f756dbc4be2 (trusted copy with startHeight
+                     2,235,745: ed12e12441ab4f6d5cc6ad02e3839d9c14b3346b953ebfc277a66d3053903e9b)
+  normal.public-pk   82,675,440 B  a11b2f05ecc33001fed7515e9824d2dfc5b7349f099e90a49a007c3de6e1aea0
+  ledger domain      5234ab346f9ea1b181e2879f9512b537ad6d595a529d9a0e7ccad87368acba2d
+  (single-party, disposable, exactly like test-v1; it secures nothing)
 
 4. KEY DERIVATION (KEY-SCHEME.txt, scheme XMR20-TKD1)
 -----------------------------------------------------

@@ -1,0 +1,25 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+notes Alpha [["98500000",true]] spent 0 balances {"3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f":"98500000"}
+{"from":"Alpha","to":"Beta","amount":"20000000","inputs":1,"change":"78500000","recordBytes":996,"extraBytes":1056,"nativeBytes":2520,"fee":"3024000000","feeXmr":"0.003024","feePerWeight":"1200000","illustrativeMainnetFee":"50400000","provingMs":31637,"carrierSignMs":84,"quoteRounds":4,"txid":"c45071bb9d49c277aa50e3a0ce9e76fc8d666c42c3a9c2d3211f834fc5e63a58","memoryBeforeBuild":193265664,"memoryAfterSign":385941504}
+notes Beta [["20000000",true]] spent 0 balances {"3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f":"20000000"}
+{"from":"Beta","to":"Alpha","amount":"5000000","inputs":1,"change":"15000000","recordBytes":996,"extraBytes":1056,"nativeBytes":2520,"fee":"3024000000","feeXmr":"0.003024","feePerWeight":"1200000","illustrativeMainnetFee":"50400000","provingMs":31077,"carrierSignMs":79,"quoteRounds":3,"txid":"98e385ab565e08ef0162b9348899d9b413af0763456fbdc1702068d2fab462ae","memoryBeforeBuild":193265664,"memoryAfterSign":385941504}
+notes Beta [["15000000",true]] spent 1 balances {"3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f":"15000000"}
+{"from":"Beta","to":"Alpha","amount":"3000000","inputs":1,"change":"12000000","recordBytes":996,"extraBytes":1056,"nativeBytes":2520,"fee":"3024000000","feeXmr":"0.003024","feePerWeight":"1200000","illustrativeMainnetFee":"50400000","provingMs":30792,"carrierSignMs":70,"quoteRounds":5,"txid":"9e2e4615a4fd24450d9a0ddb3c55171c1e382dc22de849a79cbc3bcd5f455455","memoryBeforeBuild":385941504,"memoryAfterSign":385941504}
+notes Alpha [["78500000",true],["5000000",true],["3000000",true]] spent 1 balances {"3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f":"86500000"}
+{"from":"Alpha","to":"Beta","amount":"80000000","inputs":2,"change":"3500000","recordBytes":996,"extraBytes":1056,"nativeBytes":2520,"fee":"3024000000","feeXmr":"0.003024","feePerWeight":"1200000","illustrativeMainnetFee":"50400000","provingMs":31984,"carrierSignMs":78,"quoteRounds":3,"txid":"e9ddacd8d6ef8deddce0e560cafc9e4c7c1a2ae0f5c9da93b867363a96fdc3af","memoryBeforeBuild":385941504,"memoryAfterSign":385941504}
+notes Beta [["12000000",true],["80000000",true]] spent 2 balances {"3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f":"92000000"}
+{"from":"Beta","to":"Alpha","amount":"2000000","inputs":1,"change":"78000000","recordBytes":996,"extraBytes":1056,"nativeBytes":2520,"fee":"3024000000","feeXmr":"0.003024","feePerWeight":"1200000","illustrativeMainnetFee":"50400000","provingMs":34090,"carrierSignMs":80,"quoteRounds":4,"txid":"3542e6dc26f5c003f7d97c1127d4497303cb9acd6ade0b6b4e7dd754f4e77acf","memoryBeforeBuild":385941504,"memoryAfterSign":385941504}
+notes Alpha [["3000000",true],["3500000",true],["2000000",true]] spent 3 balances {"3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f":"8500000"}
+{"from":"Alpha","to":"Beta","amount":"8000000","inputs":3,"change":"500000","recordBytes":996,"extraBytes":1056,"nativeBytes":2520,"fee":"3024000000","feeXmr":"0.003024","feePerWeight":"1200000","illustrativeMainnetFee":"50400000","provingMs":34488,"carrierSignMs":76,"quoteRounds":4,"txid":"3375ba004b8807d23d921e16ed83dc16a29b140b21af4d252645abf62a18f39e","memoryBeforeBuild":385941504,"memoryAfterSign":385941504}
+backend: Refused: secret-looking or carrier field keyImage
+{"transfers":6,"rejections":["no XMR","locked coinbase","tampered record: no carrier"],"redemption":{"recordBytes":925,"extraBytes":985,"nativeBytes":2449,"fee":"2938800000","provingMs":26366,"txid":"7c2e067ee570d073b0a5b7bc48eaa1741863b6b885b2f1d6abcd774c36c03557"}}
+✔ holder-funded carriers: 1/2/3-input transfers, fee accounting, failures, retries, restart, concurrency (322083.383625ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 323931.606625
+exit 0

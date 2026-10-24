@@ -34,4 +34,17 @@ Prerequisites (already present in this workspace; not downloaded by these steps)
    A rerun with the same --wallet-dir resumes: mined credits are reused and surplus notes are baselined (no replacement
    credits). Results: runs/stagenet/rehearsal-stagenet.json and STAGENET-RUN.txt. The wallet roots are never published.
 
+7. Focused regression of the carrier module's lost-reply recovery and pool-aware input selection (scripted daemon, < 1 s):
+     node --test holder-carrier-recovery.test.mjs
+     node --test lossy-proxy.test.mjs        # fault proxy: drop-reply/drop-request/pass-through/history (3 tests)
+8. Restart / lost-reply / stale-backup / two-installation / rollback cases on the OFFLINE chain (≈8 minutes; ports 8955, 30084-30085;
+   exit 0 only if every check passed):
+     node stagenet/recovery-cases.mjs --mode local --out runs/recovery-cases-local.json
+   Each installation is a separate process (stagenet/holder-process.mjs) behind the fault proxy (stagenet/lossy-proxy.mjs);
+   installs, snapshots and the proxy fault log are written under runs/recovery-<mode>-*/ (or --run-dir).
+9. The same cases on STAGENET (ordinary authorised test transactions only: LR, R1a, R1b, R2, R3, S; waits for real blocks, ≈2-3 h):
+     node stagenet/recovery-cases.mjs --mode stagenet --rpc http://127.0.0.1:38091 --manifest runs/stagenet/trusted-manifest.json \
+          --params-dir params/stagenet-v0 --wallet-dir runs/stagenet/wallets --param-port 8956 --run-dir runs/stagenet/recovery-run \
+          --out runs/stagenet/recovery-cases-stagenet.json
+
 Hashes: MANIFEST.sha256 (sha256sum -c MANIFEST.sha256 from the candidate root).
