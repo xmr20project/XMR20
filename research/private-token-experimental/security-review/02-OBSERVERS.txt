@@ -19,7 +19,13 @@ PUBLIC CHAIN OBSERVER (anyone with a Monero node)
   therefore produces a chain of carriers linked through its own change — exactly as its ordinary
   payments would be. We claim nothing about resistance to statistical ring analysis.
 - Fee rate and transaction size make carriers distinguishable from ordinary 2-output transactions by
-  their extra size. Nothing hides that a transaction is a carrier.
+  their extra size. Nothing hides that a transaction is a carrier. MEASURED ON STAGENET (24 Oct 2026):
+  XM3 carriers 2,533-2,539 bytes with a 1,056-byte tx_extra, XB3 credit carriers 2,462-2,466 bytes with
+  a 985-byte extra, fee 20,000 piconero/byte (not a mainnet figure); all were relayed by and visible on
+  a third-party public node, i.e. the fingerprint is public network-wide, as expected.
+- Pool observers additionally see a wallet's RETRY behaviour: after a lost reply the wallet asks its node
+  (get_transactions) and re-sends the identical blob only if unknown; identical re-sends reveal nothing
+  new (same txid). The wallet's queries themselves are visible to its own node only.
 
 PUBLIC INDEXER (runs the pool rules; no keys)
 - Everything the observer sees, plus the derived pool state: accepted/rejected records, total

@@ -1,0 +1,12 @@
+✔ drop-reply: daemon answered, client connection destroyed, fault recorded with the daemon answer (23.396416ms)
+✔ drop-request: nothing reaches the daemon (1.198208ms)
+✔ pass-through is unchanged and history survives clearing the per-case events view (5.859083ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 90.597083
+exit 0

@@ -6,7 +6,7 @@
  "bridgePayoutsGated": true,
  "candidate": "research/privacy-stagenet-roles-20261023 (+ lab crate research/privacy-stagenet-roles-20261023-lab)",
  "basedOn": "research/privacy-stagenet-rehearsal-20261023 (unchanged) <- verifier-params <- stage 4; lab crate copied from research/privacy-verifier-params-20261023-lab (unchanged)",
- "stage": "stagenet-aware roles + static parameter service + two-wallet rehearsal harness v2: TESTED IN SIMULATION (offline fakechain) AND EXECUTED ON PUBLIC STAGENET on 24 Oct 2026 (worthless faucet coins; not mainnet)",
+ "stage": "stagenet-aware roles + static parameter service + two-wallet rehearsal harness v2: TESTED IN SIMULATION (offline fakechain) AND EXECUTED ON PUBLIC STAGENET on 24 Oct 2026 (worthless faucet coins; not mainnet); 24 Oct 2026: restart/lost-reply/recovery cases (offline chain all cases incl. rollback and two-installation conflict; stagenet the ordinary cases) and the security-review package finalised in place (review/00-08)",
  "mainnet": "refused by every component (harness preflight, roles.mjs, lab Manifest::validate, lab native::guard, engine params op, scanner)",
  "networkSelection": {
   "source": "the trusted parameter manifest (network.kind offline-fakechain | stagenet, network.genesis, network.startHeight)",
@@ -44,7 +44,11 @@
   "tamperedServerRefusedByClient": "PASSED",
   "roleNetworkSelection": "PASSED (stagenet manifest vs fakechain daemon refused at both layers; manifest kind mainnet refused at both layers; genesis mismatch refused; non-daemon URL refused; URL override wins; start height above tip -> empty pool)",
   "rehearsalLocal": "PASSED (SIMULATED, offline fakechain, start height 40): credits 3, transfers with inputs [1,3,2] and exact change, holder fees exact (3,024,000,000 piconero each at the OFFLINE rate), proving 32.2/31.3/31.4 s, recovery of both wallets from roots, all records admitted by sender/recipient/indexer (runs/rehearsal-local.json)",
-  "stagenetExecution": "EXECUTED (runs/stagenet/rehearsal-stagenet.json, STAGENET-RUN.txt): 4 credit carriers (one surplus baselined), T1 one-input / recovery of both wallets / T2 three-input / T3 two-input, exact change, exact holder fees 50,760,000 / 50,780,000 / 50,660,000 piconero at 20,000 piconero/byte (STAGENET rate, not mainnet), 1,056-byte tx_extra carriers accepted with sanity checks, relayed to and confirmed (10) by a third-party node, same-blob re-send idempotent 3/3, tokens conserved"
+  "stagenetExecution": "EXECUTED (runs/stagenet/rehearsal-stagenet.json, STAGENET-RUN.txt): 4 credit carriers (one surplus baselined), T1 one-input / recovery of both wallets / T2 three-input / T3 two-input, exact change, exact holder fees 50,760,000 / 50,780,000 / 50,660,000 piconero at 20,000 piconero/byte (STAGENET rate, not mainnet), 1,056-byte tx_extra carriers accepted with sanity checks, relayed to and confirmed (10) by a third-party node, same-blob re-send idempotent 3/3, tokens conserved",
+  "recoveryCasesOffline": "PASSED 76/76 (runs/recovery-cases-local.json)",
+  "recoveryCasesStagenet": "PASSED 57/57 (runs/stagenet/recovery-cases-stagenet.json; EXECUTED on public stagenet 11:15-13:00Z 24 Oct 2026, ordinary authorised test transactions only: LR, R1a, R1b, R2, R3, S; LRQ/TWO/RB offline only; four carriers 36946f8c…, 8c9777ef…, 7732fd77…, d4c3d94b… each confirmed 10 by the owner node and 10-21 by a third-party node)",
+  "carrierRecoveryUnit": "PASSED 6/6 (holder-carrier-recovery.test.mjs)",
+  "lossyProxyUnit": "PASSED 3/3 (lossy-proxy.test.mjs, runs/lossy-proxy-test.log)"
  },
  "prerequisitesChecked": "(superseded by stagenetRun) 23 Oct: no node existed; 24 Oct: isolated node set up, synced and used",
  "stillRequiredForTheRealStagenetRehearsal": [
@@ -53,13 +57,14 @@
  "components": {
   "privateTransfers": {
    "ready": false,
-   "status": "complete two-wallet flow verified in SIMULATION and EXECUTED ON STAGENET (24 Oct 2026); still NO-GO",
+   "status": "complete two-wallet flow verified in SIMULATION and EXECUTED ON STAGENET (24 Oct 2026); restart/lost-reply/stale-backup/two-installation/rollback cases verified (offline) and the ordinary ones executed on stagenet; still NO-GO",
    "blockers": [
     "unreviewed XB3/XM3 composition and disposable setups",
     "no independent security review of the wasm engine or key scheme",
     "metadata privacy analysis",
     "carrier fingerprint (extra size) and change-chain linkage undocumented for users",
-    "no mainnet execution; stagenet fee/decoy figures only"
+    "no mainnet execution; stagenet fee/decoy figures only",
+    "popup flow (private-format.js) still to adopt lookup-before-retry and pool-aware input selection (reference implementation only in holder-process.mjs)"
    ]
   },
   "migration": {
@@ -96,7 +101,8 @@
   "mainnet fee/decoy measurements (stagenet figures only)"
  ],
  "securityReview": {
-  "status": "PACKAGE PREPARED (research/privacy-review-20261023/review), NOT COMMISSIONED, NOT PERFORMED"
+  "status": "PACKAGE FINALISED IN PLACE (review/00-08 of this candidate; published as security-review/): 00 review brief with exact source/build hashes, protocol/circuit identity, trust assumptions, key derivation, public metadata, exercised-vs-simulated-vs-mocked list, ranked unresolved findings, reproduction and reviewer deliverables; 08 production-parameter requirements; 06 F and 07 6 updated. NOT COMMISSIONED, NOT PERFORMED; no reviewer contacted; nothing paid. Locally generated parameters and the implementer/AI self-review are not an independent audit.",
+  "stage3Original": "research/privacy-review-20261023/review (unchanged)"
  },
  "exposureStatementRetained": "maxPaidPerWindow is a payout-RATE control, not a loss bound; the rollback-loss counterexample stands",
  "stagenetRun": {
@@ -114,8 +120,72 @@
   },
   "notShown": [
    "mainnet fees, decoy statistics or miner policies",
-   "a real lost-reply or reorganization case (only the idempotent re-send path)",
+   "a reorganization on the public network (rollbacks only on the offline chain); the lost-reply case WAS shown on stagenet on 24 Oct (recoveryCases)",
    "anything about the disposable setup, constant-time safety or the review blockers"
   ]
+ },
+ "recoveryCases": {
+  "files": "stagenet/recovery-cases.mjs (orchestrator), stagenet/holder-process.mjs (journaled installation as a separate process), stagenet/lossy-proxy.mjs (fault proxy), holder-carrier-recovery.test.mjs",
+  "rule": "COMPLETED only with 10 confirmations on chain; uncertain, conflicting, rejected or refused operations are never reported as completed; orchestrator and process exit nonzero on failure",
+  "cases": {
+   "LR": "actual lost broadcast reply (daemon answered OK, reply dropped): lookup before retry, nothing re-sent, one fee",
+   "LRQ": "lost request: lookup unknown, same blob re-sent once",
+   "R1a": "killed after quote: released, no fee",
+   "R1b": "killed after proving before signing: signed once on resume",
+   "R2": "killed after signing before broadcast: same txid sent on resume",
+   "R3": "killed after an unanswered send: found in pool on resume, nothing re-sent",
+   "S": "stale signed backup settles from chain (no re-send, no fee); stale built backup with spent notes refused before any carrier",
+   "TWO": "(offline only) two installations, same phrase, same note: exactly one completed; other refused/rejected",
+   "RB": "(offline only) completed transfer removed by a 12-block rollback: same carrier re-sent, no new fee; operator-side rollback loss retained (review/05)"
+  },
+  "offline": {
+   "status": "PASSED",
+   "checks": "76/76",
+   "report": "runs/recovery-cases-local.json",
+   "proxyFaults": "runs/recovery-run-local/proxy-faults.json",
+   "smokeRunKept": "runs/recovery-smoke.json (exposed the pool-awareness defect before the fix)"
+  },
+  "stagenet": {
+   "status": "PASSED 57/57 (EXECUTED ON STAGENET; not mainnet; stagenet fees are not mainnet fees)",
+   "report": "runs/stagenet/recovery-cases-stagenet.json",
+   "observation": "runs/stagenet/recovery-public-observation.json"
+  },
+  "defectsFixed": [
+   "holder-carrier.js: transport failure on publish was treated like a refusal -> publishWithRecovery/lookup (UNCERTAIN -> ask the daemon -> same-blob re-send only if unknown; every attempt journaled first)",
+   "holder-carrier.js quote: native inputs spent by unconfirmed pool transactions are excluded (a restarted installation re-picked an input its own unconfirmed carrier had spent; the daemon correctly refused the double spend)",
+   "recovery-cases.mjs/lossy-proxy.mjs: the proxy fault-log FILE was written from the per-case event view (cleared between cases) and so held no faults; now written from a never-cleared history (faults, send requests with daemon answers, upstream errors). Evidence defect only; the faults were in the report steps and run logs; the two completed runs' files were reconstructed from their run logs (reconstructedFrom) with the original tails preserved"
+  ],
+  "notChanged": [
+   "Monero validation, maturity rules, confirmation requirement, token verification, private-by-default transfers, holder-controlled keys, explicit viewing-key sharing, no native-output/key-image association in records"
+  ],
+  "regressionAfterFixes": {
+   "holder-carrier-recovery.test.mjs": "6/6",
+   "stagenet-roles.test.mjs": "4/4 (runs/stagenet-roles-test-rerun2.log)",
+   "holder-carrier.test.mjs": "1/1, 6 transfers (runs/holder-carrier-test-rerun.log)",
+   "lossy-proxy.test.mjs": "3/3"
+  },
+  "tests": {}
+ },
+ "readinessTable": {
+  "remainingEngineering": [
+   "port publishWithRecovery (lookup-before-retry) and pool-aware native input exclusion into the extension popup flow and re-run the stage-3 browser suites",
+   "independent chain observation for the roles (gate on a second node instead of recording a third-party view)",
+   "ceremony tooling: constraint-system digest, transcript verifier, deterministic finalisation (review/08 R1.b, R2.c)",
+   "proving cost (~35 s, ~400 MB) unless the product accepts it"
+  ],
+  "independentReview": [
+   "XM3/XB3 composition soundness/malleability, compact codec, XMR20-TKD1 coupling",
+   "carrier construction/fingerprint; journal and recovery semantics (review/06 F)",
+   "ceremony design and independent verification of its transcript (review/08 R4)",
+   "constant-time / side-channel review"
+  ],
+  "productDecisions": [
+   "fund a multi-party parameter ceremony; choose coordinator/contributors (review/08)",
+   "bridge finality policy with numbers, loss reserve, incident controls (review/05 A) - more confirmations or wallet reservations do not remove the loss case",
+   "keep native XMR trading off the private format or fund research (review/05 B)",
+   "accept/document change-chain linkage, carrier fingerprint, memory-erasure limits, confirmation latency",
+   "whether to run any mainnet measurement (not authorised by this research)"
+  ],
+  "note": "every verdict stays NO-GO until the independentReview column is closed, regardless of passing tests"
  }
 }

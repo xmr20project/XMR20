@@ -1,0 +1,650 @@
+{
+ "startedAt": "2026-10-24T11:05:50.934Z",
+ "mode": "local",
+ "execution": "SIMULATED on an offline fakechain (not stagenet, not mainnet)",
+ "confirmations": 10,
+ "gates": {
+  "bridgePayouts": "gated (not exercised)",
+  "nativeTrading": "gated (not exercised)"
+ },
+ "steps": [
+  {
+   "at": "2026-10-24T11:05:50.935Z",
+   "name": "manifest",
+   "path": "<workspace>/research/privacy-stagenet-roles-20261023/params/test-v1/manifest.json",
+   "sha256": "ae7ba302194ca3e6f85bd045a653f58026a4fcda9141b1ed8a86600f31611e66",
+   "network": {
+    "kind": "offline-fakechain",
+    "genesis": "418015bb9ae982a1975da7d79277c2705727a56894ba0fb246adaabb1f4632e3"
+   }
+  },
+  {
+   "at": "2026-10-24T11:05:52.369Z",
+   "name": "daemon",
+   "rpcUrl": "http://127.0.0.1:30085",
+   "nettype": "fakechain",
+   "height": 1,
+   "synchronized": true
+  },
+  {
+   "at": "2026-10-24T11:06:35.571Z",
+   "name": "roles",
+   "network": "offline-fakechain",
+   "startHeight": 0,
+   "roles": [
+    "issuer",
+    "indexer"
+   ]
+  },
+  {
+   "at": "2026-10-24T11:06:35.573Z",
+   "name": "proxy",
+   "url": "http://127.0.0.1:59793",
+   "target": "http://127.0.0.1:30085",
+   "note": "loopback fault-injection proxy between the holder installations and the daemon; the daemon itself is untouched"
+  },
+  {
+   "at": "2026-10-24T11:06:35.726Z",
+   "name": "wallets",
+   "A": {
+    "token": "penumbra10xlvvuk9v3ju352td9n2z03h3zv4gam563gfptxclhl2afu6t893apa86g5ayqvfyvp94w5ta4ksu7cpjvkarzvc45eww8fjg9945j0rkk0s7zhcq34cvr9znk872jw73jga4c",
+    "native": "4AxaxEzX3sW4umH2V2UhjUcQzAPPs9yUQKCjZ3ECAMeLV5aPqTGeKnBXXDvjeM1GTZ9MDz1PZ4vtMQ4MrUSTsrAdTQnAo5n"
+   },
+   "B": {
+    "token": "penumbra19k7yweu4cjzxcjcr7tdm837h3r4u033u7nhp0x29tmzu64xm3mx85ycmzmm2hm9vaekg74euq4gee6g24gqexzegd5qyx45htpgettjkdqtxfzfpznu8caxy4tvz9md48p2wxc",
+    "native": "45Jrfa8tPPWRMfgvskBbET1cJN7qvpsvggb2fMLwK6EfiYC69iptWS5BAoA8mzwdx72zmBzMfiv3DNCgZ7w6z5kH4xBBVFU"
+   },
+   "note": "roots in walletDir (0600), never logged"
+  },
+  {
+   "at": "2026-10-24T11:07:00.759Z",
+   "name": "fund",
+   "simulated": true,
+   "credits": [
+    {
+     "who": "A",
+     "amount": "2000000",
+     "txid": "a50b2884f37af0fa48e7d22c1a8b01226987685c0ec1148b7b3c305fb5cd1b5d"
+    },
+    {
+     "who": "A",
+     "amount": "2000000",
+     "txid": "8bbaf8cf91e4052da703fa725490237899b888737ff799976b90f6cf61fea480"
+    },
+    {
+     "who": "A",
+     "amount": "2000000",
+     "txid": "90a1a830c50f0404e1535fbb625e6507b4dd811ea09a11e526557e4f78ba0247"
+    },
+    {
+     "who": "A",
+     "amount": "2000000",
+     "txid": "e69a12565e283a61e5099c2c721d80ccd2ff32adaf7873358ecfcbcdacf24d74"
+    },
+    {
+     "who": "A",
+     "amount": "2000000",
+     "txid": "3041acbfa781b07f964c650eae18d2aa2670db406f70632e8f9f1aaed166ebe5"
+    },
+    {
+     "who": "A",
+     "amount": "2000000",
+     "txid": "027b534de193767836b46b04d45d89be279d31de3dd9aef452af56c007ef0170"
+    },
+    {
+     "who": "B",
+     "amount": "2000000",
+     "txid": "6fd76babc14899c6d19c9ad10b3faee766c9a34bc31de76b293b55fd2f1d516d"
+    },
+    {
+     "who": "B",
+     "amount": "2000000",
+     "txid": "63b683720fd74409667865e8d9d2c40886ba4aa9ffa66c238d8fcb880b0a8d7a"
+    }
+   ],
+   "note": "coinbase to issuer/A/B and eight issuer credits on the fakechain (OFFLINE values)"
+  },
+  {
+   "at": "2026-10-24T11:07:00.759Z",
+   "name": "case-start",
+   "case": "LR"
+  },
+  {
+   "at": "2026-10-24T11:07:38.716Z",
+   "name": "daemon answered OK before the reply was dropped",
+   "case": "LR",
+   "ok": true,
+   "fault": {
+    "at": "2026-10-24T11:07:38.660Z",
+    "path": "/send_raw_transaction",
+    "bytes": 5102,
+    "fault": "drop-reply",
+    "forwarded": true,
+    "upstreamStatus": 200,
+    "daemon": {
+     "status": "OK",
+     "reason": null,
+     "double_spend": false,
+     "not_relayed": false
+    },
+    "replyDroppedAfterDaemonAnswered": true
+   }
+  },
+  {
+   "at": "2026-10-24T11:07:38.716Z",
+   "name": "wallet saw a transport failure, then asked the daemon and found the carrier",
+   "case": "LR",
+   "ok": true,
+   "trail": [
+    {
+     "attempt": 0,
+     "action": "send",
+     "outcome": "uncertain",
+     "error": "UND_ERR_SOCKET"
+    },
+    {
+     "attempt": 0,
+     "action": "lookup",
+     "known": true,
+     "inPool": true,
+     "blockHeight": null,
+     "confirmations": 0,
+     "status": "OK"
+    }
+   ]
+  },
+  {
+   "at": "2026-10-24T11:07:38.716Z",
+   "name": "nothing was re-sent (recovered by lookup, resends 0)",
+   "case": "LR",
+   "ok": true,
+   "resends": 0,
+   "sendRequestsSeenByProxy": 1
+  },
+  {
+   "at": "2026-10-24T11:07:38.717Z",
+   "name": "process reports published, not completed",
+   "case": "LR",
+   "ok": true,
+   "code": 2,
+   "state": "published"
+  },
+  {
+   "at": "2026-10-24T11:07:38.717Z",
+   "name": "case-start",
+   "case": "R1a"
+  },
+  {
+   "at": "2026-10-24T11:07:41.875Z",
+   "name": "process was killed right after the fee quote was journaled",
+   "case": "R1a",
+   "ok": true,
+   "signal": "SIGKILL"
+  },
+  {
+   "at": "2026-10-24T11:07:42.644Z",
+   "name": "fresh (phrase-only) installation sees nothing pending and the same notes",
+   "case": "R1a",
+   "ok": true,
+   "balances": {
+    "f9b1999ab6960533f5e956adb77110954744bed68139e0d2dd435eff0a0d7b05": "12000000"
+   }
+  },
+  {
+   "at": "2026-10-24T11:07:43.430Z",
+   "name": "original journal shows the operation as preparing (nothing sent)",
+   "case": "R1a",
+   "ok": true,
+   "pending": {
+    "status": "quoted",
+    "display": "Fee quoted (nothing sent, no fee)",
+    "txid": null,
+    "recordId": null,
+    "reserved": [
+     "6acce7e967285db26264b3684a74cbb6255428d96011056b668708f5c6f1b305"
+    ]
+   }
+  },
+  {
+   "at": "2026-10-24T11:07:44.204Z",
+   "name": "resume releases the operation: no fee, nothing sent, exit 0",
+   "case": "R1a",
+   "ok": true,
+   "state": "released",
+   "sends": 0
+  },
+  {
+   "at": "2026-10-24T11:07:44.204Z",
+   "name": "case-start",
+   "case": "R2"
+  },
+  {
+   "at": "2026-10-24T11:08:21.862Z",
+   "name": "process was killed right after the signed carrier was journaled (never broadcast)",
+   "case": "R2",
+   "ok": true,
+   "txidAtCrash": "7e5129b5ec68fae6231fe85884cd67f9124ca7d02c09be5bbcc17bd2243c92a7"
+  },
+  {
+   "at": "2026-10-24T11:08:22.632Z",
+   "name": "fresh installation: notes unspent, nothing pending, carrier unknown to the daemon",
+   "case": "R2",
+   "ok": true
+  },
+  {
+   "at": "2026-10-24T11:08:23.383Z",
+   "name": "original journal: signed, not yet broadcast",
+   "case": "R2",
+   "ok": true,
+   "pending": {
+    "status": "signed",
+    "display": "Signed; not yet broadcast",
+    "txid": "7e5129b5ec68fae6231fe85884cd67f9124ca7d02c09be5bbcc17bd2243c92a7",
+    "recordId": "6819b6e08203be4e3c1266aeea8dbddf168a18ae4e81a3cd54ccf00446f38b0e",
+    "reserved": [
+     "6acce7e967285db26264b3684a74cbb6255428d96011056b668708f5c6f1b305"
+    ]
+   }
+  },
+  {
+   "at": "2026-10-24T11:08:24.178Z",
+   "name": "resume asked the daemon first (unknown), then sent the SAME blob: same txid, accepted, no re-sign",
+   "case": "R2",
+   "ok": false,
+   "lookup": {
+    "known": false,
+    "inPool": false,
+    "blockHeight": null,
+    "confirmations": 0,
+    "status": "OK"
+   },
+   "txid": null,
+   "sends": 1
+  },
+  {
+   "at": "2026-10-24T11:08:25.193Z",
+   "name": "advance",
+   "blocks": 1,
+   "from": 350,
+   "to": 351,
+   "why": "settlement",
+   "simulated": true
+  },
+  {
+   "at": "2026-10-24T11:08:26.075Z",
+   "name": "advance",
+   "blocks": 1,
+   "from": 351,
+   "to": 352,
+   "why": "settlement",
+   "simulated": true
+  },
+  {
+   "at": "2026-10-24T11:08:26.946Z",
+   "name": "advance",
+   "blocks": 1,
+   "from": 352,
+   "to": 353,
+   "why": "settlement",
+   "simulated": true
+  },
+  {
+   "at": "2026-10-24T11:08:27.831Z",
+   "name": "advance",
+   "blocks": 1,
+   "from": 353,
+   "to": 354,
+   "why": "settlement",
+   "simulated": true
+  },
+  {
+   "at": "2026-10-24T11:08:28.707Z",
+   "name": "advance",
+   "blocks": 1,
+   "from": 354,
+   "to": 355,
+   "why": "settlement",
+   "simulated": true
+  },
+  {
+   "at": "2026-10-24T11:08:29.583Z",
+   "name": "advance",
+   "blocks": 1,
+   "from": 355,
+   "to": 356,
+   "why": "settlement",
+   "simulated": true
+  },
+  {
+   "at": "2026-10-24T11:08:30.445Z",
+   "name": "advance",
+   "blocks": 1,
+   "from": 356,
+   "to": 357,
+   "why": "settlement",
+   "simulated": true
+  },
+  {
+   "at": "2026-10-24T11:08:31.336Z",
+   "name": "advance",
+   "blocks": 1,
+   "from": 357,
+   "to": 358,
+   "why": "settlement",
+   "simulated": true
+  },
+  {
+   "at": "2026-10-24T11:08:32.207Z",
+   "name": "advance",
+   "blocks": 1,
+   "from": 358,
+   "to": 359,
+   "why": "settlement",
+   "simulated": true
+  },
+  {
+   "at": "2026-10-24T11:08:33.081Z",
+   "name": "advance",
+   "blocks": 1,
+   "from": 359,
+   "to": 360,
+   "why": "settlement",
+   "simulated": true
+  },
+  {
+   "at": "2026-10-24T11:08:36.385Z",
+   "name": "operation completed with the required confirmations (settle exit 0)",
+   "case": "LR",
+   "ok": true,
+   "code": 0,
+   "state": "completed",
+   "confirmations": 10
+  },
+  {
+   "at": "2026-10-24T11:08:36.385Z",
+   "name": "exactly one carrier; record accepted on chain once",
+   "case": "LR",
+   "ok": true,
+   "txid": "7f68107e7e3ac8c80bc740b0ed211d5085bbe99ea729affa0d1d4097a8332863",
+   "height": 351
+  },
+  {
+   "at": "2026-10-24T11:08:36.385Z",
+   "name": "indexer admitted the record",
+   "case": "LR",
+   "ok": true,
+   "indexer": "accepted"
+  },
+  {
+   "at": "2026-10-24T11:08:36.385Z",
+   "name": "sender paid exactly one carrier fee (native moved by the journaled fee)",
+   "case": "LR",
+   "ok": true,
+   "nativeBefore": "140735609318268",
+   "nativeAfter": "140732585318268",
+   "paid": "3024000000",
+   "fee": "3024000000"
+  },
+  {
+   "at": "2026-10-24T11:08:36.385Z",
+   "name": "exact token balances in the fresh installations (sender minus amount, recipient plus amount, change kept)",
+   "case": "LR",
+   "ok": false,
+   "sender": {
+    "before": "12000000",
+    "after": "11000000",
+    "expected": "9000000"
+   },
+   "recipient": {
+    "before": "4000000",
+    "after": "5000000",
+    "expected": "7000000"
+   }
+  },
+  {
+   "at": "2026-10-24T11:08:36.385Z",
+   "name": "original installation and fresh installation agree on chain state",
+   "case": "LR",
+   "ok": true,
+   "orig": {
+    "f9b1999ab6960533f5e956adb77110954744bed68139e0d2dd435eff0a0d7b05": "11000000"
+   },
+   "fresh": {
+    "f9b1999ab6960533f5e956adb77110954744bed68139e0d2dd435eff0a0d7b05": "11000000"
+   }
+  },
+  {
+   "at": "2026-10-24T11:08:36.385Z",
+   "name": "no view reports anything but the one completed transfer (no pending, no duplicate)",
+   "case": "LR",
+   "ok": true,
+   "history": [
+    {
+     "op": "LR",
+     "status": "completed",
+     "display": "Completed",
+     "txid": "7f68107e7e3ac8c80bc740b0ed211d5085bbe99ea729affa0d1d4097a8332863",
+     "feePaid": "3024000000"
+    }
+   ]
+  },
+  {
+   "at": "2026-10-24T11:08:38.733Z",
+   "name": "operation completed with the required confirmations (settle exit 0)",
+   "case": "R2",
+   "ok": false,
+   "code": 1,
+   "state": "refused"
+  },
+  {
+   "at": "2026-10-24T11:08:38.733Z",
+   "name": "exactly one carrier; record accepted on chain once",
+   "case": "R2",
+   "ok": false,
+   "txid": "7e5129b5ec68fae6231fe85884cd67f9124ca7d02c09be5bbcc17bd2243c92a7"
+  },
+  {
+   "at": "2026-10-24T11:08:38.733Z",
+   "name": "indexer admitted the record",
+   "case": "R2",
+   "ok": false,
+   "indexer": null
+  },
+  {
+   "at": "2026-10-24T11:08:38.733Z",
+   "name": "sender paid exactly one carrier fee (native moved by the journaled fee)",
+   "case": "R2",
+   "ok": false,
+   "nativeBefore": "140735609318268",
+   "nativeAfter": "140732585318268",
+   "paid": "3024000000",
+   "fee": "0"
+  },
+  {
+   "at": "2026-10-24T11:08:38.733Z",
+   "name": "exact token balances in the fresh installations (sender minus amount, recipient plus amount, change kept)",
+   "case": "R2",
+   "ok": false,
+   "sender": {
+    "before": "12000000",
+    "after": "11000000",
+    "expected": "9000000"
+   },
+   "recipient": {
+    "before": "4000000",
+    "after": "5000000",
+    "expected": "7000000"
+   }
+  },
+  {
+   "at": "2026-10-24T11:08:38.733Z",
+   "name": "original installation and fresh installation agree on chain state",
+   "case": "R2",
+   "ok": true,
+   "orig": {
+    "f9b1999ab6960533f5e956adb77110954744bed68139e0d2dd435eff0a0d7b05": "11000000"
+   },
+   "fresh": {
+    "f9b1999ab6960533f5e956adb77110954744bed68139e0d2dd435eff0a0d7b05": "11000000"
+   }
+  },
+  {
+   "at": "2026-10-24T11:08:38.733Z",
+   "name": "no view reports anything but the one completed transfer (no pending, no duplicate)",
+   "case": "R2",
+   "ok": false,
+   "history": [
+    {
+     "op": "R2",
+     "status": "refused",
+     "display": "Refused by the daemon (no carrier fee paid)",
+     "txid": "7e5129b5ec68fae6231fe85884cd67f9124ca7d02c09be5bbcc17bd2243c92a7",
+     "feePaid": "0"
+    }
+   ]
+  },
+  {
+   "at": "2026-10-24T11:08:38.736Z",
+   "name": "done",
+   "passed": false,
+   "checks": 26,
+   "failed": 8
+  }
+ ],
+ "cases": [],
+ "failed": {
+  "message": "8 check(s) failed",
+  "checks": [
+   "R2: resume asked the daemon first (unknown), then sent the SAME blob: same txid, accepted, no re-sign",
+   "LR: exact token balances in the fresh installations (sender minus amount, recipient plus amount, change kept)",
+   "R2: operation completed with the required confirmations (settle exit 0)",
+   "R2: exactly one carrier; record accepted on chain once",
+   "R2: indexer admitted the record",
+   "R2: sender paid exactly one carrier fee (native moved by the journaled fee)",
+   "R2: exact token balances in the fresh installations (sender minus amount, recipient plus amount, change kept)",
+   "R2: no view reports anything but the one completed transfer (no pending, no duplicate)"
+  ]
+ },
+ "summary": {
+  "execution": "SIMULATED on an offline fakechain (not stagenet, not mainnet)",
+  "cases": [
+   "LR",
+   "R1a",
+   "R2"
+  ],
+  "results": [
+   {
+    "case": "LR",
+    "txid": "7f68107e7e3ac8c80bc740b0ed211d5085bbe99ea729affa0d1d4097a8332863",
+    "fee": "3024000000",
+    "amount": "1000000",
+    "inputNote": "2000000",
+    "sender": "A",
+    "height": 351,
+    "confirmations": 10
+   },
+   {
+    "case": "R2",
+    "txid": "7e5129b5ec68fae6231fe85884cd67f9124ca7d02c09be5bbcc17bd2243c92a7",
+    "fee": "0",
+    "amount": "2000000",
+    "inputNote": "2000000",
+    "sender": "A"
+   }
+  ],
+  "checks": 26,
+  "failedChecks": [
+   {
+    "case": "R2",
+    "name": "resume asked the daemon first (unknown), then sent the SAME blob: same txid, accepted, no re-sign",
+    "ok": false,
+    "lookup": {
+     "known": false,
+     "inPool": false,
+     "blockHeight": null,
+     "confirmations": 0,
+     "status": "OK"
+    },
+    "txid": null,
+    "sends": 1
+   },
+   {
+    "case": "LR",
+    "name": "exact token balances in the fresh installations (sender minus amount, recipient plus amount, change kept)",
+    "ok": false,
+    "sender": {
+     "before": "12000000",
+     "after": "11000000",
+     "expected": "9000000"
+    },
+    "recipient": {
+     "before": "4000000",
+     "after": "5000000",
+     "expected": "7000000"
+    }
+   },
+   {
+    "case": "R2",
+    "name": "operation completed with the required confirmations (settle exit 0)",
+    "ok": false,
+    "code": 1,
+    "state": "refused"
+   },
+   {
+    "case": "R2",
+    "name": "exactly one carrier; record accepted on chain once",
+    "ok": false,
+    "txid": "7e5129b5ec68fae6231fe85884cd67f9124ca7d02c09be5bbcc17bd2243c92a7"
+   },
+   {
+    "case": "R2",
+    "name": "indexer admitted the record",
+    "ok": false,
+    "indexer": null
+   },
+   {
+    "case": "R2",
+    "name": "sender paid exactly one carrier fee (native moved by the journaled fee)",
+    "ok": false,
+    "nativeBefore": "140735609318268",
+    "nativeAfter": "140732585318268",
+    "paid": "3024000000",
+    "fee": "0"
+   },
+   {
+    "case": "R2",
+    "name": "exact token balances in the fresh installations (sender minus amount, recipient plus amount, change kept)",
+    "ok": false,
+    "sender": {
+     "before": "12000000",
+     "after": "11000000",
+     "expected": "9000000"
+    },
+    "recipient": {
+     "before": "4000000",
+     "after": "5000000",
+     "expected": "7000000"
+    }
+   },
+   {
+    "case": "R2",
+    "name": "no view reports anything but the one completed transfer (no pending, no duplicate)",
+    "ok": false,
+    "history": [
+     {
+      "op": "R2",
+      "status": "refused",
+      "display": "Refused by the daemon (no carrier fee paid)",
+      "txid": "7e5129b5ec68fae6231fe85884cd67f9124ca7d02c09be5bbcc17bd2243c92a7",
+      "feePaid": "0"
+     }
+    ]
+   }
+  ],
+  "passed": false,
+  "proxyFaultLog": "<workspace>/research/privacy-stagenet-roles-20261023/runs/recovery-local-FN9WPm/proxy-faults.json",
+  "installsDir": "<workspace>/research/privacy-stagenet-roles-20261023/runs/recovery-local-FN9WPm/installs",
+  "note": "journals hold public data only (records, signed carriers, txids); roots are in walletDir and never logged"
+ },
+ "finishedAt": "2026-10-24T11:08:38.751Z"
+}

@@ -1,0 +1,275 @@
+{"step":"manifest","path":"<workspace>/research/privacy-stagenet-roles-20261023/params/test-v1/manifest.json","sha256":"ae7ba302194ca3e6f85bd045a653f58026a4fcda9141b1ed8a86600f31611e66","network":{"kind":"offline-fakechain","genesis":"418015bb9ae982a1975da7d79277c2705727a56894ba0fb246adaabb1f4632e3"}}
+{"fakechain":"http://127.0.0.1:30085","pid":3483}
+{"step":"daemon","rpcUrl":"http://127.0.0.1:30085","nettype":"fakechain","height":1,"synchronized":true}
+{"role":"issuer","ready":{"issuerNativeAddress":"4A31sYQqYyLU34uKg8nHR5BGri4s7CBxrLRmiVzNmEgdEgHKmcZ6UnB6vWsmBSHi9w4MyR7Q92iTQcPN31jKbAsd1uAbQB2","issuerTokenAddress":"penumbra1vfx9k473jukhhadtrfwd3qutpcael5tldphzp8xw378uxxvwa5ag4nzph777768fjd87vam03hdedm3zz7x67yz4633qlx0p7zhhvz7ljgzd0kg36jnsjwtnzvxp2ew4j35qur","mode":"issuer","ready":true,"trustedManifest":{"label":"DISPOSABLE TEST SETUP — NOT PRODUCTION","sha256":"
+{"role":"indexer","ready":{"domain":"759e56ff75367217038d9b5f85f6b878bf3212016922bb2a3891ea4fa6726eb8","mode":"indexer","ready":true,"trustedManifest":{"label":"DISPOSABLE TEST SETUP — NOT PRODUCTION","sha256":"ae7ba302194ca3e6f85bd045a653f58026a4fcda9141b1ed8a86600f31611e66"}}}
+{"step":"roles","network":"offline-fakechain","startHeight":0,"roles":["issuer","indexer"]}
+{"step":"proxy","url":"http://127.0.0.1:53124","target":"http://127.0.0.1:30085","note":"loopback fault-injection proxy between the holder installations and the daemon; the daemon itself is untouched"}
+{"step":"wallets","A":{"token":"penumbra1q7qg85jkqlhcdqlay59uxf87l2lawecwxpqf346u9yvazzq0u2wgjxh07lu8t7ayvmnzp48wnepnu7kecggpl4u0zkv80gyh5q7spgv2c2t6pwxcjjkqrcsqe27xlzls5t5f4x","native":"42FYFF5iSMuf7TUqrqvfwWeTDGCkRFqowKVy4NHmoAMHJhKA2zJBU59NWyZ5p3gRGF2pEqXDo3ouxhh9AyCHwcK12KAFqJm"},"B":{"token":"penumbra1dwjwxd4wq2z6k3wtqk7n2h8gcnwejkmllk33h738hzv3tyykgwrpn3wyvprs0utstkeltm8nkmmq7a4k6qvws8z0mvqlfd4sg6fedmedcdm70r9z
+{"step":"fund","simulated":true,"credits":[{"who":"A","amount":"2000000","txid":"799836782c4b15f8e21fe71a6c24f1bc32a7a0d115d5bbeef3e1a8693a7005aa"},{"who":"A","amount":"2000000","txid":"12ad20d14ed313d7f4393840f7635df82495b659988a438d8a974b655e2f6cdd"},{"who":"A","amount":"2000000","txid":"8a2216acbb0dfe828e0561268adbc63831b1973e5b6399fb183209796fee59e7"},{"who":"A","amount":"2000000","txid":"12b4bdea3d7dcc793fa4cbea
+{"holder":"fresh-A-round1-before-f2a6ab","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"fresh-B-round1-before-9eda83","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"step":"case-start","case":"LR"}
+{"holder":"fresh-A-LR-556152","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"fresh-A-LR0-cb05ae","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"fresh-B-LR0-6c4edc","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"proxy":{"at":"2026-10-24T11:11:48.873Z","path":"/send_raw_transaction","bytes":5102,"fault":"drop-reply","forwarded":true,"upstreamStatus":200,"daemon":{"status":"OK","reason":null,"double_spend":false,"not_relayed":false},"replyDroppedAfterDaemonAnswered":true}}
+{"holder":"LR-orig","cmd":"send","code":2,"signal":null,"state":"published","err":""}
+{"step":"check","case":"LR","name":"daemon answered OK before the reply was dropped","ok":true,"fault":{"at":"2026-10-24T11:11:48.873Z","path":"/send_raw_transaction","bytes":5102,"fault":"drop-reply","forwarded":true,"upstreamStatus":200,"daemon":{"status":"OK","reason":null,"double_spend":false,"not_relayed":false},"replyDroppedAfterDaemonAnswered":true}}
+{"step":"check","case":"LR","name":"wallet saw a transport failure, then asked the daemon and found the carrier","ok":true,"trail":[{"attempt":0,"action":"send","outcome":"uncertain","error":"UND_ERR_SOCKET"},{"attempt":0,"action":"lookup","known":true,"inPool":true,"blockHeight":null,"confirmations":0,"status":"OK"}]}
+{"step":"check","case":"LR","name":"nothing was re-sent (recovered by lookup, resends 0)","ok":true,"resends":0,"sendRequestsSeenByProxy":1}
+{"step":"check","case":"LR","name":"process reports published, not completed","ok":true,"code":2,"state":"published"}
+{"step":"case-start","case":"R1a"}
+{"holder":"fresh-A-R1a-c48aa7","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"fresh-A-R1a0-6ecb79","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"fresh-B-R1a0-1763de","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"R1a-orig","cmd":"send","code":null,"signal":"SIGKILL","state":null,"err":""}
+{"step":"check","case":"R1a","name":"process was killed right after the fee quote was journaled","ok":true,"signal":"SIGKILL"}
+{"holder":"fresh-A-R1a1-9b97dd","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"step":"check","case":"R1a","name":"fresh (phrase-only) installation sees nothing pending and the same notes","ok":true,"balances":{"f9b1999ab6960533f5e956adb77110954744bed68139e0d2dd435eff0a0d7b05":"12000000"}}
+{"holder":"R1a-orig","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"step":"check","case":"R1a","name":"original journal shows the operation as preparing (nothing sent)","ok":true,"pending":{"status":"quoted","display":"Fee quoted (nothing sent, no fee)","txid":null,"recordId":null,"reserved":["697a2edeaded6842c09122ecd0e039ec744d73939e4792d3fceb5380f0c13403"]}}
+{"holder":"R1a-orig","cmd":"resume","code":0,"signal":null,"state":"released","err":""}
+{"step":"check","case":"R1a","name":"resume releases the operation: no fee, nothing sent, exit 0","ok":true,"state":"released","sends":0}
+{"step":"case-start","case":"R1b"}
+{"holder":"fresh-B-R1b-7e78ed","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"fresh-A-R1b0-b895fd","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"fresh-B-R1b0-659f15","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"R1b-orig","cmd":"send","code":null,"signal":"SIGKILL","state":null,"err":""}
+{"step":"check","case":"R1b","name":"process was killed right after the proved record was journaled (before signing)","ok":true,"signal":"SIGKILL"}
+{"holder":"fresh-B-R1b1-1abce9","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"step":"check","case":"R1b","name":"fresh installation: notes still unspent, no pending operation (the proof exists only in the original journal)","ok":true}
+{"holder":"R1b-orig","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"step":"check","case":"R1b","name":"original journal: proved, awaiting fee approval, nothing sent","ok":true,"pending":{"status":"built","display":"Proved; awaiting carrier fee approval (nothing sent, no fee)","txid":null,"recordId":"ce8531e5f65f94b36172c59ecd69c56f9b7e3e2678471bd2e9b268304af36b22","reserved":["905fff26ce5753ac0ba4891d87c8a3fabab9e4287b2b142c8ddaa86b0393c307"]}}
+{"proxy":{"at":"2026-10-24T11:12:36.948Z","path":"/send_raw_transaction","bytes":5102,"fault":null,"forwarded":true,"upstreamStatus":200,"daemon":{"status":"OK","reason":null,"double_spend":false,"not_relayed":false}}}
+{"holder":"R1b-orig","cmd":"resume","code":2,"signal":null,"state":"published","err":""}
+{"step":"check","case":"R1b","name":"resume signs the saved record once and publishes it (one send request, accepted)","ok":true,"state":"published","sends":1}
+{"step":"case-start","case":"R2"}
+{"holder":"fresh-A-R2-92ad7b","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"fresh-A-R20-1e22b5","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"fresh-B-R20-694a39","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"R2-orig","cmd":"send","code":null,"signal":"SIGKILL","state":null,"err":""}
+{"step":"check","case":"R2","name":"process was killed right after the signed carrier was journaled (never broadcast)","ok":true,"txidAtCrash":"72ccbc61eb4f46eba0c969543636579ea25dc6b543c2cd229df1c3b86893faf7"}
+{"holder":"fresh-A-R21-c3391f","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"step":"check","case":"R2","name":"fresh installation: notes unspent, nothing pending, carrier unknown to the daemon","ok":true}
+{"holder":"R2-orig","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"step":"check","case":"R2","name":"original journal: signed, not yet broadcast","ok":true,"pending":{"status":"signed","display":"Signed; not yet broadcast","txid":"72ccbc61eb4f46eba0c969543636579ea25dc6b543c2cd229df1c3b86893faf7","recordId":"88733f9850f3dc47139108cb4f9f0f4a2f9a2155c738b3fb3f9c637c7d5447a6","reserved":["697a2edeaded6842c09122ecd0e039ec744d73939e4792d3fceb5380f0c13403"]}}
+{"proxy":{"at":"2026-10-24T11:13:19.051Z","path":"/send_raw_transaction","bytes":5102,"fault":null,"forwarded":true,"upstreamStatus":200,"daemon":{"status":"OK","reason":null,"double_spend":false,"not_relayed":false}}}
+{"holder":"R2-orig","cmd":"resume","code":2,"signal":null,"state":"published","err":""}
+{"step":"check","case":"R2","name":"resume asked the daemon first (unknown), then sent the SAME blob: same txid, accepted, no re-sign","ok":true,"lookup":{"known":false,"inPool":false,"blockHeight":null,"confirmations":0,"status":"OK"},"txid":"72ccbc61eb4f46eba0c969543636579ea25dc6b543c2cd229df1c3b86893faf7","sends":1}
+{"holder":"LR-orig","cmd":"settle","code":2,"signal":null,"state":"published","err":""}
+{"holder":"R1b-orig","cmd":"settle","code":2,"signal":null,"state":"published","err":""}
+{"holder":"R2-orig","cmd":"settle","code":2,"signal":null,"state":"published","err":""}
+{"step":"advance","blocks":1,"from":350,"to":351,"why":"settlement","simulated":true}
+{"holder":"LR-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"holder":"R1b-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"holder":"R2-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"step":"advance","blocks":1,"from":351,"to":352,"why":"settlement","simulated":true}
+{"holder":"LR-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"holder":"R1b-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"holder":"R2-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"step":"advance","blocks":1,"from":352,"to":353,"why":"settlement","simulated":true}
+{"holder":"LR-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"holder":"R1b-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"holder":"R2-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"step":"advance","blocks":1,"from":353,"to":354,"why":"settlement","simulated":true}
+{"holder":"LR-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"holder":"R1b-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"holder":"R2-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"step":"advance","blocks":1,"from":354,"to":355,"why":"settlement","simulated":true}
+{"holder":"LR-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"holder":"R1b-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"holder":"R2-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"step":"advance","blocks":1,"from":355,"to":356,"why":"settlement","simulated":true}
+{"holder":"LR-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"holder":"R1b-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"holder":"R2-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"step":"advance","blocks":1,"from":356,"to":357,"why":"settlement","simulated":true}
+{"holder":"LR-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"holder":"R1b-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"holder":"R2-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"step":"advance","blocks":1,"from":357,"to":358,"why":"settlement","simulated":true}
+{"holder":"LR-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"holder":"R1b-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"holder":"R2-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"step":"advance","blocks":1,"from":358,"to":359,"why":"settlement","simulated":true}
+{"holder":"LR-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"holder":"R1b-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"holder":"R2-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"step":"advance","blocks":1,"from":359,"to":360,"why":"settlement","simulated":true}
+{"holder":"LR-orig","cmd":"settle","code":0,"signal":null,"state":"completed","err":""}
+{"holder":"R1b-orig","cmd":"settle","code":0,"signal":null,"state":"completed","err":""}
+{"holder":"R2-orig","cmd":"settle","code":0,"signal":null,"state":"completed","err":""}
+{"holder":"fresh-A-LRz-470fc7","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"fresh-B-LRz-8f729f","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"LR-orig","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"step":"check","case":"LR","name":"operation completed with the required confirmations (settle exit 0)","ok":true,"code":0,"state":"completed","confirmations":10}
+{"step":"check","case":"LR","name":"exactly one carrier; record accepted on chain once","ok":true,"txid":"564697bcc0e75ae7bd562cc0c300621b3705f1bfcab1f9feb136b2815e8c2a43","height":351}
+{"step":"check","case":"LR","name":"indexer admitted the record","ok":true,"indexer":"accepted"}
+{"step":"check","case":"LR","name":"journal records exactly one carrier fee for the completed operation","ok":true,"fee":"3024000000"}
+{"step":"check","case":"LR","name":"original installation and fresh installation agree on chain state","ok":true,"orig":{"f9b1999ab6960533f5e956adb77110954744bed68139e0d2dd435eff0a0d7b05":"9200000"},"fresh":{"f9b1999ab6960533f5e956adb77110954744bed68139e0d2dd435eff0a0d7b05":"9200000"}}
+{"step":"check","case":"LR","name":"no view reports anything but the one completed transfer (no pending, no duplicate)","ok":true,"history":[{"op":"LR","status":"completed","display":"Completed","txid":"564697bcc0e75ae7bd562cc0c300621b3705f1bfcab1f9feb136b2815e8c2a43","feePaid":"3024000000"}]}
+{"holder":"fresh-A-R1bz-e44b6b","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"fresh-B-R1bz-d55685","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"R1b-orig","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"step":"check","case":"R1b","name":"operation completed with the required confirmations (settle exit 0)","ok":true,"code":0,"state":"completed","confirmations":10}
+{"step":"check","case":"R1b","name":"exactly one carrier; record accepted on chain once","ok":true,"txid":"8cc1fc0427a1ea8dc432d3a78436797a398a937d91fc02c7ad481aad2a709431","height":351}
+{"step":"check","case":"R1b","name":"indexer admitted the record","ok":true,"indexer":"accepted"}
+{"step":"check","case":"R1b","name":"journal records exactly one carrier fee for the completed operation","ok":true,"fee":"3024000000"}
+{"step":"check","case":"R1b","name":"original installation and fresh installation agree on chain state","ok":true,"orig":{"f9b1999ab6960533f5e956adb77110954744bed68139e0d2dd435eff0a0d7b05":"6800000"},"fresh":{"f9b1999ab6960533f5e956adb77110954744bed68139e0d2dd435eff0a0d7b05":"6800000"}}
+{"step":"check","case":"R1b","name":"no view reports anything but the one completed transfer (no pending, no duplicate)","ok":true,"history":[{"op":"R1b","status":"completed","display":"Completed","txid":"8cc1fc0427a1ea8dc432d3a78436797a398a937d91fc02c7ad481aad2a709431","feePaid":"3024000000"}]}
+{"holder":"fresh-A-R2z-1bc603","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"fresh-B-R2z-c05eda","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"R2-orig","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"step":"check","case":"R2","name":"operation completed with the required confirmations (settle exit 0)","ok":true,"code":0,"state":"completed","confirmations":10}
+{"step":"check","case":"R2","name":"exactly one carrier; record accepted on chain once","ok":true,"txid":"72ccbc61eb4f46eba0c969543636579ea25dc6b543c2cd229df1c3b86893faf7","height":351}
+{"step":"check","case":"R2","name":"indexer admitted the record","ok":true,"indexer":"accepted"}
+{"step":"check","case":"R2","name":"journal records exactly one carrier fee for the completed operation","ok":true,"fee":"3024000000"}
+{"step":"check","case":"R2","name":"original installation and fresh installation agree on chain state","ok":true,"orig":{"f9b1999ab6960533f5e956adb77110954744bed68139e0d2dd435eff0a0d7b05":"9200000"},"fresh":{"f9b1999ab6960533f5e956adb77110954744bed68139e0d2dd435eff0a0d7b05":"9200000"}}
+{"step":"check","case":"R2","name":"no view reports anything but the one completed transfer (no pending, no duplicate)","ok":true,"history":[{"op":"R2","status":"completed","display":"Completed","txid":"72ccbc61eb4f46eba0c969543636579ea25dc6b543c2cd229df1c3b86893faf7","feePaid":"3024000000"}]}
+{"holder":"fresh-A-round1-after-0c8647","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"fresh-B-round1-after-76a81d","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"step":"check","case":"round1","name":"exact token balance of A over the round (before - sent + received)","ok":true,"who":"A","before":"12000000","after":"9200000","expected":"9200000","sent":["1000000","2000000"],"received":["200000"]}
+{"step":"check","case":"round1","name":"exact native accounting of A over the round (before - sum of journaled carrier fees; no other fee)","ok":true,"who":"A","before":"140735609318268","after":"140729561318268","expected":"140729561318268","fees":["3024000000","3024000000"]}
+{"step":"check","case":"round1","name":"exact token balance of B over the round (before - sent + received)","ok":true,"who":"B","before":"4000000","after":"6800000","expected":"6800000","sent":["200000"],"received":["1000000","2000000"]}
+{"step":"check","case":"round1","name":"exact native accounting of B over the round (before - sum of journaled carrier fees; no other fee)","ok":true,"who":"B","before":"105551002356605","after":"105547978356605","expected":"105547978356605","fees":["3024000000"]}
+{"holder":"fresh-A-S1-2b4a70","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"R2-stale","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"step":"check","case":"S","name":"stale backup (R2 at signed) still lists the operation as signed-not-broadcast","ok":true,"pending":{"status":"signed","display":"Signed; not yet broadcast","txid":"72ccbc61eb4f46eba0c969543636579ea25dc6b543c2cd229df1c3b86893faf7","recordId":"88733f9850f3dc47139108cb4f9f0f4a2f9a2155c738b3fb3f9c637c7d5447a6","reserved":["697a2edeaded6842c09122ecd0e039ec744d73939e4792d3fceb5380f0c13403
+{"holder":"R2-stale","cmd":"resume","code":2,"signal":null,"state":"published","err":""}
+{"step":"check","case":"S","name":"stale signed backup: daemon asked first, carrier already on chain, NOTHING re-sent","ok":true,"lookup":{"known":true,"inPool":false,"blockHeight":351,"confirmations":10,"status":"OK"},"sends":0}
+{"holder":"R2-stale","cmd":"settle","code":0,"signal":null,"state":"completed","err":""}
+{"holder":"fresh-A-S1z-c7ddba","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"step":"check","case":"S","name":"stale signed backup settles from chain state as completed with no additional fee","ok":true,"state":"completed","native":{"before":"140729561318268","after":"140729561318268"}}
+{"holder":"fresh-B-S2-945899","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"R1b-stale","cmd":"resume","code":1,"signal":null,"state":"conflicted","err":""}
+{"holder":"fresh-B-S2z-63d042","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"step":"check","case":"S","name":"stale built backup whose notes were spent meanwhile is refused before any carrier: no send, no fee, never completed","ok":true,"state":"conflicted","sends":0}
+{"holder":"R1b-stale","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"step":"check","case":"S","name":"stale built backup shows the operation as conflicted in its history, not completed","ok":true,"history":[{"op":"R1b","status":"conflicted","display":"Conflicted: not re-sent (these notes were spent by another installation)","txid":null,"feePaid":"0"}]}
+{"holder":"fresh-A-round2-before-bd95e6","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"fresh-B-round2-before-c453a4","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"step":"case-start","case":"R3"}
+{"holder":"fresh-A-R3-a286b5","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"fresh-A-R30-5b07c6","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"fresh-B-R30-1b3218","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"proxy":{"at":"2026-10-24T11:14:47.514Z","path":"/send_raw_transaction","bytes":5102,"fault":"drop-reply","forwarded":true,"upstreamStatus":200,"daemon":{"status":"OK","reason":null,"double_spend":false,"not_relayed":false},"replyDroppedAfterDaemonAnswered":true}}
+{"holder":"R3-orig","cmd":"send","code":null,"signal":"SIGKILL","state":null,"err":""}
+{"step":"check","case":"R3","name":"carrier reached the daemon (daemon answered OK), reply dropped, process killed before it could ask","ok":true,"fault":{"at":"2026-10-24T11:14:47.514Z","path":"/send_raw_transaction","bytes":5102,"fault":"drop-reply","forwarded":true,"upstreamStatus":200,"daemon":{"status":"OK","reason":null,"double_spend":false,"not_relayed":false},"replyDroppedAfterDaemonAnswered":true}}
+{"holder":"R3-orig","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"step":"check","case":"R3","name":"original journal shows the outcome as UNKNOWN (not sent, not failed)","ok":true,"pending":{"status":"broadcasting","display":"Broadcast outcome UNKNOWN","txid":"10172e66e9bb2a734fbe45d0c108261230c046aaf42375184f41739c7d087b87","recordId":"218a3f98570496fdc3d17d2b513e4fbbaee99f02b4306abc63d68cbffc01dd24","reserved":["ec114c4c47ae2c9f41d5bd1167801df71257e2ae36f8f007025e463c56591a08"]
+{"holder":"fresh-A-R31-3419c3","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"step":"check","case":"R3","name":"fresh installation: nothing pending; the note still shows unspent until the carrier is mined","ok":true}
+{"holder":"R3-orig","cmd":"resume","code":2,"signal":null,"state":"published","err":""}
+{"step":"check","case":"R3","name":"resume asked the daemon first, found the carrier in its pool and re-sent NOTHING","ok":true,"lookup":{"known":true,"inPool":true,"blockHeight":null,"confirmations":0,"status":"OK"},"sends":0}
+{"step":"case-start","case":"LRQ"}
+{"holder":"fresh-A-LRQ-0c454a","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"fresh-A-LRQ0-1fdb17","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"fresh-B-LRQ0-a5dac4","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"proxy":{"at":"2026-10-24T11:15:29.416Z","path":"/send_raw_transaction","bytes":5102,"fault":"drop-request","forwarded":false}}
+{"proxy":{"at":"2026-10-24T11:15:30.925Z","path":"/send_raw_transaction","bytes":5102,"fault":null,"forwarded":true,"upstreamStatus":200,"daemon":{"status":"OK","reason":null,"double_spend":false,"not_relayed":false}}}
+{"holder":"LRQ-orig","cmd":"send","code":2,"signal":null,"state":"published","err":""}
+{"step":"check","case":"LRQ","name":"request dropped before the daemon saw it","ok":true,"first":{"at":"2026-10-24T11:15:29.416Z","path":"/send_raw_transaction","bytes":5102,"fault":"drop-request","forwarded":false}}
+{"step":"check","case":"LRQ","name":"lookup found the txid unknown, then the SAME blob was re-sent and accepted","ok":true,"trail":[{"attempt":0,"action":"send","outcome":"uncertain","error":"UND_ERR_SOCKET"},{"attempt":0,"action":"lookup","known":false,"inPool":false,"blockHeight":null,"confirmations":0,"status":"OK"},{"attempt":1,"action":"send","outcome":"accepted","status":"OK","reason":null}],"sends":2}
+{"holder":"R3-orig","cmd":"settle","code":2,"signal":null,"state":"published","err":""}
+{"holder":"LRQ-orig","cmd":"settle","code":2,"signal":null,"state":"published","err":""}
+{"step":"advance","blocks":1,"from":360,"to":361,"why":"settlement","simulated":true}
+{"holder":"R3-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"holder":"LRQ-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"step":"advance","blocks":1,"from":361,"to":362,"why":"settlement","simulated":true}
+{"holder":"R3-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"holder":"LRQ-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"step":"advance","blocks":1,"from":362,"to":363,"why":"settlement","simulated":true}
+{"holder":"R3-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"holder":"LRQ-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"step":"advance","blocks":1,"from":363,"to":364,"why":"settlement","simulated":true}
+{"holder":"R3-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"holder":"LRQ-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"step":"advance","blocks":1,"from":364,"to":365,"why":"settlement","simulated":true}
+{"holder":"R3-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"holder":"LRQ-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"step":"advance","blocks":1,"from":365,"to":366,"why":"settlement","simulated":true}
+{"holder":"R3-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"holder":"LRQ-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"step":"advance","blocks":1,"from":366,"to":367,"why":"settlement","simulated":true}
+{"holder":"R3-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"holder":"LRQ-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"step":"advance","blocks":1,"from":367,"to":368,"why":"settlement","simulated":true}
+{"holder":"R3-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"holder":"LRQ-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"step":"advance","blocks":1,"from":368,"to":369,"why":"settlement","simulated":true}
+{"holder":"R3-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"holder":"LRQ-orig","cmd":"settle","code":2,"signal":null,"state":"confirming","err":""}
+{"step":"advance","blocks":1,"from":369,"to":370,"why":"settlement","simulated":true}
+{"holder":"R3-orig","cmd":"settle","code":0,"signal":null,"state":"completed","err":""}
+{"holder":"LRQ-orig","cmd":"settle","code":0,"signal":null,"state":"completed","err":""}
+{"holder":"fresh-A-R3z-c390f9","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"fresh-B-R3z-04aeef","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"R3-orig","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"step":"check","case":"R3","name":"operation completed with the required confirmations (settle exit 0)","ok":true,"code":0,"state":"completed","confirmations":10}
+{"step":"check","case":"R3","name":"exactly one carrier; record accepted on chain once","ok":true,"txid":"10172e66e9bb2a734fbe45d0c108261230c046aaf42375184f41739c7d087b87","height":361}
+{"step":"check","case":"R3","name":"indexer admitted the record","ok":true,"indexer":"accepted"}
+{"step":"check","case":"R3","name":"journal records exactly one carrier fee for the completed operation","ok":true,"fee":"3024000000"}
+{"step":"check","case":"R3","name":"original installation and fresh installation agree on chain state","ok":true,"orig":{"f9b1999ab6960533f5e956adb77110954744bed68139e0d2dd435eff0a0d7b05":"7200000"},"fresh":{"f9b1999ab6960533f5e956adb77110954744bed68139e0d2dd435eff0a0d7b05":"7200000"}}
+{"step":"check","case":"R3","name":"no view reports anything but the one completed transfer (no pending, no duplicate)","ok":true,"history":[{"op":"R3","status":"completed","display":"Completed","txid":"10172e66e9bb2a734fbe45d0c108261230c046aaf42375184f41739c7d087b87","feePaid":"3024000000"}]}
+{"holder":"fresh-A-LRQz-ce0639","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"fresh-B-LRQz-f96056","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"LRQ-orig","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"step":"check","case":"LRQ","name":"operation completed with the required confirmations (settle exit 0)","ok":true,"code":0,"state":"completed","confirmations":10}
+{"step":"check","case":"LRQ","name":"exactly one carrier; record accepted on chain once","ok":true,"txid":"e0e9891165aa7a750a21216bc78d40eff2a41a13b63c35c8fbc18d51764ba66a","height":361}
+{"step":"check","case":"LRQ","name":"indexer admitted the record","ok":true,"indexer":"accepted"}
+{"step":"check","case":"LRQ","name":"journal records exactly one carrier fee for the completed operation","ok":true,"fee":"3024000000"}
+{"step":"check","case":"LRQ","name":"original installation and fresh installation agree on chain state","ok":true,"orig":{"f9b1999ab6960533f5e956adb77110954744bed68139e0d2dd435eff0a0d7b05":"7200000"},"fresh":{"f9b1999ab6960533f5e956adb77110954744bed68139e0d2dd435eff0a0d7b05":"7200000"}}
+{"step":"check","case":"LRQ","name":"no view reports anything but the one completed transfer (no pending, no duplicate)","ok":true,"history":[{"op":"LRQ","status":"completed","display":"Completed","txid":"e0e9891165aa7a750a21216bc78d40eff2a41a13b63c35c8fbc18d51764ba66a","feePaid":"3024000000"}]}
+{"holder":"fresh-A-round2-after-f2384e","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"fresh-B-round2-after-abf180","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"step":"check","case":"round2","name":"exact token balance of A over the round (before - sent + received)","ok":true,"who":"A","before":"9200000","after":"7200000","expected":"7200000","sent":["1000000","1000000"],"received":[]}
+{"step":"check","case":"round2","name":"exact native accounting of A over the round (before - sum of journaled carrier fees; no other fee)","ok":true,"who":"A","before":"140729561318268","after":"140723513318268","expected":"140723513318268","fees":["3024000000","3024000000"]}
+{"step":"check","case":"round2","name":"exact token balance of B over the round (before - sent + received)","ok":true,"who":"B","before":"6800000","after":"8800000","expected":"8800000","sent":[],"received":["1000000","1000000"]}
+{"step":"check","case":"round2","name":"exact native accounting of B over the round (before - sum of journaled carrier fees; no other fee)","ok":true,"who":"B","before":"105547978356605","after":"105547978356605","expected":"105547978356605","fees":[]}
+{"holder":"fresh-A-TWO-f7930f","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"fresh-B-TWO0-0bf059","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"proxy":{"at":"2026-10-24T11:16:35.710Z","path":"/send_raw_transaction","bytes":5102,"fault":null,"forwarded":true,"upstreamStatus":200,"daemon":{"status":"OK","reason":null,"double_spend":false,"not_relayed":false}}}
+{"proxy":{"at":"2026-10-24T11:16:35.712Z","path":"/send_raw_transaction","bytes":5102,"fault":null,"forwarded":true,"upstreamStatus":200,"daemon":{"status":"Failed","reason":null,"double_spend":true,"not_relayed":false}}}
+{"holder":"TWO-1","cmd":"send","code":2,"signal":null,"state":"published","err":""}
+{"holder":"TWO-2","cmd":"send","code":1,"signal":null,"state":"refused","err":""}
+{"step":"two-installs-launched","one":{"code":2,"state":"published","txid":"82cc7ebf1c731810eac11d7edf071f95426cc349206c980222bf97168a5e84cf"},"two":{"code":1,"state":"refused","txid":"a64839dde9baf9e96a4b24ce586b4eeb1270fdb7587b571522036f589cff3ec6"},"sends":[{"status":"OK","reason":null,"double_spend":false,"not_relayed":false},{"status":"Failed","reason":null,"double_spend":true,"not_relayed":false}]}
+{"step":"advance","blocks":11,"from":370,"to":381,"why":"two installs confirm","simulated":true}
+{"holder":"TWO-1","cmd":"settle","code":0,"signal":null,"state":"completed","err":""}
+{"holder":"TWO-2","cmd":"settle","code":1,"signal":null,"state":"refused","err":""}
+{"holder":"fresh-B-TWOz-5c072e","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"fresh-A-TWOz-6b934b","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"TWO-1","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"TWO-2","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"step":"check","case":"TWO","name":"exactly one of the two concurrent spends of the same note completed","ok":true,"states":["completed","refused"]}
+{"step":"check","case":"TWO","name":"the other installation reports rejected/conflicted/refused, never completed","ok":true,"loser":"refused"}
+{"step":"check","case":"TWO","name":"recipient credited exactly once","ok":true,"before":"8800000","after":"9400000"}
+{"step":"check","case":"TWO","name":"both installations agree with the fresh installation (chain), not with their journals","ok":true}
+{"step":"two-installs-result","states":["completed","refused"],"feesPaidTotal":"3024000000","one":{"op":"TWO1","status":"completed","display":"Completed","txid":"82cc7ebf1c731810eac11d7edf071f95426cc349206c980222bf97168a5e84cf","feePaid":"3024000000"},"two":{"op":"TWO2","status":"refused","display":"Refused by the daemon (no carrier fee paid)","txid":"a64839dde9baf9e96a4b24ce586b4eeb1270fdb7587b571522036f589cff3ec6",
+{"holder":"fresh-A-RB-1836ae","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"fresh-B-RB0-506769","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"proxy":{"at":"2026-10-24T11:17:17.332Z","path":"/send_raw_transaction","bytes":5102,"fault":null,"forwarded":true,"upstreamStatus":200,"daemon":{"status":"OK","reason":null,"double_spend":false,"not_relayed":false}}}
+{"holder":"RB-orig","cmd":"send","code":2,"signal":null,"state":"published","err":""}
+{"step":"advance","blocks":11,"from":381,"to":392,"why":"RB confirms","simulated":true}
+{"holder":"RB-orig","cmd":"settle","code":0,"signal":null,"state":"completed","err":""}
+{"step":"check","case":"RB","name":"transfer completed before the rollback","ok":true,"state":"completed"}
+{"holder":"fresh-A-RB1-89052b","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"fresh-B-RB1-5af7ad","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"step":"rollback","from":392,"to":380,"popStatus":"OK","simulated":true,"note":"deliberate 12-block rollback on the OFFLINE chain; pool flushed so the carrier does not return by itself"}
+{"holder":"fresh-A-RB2-1b5aa7","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"fresh-B-RB2-510e39","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"step":"check","case":"RB","name":"fresh installations revert with the chain: record gone, sender notes unspent again, recipient credit gone","ok":true,"A":{"f9b1999ab6960533f5e956adb77110954744bed68139e0d2dd435eff0a0d7b05":"6600000"},"B":{"f9b1999ab6960533f5e956adb77110954744bed68139e0d2dd435eff0a0d7b05":"9400000"}}
+{"holder":"RB-orig","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"step":"check","case":"RB","name":"original installation follows the chain too (balance from replay, not from the journal)","ok":true,"orig":{"f9b1999ab6960533f5e956adb77110954744bed68139e0d2dd435eff0a0d7b05":"6600000"}}
+{"proxy":{"at":"2026-10-24T11:17:24.851Z","path":"/send_raw_transaction","bytes":5102,"fault":null,"forwarded":true,"upstreamStatus":200,"daemon":{"status":"OK","reason":null,"double_spend":false,"not_relayed":false}}}
+{"holder":"RB-orig","cmd":"settle","code":2,"signal":null,"state":"published","err":""}
+{"step":"check","case":"RB","name":"settle detects the vanished record, asks the daemon (unknown), re-checks admission and re-sends the SAME carrier","ok":true,"lookup":{"known":false,"inPool":false,"blockHeight":null,"confirmations":0,"status":"OK"},"sends":1}
+{"step":"advance","blocks":11,"from":380,"to":391,"why":"RB re-confirms","simulated":true}
+{"holder":"RB-orig","cmd":"settle","code":0,"signal":null,"state":"completed","err":""}
+{"holder":"fresh-A-RB3-b85cb5","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"holder":"fresh-B-RB3-c14c79","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"step":"check","case":"RB","name":"re-mined with the same txid and no second fee","ok":true,"native":{"afterFirst":"140717465318268","afterRemine":"140717465318268"},"txid":"bdf03894f8db7549444eb8bc68cc596a0e6101eecf3e4536a23b3cae9c03a24d"}
+{"step":"check","case":"RB","name":"recipient credited exactly once after the re-mine","ok":true,"before":"9400000","after":"10400000"}
+{"holder":"RB-orig","cmd":"status","code":0,"signal":null,"state":true,"err":""}
+{"step":"check","case":"RB","name":"original shows one completed operation (reinstated and re-settled), nothing pending","ok":true,"history":[{"op":"RB","status":"completed","display":"Completed","txid":"bdf03894f8db7549444eb8bc68cc596a0e6101eecf3e4536a23b3cae9c03a24d","feePaid":"3024000000"}]}
+{"step":"done","passed":true,"checks":76,"failed":0}
