@@ -1,0 +1,324 @@
+[
+ {
+  "at": "2026-10-24T17:04:47.131Z",
+  "step": "extension loaded",
+  "id": "jigbpnljnmbbkebaopbnnhmiafgnofla",
+  "profile": "carrier"
+ },
+ {
+  "at": "2026-10-24T17:04:50.610Z",
+  "step": "account imported; holder keys derived in the extension and registered by public token address",
+  "name": "Alpha"
+ },
+ {
+  "at": "2026-10-24T17:04:53.621Z",
+  "step": "account imported; holder keys derived in the extension and registered by public token address",
+  "name": "Beta"
+ },
+ {
+  "at": "2026-10-24T17:04:57.108Z",
+  "step": "TEST SERVICE: mined test XMR to this account for carrier fees",
+  "text": "Mined 1 coinbase output to this account (test service). It unlocks after 60 blocks; advance the chain. XMR for carrier fees: 0.000000 XMR spendable · 35.167565 XMR locked until block 310"
+ },
+ {
+  "at": "2026-10-24T17:04:57.736Z",
+  "step": "TEST SERVICE: mined test XMR to this account for carrier fees",
+  "text": "Mined 1 coinbase output to this account (test service). It unlocks after 60 blocks; advance the chain. XMR for carrier fees: 0.000000 XMR spendable · 70.335063 XMR locked until block 311"
+ },
+ {
+  "at": "2026-10-24T17:05:03.124Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-24T17:05:03.668Z",
+  "step": "Alpha holds matured test XMR (two outputs) for carrier fees",
+  "line": "XMR for carrier fees: 70.335063 XMR spendable"
+ },
+ {
+  "at": "2026-10-24T17:05:04.351Z",
+  "step": "fee review shown before proving",
+  "fee": "Carrier fee: 0.003024 XMR (2520 weight bytes × 1200000 piconero on the offline test chain). Paid from this account’s own XMR: input 35.167565 XMR, change 35.164541 XMR returns to you. The 996-byte rec"
+ },
+ {
+  "at": "2026-10-24T17:05:40.339Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-24T17:05:40.342Z",
+  "step": "holder-funded transfer confirmed",
+  "label": "alpha-1-input",
+  "amount": "20",
+  "inputs": 1,
+  "change": "78.5",
+  "recordBytes": 996,
+  "nativeBytes": 2520,
+  "extraBytes": 1056,
+  "feeXmr": "0.003024",
+  "feePiconero": "3024000000",
+  "provingS": 31,
+  "txid": "cc83402eef63d016b3f78dc9dfca812ea1cc4e25013e562cfdc726473eeb62fb"
+ },
+ {
+  "at": "2026-10-24T17:05:42.069Z",
+  "step": "REFUSED: Beta has no XMR for the carrier fee (nothing reserved or published)",
+  "error": "No spendable XMR for the carrier fee: unlocked 0 piconero (of which 0 too small for any carrier at 1200000 piconero/byte), locked 0 (unlocks by block 0), reserved by pending carriers 0; chain tip 322"
+ },
+ {
+  "at": "2026-10-24T17:05:43.289Z",
+  "step": "TEST SERVICE: mined test XMR to this account for carrier fees",
+  "text": "Mined 1 coinbase output to this account (test service). It unlocks after 60 blocks; advance the chain. XMR for carrier fees: 0.000000 XMR spendable · 35.162736 XMR locked until block 382"
+ },
+ {
+  "at": "2026-10-24T17:05:43.361Z",
+  "step": "REFUSED: Beta’s XMR is a locked coinbase output",
+  "error": "No spendable XMR for the carrier fee: unlocked 0 piconero (of which 0 too small for any carrier at 1200000 piconero/byte), locked 35162736114616 (unlocks by block 382), reserved by pending carriers 0; chain tip 323"
+ },
+ {
+  "at": "2026-10-24T17:05:46.813Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-24T17:05:46.926Z",
+  "step": "fee review shown before proving",
+  "fee": "Carrier fee: 0.003024 XMR (2520 weight bytes × 1200000 piconero on the offline test chain). Paid from this account’s own XMR: input 35.162736 XMR, change 35.159712 XMR returns to you. The 996-byte rec"
+ },
+ {
+  "at": "2026-10-24T17:06:22.923Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-24T17:06:22.931Z",
+  "step": "holder-funded transfer confirmed",
+  "label": "beta-1-input",
+  "amount": "5",
+  "inputs": 1,
+  "change": "15",
+  "recordBytes": 996,
+  "nativeBytes": 2520,
+  "extraBytes": 1056,
+  "feeXmr": "0.003024",
+  "feePiconero": "3024000000",
+  "provingS": 31,
+  "txid": "dbca247e1db21438725f3cbb3276939c116e69c12f01d86d989c6b3cd9a7ea2b"
+ },
+ {
+  "at": "2026-10-24T17:06:23.035Z",
+  "step": "fee review shown before proving",
+  "fee": "Carrier fee: 0.003024 XMR (2520 weight bytes × 1200000 piconero on the offline test chain). Paid from this account’s own XMR: input 35.159712 XMR, change 35.156688 XMR returns to you. The 996-byte rec"
+ },
+ {
+  "at": "2026-10-24T17:06:23.933Z",
+  "step": "cancelled at review: nothing reserved, proved or published",
+  "error": "Cancelled before proving. Nothing was proved, reserved or published; the XMR input was released."
+ },
+ {
+  "at": "2026-10-24T17:06:24.044Z",
+  "step": "interrupted after approval (test hook)",
+  "error": "TEST HOOK: simulated interruption after approved (the popup stopped here; nothing else ran)."
+ },
+ {
+  "at": "2026-10-24T17:06:48.102Z",
+  "step": "fee review shown before proving",
+  "fee": "Carrier fee: 0.003024 XMR (2520 weight bytes × 1200000 piconero on the offline test chain). Paid from this account’s own XMR: input 35.167498 XMR, change 35.164474 XMR returns to you. The 996-byte rec"
+ },
+ {
+  "at": "2026-10-24T17:07:24.311Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-24T17:07:24.325Z",
+  "step": "holder-funded transfer confirmed",
+  "label": "alpha-2-inputs",
+  "amount": "80",
+  "inputs": 2,
+  "change": "3.5",
+  "recordBytes": 996,
+  "nativeBytes": 2520,
+  "extraBytes": 1056,
+  "feeXmr": "0.003024",
+  "feePiconero": "3024000000",
+  "provingS": 32,
+  "txid": "a0cda3056ce543d2a1a22b653fd33a8276efe62b6bc3e5af676278c9bf711321"
+ },
+ {
+  "at": "2026-10-24T17:07:26.223Z",
+  "step": "fee review shown before proving",
+  "fee": "Carrier fee: 0.003024 XMR (2520 weight bytes × 1200000 piconero on the offline test chain). Paid from this account’s own XMR: input 35.159712 XMR, change 35.156688 XMR returns to you. The 996-byte rec"
+ },
+ {
+  "at": "2026-10-24T17:08:02.263Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-24T17:08:02.268Z",
+  "step": "holder-funded transfer confirmed",
+  "label": "beta-return-3",
+  "amount": "3",
+  "inputs": 1,
+  "change": "77",
+  "recordBytes": 996,
+  "nativeBytes": 2520,
+  "extraBytes": 1056,
+  "feeXmr": "0.003024",
+  "feePiconero": "3024000000",
+  "provingS": 31,
+  "txid": "84403bf8b5a45fd38a121948b94728a10ee301455467d539dea3a3a93d4827ad"
+ },
+ {
+  "at": "2026-10-24T17:08:02.395Z",
+  "step": "fee review shown before proving",
+  "fee": "Carrier fee: 0.003024 XMR (2520 weight bytes × 1200000 piconero on the offline test chain). Paid from this account’s own XMR: input 35.156688 XMR, change 35.153664 XMR returns to you. The 996-byte rec"
+ },
+ {
+  "at": "2026-10-24T17:08:35.340Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-24T17:08:35.345Z",
+  "step": "holder-funded transfer confirmed",
+  "label": "beta-return-2",
+  "amount": "2",
+  "inputs": 1,
+  "change": "75",
+  "recordBytes": 996,
+  "nativeBytes": 2520,
+  "extraBytes": 1056,
+  "feeXmr": "0.003024",
+  "feePiconero": "3024000000",
+  "provingS": 31,
+  "txid": "39ae6eb00c557b7d62278271b5eda9af68739473721e1b8992ec185f8ab7ffab"
+ },
+ {
+  "at": "2026-10-24T17:08:37.702Z",
+  "step": "fee review shown before proving",
+  "fee": "Carrier fee: 0.003024 XMR (2520 weight bytes × 1200000 piconero on the offline test chain). Paid from this account’s own XMR: input 35.164541 XMR, change 35.161517 XMR returns to you. The 996-byte rec"
+ },
+ {
+  "at": "2026-10-24T17:09:14.323Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-24T17:09:14.328Z",
+  "step": "holder-funded transfer confirmed",
+  "label": "alpha-3-inputs",
+  "amount": "8",
+  "inputs": 3,
+  "change": "0.5",
+  "recordBytes": 996,
+  "nativeBytes": 2520,
+  "extraBytes": 1056,
+  "feeXmr": "0.003024",
+  "feePiconero": "3024000000",
+  "provingS": 32,
+  "txid": "86d01c7072f55d57ecb06461616d215e88bd3709a9f03e339de0fe8694b24c51"
+ },
+ {
+  "at": "2026-10-24T17:09:16.370Z",
+  "step": "fee review shown before proving",
+  "fee": "Carrier fee: 0.003024 XMR (2520 weight bytes × 1200000 piconero on the offline test chain). Paid from this account’s own XMR: input 35.153664 XMR, change 35.150640 XMR returns to you. The 996-byte rec"
+ },
+ {
+  "at": "2026-10-24T17:09:50.586Z",
+  "step": "ACTUAL lost reply: daemon answered OK, reply dropped; the popup asked the daemon first and recovered without re-sending",
+  "txid": "b8b3d7cf1139c992d7e3165550ab6a953a174640ac8e636a8ced449c0dc42c59",
+  "text": "Published f8765b2106779f63… (996-byte record, 1 input, change 71 X; proved locally in 31 s; carrier b8b3d7cf1139c992… 2520 bytes, tx_extra 1056 bytes, fee 0.003024 XMR paid from this wallet). The node"
+ },
+ {
+  "at": "2026-10-24T17:09:52.256Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-24T17:09:52.267Z",
+  "step": "one carrier, one fee, tokens exact after the lost reply",
+  "fee": "3024000000"
+ },
+ {
+  "at": "2026-10-24T17:10:24.128Z",
+  "step": "9. journal right after the signed-interruption",
+  "pending": [
+   {
+    "status": "signed",
+    "txid": "3ab03e71e8654ea8d3a8da64da041908332e6c81956ee60efab456fbf0bec01c"
+   }
+  ],
+  "history": [
+   {
+    "status": "confirmed",
+    "txid": "b8b3d7cf1139c992d7e3165550ab6a953a174640ac8e636a8ced449c0dc42c59"
+   },
+   {
+    "status": "confirmed",
+    "txid": "39ae6eb00c557b7d62278271b5eda9af68739473721e1b8992ec185f8ab7ffab"
+   },
+   {
+    "status": "confirmed",
+    "txid": "84403bf8b5a45fd38a121948b94728a10ee301455467d539dea3a3a93d4827ad"
+   }
+  ]
+ },
+ {
+  "at": "2026-10-24T17:10:44.726Z",
+  "step": "9. journal after lock/unlock and reconcile",
+  "pending": [
+   {
+    "status": "published",
+    "txid": "3ab03e71e8654ea8d3a8da64da041908332e6c81956ee60efab456fbf0bec01c"
+   }
+  ],
+  "history": [
+   {
+    "status": "confirmed",
+    "txid": "b8b3d7cf1139c992d7e3165550ab6a953a174640ac8e636a8ced449c0dc42c59"
+   },
+   {
+    "status": "confirmed",
+    "txid": "39ae6eb00c557b7d62278271b5eda9af68739473721e1b8992ec185f8ab7ffab"
+   }
+  ]
+ },
+ {
+  "at": "2026-10-24T17:10:45.842Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-24T17:10:45.853Z",
+  "step": "after lock/unlock the saved signed carrier was re-sent once (same transaction)",
+  "txid": "3ab03e71e8654ea8d3a8da64da041908332e6c81956ee60efab456fbf0bec01c"
+ },
+ {
+  "at": "2026-10-24T17:10:50.755Z",
+  "step": "two popups quoted carriers concurrently",
+  "popup1": {
+   "error": "Those notes were just reserved by another wallet window. Refresh and try again."
+  },
+  "popup2": {
+   "approved": true
+  }
+ },
+ {
+  "at": "2026-10-24T17:11:25.166Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-24T17:11:25.171Z",
+  "step": "concurrent sends: no conflicting native inputs; fees exact",
+  "published": 1,
+  "r1": "Those notes were just reserved by another wallet window. Refresh and try again.",
+  "r2": "Published 6725b12682c3b22e… (996-byte record, 1 input, change 5.9 X; proved locally in 31 s; carrier 0df4dd7cb2dc7641… 2520 bytes, tx_extra 1056 bytes, fee 0.003024 XMR paid from this wallet). Advance the chain to confirm. | "
+ },
+ {
+  "at": "2026-10-24T17:11:25.917Z",
+  "step": "fee review approve/cancel visible at 320x440"
+ },
+ {
+  "at": "2026-10-24T17:11:55.775Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-24T17:11:55.787Z",
+  "step": "redemption carried by a holder-funded carrier",
+  "nativeBytes": 2449,
+  "extraBytes": 985,
+  "fee": "2938800000"
+ }
+]

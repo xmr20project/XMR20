@@ -1,0 +1,29 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✖ holder-funded carriers in the real popup (two wallets) (318165.334208ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 320148.200042
+
+✖ failing tests:
+
+test at browser-carrier.test.mjs:19:1
+✖ holder-funded carriers in the real popup (two wallets) (318165.334208ms)
+  AssertionError [ERR_ASSERTION]: carrier size does not depend on the number of token inputs (fixed 996-byte record)
+  
+  2521 !== 2520
+  
+      at TestContext.<anonymous> (file://<workspace>/research/privacy-stagenet-wallet-20261024/browser-carrier.test.mjs:64:170)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 2521,
+    expected: 2520,
+    operator: 'strictEqual'
+  }
+exit 1
