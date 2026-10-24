@@ -1,0 +1,288 @@
+{
+ "startedAt": "2026-10-24T03:26:23.587Z",
+ "mode": "stagenet",
+ "execution": "EXECUTED ON STAGENET (not mainnet; stagenet fees are not mainnet fees)",
+ "sanityChecks": true,
+ "gates": {
+  "bridgePayouts": "gated (not exercised)",
+  "nativeTrading": "gated (not exercised)"
+ },
+ "steps": [
+  {
+   "at": "2026-10-24T03:26:23.590Z",
+   "name": "manifest",
+   "path": "<workspace>/research/privacy-stagenet-roles-20261023/runs/stagenet/trusted-manifest.json",
+   "sha256": "ed12e12441ab4f6d5cc6ad02e3839d9c14b3346b953ebfc277a66d3053903e9b",
+   "label": "DISPOSABLE TEST SETUP — STAGENET REHEARSAL — NOT PRODUCTION",
+   "network": {
+    "kind": "stagenet",
+    "genesis": "76ee3cc98646292206cd3e86f74d88b4dcc1d937088645e9b0cbca84b7ce74eb",
+    "startHeight": 2235745
+   },
+   "ledgerDomain": "5234ab346f9ea1b181e2879f9512b537ad6d595a529d9a0e7ccad87368acba2d"
+  },
+  {
+   "at": "2026-10-24T03:26:23.604Z",
+   "name": "daemon",
+   "rpcUrl": "http://127.0.0.1:38091",
+   "nettype": "stagenet",
+   "height": 2235788,
+   "synchronized": true,
+   "offline": false,
+   "busySyncing": false,
+   "genesis": "76ee3cc98646292206cd3e86f74d88b4dcc1d937088645e9b0cbca84b7ce74eb",
+   "startHeight": 2235745
+  },
+  {
+   "at": "2026-10-24T03:26:23.724Z",
+   "name": "param-server",
+   "url": "http://127.0.0.1:8954",
+   "files": {
+    "parameters.json": {
+     "bytes": 4732,
+     "sha256": "c440a78eb81b8f00008178957a1fd2b463f2f49f7fbcbcf7d719129e510c4d34"
+    },
+    "normal.public-pk": {
+     "bytes": 82675440,
+     "sha256": "a11b2f05ecc33001fed7515e9824d2dfc5b7349f099e90a49a007c3de6e1aea0"
+    },
+    "boundary.public-pk": {
+     "bytes": 64409328,
+     "sha256": "b7f6c83597a29a8ae77affc412019aa96e2630a65df69b6b1d9cc6bc4c871f76"
+    }
+   },
+   "note": "serves parameters.json and the two proving keys only; the wallets authenticate them against their own manifest"
+  },
+  {
+   "at": "2026-10-24T03:27:31.095Z",
+   "name": "roles",
+   "network": "stagenet",
+   "startHeight": 2235745,
+   "issuerNativeAddress": "57niMTvoAZ5GigRF1mQVXxVAmGwJihSSsDLjwPX9vH8hcxA3cyFUP3SjaJefz4ty19iSzfFmWTmoPC6Wg59i9ufTV8p4FQM",
+   "issuerTokenAddress": "penumbra13dsttnlshskauhg9dr9wvs4uhhlazf9eqhv86g2l46c0zkwqqcxt0093ue0e95njr40939cluyw6fz2852y6ten6duhrzvvu7vl9utmt6j5v26g7eynz6aml508jzz20k5muqk",
+   "trustedManifest": {
+    "issuer": {
+     "label": "DISPOSABLE TEST SETUP — STAGENET REHEARSAL — NOT PRODUCTION",
+     "sha256": "ed12e12441ab4f6d5cc6ad02e3839d9c14b3346b953ebfc277a66d3053903e9b"
+    },
+    "indexer": {
+     "label": "DISPOSABLE TEST SETUP — STAGENET REHEARSAL — NOT PRODUCTION",
+     "sha256": "ed12e12441ab4f6d5cc6ad02e3839d9c14b3346b953ebfc277a66d3053903e9b"
+    }
+   }
+  },
+  {
+   "at": "2026-10-24T03:27:31.321Z",
+   "name": "wallets",
+   "A": {
+    "token": "penumbra1pvadxvfw752swzjg5czh2ae9uz854w20qzkuqpt5zjadc9nf99t7d2hrdwa78m6drz3lu4cgu9sng2g3wkfxdye6xff6qygm2v2mxtc3t70fegj4weu0y2je60kqf3s9h3rzfh",
+    "native": "55VMrQmPTFTf79xNRYioc9fXrk5wZQ1ipXMWnUXQ3fSbB3jan6ewzcRKBgUFuHHAAfif8DXy89x3gPJxoNYbKMRXLQuxPxv"
+   },
+   "B": {
+    "token": "penumbra1p5upagjfve5pr740ffrjcq4hwsjxc7exn2tal4szem74w8y94574uuu2kpsrhactsadyw9rree4lw4yjc4q0mwttpkjf2phcxqz5zexxa6jdkjd7lle2wsfpv75yva0r8qxu4w",
+    "native": "56RMFW1ZE9x4rbgogsqzSyfyWHhHie6RvTt8USAjsoFiX5UqDzAUqoeVzo6DZJtx7aMtF2SAr66w3YhPH9V5Gghn35pzEnw"
+   },
+   "walletDir": "<workspace>/research/privacy-stagenet-roles-20261023/runs/stagenet/wallets",
+   "note": "roots stored in walletDir (0600), never logged"
+  },
+  {
+   "at": "2026-10-24T03:27:31.687Z",
+   "name": "sync",
+   "A": {
+    "tip": 2235787,
+    "startHeight": 2235745,
+    "ms": 200
+   },
+   "B": {
+    "tip": 2235787,
+    "startHeight": 2235745,
+    "ms": 165
+   }
+  },
+  {
+   "at": "2026-10-24T03:27:31.689Z",
+   "name": "mining-status",
+   "active": true,
+   "threads": 6,
+   "speed": 2227,
+   "address": "57niMTvoAZ5GigRF1mQVXxVAmGwJihSSsDLjwPX9vH8hcxA3cyFUP3SjaJefz4ty19iSzfFmWTmoPC6Wg59i9ufTV8p4FQM",
+   "note": "the OWNER node is mining stagenet blocks itself (CPU); blocks it finds are not independent third-party mining"
+  },
+  {
+   "at": "2026-10-24T03:27:31.692Z",
+   "name": "sync",
+   "A": {
+    "tip": 2235787,
+    "startHeight": 2235745,
+    "ms": 2
+   },
+   "B": {
+    "tip": 2235787,
+    "startHeight": 2235745,
+    "ms": 1
+   }
+  },
+  {
+   "at": "2026-10-24T03:27:31.864Z",
+   "name": "native-balances",
+   "issuer": "29950680000",
+   "A": {
+    "unlocked": "10000000000",
+    "locked": "10000000000",
+    "outputs": 2
+   },
+   "B": {
+    "unlocked": "10000000000",
+    "locked": "0",
+    "outputs": 1
+   }
+  },
+  {
+   "at": "2026-10-24T03:27:36.007Z",
+   "name": "credit",
+   "amount": "5000000",
+   "txid": "fa2b73a89488b29ab0b38e614aeeced487ce83c6b4027afb6841e10e59bb6706",
+   "recordId": "c340bf49a0359d2dff827e3304e7e7750d3edb06eaa6a4a06d3a16038e07b537",
+   "issuerFee": "49320000",
+   "extraBytes": 985,
+   "nativeBytes": 2466,
+   "note": "issuer-funded carrier (issuer fee, not holder fee)"
+  },
+  {
+   "at": "2026-10-24T03:27:41.480Z",
+   "name": "public-relay",
+   "label": "credit 5000000",
+   "txid": "fa2b73a89488b29ab0b38e614aeeced487ce83c6b4027afb6841e10e59bb6706",
+   "node": "http://node.monerodevs.org:38089",
+   "inPool": true,
+   "blockHeight": null,
+   "confirmations": null,
+   "note": "third-party stagenet node asked whether it holds the carrier (relay evidence independent of our node)"
+  },
+  {
+   "at": "2026-10-24T03:27:44.449Z",
+   "name": "credit",
+   "amount": "3000000",
+   "txid": "5978895b8b82ede38df978092daa02954d412464c140b6bc6802466b90be7965",
+   "recordId": "472f367c51d549bd021a86ba3dcd52783e1dede060719eb6242d71a9898282c5",
+   "issuerFee": "49260000",
+   "extraBytes": 985,
+   "nativeBytes": 2463,
+   "note": "issuer-funded carrier (issuer fee, not holder fee)"
+  },
+  {
+   "at": "2026-10-24T03:27:49.907Z",
+   "name": "public-relay",
+   "label": "credit 3000000",
+   "txid": "5978895b8b82ede38df978092daa02954d412464c140b6bc6802466b90be7965",
+   "node": "http://node.monerodevs.org:38089",
+   "inPool": true,
+   "blockHeight": null,
+   "confirmations": null,
+   "note": "third-party stagenet node asked whether it holds the carrier (relay evidence independent of our node)"
+  },
+  {
+   "at": "2026-10-24T03:27:52.440Z",
+   "name": "credit-retry",
+   "amount": "2000000",
+   "attempt": 0,
+   "reason": "No mature unreserved native input"
+  },
+  {
+   "at": "2026-10-24T03:29:52.451Z",
+   "name": "advance",
+   "blocks": 1,
+   "from": 2235787,
+   "to": 2235788,
+   "why": "issuer input unlock / decoy retry",
+   "waitedMs": 120009,
+   "stagenet": true
+  },
+  {
+   "at": "2026-10-24T03:29:54.530Z",
+   "name": "credit-retry",
+   "amount": "2000000",
+   "attempt": 1,
+   "reason": "No mature unreserved native input"
+  },
+  {
+   "at": "2026-10-24T03:33:24.543Z",
+   "name": "advance",
+   "blocks": 1,
+   "from": 2235788,
+   "to": 2235789,
+   "why": "issuer input unlock / decoy retry",
+   "waitedMs": 210012,
+   "stagenet": true
+  },
+  {
+   "at": "2026-10-24T03:33:26.516Z",
+   "name": "credit-retry",
+   "amount": "2000000",
+   "attempt": 2,
+   "reason": "No mature unreserved native input"
+  },
+  {
+   "at": "2026-10-24T03:34:56.522Z",
+   "name": "advance",
+   "blocks": 1,
+   "from": 2235789,
+   "to": 2235790,
+   "why": "issuer input unlock / decoy retry",
+   "waitedMs": 90005,
+   "stagenet": true
+  },
+  {
+   "at": "2026-10-24T03:34:58.493Z",
+   "name": "credit-retry",
+   "amount": "2000000",
+   "attempt": 3,
+   "reason": "No mature unreserved native input"
+  },
+  {
+   "at": "2026-10-24T03:40:28.520Z",
+   "name": "advance",
+   "blocks": 1,
+   "from": 2235790,
+   "to": 2235791,
+   "why": "issuer input unlock / decoy retry",
+   "waitedMs": 330026,
+   "stagenet": true
+  },
+  {
+   "at": "2026-10-24T03:40:30.571Z",
+   "name": "credit-retry",
+   "amount": "2000000",
+   "attempt": 4,
+   "reason": "No mature unreserved native input"
+  },
+  {
+   "at": "2026-10-24T03:45:00.594Z",
+   "name": "advance",
+   "blocks": 1,
+   "from": 2235791,
+   "to": 2235792,
+   "why": "issuer input unlock / decoy retry",
+   "waitedMs": 270021,
+   "stagenet": true
+  },
+  {
+   "at": "2026-10-24T03:45:03.882Z",
+   "name": "credit-retry",
+   "amount": "2000000",
+   "attempt": 5,
+   "reason": "No mature unreserved native input"
+  },
+  {
+   "at": "2026-10-24T03:48:03.905Z",
+   "name": "failed",
+   "message": "fetch failed"
+  }
+ ],
+ "blocked": null,
+ "failed": {
+  "message": "fetch failed",
+  "stack": "TypeError: fetch failed\n    at node:internal/deps/undici/undici:15363:13\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async daemonRpc (file://<workspace>/research/privacy-stagenet-roles-20261023/stagenet/roles.mjs:24:10)\n    at async height (file://<workspace>/research/privacy-stagenet-roles-20261023/stagenet/rehearsal.mjs:90:26)\n    at async advance (file://<workspace>/research/privacy-stagenet-roles-20261023/stagenet/rehearsal.mjs:94:24)"
+ },
+ "finishedAt": "2026-10-24T03:48:03.920Z"
+}

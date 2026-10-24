@@ -1,0 +1,52 @@
+EXTERNAL SECURITY REVIEW PACKAGE — 03 THE ORIGINAL NATIVE SOURCE / KEY-IMAGE LEAK AND ITS REGRESSION COVERAGE
+research/privacy-review-20261023 (stage 3).
+
+THE LEAK (research/privacy-impact-20261020/FINDINGS.txt, reproduced there with the real XN1 code)
+The output-bound XN1 native-token format tied token ownership to a specific Monero output. Its
+ownership proof publicly verified that a particular native output P and a particular key image I
+correspond to the same one-time output key (I = x·Hp(P) for P = xG). This is exactly the relation
+Monero's ring signatures hide. Consequence for OTHER users: if P appears as a decoy in someone else's
+ring with a different key image J, P is publicly excluded as that ring's real spend (16 -> 15
+candidates; repeated disclosures exclude more; the demo arranges 15 disclosures to leave one). The
+disclosure is retroactive (older rings containing P) and does not need any wallet secret. It applies
+to every affected old-format operation, so continuing to use the old path keeps publishing new leaks
+even if history is preserved.
+
+WHY THE NEW FORMAT DOES NOT HAVE IT
+- Token ownership is a Penumbra-style note (commitment in a TCT, nullifier on spend) owned by a
+  key derived from the phrase; it is NOT bound to any Monero output.
+- A carrier is an ordinary Monero transaction; the record in its extra references no native output,
+  key image, ring position, amount or mask (xm3.rs / boundary.rs headers; record layouts in 01).
+- The carrier's key image is linked to the record only by being in the same transaction - the same
+  linkage any payment with a payment id or memo has - and the carrier's real ring member is hidden by
+  the ordinary 16-ring CLSAG. No publicly verifiable P -> I relation is created.
+- Migration claims (legacy -> private) are signed under the LEGACY output key P with Monero's
+  generate_signature (no key image is produced or revealed; the signature proves knowledge of x for P
+  without disclosing I). The claim binds P to a token address - a disclosure of P's OWNERSHIP
+  (already implied by the old format) but not of its key image.
+
+REGRESSION COVERAGE ACROSS THE NEW-FORMAT PATHS (what is tested today)
+1. Record contents. Host test `record_bytes_contain_no_native_material` (holder-wasm, stage 3): for
+   every published carrier in a run, the 996/925 record bytes contain neither the carrier's key image,
+   nor any ring member's output key, nor the real input's output key, nor the carrier's tx pubkey
+   (byte containment, also against 16-byte windows). See holder-carrier-leak.test.mjs for the Node
+   version over a live chain (every record vs every carrier input).
+2. Transfer / consolidation / redemption / credit paths all use the same two record formats; there is
+   no third format with native fields. pool.rs admits only XM3/XB3 by magic.
+3. Backend/network audit (every browser run): no key image, carrier blob, ring, record wire or
+   secret reaches the test backend (refused by field name; grep of its request log against every key
+   image the wallet knows); the daemon receives only what any wallet sends.
+4. Decoy selection: monero-oxide's gamma sampler, real output requested among the candidates (not
+   last); the engine checks the node's view of the real output matches ours.
+5. Migration claims: `legacy_sign.rs` (integration lab) generate_signature without key image; the
+   claim replay test rejects reuse; the cutover indexer logs post-cutoff old-format records as
+   "visible, honoured by nothing".
+
+NOT COVERED / OPEN
+- The affected old-format path still exists in the shipping native-market code. Nothing here removes
+  it; a product decision is needed to stop promoting it (see 04-MIGRATION).
+- Statistical linkage through a holder's own change chain is standard Monero behaviour and is not
+  measured here.
+- No review of the compact payload codec or of the Penumbra composition for subtle leaks
+  (e.g. anchor choice revealing when a wallet last synced: the engine uses the current root; a
+  reviewer should consider whether anchor freshness leaks timing).

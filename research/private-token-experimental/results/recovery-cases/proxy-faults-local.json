@@ -1,0 +1,143 @@
+{
+ "note": "every fault and every /send_raw_transaction (with the daemon answer) seen by the loopback proxy over the whole run",
+ "reconstructedFrom": "recovery-cases-local.stderr.log ({\"proxy\":\u2026} lines written by the proxy log callback at the time of each event); the file first written by the harness held only the trailing pass-through traffic (preserved as proxy-events-tail.json) because the cases reset the per-case event view \u2014 writer fixed in recovery-cases.mjs/lossy-proxy.mjs",
+ "faults": 3,
+ "sendRequests": 10,
+ "events": [
+  {
+   "at": "2026-10-24T11:11:48.873Z",
+   "path": "/send_raw_transaction",
+   "bytes": 5102,
+   "fault": "drop-reply",
+   "forwarded": true,
+   "upstreamStatus": 200,
+   "daemon": {
+    "status": "OK",
+    "reason": null,
+    "double_spend": false,
+    "not_relayed": false
+   },
+   "replyDroppedAfterDaemonAnswered": true
+  },
+  {
+   "at": "2026-10-24T11:12:36.948Z",
+   "path": "/send_raw_transaction",
+   "bytes": 5102,
+   "fault": null,
+   "forwarded": true,
+   "upstreamStatus": 200,
+   "daemon": {
+    "status": "OK",
+    "reason": null,
+    "double_spend": false,
+    "not_relayed": false
+   }
+  },
+  {
+   "at": "2026-10-24T11:13:19.051Z",
+   "path": "/send_raw_transaction",
+   "bytes": 5102,
+   "fault": null,
+   "forwarded": true,
+   "upstreamStatus": 200,
+   "daemon": {
+    "status": "OK",
+    "reason": null,
+    "double_spend": false,
+    "not_relayed": false
+   }
+  },
+  {
+   "at": "2026-10-24T11:14:47.514Z",
+   "path": "/send_raw_transaction",
+   "bytes": 5102,
+   "fault": "drop-reply",
+   "forwarded": true,
+   "upstreamStatus": 200,
+   "daemon": {
+    "status": "OK",
+    "reason": null,
+    "double_spend": false,
+    "not_relayed": false
+   },
+   "replyDroppedAfterDaemonAnswered": true
+  },
+  {
+   "at": "2026-10-24T11:15:29.416Z",
+   "path": "/send_raw_transaction",
+   "bytes": 5102,
+   "fault": "drop-request",
+   "forwarded": false
+  },
+  {
+   "at": "2026-10-24T11:15:30.925Z",
+   "path": "/send_raw_transaction",
+   "bytes": 5102,
+   "fault": null,
+   "forwarded": true,
+   "upstreamStatus": 200,
+   "daemon": {
+    "status": "OK",
+    "reason": null,
+    "double_spend": false,
+    "not_relayed": false
+   }
+  },
+  {
+   "at": "2026-10-24T11:16:35.710Z",
+   "path": "/send_raw_transaction",
+   "bytes": 5102,
+   "fault": null,
+   "forwarded": true,
+   "upstreamStatus": 200,
+   "daemon": {
+    "status": "OK",
+    "reason": null,
+    "double_spend": false,
+    "not_relayed": false
+   }
+  },
+  {
+   "at": "2026-10-24T11:16:35.712Z",
+   "path": "/send_raw_transaction",
+   "bytes": 5102,
+   "fault": null,
+   "forwarded": true,
+   "upstreamStatus": 200,
+   "daemon": {
+    "status": "Failed",
+    "reason": null,
+    "double_spend": true,
+    "not_relayed": false
+   }
+  },
+  {
+   "at": "2026-10-24T11:17:17.332Z",
+   "path": "/send_raw_transaction",
+   "bytes": 5102,
+   "fault": null,
+   "forwarded": true,
+   "upstreamStatus": 200,
+   "daemon": {
+    "status": "OK",
+    "reason": null,
+    "double_spend": false,
+    "not_relayed": false
+   }
+  },
+  {
+   "at": "2026-10-24T11:17:24.851Z",
+   "path": "/send_raw_transaction",
+   "bytes": 5102,
+   "fault": null,
+   "forwarded": true,
+   "upstreamStatus": 200,
+   "daemon": {
+    "status": "OK",
+    "reason": null,
+    "double_spend": false,
+    "not_relayed": false
+   }
+  }
+ ]
+}

@@ -1,0 +1,204 @@
+// Private-holder TEST integration (build flag XMR20_PRIVATE_HOLDER_TEST=local).
+// Private by default: deposits through the upgraded bridge credit the holder's
+// private address automatically; there is no public token mode and no "shield"
+// step. Legacy balances stay labelled until explicitly migrated.
+//
+// Key boundaries (see RESULTS.txt "what runs under holder control"):
+// - Token keys: derived in the holder worker (wasm, scheme XMR20-TKD1) from the
+//   account's recovery phrase; never leave the worker. Scanning is local: the
+//   worker replays the public chain from the test daemon's RPC and trial-decrypts.
+// - Spends/redemptions: notes selected, proved and signed in the worker.
+// - CARRIER (stage 2, holder-funded): the worker's engine also holds the
+//   account's Monero keys, scans the holder's own XMR outputs, quotes the exact
+//   network fee BEFORE anything is proved, and after the holder approves it
+//   builds, signs and publishes the ordinary Monero carrier transaction to the
+//   test daemon directly. No relay. The fee comes from this account's XMR.
+// - Solana deposits: signed here with the account's Solana key (importSol).
+// - Legacy claims: signed in the one-shot claim worker under the Monero keys.
+// - Viewing key: exported from the worker only on the explicit share action.
+// - Pending operations: encrypted journal (private-journal.js). Signed carriers
+//   are republished AS-IS (same transaction, same fee) when a reply was lost;
+//   a new carrier is never built automatically for a record that has one.
+import {maxControl,fillMaximum,atomic,inputAmount} from './max-amount.js';
+import {createPrivateJournal,reservedCommitments,reservedKeyImages} from './private-journal.js';
+import {xmr} from './holder-carrier.js';
+import {Transaction} from '@solana/web3.js';
+export const PRIVATE_FORMAT_ENDPOINT='http://127.0.0.1:8940';
+const SCHEME='XMR20-TKD1';
+export function createPrivateFormat({endpoint=PRIVATE_FORMAT_ENDPOINT,account,oneShot,workerClient,store,secret,show,on,run,toast,esc,amount,units,compactTokenBalance,importSol,render,same,$,close}){
+ const journal=createPrivateJournal({store});
+ let backend=null,holder=null,journalAcc=null,error='',loading=false,statusLine='',refreshQueued=false,holderAccount=null;// holderAccount: the account id the current `holder` state belongs to
+ const workers=new Map();// account id -> {client, tokenAddress, accountId}
+ const post=async(action,body)=>{const r=await fetch(endpoint+'/action/'+action,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(120000)});const v=await r.json().catch(()=>({error:'Unreadable reply'}));if(!r.ok)throw Error(v.error||'Test backend refused the request.');return v;};
+ const accountId=()=>{const a=account();return a?('ext-'+a.id).replace(/[^A-Za-z0-9_-]/g,'').slice(0,64):null;};
+ const progressEl=()=>$('#progress');
+ const setProgress=t=>{const el=progressEl();if(el)el.textContent=t;};
+ // Scan/worker status: shown in the row placeholder, and in #progress only while no operation message occupies it (a concurrent refresh must never erase an operation's result text).
+ let lastStatus='',operationStatus=false;const setStatus=t=>{statusLine=t;const row=$('#pf-status');if(row)row.textContent=t;const el=progressEl();if(el&&(operationStatus||el.textContent===''||el.textContent===lastStatus))el.textContent=t;lastStatus=t;};
+ const testHook=point=>{const h=globalThis.__pfTest;if(h?.crashAfter===point){delete h.crashAfter;throw Error('TEST HOOK: simulated interruption after '+point+' (the popup stopped here; nothing else ran).');}};
+ async function ensureWorker(a){
+  for(const [id,w] of workers)if(id!==a.id){w.client.close();workers.delete(id);}
+  if(workers.has(a.id))return workers.get(a.id);
+  // Created directly (not through the app's shared client set): the app's endWorkers() runs on every account switch and would kill the holder worker mid-open; lifetime is managed here (ensureWorker/reset).
+  const client=workerClient('private-holder.worker.js',{onProgress:p=>setStatus(p.text||'')});
+  const w={client,tokenAddress:null,accountId:a.id};workers.set(a.id,w);
+  try{const opened=await client.call('open',{seed:a.xmrSeed,owner:a.xmr,backend:endpoint,rpc:backend.rpcUrl},240000,{idle:true});w.tokenAddress=opened.tokenAddress;w.nativeAddress=opened.nativeAddress;w.scheme=opened.scheme;w.engine=opened.engine;w.parameters=opened.parameters;return w;}
+  catch(e){client.close();workers.delete(a.id);throw e;}}
+ async function register(a,tokenAddress){const keys=await oneShot('private-claim.worker.js','public-keys',{seed:a.xmrSeed,owner:a.xmr});return post('register',{id:accountId(),sol:a.sol,xmr:a.xmr,A:keys.A,B:keys.B,tokenAddress});}
+ const current=()=>{const a=account();return a&&workers.get(a.id)?.tokenAddress&&holderAccount===a.id?workers.get(a.id):null;};
+ const need=()=>{const w=current();if(!w)throw Error('The private holder wallet is still opening. Wait for the balances to load and try again.');return w;};
+ async function refresh(){const a=account();if(!a)return;if(!a.xmrSeed||!a.sol){error='This account needs both a Monero recovery phrase and a Solana key for the private test.';backend=holder=null;render();return;}
+  if(loading){refreshQueued=true;return;}loading=true;error='';if(holderAccount!==a.id){holder=null;journalAcc=null;holderAccount=null;render();}
+  try{const id=accountId();backend=await post('state',{id});const w=await ensureWorker(a);if(account()?.id!==a.id)return;
+   if(!backend.registered){await register(a,w.tokenAddress);backend=await post('state',{id});}
+   if(backend.tokenAddress&&backend.tokenAddress!==w.tokenAddress)throw Error('The test backend knows this install under a different private address.');
+   if(!journal.unlocked)await journal.unlock(secret());
+   const reserve=[...reservedKeyImages(journal.account(await journal.read(),w.tokenAddress))];
+   holder=await w.client.call('sync',{reserveKeyImages:reserve},600000,{idle:true});if(account()?.id!==a.id)return;
+   await reconcile(w,holder);journalAcc=journal.account(await journal.read(),w.tokenAddress);holderAccount=a.id;setStatus('');}
+  catch(e){if(account()?.id===a.id){error=e.message;holder=null;}}
+  finally{loading=false;if(account()?.id===a.id)render();if(refreshQueued){refreshQueued=false;void refresh();}}}
+ // Reconcile the journal with the LOCAL replica of the chain: records seen on
+ // chain settle their entries; signed carriers that are not on chain are
+ // re-sent AS-IS (idempotent on the daemon; never a second carrier or fee);
+ // stale selections/quotes from dead windows are released; proved records
+ // without a carrier wait for the holder's explicit fee approval; signed
+ // legacy claims are resubmitted.
+ async function reconcile(w,status){const conf=backend.confirmations;const now=Date.now();const republish=[],claimQueue=[],release=[];
+  const spentOnChain=new Set((status.spent||[]).map(n=>n.commitment));
+  await journal.write(j=>{const acc=journal.account(j,w.tokenAddress);
+   // Rollback: a settled record that is no longer on the chain comes back as a signed carrier and is re-sent AS-IS (same transaction, no new fee) unless its notes were spent meanwhile.
+   for(const hpast of acc.history.slice()){if((hpast.status==='confirmed'||hpast.status==='mined')&&hpast.recordId&&!status.records[hpast.recordId]&&hpast.carrier?.blob&&hpast.id&&!acc.pending[hpast.id]){acc.history=acc.history.filter(x=>x!==hpast);const {settled,...entry}=hpast;acc.pending[hpast.id]={...entry,status:'signed',heartbeat:0,error:'The chain rolled back below this record; the same carrier is re-sent (no new fee).',rolledBack:(entry.rolledBack||0)+1};}}
+   for(const [id,p] of Object.entries(acc.pending)){const rec=status.records[p.recordId];
+    // Stale installation / stale backup: the notes of a saved (proved or signed) record were spent by another record. Never carry or re-send it: mark it rejected, release its native input, pay no fee.
+    if(!rec&&p.reserved?.some(c=>spentOnChain.has(c))&&['built','signed','published','missing','conflicted'].includes(p.status)){p.status='rejected';p.error='Notes already spent by another installation (or an earlier operation); this saved record was NOT sent and no carrier fee was paid'+(p.carrier?' (signed carrier discarded)':'')+'.';acc.history.unshift({...p,id,settled:now});acc.history=acc.history.slice(0,30);delete acc.pending[id];if(p.carrier?.keyImage)release.push(p.carrier.keyImage);else if(p.nativeInput)release.push(p.nativeInput);continue;}
+    if(rec){p.txid=rec.txid;p.height=rec.height;p.confirmations=rec.confirmations;if(rec.status==='accepted'){p.status=rec.confirmations>=conf?'confirmed':'mined';}else{p.status='rejected';p.error=rec.error;}
+     if(p.status==='confirmed'||p.status==='rejected'){acc.history.unshift({...p,id,settled:now});acc.history=acc.history.slice(0,30);delete acc.pending[id];if(p.carrier?.keyImage&&p.status==='rejected')release.push(p.carrier.keyImage);}continue;}
+    const live=now-(p.heartbeat||p.created)<20000;// an operation in another window (or this one) is still working on it
+    if(p.status==='selected'||p.status==='quoted'){if(!live){if(p.nativeInput)release.push(p.nativeInput);delete acc.pending[id];}continue;}
+    if(live&&(p.status==='built'||p.status==='signed'))continue;
+    if(p.status==='signed'||p.status==='missing'||(p.status==='published'&&status.tip-(p.publishedAtTip??status.tip)>=2)){if(p.carrier?.blob)republish.push(id);}}
+   for(const [claim,c] of Object.entries(acc.claims))if(c.phase==='signed')claimQueue.push(claim);});
+  if(release.length)await w.client.call('nativeRelease',{keyImages:release},30000).catch(()=>{});
+  for(const id of republish){const acc=journal.account(await journal.read(),w.tokenAddress);const p=acc.pending[id];if(!p?.carrier?.blob)continue;setProgress('Reconciling: re-sending a signed carrier that is not on the chain yet (same transaction, no new fee)…');
+   try{const r=await w.client.call('carrierPublish',{blob:p.carrier.blob},60000);
+    await journal.write(j=>{const q=journal.account(j,w.tokenAddress).pending[id];if(!q)return;if(r.ok){Object.assign(q,{status:'published',txid:p.carrier.txid,publishedAtTip:status.tip,publishAttempts:(q.publishAttempts||0)+1});}
+     else if(r.doubleSpend){q.status='conflicted';q.error='The carrier’s XMR input was spent by another transaction; the record is still unpublished. Approve a new carrier (a new fee) from the pending list.';}
+     else{q.status='missing';q.error='Daemon refused the carrier: '+r.reason;}});}
+   catch(e){await journal.write(j=>{const q=journal.account(j,w.tokenAddress).pending[id];if(q){q.status='missing';q.error=e.message;}});}}
+  for(const claim of claimQueue){const acc=journal.account(await journal.read(),w.tokenAddress);const c=acc.claims[claim];setProgress('Reconciling: submitting a signed migration claim that was interrupted…');
+   try{await post('claimSubmit',{id:accountId(),body:c.body,legacySignature:c.signature});await journal.write(j=>{journal.account(j,w.tokenAddress).claims[claim].phase='submitted';});}
+   catch(e){if(/already/i.test(e.message))await journal.write(j=>{journal.account(j,w.tokenAddress).claims[claim]={...c,phase:'submitted',note:e.message};});else await journal.write(j=>{journal.account(j,w.tokenAddress).claims[claim].error=e.message;});}}}
+ const assets=()=>backend?.assets??[];
+ const balanceOf=r=>holder?.balances?.[r.asset]??'0';
+ const notesOf=r=>(holder?.notes??[]).filter(n=>n.asset===r.asset);
+ const pendingOf=r=>Object.entries(journalAcc?.pending??{}).filter(([,p])=>p.asset===r.asset).map(([id,p])=>({id,...p}));
+ const tokenAddress=()=>current()?.tokenAddress||holder?.tokenAddress||'';
+ const native=()=>holder?.native||null;
+ const nativeLine=()=>{const n=native();if(!n)return 'XMR for carrier fees: unavailable';const lockedAt=n.outputs.filter(o=>!o.spent&&!o.reserved&&n.tip<o.unlockedAt).map(o=>o.unlockedAt);return `XMR for carrier fees: ${xmr(n.unlocked)} XMR spendable${BigInt(n.locked)>0n?` · ${xmr(n.locked)} XMR locked until block ${Math.max(...lockedAt)}`:''}${BigInt(n.reserved)>0n?` · ${xmr(n.reserved)} XMR reserved by pending carriers`:''}`;};
+ function rowsHTML(){if(!accountId())return '';if(error)return `<div class="notice" id="pf-error-row">Private holder test unavailable: ${esc(error)}</div>`;if(!backend||!holder||holderAccount!==account()?.id)return `<div class="empty" id="pf-loading">Opening the private holder wallet… <span id="pf-status">${esc(statusLine)}</span></div>`;
+  let html='';assets().forEach((r,i)=>{const pend=pendingOf(r);html+=`<button class="asset" id="asset-private-${i}"><span class="coin"><span class="coin-fallback">${esc(r.symbol)}</span></span><span class="asset-info"><strong>${esc(r.name)}</strong><small>Private balance · keys in this wallet${pend.length?' · '+pend.length+' pending':''}</small></span><span class="asset-amount"><strong title="${esc(amount(balanceOf(r)))} ${esc(r.symbol)}">${esc(compactTokenBalance(balanceOf(r)))} ${esc(r.symbol)}</strong><small class="asset-usd">${r.viewingKeyShared?'Viewing key shared':'Scanned locally'}</small></span></button>`;
+   (r.legacy??[]).filter(l=>!l.claimed).forEach((l,j)=>{html+=`<button class="asset legacy-asset" id="asset-legacy-${i}-${j}"><span class="coin"><span class="coin-fallback">L</span></span><span class="asset-info"><strong>Legacy ${esc(r.symbol)} (not migrated)</strong><small>Previously bridged tokens · migrate to private</small></span><span class="asset-amount"><strong title="${esc(amount(l.amount))} ${esc(r.symbol)}">${esc(compactTokenBalance(l.amount))} ${esc(r.symbol)}</strong><small class="asset-usd">Legacy</small></span></button>`;});});
+  return html;}
+ function bind(){assets().forEach((r,i)=>{on('asset-private-'+i,()=>detail(r));(r.legacy??[]).filter(l=>!l.claimed).forEach((l,j)=>on(`asset-legacy-${i}-${j}`,()=>legacyDetail(r,l)));});}
+ const testNote=`<p class="subtle">Synthetic private-holder test. Token keys are derived in this extension from the account’s recovery phrase (scheme ${SCHEME}); notes are scanned locally from the public test chain. Carrier transactions are built, signed and paid by this wallet from its own test XMR and sent to the test daemon directly; there is no relay. Nothing here touches real funds.</p>`;
+ const paramsNote=()=>{const p=current()?.parameters;if(!p)return '';return `<p class="subtle" id="pf-params">Proving parameters: ${esc(p.label)}. Every parameter file is authenticated against the manifest shipped in this build (sha256 ${esc(p.manifestSha256.slice(0,16))}…${p.pinnedInBuild?', pinned in the worker':''}) before it is used; the parameter server’s own checksums are not trusted.</p>`;};
+ const statusWord=p=>({selected:'selecting notes',quoted:'fee quoted, awaiting approval',built:'proved · needs a carrier (approve the fee to publish)',signed:'carrier signed, sending to the daemon',published:'published, waiting for a block',mined:`mined · ${p.confirmations||0} of ${backend?.confirmations} confirmations`,missing:'carrier not seen on chain yet (re-sent on refresh)',conflicted:'carrier conflicted · needs a new carrier',rejected:'rejected',confirmed:'confirmed'}[p.status]||p.status);
+ function pendingHTML(r){const pend=pendingOf(r);if(!pend.length)return '';return `<details open><summary>Pending operations (${pend.length})</summary>${pend.map(p=>`<p class="review-line"><span>${esc(p.kind)} ${esc(amount(p.amount))} ${esc(r.symbol)}</span><strong>${esc(statusWord(p))}</strong></p>${p.carrier?`<p class="subtle">Carrier ${esc(p.carrier.txid.slice(0,16))}… · fee ${esc(xmr(p.carrier.fee))} XMR · ${esc(p.carrier.nativeBytes)} bytes</p>`:''}${p.error?`<p class="error">${esc(p.error)}</p>`:''}${(p.status==='built'||p.status==='conflicted')&&p.wire?`<button class="text-btn wide" data-carry="${esc(p.id)}">Approve carrier fee and publish this proved record</button>`:''}`).join('')}<p class="subtle">Saved in the encrypted journal; checked against the chain on every refresh. A signed carrier is re-sent as the same transaction (no second fee); a proved record without a carrier waits for your fee approval.</p></details>`;}
+ function detail(r){const notes=notesOf(r);show(r.name,`<div class="monero-token-detail"><h1 class="page-title" title="${esc(amount(balanceOf(r)))} ${esc(r.symbol)}">${esc(compactTokenBalance(balanceOf(r)))} ${esc(r.symbol)}</h1><p class="subtle">Private balance · ${notes.length} note${notes.length===1?'':'s'} · scanned locally to block ${esc(holder?.tip??'?')}${pendingOf(r).length?' · '+pendingOf(r).length+' pending':''}</p>${r.viewingKeyShared?'<p class="notice">Viewing key shared with the test indexer on your explicit request. It can see this asset’s balance; it cannot spend.</p>':''}<label>Private token address</label><div class="address">${esc(tokenAddress())}</div><p class="subtle" id="pf-native">${esc(nativeLine())}</p><label>Solana test balance (${esc(r.symbol)} tokens)</label><div class="address">${esc(amount(r.solanaBalance))} ${esc(r.symbol)}</div><button class="primary wide" id="pf-send">Send</button><button class="secondary wide" id="pf-bridge">Bridge</button>${notes.length>3?`<button class="secondary wide" id="pf-consolidate">Consolidate notes (${notes.length} → ${notes.length-2})</button>`:''}<button class="text-btn wide" id="pf-view">Share viewing key with the test indexer</button><button class="text-btn wide" id="pf-fund">Mine test XMR to this account for carrier fees (test service)</button><button class="text-btn wide" id="pf-mine">Advance test chain ${esc(backend.confirmations)} blocks (test service)</button><p id="progress" class="busy" role="status"></p><div id="pf-review"></div>${pendingHTML(r)}${paramsNote()}${testNote}</div>`);
+  on('pf-send',()=>sendForm(r));on('pf-bridge',()=>bridgeForm(r));
+  on('pf-view',()=>void run(async e=>{const w=need();setProgress('Exporting this wallet’s viewing key and sending it to the test indexer (explicit share)…');const vk=await w.client.call('viewingKey',{},30000);same(e);const v=await post('view',{id:accountId(),symbol:r.symbol,viewingKey:vk.viewingKey});same(e);setProgress(`Indexer view: ${amount(v.balance)} ${r.symbol}, ${v.notes} note(s). It cannot spend.`);await refresh();}));
+  on('pf-mine',()=>void run(async e=>{setProgress('Mining test blocks…');const m=await post('mine',{blocks:backend.confirmations});same(e);await refresh();same(e);const next=assets().find(x=>x.symbol===r.symbol);setProgress(`Test chain at block ${m.tip}. Balance ${amount(balanceOf(next))} ${r.symbol}.`);}));
+  on('pf-fund',()=>void run(async e=>{setProgress('TEST SERVICE: mining a coinbase reward to this account’s Monero address (matures after 60 blocks)…');const f=await post('fund',{id:accountId(),blocks:1});same(e);await refresh();same(e);setProgress(`Mined ${f.funded} coinbase output to this account (test service). It unlocks after 60 blocks; advance the chain. ${nativeLine()}`);}));
+  on('pf-consolidate',()=>void run(async e=>{const w=need();const picked=notesOf(r).slice().sort((x,y)=>(BigInt(y.amount)>BigInt(x.amount)?1:-1)).slice(0,3);const total=picked.reduce((n,x)=>n+BigInt(x.amount),0n).toString();const rounds=Math.ceil((notesOf(r).length-1)/2);
+   setProgress(`Merging ${picked.length} notes (${picked.map(x=>amount(x.amount)).join(' + ')} ${r.symbol}) into one note of ${amount(total)} ${r.symbol}. No token fee; each consolidation is one carrier transaction with its own XMR fee (merging all ${notesOf(r).length} notes into one needs ${rounds} transactions).`);
+   const out=await operate(e,w,{kind:'send',asset:r.asset,symbol:r.symbol,amount:total,to:w.tokenAddress,notes:picked.map(x=>x.commitment)});same(e);
+   setProgress(`Consolidation published (${out.inputs} inputs → 1 note of ${amount(total)} ${r.symbol}; ${out.bytes}-byte record proved locally in ${Math.round(out.provingMs/1000)} s; carrier ${out.carrier.txid.slice(0,16)}… paid ${xmr(out.carrier.fee)} XMR from this wallet). Advance the chain to confirm.`);await refresh();}));
+  document.querySelectorAll('[data-carry]').forEach(b=>b.onclick=()=>void run(async e=>{const w=need();const out=await carryPending(e,w,b.dataset.carry);same(e);setProgress(`Carrier ${out.carrier.txid.slice(0,16)}… published for the saved record; fee ${xmr(out.carrier.fee)} XMR paid from this wallet.`);await refresh();}));}
+ // Fee approval: the exact quote is rendered for the holder and the decision buttons are placed in
+ // the modal's pinned action area (next to the form's own primary button, which is hidden meanwhile),
+ // so Approve/Cancel and the fee line in #progress stay visible at short popup heights. The
+ // operation continues only on an explicit click; Cancel releases everything.
+ function approveFee(q,w,{kind}){const n=native();return new Promise((resolve,reject)=>{const box=$('#pf-review');if(!box)return reject(Error('Review area missing'));
+  box.innerHTML=`<p class="notice" id="pf-fee">Carrier fee: <strong>${esc(xmr(q.fee))} XMR</strong> (${esc(q.weight)} weight bytes × ${esc(q.feePerWeight)} piconero on the offline test chain). Paid from this account’s own XMR: input ${esc(xmr(q.inputAmount))} XMR, change ${esc(xmr(q.changeAmount))} XMR returns to you. The ${kind==='redeem'?'925':'996'}-byte record rides in tx_extra of an ordinary Monero transaction (ring of ${esc(q.ringSize)}). On mainnet at 20,000 piconero/byte this would be about ${esc(xmr(q.illustrativeMainnetFee,8))} XMR; the real rate comes from the node at send time. Nothing has been proved or published yet.</p>`;
+  setProgress(`Carrier fee ${xmr(q.fee)} XMR from this account’s XMR (${xmr(q.inputAmount)} XMR input). Approve to prove and send, or cancel.`);
+  const primary=document.querySelector('#modal button.primary.wide:not([hidden])');const anchor=primary&&primary.parentElement?primary:null;
+  const approve=document.createElement('button');approve.className='primary wide';approve.id='pf-approve';approve.dataset.keep='1';approve.textContent='Approve fee and send';
+  const cancel=document.createElement('button');cancel.className='secondary wide';cancel.id='pf-cancel';cancel.dataset.keep='1';cancel.textContent='Cancel';
+  if(anchor){anchor.parentElement.insertBefore(approve,anchor);anchor.parentElement.insertBefore(cancel,anchor);anchor.hidden=true;}else{box.append(approve,cancel);}
+  const done=()=>{approve.remove();cancel.remove();if(anchor)anchor.hidden=false;box.innerHTML='';};
+  approve.onclick=()=>{done();resolve(true);};cancel.onclick=()=>{done();reject(Error('Cancelled before proving. Nothing was proved, reserved or published; the XMR input was released.'));};});}
+ // Shared operation core: select against shared reservations -> reserve in the
+ // journal -> QUOTE the carrier fee (native input + ring chosen in the worker)
+ // -> holder approval -> prove in the worker -> persist the record -> sign the
+ // carrier with the approved quote -> persist the signed carrier -> publish to
+ // the daemon. Every step is journaled so an interruption resumes safely.
+ async function operate(e,w,{kind,asset,symbol,amount:raw,to,binding,notes:preselected}){
+  const first=await journal.read();const acc0=journal.account(first,w.tokenAddress);const exclude=[...reservedCommitments(acc0)];const excludeKi=[...reservedKeyImages(acc0)];
+  const sel=preselected?{notes:preselected}:await w.client.call('select',{asset,amount:raw,exclude},30000);same(e);
+  const opId=crypto.randomUUID();
+  await journal.write(j=>{const acc=journal.account(j,w.tokenAddress);const taken=reservedCommitments(acc);if(sel.notes.some(c=>taken.has(c)))throw Error('Those notes were just reserved by another wallet window. Refresh and try again.');acc.pending[opId]={kind,asset,symbol,amount:raw,to,binding,reserved:sel.notes,status:'selected',created:Date.now(),heartbeat:Date.now()};});
+  const beat=setInterval(()=>{journal.write(j=>{const p=journal.account(j,w.tokenAddress).pending[opId];if(p&&['selected','quoted','built','signed'].includes(p.status))p.heartbeat=Date.now();}).catch(()=>{});},5000);
+  let built=null,quote=null;
+  try{
+   operationStatus=true;setProgress('Quoting the carrier fee: choosing an XMR input and sampling ring members in this wallet…');
+   quote=await w.client.call('carrierQuote',{kind,exclude:excludeKi},120000);operationStatus=false;same(e);
+   await journal.write(j=>{const acc=journal.account(j,w.tokenAddress);const taken=reservedKeyImages(acc);if(taken.has(quote.keyImage))throw Error('That XMR input was just reserved by another wallet window. Refresh and try again.');const p=acc.pending[opId];if(!p)throw Error('Operation record vanished');Object.assign(p,{status:'quoted',nativeInput:quote.keyImage,quote:{fee:quote.fee,weight:quote.weight,feePerWeight:quote.feePerWeight,inputAmount:quote.inputAmount},heartbeat:Date.now()});});
+   setProgress('');
+   try{await approveFee(quote,w,{kind});}catch(err){await w.client.call('carrierCancel',{quoteId:quote.quoteId},30000).catch(()=>{});await journal.write(j=>{const acc=journal.account(j,w.tokenAddress);delete acc.pending[opId];});await w.client.call('nativeRelease',{keyImages:[quote.keyImage]},30000).catch(()=>{});throw err;}
+   same(e);testHook('approved');
+   operationStatus=true;built=await w.client.call('build',{kind,to,amount:raw,binding,notes:sel.notes},900000,{idle:true});operationStatus=false;same(e);
+   await journal.write(j=>{const p=journal.account(j,w.tokenAddress).pending[opId];if(!p)throw Error('Operation record vanished');Object.assign(p,{status:'built',heartbeat:Date.now(),wire:built.wire,recordId:built.recordId,bytes:built.bytes,inputs:built.inputs,change:built.change,provingMs:built.provingMs});});
+   testHook('built');
+   setProgress(`Record proved locally (${built.bytes} bytes, ${built.inputs} input${built.inputs===1?'':'s'}, ${Math.round(built.provingMs/1000)} s). Signing the carrier transaction in this wallet…`);
+   const carrier=await w.client.call('carrierSign',{quoteId:quote.quoteId,wire:built.wire},120000);same(e);
+   if(carrier.fee!==quote.fee)throw Error('Carrier fee differs from the approved quote; not publishing.');
+   await journal.write(j=>{const p=journal.account(j,w.tokenAddress).pending[opId];if(!p)throw Error('Operation record vanished');Object.assign(p,{status:'signed',heartbeat:Date.now(),carrier:{txid:carrier.txid,blob:carrier.blob,fee:carrier.fee,keyImage:carrier.keyImage,nativeBytes:carrier.nativeBytes,extraBytes:carrier.extraBytes,signMs:carrier.signMs}});});
+   testHook('signed');
+   setProgress(`Carrier signed (${carrier.nativeBytes} bytes, tx_extra ${carrier.extraBytes} bytes, fee ${xmr(carrier.fee)} XMR). Sending to the test daemon…`);
+   let pub;try{pub=await w.client.call('carrierPublish',{blob:carrier.blob},60000);}catch(err){throw Error('The daemon did not answer ('+err.message+'). Your signed carrier is saved in the encrypted journal and is re-sent as the same transaction on the next refresh: one carrier, one fee, nothing lost.');}same(e);
+   if(!pub.ok)throw Error('The daemon refused the carrier ('+pub.reason+'). It stays saved; refresh re-sends it or shows what to do.');
+   await journal.write(j=>{const p=journal.account(j,w.tokenAddress).pending[opId];if(p)Object.assign(p,{status:'published',txid:carrier.txid,publishedAtTip:holder?.tip??0,publishAttempts:1});});
+   return {...built,carrier,quote,opId};}
+  catch(err){if(!built){try{await journal.write(j=>{const acc=journal.account(j,w.tokenAddress);const p=acc.pending[opId];if(p&&(p.status==='selected'||p.status==='quoted'))delete acc.pending[opId];});}catch{}
+    if(quote&&!/Cancelled/.test(err.message)){await w.client.call('carrierCancel',{quoteId:quote.quoteId},30000).catch(()=>{});await w.client.call('nativeRelease',{keyImages:[quote.keyImage]},30000).catch(()=>{});}}throw err;}
+  finally{operationStatus=false;clearInterval(beat);}}
+ // A proved record saved without a carrier (interrupted, or its carrier conflicted): quote, approve, sign, publish. The record itself is not rebuilt.
+ async function carryPending(e,w,opId){const acc=journal.account(await journal.read(),w.tokenAddress);const p=acc.pending[opId];if(!p?.wire)throw Error('No saved record for this operation.');
+  const excludeKi=[...reservedKeyImages(acc)].filter(k=>k!==p.nativeInput);
+  operationStatus=true;setProgress('Quoting a carrier for the saved record…');const quote=await w.client.call('carrierQuote',{kind:p.kind,exclude:excludeKi},120000);operationStatus=false;same(e);setProgress('');
+  try{await approveFee(quote,w,{kind:p.kind});}catch(err){await w.client.call('carrierCancel',{quoteId:quote.quoteId},30000).catch(()=>{});await w.client.call('nativeRelease',{keyImages:[quote.keyImage]},30000).catch(()=>{});throw err;}
+  same(e);let carrier;try{carrier=await w.client.call('carrierSign',{quoteId:quote.quoteId,wire:p.wire},120000);}
+  catch(err){if(/fails local admission/.test(err.message)){await w.client.call('carrierCancel',{quoteId:quote.quoteId},30000).catch(()=>{});await w.client.call('nativeRelease',{keyImages:[quote.keyImage]},30000).catch(()=>{});await journal.write(j=>{const acc=journal.account(j,w.tokenAddress);const q=acc.pending[opId];if(q){q.status='rejected';q.error='This saved record is no longer valid on the chain (its notes were spent elsewhere); no carrier was built and no fee was paid.';acc.history.unshift({...q,id:opId,settled:Date.now()});delete acc.pending[opId];}});throw Error('The saved record is no longer valid: its notes were spent by another operation or installation. Nothing was sent and no fee was paid.');}throw err;}same(e);
+  await journal.write(j=>{const q=journal.account(j,w.tokenAddress).pending[opId];if(!q)throw Error('Operation record vanished');Object.assign(q,{status:'signed',nativeInput:carrier.keyImage,heartbeat:Date.now(),error:undefined,carrier:{txid:carrier.txid,blob:carrier.blob,fee:carrier.fee,keyImage:carrier.keyImage,nativeBytes:carrier.nativeBytes,extraBytes:carrier.extraBytes}});});
+  const pub=await w.client.call('carrierPublish',{blob:carrier.blob},60000);same(e);if(!pub.ok)throw Error('The daemon refused the carrier ('+pub.reason+'). It stays saved.');
+  await journal.write(j=>{const q=journal.account(j,w.tokenAddress).pending[opId];if(q)Object.assign(q,{status:'published',txid:carrier.txid,publishedAtTip:holder?.tip??0,publishAttempts:(q.publishAttempts||0)+1});});return {carrier};}
+ function sendForm(r){show('Send '+r.symbol,`<p class="subtle">Private transfer on the test chain, proved in this extension. Exact change returns to your wallet.</p><label for="pf-to">Recipient private address</label><input id="pf-to" autocomplete="off" spellcheck="false">${maxControl('pf-amount','Amount ('+r.symbol+')')}<input id="pf-amount" inputmode="decimal" placeholder="0" autocomplete="off"><p class="subtle">Available: ${esc(amount(balanceOf(r)))} ${esc(r.symbol)} · up to three notes per transfer · no token fee. The record travels in an ordinary Monero transaction built and signed by this wallet; its XMR network fee is paid from this account (${esc(nativeLine().replace('XMR for carrier fees: ',''))}) and is shown for approval before anything is proved.</p><div id="pf-review"></div><button class="primary wide" id="pf-send-go">Send</button><button class="secondary wide" id="pf-back" data-keep>Back</button><p id="progress" class="busy" role="status"></p>`);
+  $('#pf-amount-max').onclick=()=>void fillMaximum($('#pf-amount'),async()=>balanceOf(r));on('pf-back',()=>detail(r));
+  on('pf-send-go',()=>void run(async e=>{const w=need();const to=$('#pf-to').value.trim(),raw=units($('#pf-amount').value.trim(),6).toString();if(!to.startsWith('penumbra1'))throw Error('Enter the recipient’s private token address.');if(atomic(raw)<=0n)throw Error('Enter an amount.');if(atomic(raw)>atomic(balanceOf(r)))throw Error('Insufficient private balance.');
+   setProgress('Selecting notes and reserving them in the encrypted journal…');const out=await operate(e,w,{kind:'send',asset:r.asset,symbol:r.symbol,amount:raw,to});same(e);
+   setProgress(`Published ${out.recordId.slice(0,16)}… (${out.bytes}-byte record, ${out.inputs} input${out.inputs===1?'':'s'}, change ${amount(out.change)} ${r.symbol}; proved locally in ${Math.round(out.provingMs/1000)} s; carrier ${out.carrier.txid.slice(0,16)}… ${out.carrier.nativeBytes} bytes, tx_extra ${out.carrier.extraBytes} bytes, fee ${xmr(out.carrier.fee)} XMR paid from this wallet). Advance the chain to confirm.`);await refresh();}));}
+ function bridgeForm(r,direction='deposit'){const dep=direction==='deposit';show('Bridge '+r.symbol,`<p class="bridge-intro">Move ${esc(r.symbol)} between Solana and the private test chain. Deposits are credited to your private address automatically.</p><label for="pf-direction">Direction</label><select id="pf-direction"><option value="deposit" ${dep?'selected':''}>Solana → private (deposit)</option><option value="redeem" ${dep?'':'selected'}>Private → Solana (redeem)</option></select>${maxControl('pf-amount','Amount ('+r.symbol+')')}<input id="pf-amount" inputmode="decimal" placeholder="0" autocomplete="off"><p class="subtle">${dep?`Available on Solana: ${esc(amount(r.solanaBalance))} ${esc(r.symbol)}. One 1.5% token transfer fee is deducted once on deposit; you sign the deposit with this account’s Solana key.`:`Available privately: ${esc(amount(balanceOf(r)))} ${esc(r.symbol)}. The burn is proved in this extension, carried by a Monero transaction this wallet pays for (fee shown for approval), and pays out to your Solana address after ${esc(backend.confirmations)} confirmations; the token fee is deducted once at payout.`}</p><div id="pf-review"></div><button class="primary wide" id="pf-bridge-go">${dep?'Review and sign deposit':'Redeem to Solana'}</button><button class="secondary wide" id="pf-back" data-keep>Back</button><p id="progress" class="busy" role="status"></p><details><summary>Pending payouts (test operator)</summary>${(r.payouts??[]).map(p=>`<p>${esc(p.txid.slice(0,16))}… · ${esc(amount(p.amount))} · ${esc(p.status)} · ${esc(p.confirmations)} conf.</p>${p.status==='paid'?'':`<button class="text-btn wide" data-payout="${esc(p.txid)}">Request operator payout (test service)</button>`}`).join('')||'<p class="subtle">None.</p>'}</details>`);
+  $('#pf-direction').onchange=e=>{$('#pf-amount').value='';bridgeForm(r,e.target.value);};$('#pf-amount-max').onclick=()=>void fillMaximum($('#pf-amount'),async()=>dep?r.solanaBalance:balanceOf(r));on('pf-back',()=>detail(r));
+  document.querySelectorAll('[data-payout]').forEach(b=>b.onclick=()=>void run(async e=>{setProgress('Asking the test operator to pay this burn…');const p=await post('payout',{symbol:r.symbol,txid:b.dataset.payout});same(e);const msg=p.status==='paid'?`Paid ${amount(p.net)} ${r.symbol} to your Solana address${p.repeated?' (already paid earlier; no second payout)':''}.`:'Payout status: '+p.status;setProgress(msg);await refresh();same(e);const next=assets().find(x=>x.symbol===r.symbol);if(next){bridgeForm(next,'redeem');setProgress(msg);}}));
+  on('pf-bridge-go',()=>void run(async e=>{const w=need();const raw=units($('#pf-amount').value.trim(),6).toString();if(atomic(raw)<=0n)throw Error('Enter an amount.');
+   if(dep){if(atomic(raw)>atomic(r.solanaBalance))throw Error('Insufficient Solana token balance.');setProgress('Preparing the deposit transaction…');const prep=await post('depositPrepare',{id:accountId(),symbol:r.symbol,amount:raw});same(e);
+    const a=account();if(prep.review.owner!==a.sol||prep.review.mint!==r.mint||prep.review.gross!==raw||prep.review.creditTo!==w.tokenAddress)throw Error('Prepared deposit does not match this account.');const tx=Transaction.from(Uint8Array.from(atob(prep.transaction),c=>c.charCodeAt(0)));if(tx.instructions.length!==1||tx.feePayer?.toBase58()!==a.sol)throw Error('Unexpected deposit transaction.');
+    setProgress(`Signing deposit of ${amount(prep.review.gross)} ${r.symbol} (fee ${amount(prep.review.fee)}, net ${amount(prep.review.net)}) with your Solana key…`);const key=importSol(a.solSecret);try{if(key.publicKey.toBase58()!==a.sol)throw Error('Selected Solana key differs.');tx.sign(key);}finally{key.secretKey.fill(0);}
+    const d=await post('depositSubmit',{id:accountId(),nonce:prep.nonce,transaction:btoa(String.fromCharCode(...tx.serialize()))});same(e);setProgress(`Deposit accepted (net ${amount(d.receipt.net)} ${r.symbol}); private credit ${d.credit.txid.slice(0,16)}… published to your private address. Advance the chain ${backend.confirmations} blocks to see it.`);}
+   else{if(atomic(raw)>atomic(balanceOf(r)))throw Error('Insufficient private balance.');setProgress('Registering the redemption with the test operator…');const rp=await post('redeemPrepare',{id:accountId(),symbol:r.symbol});same(e);if(rp.destination!==account().sol)throw Error('Redemption destination is not this account’s Solana address.');
+    const out=await operate(e,w,{kind:'redeem',asset:r.asset,symbol:r.symbol,amount:raw,binding:rp.binding});same(e);setProgress(`Burn ${out.recordId.slice(0,16)}… published (${out.bytes}-byte record, ${out.inputs} input${out.inputs===1?'':'s'}, proved locally in ${Math.round(out.provingMs/1000)} s; carrier ${out.carrier.txid.slice(0,16)}… fee ${xmr(out.carrier.fee)} XMR paid from this wallet). Payout to your Solana address after ${backend.confirmations} confirmations.`);}
+   await refresh();}));}
+ function legacyDetail(r,l){show('Legacy '+r.symbol,`<div class="monero-token-detail"><h1 class="page-title" title="${esc(amount(l.amount))} ${esc(r.symbol)}">${esc(compactTokenBalance(l.amount))} ${esc(r.symbol)}</h1><p class="subtle">Legacy balance · not migrated</p><p class="notice">Previously bridged tokens stay legacy until you explicitly migrate them. Migration signs a one-time claim with this wallet’s own Monero keys for the legacy output shown below. No key image is revealed and nothing is spent on Monero. The credit goes to your private address.</p><label>Legacy output key</label><div class="address">${esc(l.P)}</div><button class="primary wide" id="pf-migrate">Migrate to private</button><button class="secondary wide" id="pf-back" data-keep>Back</button><p id="progress" class="busy" role="status"></p>${testNote}</div>`);
+  on('pf-back',close);
+  on('pf-migrate',()=>void run(async e=>{const w=need();setProgress('Preparing the migration claim…');const prep=await post('claimPrepare',{id:accountId(),claim:l.claim});same(e);if(prep.body.owner!==w.tokenAddress||prep.body.amount!==l.amount||prep.P!==l.P)throw Error('Prepared claim does not match this legacy balance.');
+   await journal.write(j=>{journal.account(j,w.tokenAddress).claims[l.claim]={phase:'prepared',body:prep.body,created:Date.now()};});testHook('claim-prepared');
+   setProgress('Deriving the legacy output key from your Monero keys and signing locally…');const a=account();const sig=await oneShot('private-claim.worker.js','sign-claim',{seed:a.xmrSeed,owner:a.xmr,review:{messageHash:prep.messageHash,P:prep.P,txPublicKey:prep.txPublicKey,outputIndex:prep.outputIndex}});same(e);
+   await journal.write(j=>{journal.account(j,w.tokenAddress).claims[l.claim]={phase:'signed',body:prep.body,signature:sig.signature,created:Date.now()};});testHook('claim-signed');
+   setProgress('Submitting the signed claim…');const c=await post('claimSubmit',{id:accountId(),body:prep.body,legacySignature:sig.signature});same(e);await journal.write(j=>{journal.account(j,w.tokenAddress).claims[l.claim].phase='submitted';});
+   setProgress(`Claim credited: ${c.txid.slice(0,16)}… for ${amount(c.amount)} ${r.symbol} to your private address. Advance the chain to see the private balance.`);await refresh();}));}
+ function reset(){for(const w of workers.values())w.client.close();workers.clear();journal.lock();backend=holder=journalAcc=null;holderAccount=null;error='';statusLine='';}
+ // Test-build inspection hook (public/local data only: no keys, no seeds; key images and carrier blobs are the holder's own local data).
+ globalThis.__pfDebug={state:async()=>({backend,holder,journal:journal.unlocked&&current()?journal.account(await journal.read(),current().tokenAddress):journalAcc,error,statusLine,parameters:current()?.parameters??null,nativeAddress:current()?.nativeAddress??null}),parameters:async()=>current()?current().client.call('parameters',{},30000):null};
+ return {refresh,rowsHTML,bind,reset,get state(){return {backend,holder,journal:journalAcc};}};
+}

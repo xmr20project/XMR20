@@ -1,0 +1,159 @@
+[
+ {
+  "at": "2026-10-23T15:44:58.743Z",
+  "step": "extension loaded",
+  "id": "jigbpnljnmbbkebaopbnnhmiafgnofla",
+  "profile": "A"
+ },
+ {
+  "at": "2026-10-23T15:45:01.886Z",
+  "step": "account imported; holder keys derived in the extension and registered by public token address",
+  "name": "Alpha"
+ },
+ {
+  "at": "2026-10-23T15:45:04.644Z",
+  "step": "account imported; holder keys derived in the extension and registered by public token address",
+  "name": "Beta"
+ },
+ {
+  "at": "2026-10-23T15:45:09.111Z",
+  "step": "REAL: Solana deposit signed in popup, executed in LiteSVM, private credit published to the extension-derived address",
+  "text": "Deposit accepted (net 98.5 X); private credit a7a09c362e4d70c5… published to your private address. Advance the chain 10 blocks to see it."
+ },
+ {
+  "at": "2026-10-23T15:45:10.675Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T15:45:10.681Z",
+  "step": "private balance after deposit, scanned locally by the holder worker",
+  "balance": "98.50 X"
+ },
+ {
+  "at": "2026-10-23T15:45:42.745Z",
+  "step": "REAL: private transfer proved in the extension worker and published with exact change",
+  "text": "Published 2bfc740af8664367… (996-byte record, 1 input, change 58.5 X; proved locally in 29 s; carrier 9b496ea9df19ca82…). Advance the chain to confirm."
+ },
+ {
+  "at": "2026-10-23T15:45:44.307Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T15:45:44.423Z",
+  "step": "insufficient balance refused in popup; second click ignored by the busy guard"
+ },
+ {
+  "at": "2026-10-23T15:45:47.819Z",
+  "step": "REAL: migration claim signed by the extension worker under the account keys; credit to the holder address",
+  "text": "Claim credited: 15d15d71e22056c7… for 492.5 X to your private address. Advance the chain to see the private balance."
+ },
+ {
+  "at": "2026-10-23T15:45:47.867Z",
+  "step": "backend-error",
+  "message": "Claim already consumed"
+ },
+ {
+  "at": "2026-10-23T15:45:47.868Z",
+  "step": "duplicate claim replay rejected by the backend",
+  "error": "Claim already consumed"
+ },
+ {
+  "at": "2026-10-23T15:45:48.842Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T15:46:15.370Z",
+  "step": "REAL: private burn (925-byte boundary record) proved in the extension and published",
+  "text": "Burn b04a3e1c831a78a7… published (925-byte record, 1 input, proved locally in 23 s; carrier 1f1161688a9fc019…). Payout to your Solana address after 10 confirmations."
+ },
+ {
+  "at": "2026-10-23T15:46:16.206Z",
+  "step": "TEST SERVICE: mined 9 blocks via backend action (burn has 9 confirmations)"
+ },
+ {
+  "at": "2026-10-23T15:46:16.690Z",
+  "step": "backend-error",
+  "message": "Only 9 confirmations"
+ },
+ {
+  "at": "2026-10-23T15:46:16.695Z",
+  "step": "payout refused at 9 confirmations",
+  "error": "Only 9 confirmations"
+ },
+ {
+  "at": "2026-10-23T15:46:16.749Z",
+  "step": "TEST SERVICE: mined 1 block (10 confirmations)"
+ },
+ {
+  "at": "2026-10-23T15:46:17.835Z",
+  "step": "TEST SERVICE: operator payout requested from popup; paid once",
+  "text": "Paid 9.85 X to your Solana address."
+ },
+ {
+  "at": "2026-10-23T15:46:19.145Z",
+  "step": "viewing key exported from the holder worker on explicit request; indexer sees the balance, cannot spend",
+  "text": "Indexer view: 30 X, 1 note(s). It cannot spend."
+ },
+ {
+  "at": "2026-10-23T15:46:54.484Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T15:47:25.234Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T15:47:55.982Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T15:48:26.705Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T15:48:57.516Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T15:48:57.516Z",
+  "step": "five 1 X notes sent to Beta (each mined before the next: change must confirm before it can be spent)"
+ },
+ {
+  "at": "2026-10-23T15:48:59.251Z",
+  "step": "fragmented balance refused (needs > 3 notes)",
+  "error": "No set of up to three unreserved notes covers 34000000; consolidate smaller notes first (fragmented balance)"
+ },
+ {
+  "at": "2026-10-23T15:49:30.234Z",
+  "step": "consolidation: three largest notes merged, amounts shown in token units",
+  "text": "Consolidation published (3 inputs → 1 note of 32 X; 996-byte record proved locally in 29 s; carrier 28962784477a4938…). Advance the chain to confirm."
+ },
+ {
+  "at": "2026-10-23T15:49:31.840Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T15:50:01.334Z",
+  "step": "after consolidation the 34 X spend succeeds",
+  "text": "Published 9192561c99cb3d7f… (996-byte record, 3 inputs, change 0 X; proved locally in 29 s; carrier 3990bd05572b843a…). Advance the chain to confirm."
+ },
+ {
+  "at": "2026-10-23T15:50:03.004Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T15:50:03.601Z",
+  "step": "short popup (320x440): Send, Back, progress and error visible without scrolling"
+ },
+ {
+  "at": "2026-10-23T15:50:05.589Z",
+  "step": "reopened and unlocked; private rows restored by local replay",
+  "balance": "580.00 X"
+ },
+ {
+  "at": "2026-10-23T15:50:05.591Z",
+  "step": "backend run folder audited for secrets",
+  "filesChecked": 8,
+  "hits": []
+ }
+]

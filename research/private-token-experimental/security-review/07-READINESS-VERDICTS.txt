@@ -1,0 +1,87 @@
+EXTERNAL SECURITY REVIEW PACKAGE — 07 READINESS VERDICTS PER COMPONENT (with the evidence needed to close each blocker)
+research/privacy-review-20261023 (stage 3); updated 24 Oct 2026 by research/privacy-stagenet-roles-20261023 (verifier-side
+manifest checks, public-stagenet execution, restart/lost-reply cases). Real funds stay DISABLED wherever evidence is missing.
+Legend for "closes with": CODE = engineering work with tests; PRODUCT = an owner decision with stated
+assumptions; REVIEW = independent security review / audit; RESEARCH = no known construction yet.
+(Test tallies and evidence paths: RESULTS.txt and readiness.json of this candidate.)
+
+1. PRIVATE TRANSFERS (XM3 records, holder-controlled keys, holder-funded carriers)   VERDICT: NO-GO for real funds
+   What works (synthetic): keys, scanning, proving, carrier construction, fee approval, publication,
+   recovery from the phrase, journal recovery, concurrency and interruption handling, parameter
+   authentication, no native-source disclosure in records.
+   Blockers and what closes them:
+   a. Disposable single-party Groth16 setup ........................ PRODUCT (ceremony plan) + CODE (ceremony tooling, signed manifest) + REVIEW
+      evidence needed: ceremony transcript, reproducible parameter derivation, signed manifest matching the shipped hashes
+   b. Unreviewed circuit composition, codec, key scheme ............. REVIEW
+      evidence needed: independent report on 01-PROOF-CONSTRUCTION items 1-4 (06.E questions 1-3)
+   c. Proving cost (~30 s single-threaded, 83 MB key in the worker) ... CODE (threads/wasm SIMD, smaller circuits) or PRODUCT (accept)
+      evidence needed: measured proving time on target devices; memory budget decision
+   d. No constant-time / side-channel review of wasm proving and signing ... REVIEW
+   e. Verifier-side (indexer/issuer) parameter manifest checks ....... CLOSED 23 Oct (verifier-params milestone: roles require
+      --trusted-manifest, authenticate every parameter byte, refuse on mismatch; verifier-params.test.mjs)
+   f. Mainnet fee/decoy behaviour unmeasured (offline fakechain only) .. PARTLY CLOSED 24 Oct: EXECUTED ON STAGENET — carriers
+      accepted with sanity checks ON, relayed to and confirmed by a third-party node, fee 20,000 piconero/byte observed
+      (runs/stagenet/STAGENET-RUN.txt). STILL OPEN: mainnet rates, decoy statistics and miner policies — CODE/PRODUCT (a
+      mainnet measurement is a product decision; nothing here authorises it)
+   i. Restart / lost-reply / stale-backup / two-installation behaviour .. CODE DONE 24 Oct in the reference holder process
+      (recovery-cases.mjs: offline chain all cases incl. rollback and conflict; stagenet the ordinary cases) — REVIEW of the
+      semantics (06.F.5-7) and CODE to port lookup-before-retry and pool-aware selection into the popup flow remain
+   g. Change-chain linkage and carrier fingerprint (extra size) ...... PRODUCT (accept + document) / REVIEW
+   h. Memory-erasure limits in the browser ............................ PRODUCT (accept + document)
+
+2. MIGRATION (legacy -> private claims, cutover)                                    VERDICT: NO-GO (not started for real balances)
+   What works (synthetic): claim signed under the legacy output key without a key image; interrupted
+   claim recovery; replay rejection; snapshot rights model; explicit "not migrated" presentation.
+   Blockers:
+   a. No production snapshot height, claim window or published snapshot .............. PRODUCT
+   b. Old-format path still live; continued use keeps publishing the P->I leak ......... PRODUCT (stop promoting; keep history read-only)
+   c. Operator identity graph (P -> token address -> Solana) ........................... PRODUCT (document) / CODE (two-step claim option)
+   d. Signer (noble-based) not reviewed for constant time ............................ REVIEW
+   e. Legacy snapshot authenticity and liability reconciliation against the live bridge .. CODE + REVIEW
+      evidence needed: reconciliation of the real XN1 legacy index at a chosen height with the backing invariants
+
+3. BRIDGING (Solana deposits -> private credits; private burns -> payouts)          VERDICT: NO-GO; payouts GATED
+   What works (synthetic): deposits signed in the popup, credits private by default, redemption proved
+   by the holder, payout exactly once at CONFIRMATIONS, backing invariants, exposure controls as
+   RATE controls.
+   Blockers:
+   a. Rollback-loss on paid burns (05.A): no loss bound without an assumed max depth ...... PRODUCT (explicit depth/reserve assumption + funded loss reserve + incident controls) + REVIEW; CODE alone cannot close it
+      evidence needed: written finality policy with numbers, reserve sizing, incident runbook, reviewed
+   b. Independent chain observation for the operator (one node today) ................ CODE
+   c. Production adapters, authentication, operator key custody ...................... CODE + REVIEW
+   d. Live program/liquidity compatibility of the private credit/redemption adapter ..... CODE (rehearsal against the live program on devnet/mainnet-fork)
+   e. Operator learns the deposit/redeem identity graph ................................ PRODUCT (document)
+
+4. NATIVE XMR TRADING (buy/sell tokens for XMR)                                     VERDICT: GATED (nativeXmrTradingGated: true), NO-GO
+   Blocker: buyer-pays-receives-nothing after a reservation rollback (05.B). Binding the XMR payment to
+   token state needs the native source/key-image association the new format exists to avoid.
+   Closes with: RESEARCH (a new settlement primitive without P->I disclosure) or PRODUCT (keep trading
+   off the private format). No code in stages 1-3 changes this.
+
+5. CROSS-CUTTING
+   - No independent security audit of any component .................................. REVIEW (this package is the input)
+   - Real-fund readiness ............................................................... false everywhere until 1a-1b, 3a and the audit are closed
+   - Isolation: everything in stages 1-3 ran on synthetic wallets, an offline fakechain, LiteSVM and
+     disposable browser profiles; nothing was deployed; no live wallet, balance, NFT or service touched.
+   - 24 Oct 2026: the stagenet execution used worthless faucet coins on an isolated owner node; mainnet was never contacted.
+
+6. READINESS TABLE — WHAT CLOSES EACH REMAINING ITEM (24 Oct 2026)
+   REMAINING ENGINEERING (CODE)
+     - port lookup-before-retry (publishWithRecovery) and pool-aware native input exclusion into the extension popup flow
+       (private-format.js) and re-run the stage-3 browser suites
+     - independent chain observation for the roles (second daemon / gating on a third-party view instead of recording it)
+     - ceremony tooling: constraint-system digest, transcript verifier, deterministic finalisation (08 R1.b, R2.c)
+     - proving cost (≈35 s single-threaded, ≈400 MB) if the product does not accept it
+   INDEPENDENT REVIEW (REVIEW) — none commissioned; 00-REVIEW-BRIEF.txt is the input
+     - XM3/XB3 composition soundness and malleability; compact codec; XMR20-TKD1 coupling (06.E.1-3)
+     - carrier construction and fingerprint; journal/recovery semantics (06.E.5-6, 06.F)
+     - ceremony design and the independent verification of its transcript (08 R4)
+     - constant-time / side-channel review; the Solana adapter path when it exists
+   PRODUCT DECISIONS (PRODUCT)
+     - whether to fund a multi-party ceremony and who coordinates/contributes (08)
+     - finality policy with numbers, loss reserve and incident controls for bridge payouts (05.A) — additional confirmations
+       or wallet reservations do NOT eliminate the loss case
+     - keep native XMR trading off the private format (05.B) or fund research into a settlement primitive
+     - accept/document: change-chain linkage, carrier fingerprint, memory-erasure limits, confirmation latency
+     - whether to run any mainnet measurement (not authorised by this research)
+   Until the REVIEW column is closed, every verdict above stays NO-GO regardless of test results.
