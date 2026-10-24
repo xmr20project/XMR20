@@ -1,0 +1,118 @@
+[
+ {
+  "at": "2026-10-24T17:18:36.632Z",
+  "step": "service",
+  "message": "{\"role\":\"issuer\",\"ready\":{\"issuerNativeAddress\":\"57niMTvoAZ5GigRF1mQVXxVAmGwJihSSsDLjwPX9vH8hcxA3cyFUP3SjaJefz4ty19iSzfFmWTmoPC6Wg59i9ufTV8p4FQM\",\"issuerTokenAddress\":\"penumbra13dsttnlshskauhg9dr9wvs4uhhlazf9eqhv86g2l46c0zkwqqcxt0093ue0e95njr40939cluyw6fz2852y6ten6duhrzvvu7vl9utmt6j5v26g7eynz6aml508"
+ },
+ {
+  "at": "2026-10-24T17:18:36.757Z",
+  "step": "service",
+  "message": "{\"role\":\"indexer\",\"ready\":{\"domain\":\"5234ab346f9ea1b181e2879f9512b537ad6d595a529d9a0e7ccad87368acba2d\",\"mode\":\"indexer\",\"ready\":true,\"trustedManifest\":{\"label\":\"DISPOSABLE TEST SETUP — STAGENET REHEARSAL — NOT PRODUCTION\",\"sha256\":\"ed12e12441ab4f6d5cc6ad02e3839d9c14b3346b953ebfc277a66d3053903e9b\"}}}"
+ },
+ {
+  "at": "2026-10-24T17:18:37.937Z",
+  "step": "extension loaded",
+  "id": "blimjfnfilgalllddpdlcpnikkfagfhd",
+  "profile": "stagenet-popup"
+ },
+ {
+  "at": "2026-10-24T17:18:41.981Z",
+  "step": "account imported; holder keys derived in the extension and registered by public token address",
+  "name": "Alice-stagenet"
+ },
+ {
+  "at": "2026-10-24T17:18:45.522Z",
+  "step": "account imported; holder keys derived in the extension and registered by public token address",
+  "name": "Bob-stagenet"
+ },
+ {
+  "at": "2026-10-24T17:18:45.522Z",
+  "step": "two fresh test accounts created in the stagenet popup (keys derived in the extension; phrases never leave the browser)"
+ },
+ {
+  "at": "2026-10-24T17:18:49.977Z",
+  "step": "accounts on STAGENET",
+  "A": {
+   "token": "penumbra10z6dkf2tplrf0xcj4axlu03r69x2w9k7n4tzylsucxust4cmffp0r0z0lga3p3ycnqjctytvuvc9xjm3xyezdpswe5ctqv4xuju2np8gtmvkudfnp8avfwdkgt2amvm467gnhe",
+   "native": "53DBsHvPFD5hfqh4WZXL5GTH6A18V5viJ5wLbZAFYwBCEsacPNpU4KFfNExnVqDbCDEG85arrGUoPS2QdEsnJ4MA3EZpBz6",
+   "net": "stagenet",
+   "nettype": "stagenet"
+  },
+  "B": {
+   "token": "penumbra1kplqave9pl03m8rq20erac458yu0jnerttm02wgrpj0k8xqmj9s0h5w2jshmhf3v9dmc2q446ft6nrqxk3w0xdvjd53ncr2rggjwpgquf3duepqf8s3r0tvl2jepkkj0m9m3nh",
+   "native": "58jLXpgZWHPdyPwhpcSVdv38nQzczd7f3DvGjFr7e6tZigA7A2CWxjkLpAPakq63YgYcwgeWjDjhLHUHvZSVMYvBCTrCkCS",
+   "net": "stagenet"
+  }
+ },
+ {
+  "at": "2026-10-24T17:18:54.224Z",
+  "step": "TEST SERVICE: public faucet claim for Alice",
+  "text": "Faucet sent 0.01000000 stagenet XMR (txid 0112a3d5f12a970c…). It becomes spendable after 10 confirmations; refresh later. XMR for carrier fees: 0.000000 XMR spendable"
+ },
+ {
+  "at": "2026-10-24T17:18:55.860Z",
+  "step": "service",
+  "message": "Offline zero-peer fakechain required (daemon reports nettype \"stagenet\", offline false)"
+ },
+ {
+  "at": "2026-10-24T17:21:54.262Z",
+  "step": "credit attempt failed; retrying after a wait",
+  "attempt": 0,
+  "error": "Offline zero-peer fakechain required (daemon reports nettype \"stagenet\", offline false)"
+ },
+ {
+  "at": "2026-10-24T17:23:56.498Z",
+  "step": "service",
+  "message": "Offline zero-peer fakechain required (daemon reports nettype \"stagenet\", offline false)"
+ },
+ {
+  "at": "2026-10-24T17:26:54.821Z",
+  "step": "credit attempt failed; retrying after a wait",
+  "attempt": 1,
+  "error": "Offline zero-peer fakechain required (daemon reports nettype \"stagenet\", offline false)"
+ },
+ {
+  "at": "2026-10-24T17:28:56.916Z",
+  "step": "service",
+  "message": "Offline zero-peer fakechain required (daemon reports nettype \"stagenet\", offline false)"
+ },
+ {
+  "at": "2026-10-24T17:31:55.398Z",
+  "step": "credit attempt failed; retrying after a wait",
+  "attempt": 2,
+  "error": "Offline zero-peer fakechain required (daemon reports nettype \"stagenet\", offline false)"
+ },
+ {
+  "at": "2026-10-24T17:33:57.504Z",
+  "step": "service",
+  "message": "Offline zero-peer fakechain required (daemon reports nettype \"stagenet\", offline false)"
+ },
+ {
+  "at": "2026-10-24T17:36:55.978Z",
+  "step": "credit attempt failed; retrying after a wait",
+  "attempt": 3,
+  "error": "Offline zero-peer fakechain required (daemon reports nettype \"stagenet\", offline false)"
+ },
+ {
+  "at": "2026-10-24T17:38:58.145Z",
+  "step": "service",
+  "message": "Offline zero-peer fakechain required (daemon reports nettype \"stagenet\", offline false)"
+ },
+ {
+  "at": "2026-10-24T17:41:56.557Z",
+  "step": "credit attempt failed; retrying after a wait",
+  "attempt": 4,
+  "error": "Offline zero-peer fakechain required (daemon reports nettype \"stagenet\", offline false)"
+ },
+ {
+  "at": "2026-10-24T17:43:58.962Z",
+  "step": "service",
+  "message": "Offline zero-peer fakechain required (daemon reports nettype \"stagenet\", offline false)"
+ },
+ {
+  "at": "2026-10-24T17:46:57.111Z",
+  "step": "credit attempt failed; retrying after a wait",
+  "attempt": 5,
+  "error": "Offline zero-peer fakechain required (daemon reports nettype \"stagenet\", offline false)"
+ }
+]

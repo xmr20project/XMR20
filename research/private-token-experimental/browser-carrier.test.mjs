@@ -5,7 +5,7 @@
 // Covered: 1/2/3-input transfers with exact token change; actual record and
 // tx_extra sizes; daemon acceptance; exact XMR fee accounting; no XMR, locked
 // XMR, cancellation, interrupted approval, failed construction; lost broadcast
-// reply (same carrier re-sent, one fee); restart with a signed carrier; two
+// reply (daemon asked first, nothing re-sent, one fee); restart with a signed carrier; two
 // popups concurrently (distinct native inputs); 320x440 review layout;
 // redemption carrier; audit: no key image or carrier data reaches the backend,
 // no relay requests, no external requests, no secret leaks.
@@ -45,7 +45,7 @@ test('holder-funded carriers in the real popup (two wallets)',{timeout:3000000},
    await h.mine();const after=await nativeTotal();assert.equal(before-after,BigInt(carrier.fee),'XMR fell by exactly the carrier fee');assert.equal(bal(await h.balanceText()),Math.round((tokBefore-Number(amount))*1e6)/1e6);
    const row={label,amount,inputs:Number(m[2]),change:m[3],recordBytes:Number(m[1]),nativeBytes:Number(m[5]),extraBytes:Number(m[6]),feeXmr:m[7],feePiconero:carrier.fee,provingS:Number(m[4]),txid:carrier.txid};results.transfers.push(row);h.log('holder-funded transfer confirmed',row);return row;}
   // 1. One input: Alpha -> Beta 20 X (change 78.5); fee shown before proving, approved, paid from Alpha's XMR.
-  const t1=await sendAndCheck(betaAddress,'20',1,'78.5','alpha-1-input');assert.equal(t1.nativeBytes,2520);assert.equal(t1.extraBytes,1056);
+  const t1=await sendAndCheck(betaAddress,'20',1,'78.5','alpha-1-input');assert.ok(t1.nativeBytes>=2518&&t1.nativeBytes<=2524,'carrier size '+t1.nativeBytes);assert.equal(t1.extraBytes,1056);
   // 2. Beta has tokens but NO XMR: the fee quote fails visibly; nothing is reserved or published.
   await h.switchAccount(1);assert.equal(bal(await h.balanceText()),20);await h.openDetail();await page.click('#pf-send');await page.fill('#pf-to',alphaAddress);await page.fill('#pf-amount','5');const txBefore=await daemonTxCount();await page.click('#pf-send-go');
   const noXmr=await h.errorText(/No spendable XMR for the carrier fee: unlocked 0 piconero .*locked 0 \(/,120000);await h.shot('beta-no-xmr-refused');assert.equal(Object.keys(await pending()).length,0,'no reservation left');assert.equal(await daemonTxCount(),txBefore);h.log('REFUSED: Beta has no XMR for the carrier fee (nothing reserved or published)',{error:noXmr});
@@ -61,13 +61,14 @@ test('holder-funded carriers in the real popup (two wallets)',{timeout:3000000},
   await h.switchAccount(0);await h.uiRefresh();assert.equal(bal(await h.balanceText()),83.5);await sendAndCheck(betaAddress,'80',2,'3.5','alpha-2-inputs');
   await h.switchAccount(1);await sendAndCheck(alphaAddress,'3',1,'77','beta-return-3');await sendAndCheck(alphaAddress,'2',1,'75','beta-return-2');// largest-first: Beta spends its 80 X note, then the 77 X change
   // 7. Three inputs: Alpha 3.5 + 3 + 2 -> send 8 (change 0.5).
-  await h.switchAccount(0);await h.uiRefresh();assert.equal(bal(await h.balanceText()),8.5);const t3=await sendAndCheck(betaAddress,'8',3,'0.5','alpha-3-inputs');assert.equal(t3.nativeBytes,2520,'carrier size does not depend on the number of token inputs (fixed 996-byte record)');
-  // 8. Lost broadcast reply: the daemon accepts the carrier but the popup never hears back -> the SAME signed carrier is re-sent on refresh; one carrier, one fee.
-  await h.switchAccount(1);const beforeLost=await nativeTotal();await page.route('**/send_raw_transaction',async route=>{await route.fetch();await route.abort('connectionreset');});
-  await h.openDetail();await page.click('#pf-send');await page.fill('#pf-to',alphaAddress);await page.fill('#pf-amount','4');await page.click('#pf-send-go');await h.waitText('#pf-fee',/Carrier fee/);await page.click('#pf-approve');const lostErr=await h.errorText(/daemon did not answer .* re-sent as the same transaction/,900000);await page.unroute('**/send_raw_transaction');await h.shot('beta-lost-broadcast-reply');
-  let pend=Object.values(await pending());assert.equal(pend.length,1);assert.equal(pend[0].status,'signed');const lostTxid=pend[0].carrier.txid;h.log('lost broadcast reply: signed carrier saved in the journal',{error:lostErr,txid:lostTxid});
-  await h.back();await h.closeModal();await h.uiRefresh();for(let i=0;i<40;i++){pend=Object.values(await pending());if(pend.length===1&&pend[0].status==='published')break;await page.waitForTimeout(2000);await h.uiRefresh();}
-  assert.equal(pend[0].status,'published');assert.equal(pend[0].carrier.txid,lostTxid,'the SAME carrier was re-sent');assert.equal(pend[0].publishAttempts,1);await h.mine();assert.equal(beforeLost-(await nativeTotal()),BigInt(pend[0].carrier.fee),'exactly one fee paid');assert.equal(bal(await h.balanceText()),94);h.log('same carrier re-sent after the lost reply; one fee; tokens exact',{fee:pend[0].carrier.fee});
+  await h.switchAccount(0);await h.uiRefresh();assert.equal(bal(await h.balanceText()),8.5);const t3=await sendAndCheck(betaAddress,'8',3,'0.5','alpha-3-inputs');assert.ok(Math.abs(t3.nativeBytes-t1.nativeBytes)<=2,'carrier size does not depend on the number of token inputs (fixed 996-byte record; ring-offset varints may differ by a byte): '+t3.nativeBytes+' vs '+t1.nativeBytes);
+  // 8. ACTUAL lost broadcast reply: the daemon accepts the carrier but the reply is dropped before the popup sees it (route.fetch()
+  //    completes, then the connection is reset). Lookup-before-retry: the popup asks the daemon, finds the carrier and re-sends NOTHING.
+  await h.switchAccount(1);const beforeLost=await nativeTotal();const sendsBefore=await daemonTxCount();await page.route('**/send_raw_transaction',async route=>{await route.fetch();await route.abort('connectionreset');});
+  await h.openDetail();await page.click('#pf-send');const lost=await h.sendApprove({to:alphaAddress,amount:'4',re:/Published .*nothing was re-sent/});await page.unroute('**/send_raw_transaction');await h.shot('beta-lost-broadcast-reply');
+  let pend=Object.values(await pending());assert.equal(pend.length,1);assert.equal(pend[0].status,'published','recovered by lookup: '+JSON.stringify(pend[0].error||null));assert.equal(pend[0].recovered,true);assert.equal(pend[0].publishAttempts,1);assert.equal(pend[0].resends||0,0);const lostTxid=pend[0].carrier.txid;
+  assert.equal((await daemonTxCount())-sendsBefore,1,'exactly one send request left the popup');h.log('ACTUAL lost reply: daemon answered OK, reply dropped; the popup asked the daemon first and recovered without re-sending',{txid:lostTxid,text:lost.text.slice(0,200)});
+  await h.back();await h.closeModal();await h.mine();assert.equal(beforeLost-(await nativeTotal()),BigInt(pend[0].carrier.fee),'exactly one fee paid');assert.equal(bal(await h.balanceText()),94);h.log('one carrier, one fee, tokens exact after the lost reply',{fee:pend[0].carrier.fee});
   // 9. Restart with a signed carrier: interrupted after signing (test hook), lock/unlock -> reconcile re-sends the saved carrier (same txid), one fee.
   const beforeRestart=await nativeTotal();await page.evaluate(()=>{globalThis.__pfTest={crashAfter:'signed'};});await h.openDetail();await page.click('#pf-send');await page.fill('#pf-to',alphaAddress);await page.fill('#pf-amount','6');await page.click('#pf-send-go');await h.waitText('#pf-fee',/Carrier fee/);await page.click('#pf-approve');const sErr=await h.errorText(/TEST HOOK: simulated interruption after signed/,900000);await h.shot('beta-signed-interrupted');
   await h.back();await h.closeModal();let st9=await state();h.log('9. journal right after the signed-interruption',{pending:Object.values(st9.journal?.pending||{}).map(p=>({status:p.status,txid:p.carrier?.txid})),history:(st9.journal?.history||[]).slice(0,3).map(p=>({status:p.status,txid:p.carrier?.txid,error:p.error}))});

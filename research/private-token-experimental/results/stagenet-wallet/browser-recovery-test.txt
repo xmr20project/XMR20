@@ -1,0 +1,11 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✔ fresh-install recovery of holder-controlled private tokens (two profiles) (329874.124875ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 331832.746125
+exit 0

@@ -1,0 +1,10 @@
+✔ journal: round trip, wrong password, concurrent writes keep every update (355.057209ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 393.459709
+private-journal.test.mjs exit 0

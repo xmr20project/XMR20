@@ -1,0 +1,114 @@
+RESULTS — XMR20 STAGENET TEST WALLET (research/privacy-stagenet-wallet-20261024), 24 October 2026
+Continues research/privacy-stagenet-roles-20261023 (recovery cases, stagenet rehearsal) — that candidate is unchanged.
+Additive candidate: copied source only (wallet-extension src/static/build, backend, wallet-lib, stagenet tools, browser tests),
+the built wasm engine (sha256 2c866f39…), the trusted stagenet manifest (sha256 ed12e124…, startHeight 2,235,745) and
+symlinks to the parameter sets and workspace libraries. No installed extension, website, bridge, backend or wallet touched.
+SIMULATED = offline zero-peer regtest fakechain (minutes). EXECUTED ON STAGENET = public Monero stagenet through the isolated
+node operations/stagenet-node-20261023 (worthless faucet coins; real blocks; not mainnet).
+
+1. POPUP PORT: LOOKUP BEFORE RETRY + PENDING-INPUT HANDLING (wallet-extension/src)
+  private-holder.worker.js  network from the shipped manifest (offline-fakechain | stagenet); MAINNET REFUSED from the node's
+                            own get_info before anything is scanned (and again by the scanner on every sync; genesis checked);
+                            monerod sanity checks ON off the fakechain; the account's keys are checked against the STAGENET
+                            address of the same seed (the account itself stores the mainnet format); new actions carrierLookup
+                            and carrierPublishRecover (holder-carrier.js publishWithRecovery: transport failure = UNCERTAIN ->
+                            get_transactions lookup -> the SAME blob re-sent only if the node positively does not know it).
+  private-format.js         journals 'broadcasting' BEFORE the first send; outcome mapping in one place (applyPublishOutcome):
+                            published (recovered=true when the node already had it) | uncertain (never "sent"/"failed") |
+                            conflicted (XMR input spent elsewhere) | refused (final; explicit new carrier). reconcile(): for
+                            every signed/broadcasting/uncertain/missing/stale-published entry: 1) ask the node (lookup) ->
+                            published/mined; 2) if unknown, verify the saved record still passes local admission (else
+                            rejected: nothing sent, no fee, native input released); 3) only then re-send the SAME blob.
+                            Quote excludes native inputs spent by unconfirmed pool transactions (holder-carrier.js, from the
+                            recovery-cases fix). Display: never "confirmed" before CONFIRMATIONS; "mined · n of 10";
+                            "broadcast outcome UNKNOWN"; recovered entries say "nothing was re-sent"; recent-operations list.
+                            Network-aware texts and test-service buttons from backend.features (no mine/fund/bridge on stagenet;
+                            faucet + issuer credit instead).
+  private-journal.js        reservation sets include broadcasting/uncertain/refused (notes) and broadcasting/uncertain (inputs).
+  app.js / build.mjs        network badge define; XMR20_PRIVATE_HOLDER_TEST=stagenet -> "XMR20 Stagenet — Test funds only"
+                            0.1.94, no extension key (own id), host permissions and CSP connect-src 127.0.0.1:8961 (test
+                            service) + 127.0.0.1:38091 (isolated node) only, shipped manifest = the TRUSTED stagenet manifest,
+                            endpoint compiled in (__XMR20_PRIVATE_ENDPOINT__). The offline build (…=local) is unchanged in
+                            behaviour except for the ported recovery logic.
+  Unchanged: Monero validation, maturity (10-block spend lock, 60 coinbase), token verification, private-by-default transfers,
+  holder-controlled keys, explicit viewing-key sharing, no additional native-output/key-image associations (the node still
+  learns only what any wallet discloses: get_outs indexes and the signed transaction).
+
+2. STAGENET TEST SERVICE + LAUNCHER
+  backend/stagenet-service.mjs  loopback 127.0.0.1:8961; refuses non-stagenet nodes (checkDaemonNetwork); lab issuer+indexer
+                                on the trusted manifest (asset f9b1999a… = the rehearsal asset); actions state/register/view/
+                                credit (TEST SERVICE, issuer-paid XB3 credit of 10 X, max 6 per address)/faucet (TEST SERVICE,
+                                cypherfaucet.com, one claim per address per hour); parameter transport; secret-field guard;
+                                audit log; holder facts persisted (public data only). No bridge, payouts or trading code.
+  launch.mjs / launch.sh        checks the node (starts it with its own start.sh + disk watchdog only if down and >= 20 GB
+                                free), builds if needed, starts the service, opens Playwright Chromium with a dedicated
+                                persistent profile under ./profiles and the extension loaded. Never touches other profiles.
+  Smoke 24 Oct 16:53Z: roles started on the trusted manifest, state answered (tip 2,235,945), issuer unlocked 6.03 sXMR.
+
+3. UNIT TESTS (this candidate)              private-journal 1/1 · holder-carrier-recovery 6/6 · lossy-proxy 3/3
+
+4. SIMULATED — REAL POPUP ON THE OFFLINE FAKECHAIN (browser-carrier.test.mjs, Playwright Chromium, two wallets)
+  Attempt 1 (runs/browser-carrier-test-attempt1-size-assertion.log): steps 1-7 passed; failed on a brittle assertion that the
+    carrier is exactly 2,520 bytes (it was 2,521: ring-offset varints differ by a byte). Assertion relaxed to +-2 bytes of the
+    first transfer; no code change.
+  Attempt 2 PASSED 1/1 in 484 s (runs/browser-carrier-test.log, evidence/verified-carrier-2026-10-24T17-03-54/):
+    1/2/3-input transfers with exact change (996-byte record, 2,520-byte carrier, 1,056-byte tx_extra, fee 3,024,000,000
+    piconero at the OFFLINE rate); no-XMR and locked-XMR refusals; cancel at review releases everything; interruption after
+    approval releases the quote; ACTUAL LOST REPLY (daemon answered OK, reply dropped by the browser route): the popup asked
+    the daemon, recovered without re-sending — 1 send request, status published, recovered=true, publishAttempts 1, one fee
+    (carrier b8b3d7cf…); restart after signing (lock/unlock) re-sent the saved carrier once after lookup found it unknown
+    (3ab03e71…); two popups concurrently -> distinct inputs / second refused by reservation; 320x440 review layout;
+    redemption carrier (985-byte extra). Audit: 6,186 requests, all loopback (96 backend, 6,015 daemon), 0 external, 0 leaks,
+    no key image or carrier reached the backend.
+  Other offline popup suites (recovery, journal recovery, interruptions): browser-recovery.test.mjs PASSED 1/1; browser-journal-recovery.test.mjs
+    PASSED 1/1 (runs/browser-recovery-test.log, runs/browser-journal-recovery-test.log). browser-interruptions.test.mjs: attempt 1
+    FAILED only because step (a) still encoded the OLD lost-reply behaviour (an error text, then a re-send on refresh); with the
+    lookup-first behaviour the popup recovers at once, so the expectation was updated (recovered=true, published, nothing
+    re-sent) — attempt 2 PASSED 1/1 in 335 s (runs/browser-interruptions-test-attempt1-old-expectation.log, runs/browser-
+    interruptions-test.log). Evidence folders: evidence/verified-recovery-*, verified-journal-recovery-*, verified-interruptions-*.
+
+5. EXECUTED ON STAGENET — REAL POPUP, TWO FRESH ACCOUNTS (browser-stagenet.test.mjs)
+  Attempt 1 (17:01Z; evidence/stagenet-popup-attempt1-endpoint-csp-…, runs/browser-stagenet-test-attempt1-endpoint-csp.log):
+    FAILED before any funds were requested: the popup's test-service endpoint was still compiled as 127.0.0.1:8940 and the
+    stagenet CSP (8961/38091 only) blocked it. Fix: endpoint compiled from the build (__XMR20_PRIVATE_ENDPOINT__). Profile
+    discarded (no faucet claim had been made).
+  Attempt 2 (17:08Z; evidence/stagenet-popup-attempt2-address-format-…): FAILED at account setup: the worker compared the
+    engine's native address right after key derivation, before the parameters (and so the network) were loaded, so it saw the
+    mainnet form and refused ("Derived Monero address does not match this account (stagenet)"). Fix: compare after the
+    parameters step using the engine's network-formatted address. Harness now surfaces the popup's error row at once.
+  Attempt 3 (17:17Z; evidence/stagenet-popup-2026-10-24T17-17-52, log runs/browser-stagenet-test-attempt3-issuer-scan.log):
+    both fresh accounts created in the real popup (stagenet addresses 53DB…/58jL…, badge STAGENET · TEST FUNDS ONLY), faucet
+    claim for Alice accepted (txid 0112a3d5…), then every issuer test credit was refused by the lab issuer's guard ("Offline
+    zero-peer fakechain required"): the issuer process only learns the network from its first scan, and the test service
+    had never asked it to scan. Fix: the service scans the issuer at start and before every credit (service-side only; the
+    lab binary is unchanged). Profile and faucet claim kept; the run resumes from the credits.
+  Attempt 4 PASSED 1/1 in 7,840 s (17:50Z-20:00Z 24 Oct 2026; runs/browser-stagenet-test.log, runs/stagenet-popup-results.json,
+    evidence/stagenet-popup-2026-10-24T17-50-16/ and evidence/stagenet-popup-fresh-2026-10-24T20-00-44/; profile and state resumed
+    from attempt 3, so the accounts, badge screenshot and faucet claim are in attempt 3's evidence folder):
+    accounts   Alice (token penumbra10z6dkf2…, stagenet XMR 53DBsHvP…) and Bob (penumbra1kplqave…, 58jLXpgZ…) created in the
+               real popup; the holder worker verified the stagenet form of each account's keys; badge STAGENET · TEST FUNDS ONLY.
+    funding    faucet 0.01 sXMR to Alice (txid 0112a3d5…); TEST SERVICE issuer credits of 10 X each to Alice:
+               a5f39f80cb7cf62e… and 31e498c48e038ce3… (issuer-paid fees 49280000 / 49340000 piconero); Alice showed 20 X and spendable XMR after the unlocks.
+    send1      Alice -> Bob 3 X from a 10 X note, change 7 X (exact), fee review shown BEFORE proving (2,538 weight bytes x 20,000
+               piconero = 50,760,000, input 0.010000 XMR), proved in 31 s, carrier 80c2be96… (2,538 B, tx_extra 1,056 B), published,
+               mined in block 2,235,963, 10 confirmations.
+    reopen     popup page closed and reopened, then locked and unlocked: the pending operation stayed "published · in the node's pool,
+               waiting for a block"; ZERO send requests left the popup (lookup only).
+    lost reply Alice -> Bob 2 X from the other 10 X note, change 8 X; the browser route let the node answer and then reset the
+               connection: the popup asked the node, found the carrier, re-sent NOTHING ("The node's reply was lost but it already
+               held the carrier: nothing was re-sent"); exactly 1 send request; carrier 4aacb060… (2,535 B), fee 50,700,000, mined in
+               block 2,235,974, 10 confirmations. This is an actual lost reply on the public network, not the ordinary repeat broadcast.
+    exactness  Alice 20 -> 15 X, Bob 0 -> 5 X; Alice's XMR 10,000,000,000 -> 9,898,540,000 piconero = exactly the two carrier fees
+               (101,460,000); nothing pending; history shows both transfers confirmed.
+    observation both carriers mined and confirmed on the owner node AND on the third-party node node.monerodevs.org:38089
+               (80c2be96… block 2,235,963, 1,287 pruned bytes; 4aacb060… block 2,235,974, 1,284 pruned bytes).
+    fresh      a NEW profile (fresh installation) imported Bob and Alice from their phrases only: same token addresses, Bob 5 X,
+               Alice 15 X, nothing pending, empty history (the journal is per installation).
+    audit      every request from both profiles went to 127.0.0.1:8961 or 127.0.0.1:38091; no external request; no phrase or key in
+               any request body (network-audit.json in both evidence folders). Screenshots never show a phrase.
+  Not shown on stagenet (by design): rollbacks, conflicting histories, two installations spending concurrently — offline only.
+
+6. WHAT THIS DOES NOT CHANGE
+  Readiness: NO-GO for real funds (disposable single-party Groth16 parameters; no independent security review; the
+  bridge/trading rollback-loss counterexamples stand; see privacy-stagenet-roles-20261023/review/). Bridge payouts and
+  native XMR trading: absent from this build and gated elsewhere. Nothing deployed, merged or replaced.

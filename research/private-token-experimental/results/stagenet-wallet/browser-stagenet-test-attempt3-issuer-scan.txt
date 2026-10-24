@@ -1,0 +1,26 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✖ actual popup on public stagenet: receive, send with change, lost reply, reopen, confirm, fresh recovery (1865335.433833ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1867811.179334
+
+✖ failing tests:
+
+test at browser-stagenet.test.mjs:22:1
+✖ actual popup on public stagenet: receive, send with change, lost reply, reopen, confirm, fresh recovery (1865335.433833ms)
+  AssertionError [ERR_ASSERTION]: issuer credit 1
+      at TestContext.<anonymous> (file://<workspace>/research/privacy-stagenet-wallet-20261024/browser-stagenet.test.mjs:54:12)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '=='
+  }
+exit 1

@@ -19,7 +19,8 @@ const require=createRequire(''+(process.env.XMR20_PLAYWRIGHT_DIR||'../../node_mo
 const {chromium}=require('playwright');
 export const dir=fileURLToPath(new URL('./',import.meta.url)),ext=dir+'wallet-extension/extension-private-holder-test';
 export const PROVE_TIMEOUT=900000;
-export function harness(name){
+export const stagenetExt=dir+'wallet-extension/extension-stagenet-test';
+export function harness(name,{extensionDir=ext,backendUrl='http://127.0.0.1:8940/',rpcUrl='http://127.0.0.1:30041/'}={}){
  const steps=[],shots=[],requests=[],consoleLines=[],secrets=[];let page=null,evidence=null;
  const h={steps,shots,requests,consoleLines,secrets,get page(){return page;},set page(p){page=p;h.wire(p);},get evidence(){return evidence;}};
  h.log=(step,detail={})=>{steps.push({at:new Date().toISOString(),step,...detail});};
@@ -28,7 +29,8 @@ export function harness(name){
  h.settle=async()=>page.waitForFunction(()=>![...document.querySelectorAll('#modal button,#modal input')].some(b=>b.disabled&&!b.dataset.keep),null,{timeout:PROVE_TIMEOUT});
  h.progress=async(re,timeout=PROVE_TIMEOUT)=>{await page.waitForFunction(([src])=>new RegExp(src).test(document.querySelector('#progress')?.textContent||''),[re.source],{timeout});const t=await page.textContent('#progress');await h.settle();return t;};
  h.errorText=async(re,timeout=120000)=>{await page.waitForFunction(([src])=>new RegExp(src).test(document.querySelector('#error')?.textContent||''),[re.source],{timeout});const t=await page.textContent('#error');await h.settle();return t;};
- h.rowsReady=async()=>{await page.waitForFunction(()=>!document.querySelector('#pf-loading')&&!document.querySelector('#pf-error-row')&&document.querySelector('#asset-private-0'),null,{timeout:300000});};
+ // Fails fast with the popup's own error text when the private holder cannot open (instead of waiting for the timeout).
+ h.rowsReady=async()=>{await page.waitForFunction(()=>(!document.querySelector('#pf-loading')&&document.querySelector('#asset-private-0'))||document.querySelector('#pf-error-row'),null,{timeout:300000});const err=await page.$('#pf-error-row');if(err)throw Error('popup: '+(await err.textContent()));};
  h.importAccount=async({name,seed,solSecret,password,first})=>{
   if(first)await page.click('#start-import');else{await page.click('#accounts');await page.click('#add-import');}
   await page.fill('#name',name);await page.fill('#height','0');if(first){await page.fill('#password',password);await page.fill('#password-confirm',password);}
@@ -55,10 +57,10 @@ export function harness(name){
  h.balanceText=async()=>page.textContent('#asset-private-0 .asset-amount strong');
  h.tokenAddress=async()=>{await h.openDetail();const t=await page.textContent('.monero-token-detail .address');await h.closeModal();return t.trim();};
  h.newWallet=async(label)=>{const k=await page.evaluate(()=>new Promise((res,rej)=>{const w=new Worker('vendor/keys.worker.js');w.onmessage=({data})=>{w.terminate();data.error?rej(Error(data.error)):res(data.result);};w.postMessage({id:'seed',action:'create'});}));const sol=Keypair.generate();const w={name:label,seed:k.seed,xmr:k.address,sol:sol.publicKey.toBase58(),solSecret:bs58.encode(sol.secretKey)};secrets.push(k.seed,bs58.encode(sol.secretKey));return w;};
- h.launch=async(profileLabel)=>{const profile=await mkdtemp(dir+'runs/profile-'+profileLabel+'-');const context=await chromium.launchPersistentContext(profile,{channel:'chromium',headless:true,viewport:{width:380,height:600},args:[`--disable-extensions-except=${ext}`,`--load-extension=${ext}`]});let sw=context.serviceWorkers()[0];if(!sw)sw=await context.waitForEvent('serviceworker',{timeout:30000});const id=new URL(sw.url()).host;h.log('extension loaded',{id,profile:profileLabel});return {context,id,profile};};
+ h.launch=async(profileLabel,fixedDir=null)=>{const profile=fixedDir||await mkdtemp(dir+'runs/profile-'+profileLabel+'-');if(fixedDir)await mkdir(fixedDir,{recursive:true});const context=await chromium.launchPersistentContext(profile,{channel:'chromium',headless:true,viewport:{width:380,height:600},args:[`--disable-extensions-except=${extensionDir}`,`--load-extension=${extensionDir}`]});let sw=context.serviceWorkers()[0];if(!sw)sw=await context.waitForEvent('serviceworker',{timeout:30000});const id=new URL(sw.url()).host;h.log('extension loaded',{id,profile:profileLabel});return {context,id,profile};};
  h.start=async()=>{evidence=dir+'evidence/'+name+'-'+new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);await mkdir(evidence,{recursive:true});};
- h.finish=async(backend,extra={})=>{const external=requests.filter(r=>r.url&&!r.url.startsWith('chrome-extension://')&&!r.url.startsWith('http://127.0.0.1:8940/')&&!r.url.startsWith('http://127.0.0.1:30041/'));const leaks=requests.filter(r=>r.LEAK);
-  await writeFile(evidence+'/steps.json',JSON.stringify(steps,null,1));await writeFile(evidence+'/network-audit.json',JSON.stringify({totalRequests:requests.length,backendRequests:requests.filter(r=>r.url?.startsWith('http://127.0.0.1:8940/')).length,daemonRequests:requests.filter(r=>r.url?.startsWith('http://127.0.0.1:30041/')).length,externalRequests:external,secretLeaks:leaks,consoleSample:consoleLines.slice(0,80),screenshots:shots,backendRun:backend?.run,...extra},null,1));
+ h.finish=async(backend,extra={})=>{const external=requests.filter(r=>r.url&&!r.url.startsWith('chrome-extension://')&&!r.url.startsWith(backendUrl)&&!r.url.startsWith(rpcUrl));const leaks=requests.filter(r=>r.LEAK);
+  await writeFile(evidence+'/steps.json',JSON.stringify(steps,null,1));await writeFile(evidence+'/network-audit.json',JSON.stringify({totalRequests:requests.length,backendRequests:requests.filter(r=>r.url?.startsWith(backendUrl)).length,daemonRequests:requests.filter(r=>r.url?.startsWith(rpcUrl)).length,externalRequests:external,secretLeaks:leaks,consoleSample:consoleLines.slice(0,80),screenshots:shots,backendRun:backend?.run,...extra},null,1));
   return {external,leaks};};
  return h;
 }
