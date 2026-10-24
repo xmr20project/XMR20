@@ -1,0 +1,140 @@
+[
+ {
+  "at": "2026-10-23T18:20:23.738Z",
+  "step": "extension loaded",
+  "id": "jigbpnljnmbbkebaopbnnhmiafgnofla",
+  "profile": "params"
+ },
+ {
+  "at": "2026-10-23T18:20:26.883Z",
+  "step": "account imported; holder keys derived in the extension and registered by public token address",
+  "name": "Alpha"
+ },
+ {
+  "at": "2026-10-23T18:20:27.983Z",
+  "step": "popup reports the shipped parameter manifest (label, pinned hash) and authenticates against it",
+  "label": "DISPOSABLE TEST SETUP — NOT PRODUCTION",
+  "manifestSha256": "ae7ba302194ca3e6f85bd045a653f58026a4fcda9141b1ed8a86600f31611e66"
+ },
+ {
+  "at": "2026-10-23T18:20:30.882Z",
+  "step": "TEST SERVICE: mined test XMR to this account for carrier fees",
+  "text": "Mined 1 coinbase output to this account (test service). It unlocks after 60 blocks; advance the chain. XMR for carrier fees: 0.000000 XMR spendable · 35.170504 XMR locked until block 310"
+ },
+ {
+  "at": "2026-10-23T18:20:31.536Z",
+  "step": "TEST SERVICE: mined test XMR to this account for carrier fees",
+  "text": "Mined 1 coinbase output to this account (test service). It unlocks after 60 blocks; advance the chain. XMR for carrier fees: 0.000000 XMR spendable · 70.338002 XMR locked until block 311"
+ },
+ {
+  "at": "2026-10-23T18:20:34.001Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T18:20:35.362Z",
+  "step": "REFUSED visibly, nothing proved or published: corrupt-query",
+  "error": "Parameters refused: Parameter file normal.public-pk (download) rejected before use: sha256 e3c91f164b191862… does not match the shipped manifest (8152016c33b1f4bb…). Nothing was proved or published."
+ },
+ {
+  "at": "2026-10-23T18:20:36.505Z",
+  "step": "REFUSED visibly, nothing proved or published: truncated",
+  "error": "Parameters refused: Parameter file normal.public-pk (download) rejected before use: 74407896 bytes, the shipped manifest pins 82675440 bytes (missing, truncated or substituted file). Nothing was proved or published."
+ },
+ {
+  "at": "2026-10-23T18:20:37.526Z",
+  "step": "REFUSED visibly, nothing proved or published: missing",
+  "error": "Parameters refused: Parameter file /params/normal.public-pk is missing from the parameter server (HTTP 404). Nothing was proved or published."
+ },
+ {
+  "at": "2026-10-23T18:20:38.604Z",
+  "step": "REFUSED visibly, nothing proved or published: interrupted",
+  "error": "Parameters refused: Download of /params/normal.public-pk was interrupted after 33070176 bytes (network error). Nothing was kept; it will be downloaded again. Nothing was proved or published."
+ },
+ {
+  "at": "2026-10-23T18:20:38.678Z",
+  "step": "fee review shown before proving",
+  "fee": "Carrier fee: 0.003024 XMR (2520 weight bytes × 1200000 piconero on the offline test chain). Paid from this account’s own XMR: input 35.170504 XMR, change 35.167480 XMR returns to you. The 996-byte rec"
+ },
+ {
+  "at": "2026-10-23T18:21:11.952Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T18:21:11.958Z",
+  "step": "genuine parameters authenticated and used",
+  "text": "Published 6c991d1fd638bf9f… (996-byte record, 1 input, change 88.5 X; proved locally in 29 s; carrier 4f254c64dca1dcb6… 2520 bytes, tx_extra 1056 bytes, fee 0.003024 XMR paid from this wallet). Advance the chain to confirm.",
+  "loaded": {
+   "authenticated": true,
+   "bytes": 82675440,
+   "label": "DISPOSABLE TEST SETUP — NOT PRODUCTION",
+   "manifest": "XMR20-PARAMS-1",
+   "sha256": "8152016c33b1f4bb10da5c2de242b38763bb7461fac3d611dcbee0306326aced",
+   "slot": 0,
+   "source": "download",
+   "path": "normal.public-pk"
+  }
+ },
+ {
+  "at": "2026-10-23T18:21:12.098Z",
+  "step": "cache entry corrupted deliberately (one byte)",
+  "found": true,
+  "bytes": 82675440
+ },
+ {
+  "at": "2026-10-23T18:21:14.032Z",
+  "step": "fee review shown before proving",
+  "fee": "Carrier fee: 0.003024 XMR (2520 weight bytes × 1200000 piconero on the offline test chain). Paid from this account’s own XMR: input 35.167498 XMR, change 35.164474 XMR returns to you. The 996-byte rec"
+ },
+ {
+  "at": "2026-10-23T18:21:46.539Z",
+  "step": "corrupted cache discarded and re-downloaded after unlock; send succeeded",
+  "log": [
+   {
+    "at": 1792779674262,
+    "event": "cache-rejected",
+    "name": "normal",
+    "reason": "sha256",
+    "received": "aa31301921e84f4d05c1bfdc669085e20866adbaeefb3bd852a77a5dfd0dbcc7"
+   },
+   {
+    "at": 1792779676833,
+    "event": "parameters-loaded",
+    "name": "normal",
+    "source": "download",
+    "sha256": "8152016c33b1f4bb10da5c2de242b38763bb7461fac3d611dcbee0306326aced"
+   }
+  ]
+ },
+ {
+  "at": "2026-10-23T18:21:49.479Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T18:21:49.604Z",
+  "step": "fee review shown before proving",
+  "fee": "Carrier fee: 0.003024 XMR (2520 weight bytes × 1200000 piconero on the offline test chain). Paid from this account’s own XMR: input 35.167480 XMR, change 35.164456 XMR returns to you. The 996-byte rec"
+ },
+ {
+  "at": "2026-10-23T18:22:21.666Z",
+  "step": "after restart the authenticated cached file was used; the parameter server was not needed",
+  "loaded": {
+   "authenticated": true,
+   "bytes": 82675440,
+   "label": "DISPOSABLE TEST SETUP — NOT PRODUCTION",
+   "manifest": "XMR20-PARAMS-1",
+   "sha256": "8152016c33b1f4bb10da5c2de242b38763bb7461fac3d611dcbee0306326aced",
+   "slot": 0,
+   "source": "cache",
+   "path": "normal.public-pk"
+  }
+ },
+ {
+  "at": "2026-10-23T18:22:22.764Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T18:22:25.666Z",
+  "step": "REFUSED: parameter server configuration from another ledger/version",
+  "error": "Private holder test unavailable: Served parameters.json rejected: sha256 d00c64cb5df55136… differs from the shipped manifest (413c0356e2339763…). The parameter server serves another version or ledger."
+ }
+]

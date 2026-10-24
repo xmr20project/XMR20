@@ -1,0 +1,218 @@
+[
+ {
+  "at": "2026-10-23T18:09:06.239Z",
+  "step": "extension loaded",
+  "id": "jigbpnljnmbbkebaopbnnhmiafgnofla",
+  "profile": "A"
+ },
+ {
+  "at": "2026-10-23T18:09:09.525Z",
+  "step": "account imported; holder keys derived in the extension and registered by public token address",
+  "name": "Alpha"
+ },
+ {
+  "at": "2026-10-23T18:09:12.373Z",
+  "step": "account imported; holder keys derived in the extension and registered by public token address",
+  "name": "Beta"
+ },
+ {
+  "at": "2026-10-23T18:09:15.855Z",
+  "step": "TEST SERVICE: mined test XMR to this account for carrier fees",
+  "text": "Mined 1 coinbase output to this account (test service). It unlocks after 60 blocks; advance the chain. XMR for carrier fees: 0.000000 XMR spendable · 35.167565 XMR locked until block 310"
+ },
+ {
+  "at": "2026-10-23T18:09:17.937Z",
+  "step": "TEST SERVICE: mined test XMR to this account for carrier fees",
+  "text": "Mined 1 coinbase output to this account (test service). It unlocks after 60 blocks; advance the chain. XMR for carrier fees: 0.000000 XMR spendable · 35.167498 XMR locked until block 311"
+ },
+ {
+  "at": "2026-10-23T18:09:21.809Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T18:09:22.912Z",
+  "step": "both accounts hold matured test XMR for carrier fees",
+  "alpha": "XMR for carrier fees: 35.167565 XMR spendable"
+ },
+ {
+  "at": "2026-10-23T18:09:24.678Z",
+  "step": "REAL: Solana deposit signed in popup, executed in LiteSVM, private credit published to the extension-derived address",
+  "text": "Deposit accepted (net 98.5 X); private credit fb7a0e7067226ee0… published to your private address. Advance the chain 10 blocks to see it."
+ },
+ {
+  "at": "2026-10-23T18:09:26.268Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T18:09:26.273Z",
+  "step": "private balance after deposit, scanned locally by the holder worker",
+  "balance": "98.50 X"
+ },
+ {
+  "at": "2026-10-23T18:09:26.423Z",
+  "step": "fee review shown before proving",
+  "fee": "Carrier fee: 0.003024 XMR (2520 weight bytes × 1200000 piconero on the offline test chain). Paid from this account’s own XMR: input 35.167565 XMR, change 35.164541 XMR returns to you. The 996-byte rec"
+ },
+ {
+  "at": "2026-10-23T18:09:58.626Z",
+  "step": "REAL: private transfer proved in the extension worker and published with exact change",
+  "text": "Published 04a1346bde41e1d7… (996-byte record, 1 input, change 58.5 X; proved locally in 29 s; carrier f97e3ddc3b5d7821… 2520 bytes, tx_extra 1056 bytes, fee 0.003024 XMR paid from this wallet). Advance the chain to confirm."
+ },
+ {
+  "at": "2026-10-23T18:10:00.250Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T18:10:00.351Z",
+  "step": "insufficient balance refused in popup; second click ignored by the busy guard"
+ },
+ {
+  "at": "2026-10-23T18:10:03.793Z",
+  "step": "REAL: migration claim signed by the extension worker under the account keys; credit to the holder address",
+  "text": "Claim credited: b7872078b8c0e9b6… for 492.5 X to your private address. Advance the chain to see the private balance."
+ },
+ {
+  "at": "2026-10-23T18:10:03.838Z",
+  "step": "backend-error",
+  "message": "Claim already consumed"
+ },
+ {
+  "at": "2026-10-23T18:10:03.839Z",
+  "step": "duplicate claim replay rejected by the backend",
+  "error": "Claim already consumed"
+ },
+ {
+  "at": "2026-10-23T18:10:04.829Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T18:10:31.386Z",
+  "step": "REAL: private burn (925-byte boundary record) proved in the extension and published",
+  "text": "Burn e5feb35669308a1f… published (925-byte record, 1 input, proved locally in 23 s; carrier 551f7b4a87469c3f… fee 0.002938 XMR paid from this wallet). Payout to your Solana address after 10 confirmations."
+ },
+ {
+  "at": "2026-10-23T18:10:32.264Z",
+  "step": "TEST SERVICE: mined 9 blocks via backend action (burn has 9 confirmations)"
+ },
+ {
+  "at": "2026-10-23T18:10:32.725Z",
+  "step": "backend-error",
+  "message": "Only 9 confirmations"
+ },
+ {
+  "at": "2026-10-23T18:10:32.732Z",
+  "step": "payout refused at 9 confirmations",
+  "error": "Only 9 confirmations"
+ },
+ {
+  "at": "2026-10-23T18:10:32.788Z",
+  "step": "TEST SERVICE: mined 1 block (10 confirmations)"
+ },
+ {
+  "at": "2026-10-23T18:10:33.860Z",
+  "step": "TEST SERVICE: operator payout requested from popup; paid once",
+  "text": "Paid 9.85 X to your Solana address."
+ },
+ {
+  "at": "2026-10-23T18:10:35.178Z",
+  "step": "viewing key exported from the holder worker on explicit request; indexer sees the balance, cannot spend",
+  "text": "Indexer view: 30 X, 1 note(s). It cannot spend."
+ },
+ {
+  "at": "2026-10-23T18:10:37.452Z",
+  "step": "fee review shown before proving",
+  "fee": "Carrier fee: 0.003024 XMR (2520 weight bytes × 1200000 piconero on the offline test chain). Paid from this account’s own XMR: input 35.164541 XMR, change 35.161517 XMR returns to you. The 996-byte rec"
+ },
+ {
+  "at": "2026-10-23T18:11:10.727Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T18:11:10.816Z",
+  "step": "fee review shown before proving",
+  "fee": "Carrier fee: 0.003024 XMR (2520 weight bytes × 1200000 piconero on the offline test chain). Paid from this account’s own XMR: input 35.161517 XMR, change 35.158493 XMR returns to you. The 996-byte rec"
+ },
+ {
+  "at": "2026-10-23T18:11:41.517Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T18:11:41.637Z",
+  "step": "fee review shown before proving",
+  "fee": "Carrier fee: 0.003024 XMR (2520 weight bytes × 1200000 piconero on the offline test chain). Paid from this account’s own XMR: input 35.158493 XMR, change 35.155469 XMR returns to you. The 996-byte rec"
+ },
+ {
+  "at": "2026-10-23T18:12:12.282Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T18:12:12.415Z",
+  "step": "fee review shown before proving",
+  "fee": "Carrier fee: 0.003024 XMR (2520 weight bytes × 1200000 piconero on the offline test chain). Paid from this account’s own XMR: input 35.155469 XMR, change 35.152445 XMR returns to you. The 996-byte rec"
+ },
+ {
+  "at": "2026-10-23T18:12:43.077Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T18:12:43.204Z",
+  "step": "fee review shown before proving",
+  "fee": "Carrier fee: 0.003024 XMR (2520 weight bytes × 1200000 piconero on the offline test chain). Paid from this account’s own XMR: input 35.152445 XMR, change 35.149421 XMR returns to you. The 996-byte rec"
+ },
+ {
+  "at": "2026-10-23T18:13:13.654Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T18:13:13.654Z",
+  "step": "five 1 X notes sent to Beta (each mined before the next: change must confirm before it can be spent)"
+ },
+ {
+  "at": "2026-10-23T18:13:15.572Z",
+  "step": "fragmented balance refused (needs > 3 notes)",
+  "error": "No set of up to three unreserved notes covers 34000000; consolidate smaller notes first (fragmented balance)"
+ },
+ {
+  "at": "2026-10-23T18:13:46.274Z",
+  "step": "consolidation: three largest notes merged, amounts shown in token units",
+  "text": "Consolidation published (3 inputs → 1 note of 32 X; 996-byte record proved locally in 29 s; carrier 084c98709c9455a6… paid 0.003024 XMR from this wallet). Advance the chain to confirm."
+ },
+ {
+  "at": "2026-10-23T18:13:47.881Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T18:13:48.037Z",
+  "step": "fee review shown before proving",
+  "fee": "Carrier fee: 0.003024 XMR (2520 weight bytes × 1200000 piconero on the offline test chain). Paid from this account’s own XMR: input 35.161535 XMR, change 35.158511 XMR returns to you. The 996-byte rec"
+ },
+ {
+  "at": "2026-10-23T18:14:17.107Z",
+  "step": "after consolidation the 34 X spend succeeds",
+  "text": "Published 91e305b367b93e48… (996-byte record, 3 inputs, change 0 X; proved locally in 29 s; carrier 4388cdc18ef1b11a… 2520 bytes, tx_extra 1056 bytes, fee 0.003024 XMR paid from this wallet). Advance the chain to confirm."
+ },
+ {
+  "at": "2026-10-23T18:14:18.748Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T18:14:19.352Z",
+  "step": "short popup (320x440): Send, Back, progress and error visible without scrolling"
+ },
+ {
+  "at": "2026-10-23T18:14:21.866Z",
+  "step": "reopened and unlocked; private rows restored by local replay",
+  "balance": "580.00 X"
+ },
+ {
+  "at": "2026-10-23T18:14:21.875Z",
+  "step": "audit: key images never sent to the backend; no relay requests",
+  "keyImages": 7
+ },
+ {
+  "at": "2026-10-23T18:14:21.877Z",
+  "step": "backend run folder audited for secrets",
+  "filesChecked": 7,
+  "hits": []
+ }
+]

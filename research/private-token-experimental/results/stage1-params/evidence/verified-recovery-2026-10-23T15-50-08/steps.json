@@ -1,0 +1,125 @@
+[
+ {
+  "at": "2026-10-23T15:51:40.424Z",
+  "step": "extension loaded",
+  "id": "jigbpnljnmbbkebaopbnnhmiafgnofla",
+  "profile": "recovery-A"
+ },
+ {
+  "at": "2026-10-23T15:51:43.671Z",
+  "step": "account imported; holder keys derived in the extension and registered by public token address",
+  "name": "Alpha"
+ },
+ {
+  "at": "2026-10-23T15:51:46.426Z",
+  "step": "account imported; holder keys derived in the extension and registered by public token address",
+  "name": "Beta"
+ },
+ {
+  "at": "2026-10-23T15:51:52.605Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T15:52:26.296Z",
+  "step": "A: transfer with change",
+  "text": "Published cd2f7fa059d3d32a… (996-byte record, 1 input, change 78.5 X; proved locally in 30 s; carrier 07c86e0c928dbd7c…). Advance the chain to confirm."
+ },
+ {
+  "at": "2026-10-23T15:52:27.440Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T15:53:03.204Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T15:53:34.213Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T15:54:04.884Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T15:54:39.422Z",
+  "step": "A: consolidation",
+  "text": "Consolidation published (3 inputs → 1 note of 86.5 X; 996-byte record proved locally in 30 s; carrier 29ecb633ad9d2183…). Advance the chain to confirm."
+ },
+ {
+  "at": "2026-10-23T15:54:41.085Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T15:55:05.443Z",
+  "step": "A: redemption proved locally",
+  "text": "Burn 40d678563c3c6c91… published (925-byte record, 1 input, proved locally in 23 s; carrier 96631731fccce4fb…). Payout to your Solana address after 10 confirmations."
+ },
+ {
+  "at": "2026-10-23T15:55:08.137Z",
+  "step": "A: final state before closing the profile (holder-local replay)",
+  "balance": "78.50 X",
+  "notes": 2,
+  "spent": 5,
+  "tip": 320
+ },
+ {
+  "at": "2026-10-23T15:55:08.646Z",
+  "step": "profile A closed; nothing copied"
+ },
+ {
+  "at": "2026-10-23T15:55:09.316Z",
+  "step": "extension loaded",
+  "id": "jigbpnljnmbbkebaopbnnhmiafgnofla",
+  "profile": "recovery-B"
+ },
+ {
+  "at": "2026-10-23T15:55:12.618Z",
+  "step": "account imported; holder keys derived in the extension and registered by public token address",
+  "name": "Alpha restored"
+ },
+ {
+  "at": "2026-10-23T15:55:13.209Z",
+  "step": "B: restored from phrase + public parameters + public chain",
+  "balance": "78.50 X",
+  "notes": 2,
+  "spent": 5,
+  "registration": {
+   "registered": true,
+   "tokenAddress": "penumbra1ra9f9e87zf8f7px8t338lgm9kjwdllt3d7lc39dfpwg6tstaj93gq4gcj5fxryat4yxtgdqzqnujt2rv9dafvfxp5ed0qvn4qw3y2w5wzmdscgnkrm6uzn43wsgl3nrhtvef7x",
+   "existing": true,
+   "note": "Known holder (same private address): bridge-side facts reattached; no private state exists on this service."
+  }
+ },
+ {
+  "at": "2026-10-23T15:55:46.119Z",
+  "step": "B: private spend after restoration (two recovered inputs)",
+  "text": "Published b00034874e370d18… (996-byte record, 2 inputs, change 1.5 X; proved locally in 29 s; carrier 579ab3e2902fbae7…). Advance the chain to confirm."
+ },
+ {
+  "at": "2026-10-23T15:55:47.301Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T15:55:50.443Z",
+  "step": "account imported; holder keys derived in the extension and registered by public token address",
+  "name": "Wrong phrase"
+ },
+ {
+  "at": "2026-10-23T15:55:51.212Z",
+  "step": "B: wrong recovery phrase derives another address and recovers nothing"
+ },
+ {
+  "at": "2026-10-23T15:55:54.267Z",
+  "step": "account imported; holder keys derived in the extension and registered by public token address",
+  "name": "Beta restored"
+ },
+ {
+  "at": "2026-10-23T15:55:55.047Z",
+  "step": "B: account separation holds"
+ },
+ {
+  "at": "2026-10-23T15:55:56.942Z",
+  "step": "B: viewing key shared explicitly; indexer sees 1.5 X, cannot spend",
+  "text": "Indexer view: 1.5 X, 2 note(s). It cannot spend."
+ }
+]

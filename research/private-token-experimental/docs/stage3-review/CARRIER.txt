@@ -1,0 +1,124 @@
+HOLDER-FUNDED MONERO CARRIERS — research/privacy-carrier-20261023 (stage 2 of the 23 Oct 2026 handoff)
+Synthetic, offline, isolated. Builds on research/privacy-params-20261023 (stage 1, unchanged).
+
+WHAT CHANGED
+------------
+Before (holder candidate / stage 1): the extension handed a finished record to the test backend's
+`relay` action; a lab wallet process wrapped it into a native carrier transaction and paid the fee
+from the relay's own test XMR. Carrier-fee funding was undecided and "relay-paid" was labelled.
+Now: there is NO relay. The holder's own extension
+  1. scans its own Monero outputs (view key) while replaying the public chain,
+  2. quotes the exact XMR network fee BEFORE anything is proved,
+  3. shows the fee for approval (amount, weight x rate, input, change, record size, ring size, an
+     illustrative mainnet figure), and continues only on an explicit click,
+  4. proves the private-token record,
+  5. builds and signs the ordinary Monero transaction that carries the record in tx_extra
+     (one 16-ring CLSAG input, two outputs: the change back to itself and, as wallet2 does for a
+     one-output payment, a 0-amount dummy output to a fresh random address; no dust accumulates),
+  6. publishes it straight to the daemon (`send_raw_transaction`), and
+  7. pays the fee from its own XMR (the only XMR movement is fee = input - outputs).
+The test backend's `relay` action and relay wallet process were removed; the backend refuses any
+request field that looks like a key image, carrier, blob, ring or record wire. A labelled TEST
+SERVICE action `fund` mines coinbase rewards to the holder's public Monero address so the test
+wallet has XMR at all; on mainnet the holder's XMR is bought or received, never minted by a service.
+
+WHERE EACH PART RUNS
+--------------------
+holder-wasm/src/native.rs (inside the extension's holder worker, wasm):
+  - Monero keys: spend = the account's private spend key (the same 32-byte root the token key is
+    derived from), view = Hs(spend); the derived address must equal the account's address or the
+    worker refuses to open. Keys live in wasm memory for the worker's lifetime (lock terminates it).
+  - Scanning: monero-oxide `Scanner` over every block (blob + transaction blobs supplied by the
+    host); the RingCT output index is COUNTED LOCALLY, never taken from the node; spent status comes
+    from key images seen in chain inputs; duplicate output keys (burning bug) are ignored.
+  - Lock rules: coinbase 60 blocks, other outputs 10 blocks, following monerod (spendable when
+    tip + 1 >= height + window; coinbase unlock_time satisfied when tip + 1 >= unlock_time).
+  - Input selection: largest spendable output not spent, not reserved (journal), not excluded by
+    another window and large enough to pay any carrier at the current rate (>= rate x 1,500 bytes);
+    precise refusal text otherwise (unlocked / too small / locked until block N / reserved).
+  - Decoys: monero-oxide's own gamma selection (`OutputWithDecoys::new`, ring 16) runs in wasm
+    against a replayable cache of the daemon's answers: the host fetches `get_output_distribution`
+    once and `get_outs` for the indexes the engine asks for; the RNG is seeded per attempt so a
+    replay after the fetch draws the same candidates. The real output is requested together with
+    the first candidate batch, exactly as monero-oxide does against a live node. The engine checks
+    the daemon's RingCT total against its local count before trusting the distribution and
+    monero-oxide checks that the node's view of the real output matches ours.
+  - Fee: monero-oxide's weight model on the exact structure (1 input, 2 outputs, extra = record
+    chunks + tx pubkey) with the daemon's fee rate; the quote is computed before proving and the
+    signed transaction must reproduce it byte for byte or signing is refused.
+  - Signing: CLSAG + Bulletproof+ (RctType ClsagBulletproofPlus) with the holder's spend key; the
+    engine verifies the record admits locally before paying a fee for it, that the carrier carries
+    exactly that record (unframe == wire), that tx_extra <= 1060 bytes, and that the key image is
+    the quoted input's.
+wallet-extension/src/holder-carrier.js (worker, host side): daemon RPC only (`get_info`,
+  `get_fee_estimate`, `get_output_distribution`, `/get_outs`, `/send_raw_transaction`,
+  `/get_transaction_pool_hashes`). Publishing uses `do_sanity_checks: false` because the offline
+  fakechain's few outputs fail monerod's ring-statistics sanity check; a mainnet wallet with the same
+  gamma selection passes it (monero-oxide disables it as well).
+wallet-extension/src/private-format.js (popup): journal states selected -> quoted -> (approval) ->
+  built -> signed -> published -> mined -> confirmed; XMR line in the detail view; fee review block
+  with Approve / Cancel; pending list shows carrier txid, fee and size; a proved record without a
+  carrier offers "Approve carrier fee and publish"; a signed carrier is re-sent AS-IS on refresh.
+wallet-extension/src/private-journal.js: `reservedKeyImages` (native inputs held by quoted/signed/
+  published carriers) alongside `reservedCommitments` (token notes).
+
+RETRY SEMANTICS (no duplicate payments, no conflicting native inputs)
+---------------------------------------------------------------------
+- Lost broadcast reply: the signed blob stays in the journal ('signed'); reconcile re-sends the SAME
+  transaction. monerod reports already-in-pool / already-in-chain as OK, so re-sending is idempotent:
+  one carrier, one fee. Verified in Node (three broadcasts, one fee) and in the popup (reply dropped
+  by the harness; the same txid is re-sent on refresh; XMR falls by exactly one fee).
+- Restart: lock/unlock (new worker) replays the chain, reads the journal, re-sends saved signed
+  carriers; proved records WITHOUT a carrier wait for an explicit fee approval (a new carrier means
+  a new fee, never silent).
+- A carrier is NEVER rebuilt automatically while a signed one exists. Only a daemon `double_spend`
+  answer marks it 'conflicted' and offers an explicit new carrier (new fee) for the still-unpublished
+  record.
+- Concurrency: the journal reserves the native input (key image) from the quote onwards; a second
+  window excludes it and picks another output or is refused ("reserved by pending carriers"). The
+  engine additionally keeps an in-memory reserved set. Verified: two popups -> distinct inputs.
+- Cancellation at the review and interruption after approval release the quote, the native input
+  and the note reservation; nothing is proved or published and no fee is paid.
+
+PRIVACY (the central requirement)
+---------------------------------
+The record and the native input are linked only by the ordinary Monero ring of the carrier. Checked:
+- Serialized records (XM3 996 B / XB3 925 B) contain no native data (unchanged formats).
+- Journal fields handed to the popup: key images and carrier blobs are the holder's OWN local data
+  (encrypted journal, same origin); they are what any Monero wallet stores.
+- Requests to the test backend: audited in every run; no key image, carrier blob, ring or record
+  wire ever appears (the backend refuses such field names; the tests grep its request log for every
+  key image the wallet knows). Carrier txids appear only in the explicit payout request.
+- Requests to the daemon: `get_outs` carries the real output's index among the decoys (as every
+  Monero wallet talking to a node), and `send_raw_transaction` carries the signed transaction. This
+  is the standard wallet/node trust relationship; a node the holder does not trust can attempt the
+  usual passive analysis and nothing here makes it worse.
+- No proof links the key image to the token record beyond ring membership; the relay's view
+  (record + sender origin + timing) no longer exists.
+Not claimed: Monero-equivalent privacy of the token layer, resistance to a malicious node, or
+anything about timing/network-level correlation between the holder's IP and the published carrier.
+
+WHAT A RELAY WOULD STILL BE FOR
+-------------------------------
+None is required for correctness. A relay would only matter for holders who have NO XMR at all
+(fee sponsorship) or to decouple the publishing IP from the holder; both are product decisions with
+their own trust and metadata consequences (the relay sees the record, timing and origin and must be
+paid). This candidate does not implement one and never describes a relay-paid test as holder-funded.
+
+FEES: OFFLINE CHAIN vs MAINNET
+------------------------------
+The offline fakechain's dynamic fee rate is 1,200,000 piconero/byte (tiny block-weight median), so a
+2,520-byte carrier costs 3,024,000,000 piconero = 0.003024 XMR here. Mainnet rates come from the
+node's `get_fee_estimate` at send time (recently of the order of 20,000 piconero/byte, i.e. about
+0.0000504 XMR for the same carrier). The popup shows the real quote and, separately, the
+illustrative mainnet figure, labelled as such. Nothing here estimates mainnet fees authoritatively.
+
+LIMITS KEPT EXPLICIT
+--------------------
+- One native input per carrier; the largest spendable output is used. If the largest output does
+  not cover the fee the quote fails with the exact amounts (nothing reserved).
+- Up to three token notes per record (unchanged). Merging n notes into one needs ceil((n-1)/2)
+  consolidation transactions, each a carrier with its own XMR fee; the popup says so.
+- Fresh change is spendable after 10 blocks; a wallet with a single XMR output can therefore send
+  one carrier per 10 blocks. Two outputs allow two concurrent carriers (tested).
+- Native scanning replays every block from genesis on each open (same as the token pool).

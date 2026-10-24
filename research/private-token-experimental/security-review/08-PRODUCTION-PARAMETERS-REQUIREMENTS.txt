@@ -1,0 +1,88 @@
+EXTERNAL SECURITY REVIEW PACKAGE — 08 REPLACING THE DISPOSABLE PROOF PARAMETERS WITH A REVIEWED PRODUCTION SETUP
+research/privacy-stagenet-roles-20261023 (package continued from stage 3), 24 October 2026.
+Status: REQUIREMENTS ONLY. No ceremony has been run, no coordinator chosen, no contributor contacted, nothing paid.
+Every parameter set that exists today (params/test-v1, params/test-other, params/stagenet-v0) is a SINGLE-PARTY Groth16
+setup generated on the owner's machine by the laboratory `setup` command. Whoever ran it could have kept the toxic
+waste; each set must be treated as "demo only" and must never be shipped for real funds (01 §2).
+
+WHAT THE PARAMETERS ARE
+  Two Groth16 proving/verifying key pairs on BLS12-377 (arkworks 0.4 / ark-groth16 0.4.0):
+    normal   — XM3 private transfer circuit: 3 unchanged penumbra-sdk-shielded-pool 2.1.1 SpendCircuits + 2 OutputCircuits
+               in one R1CS with a shared randomizer (proving key 82,675,440 B; verifying key 1,160 B)
+    boundary — XB3 boundary circuit: the same 3 SpendCircuits + 1 OutputCircuit (proving key 64,409,328 B; vk 1,064 B)
+  plus parameters.json (chain genesis, ledger domain, both verifying keys, issuer verification key) and the XMR20-PARAMS-1
+  manifest that pins exact lengths and sha256 of every file (03 of 01). The ledger domain binds genesis + both vks + the
+  issuer key, so NEW parameters mean a NEW ledger domain: records under one domain are not valid under another.
+
+R1. CIRCUIT FREEZE AND REVIEW (precondition; without it a ceremony secures the wrong circuit)
+  a. Freeze the exact R1CS of both circuits: pinned penumbra-sdk 2.1.1 sources (vendored shielded-pool with its stubs
+     listed), the composition code (holder-wasm/src/xm3.rs, boundary.rs), decaf377 0.10.1, arkworks 0.4.x, with a
+     reproducible build (locked Cargo.lock, pinned toolchain) that produces a stable constraint-system digest.
+  b. Publish a constraint-system digest tool: anyone must be able to rebuild the R1CS from the frozen source and obtain the
+     same digest (number of constraints, public inputs, a hash over the matrices). The ceremony binds to that digest.
+  c. Independent review of the NEW parts before the ceremony (06.E questions 1-2): the three-spend composition with one
+     shared randomizer and one rk/auth, the 176-byte compact payload codec, the public-amount-in-binding-signature
+     construction of XB3, the issuer authorization. The upstream Penumbra circuits are reviewed upstream; the composition
+     is not. A ceremony over an unsound composition is wasted.
+  d. Versioning: protocol label, record magics (XM3 / XB3), record byte lengths, circuit digests and the manifest format are
+     recorded together; any change to any of them is a new circuit version requiring a new phase 2.
+
+R2. MULTI-PARTY SETUP (phase 1 + phase 2) WITH PUBLISHED TRANSCRIPTS
+  a. Phase 1 (circuit-independent powers of tau on BLS12-377): either run a fresh phase 1 of sufficient degree (both
+     circuits' constraint counts plus margin), or reuse an existing BLS12-377 phase-1 transcript ONLY IF its full
+     transcript, its contributor attestations and its verification tooling are public and are re-verified by at least
+     two independent parties with the degree shown to suffice. Record the decision and the verification outputs.
+  b. Phase 2 (circuit-specific) for EACH circuit, run over the frozen digest of R1.b. Requirements:
+     - N independent contributors (recommendation: not fewer than the number the product owner is prepared to name
+       publicly, with at least several parties unaffiliated with the project; the security claim is "at least one
+       honest contributor destroyed their randomness");
+     - every contribution carries a signed attestation (contributor identity or pseudonym, hash of the input transcript,
+       hash of the output, entropy source statement, hardware/software used, date);
+     - contributions are sequential and verifiable: the coordinator publishes every intermediate transcript; the
+       verification tool checks each contribution's proof of knowledge and consistency with the previous one;
+     - a public randomness beacon (e.g. a published block hash / drand round chosen in advance) is applied as the final
+       contribution so the coordinator cannot bias the result;
+     - the coordinator never contributes last, never has write access to the beacon, and the coordinator software's
+       source and build hash are published before the ceremony starts.
+  c. Reproducible finalisation: a documented, deterministic command turns the final transcript into the two proving keys,
+     the two verifying keys and parameters.json; independent parties rerun it and must obtain byte-identical files
+     (hashes published alongside the transcript).
+  d. Destruction statements from contributors are recorded but are NOT the security basis; the basis is the public
+     verifiability of each contribution plus at least one honest contributor.
+
+R3. PROVENANCE, SIGNING AND DISTRIBUTION
+  a. The XMR20-PARAMS-1 manifest for the production set is produced from the finalised files (exact lengths and sha256,
+     verifying keys, ledger domain, issuer key, genesis, network kind "mainnet" — a kind this research code REFUSES today
+     and must only be enabled by a reviewed release), and is signed by a threshold of release keys (not a single key),
+     with the signing keys' fingerprints published out of band (website, repository, independent mirrors).
+  b. The manifest hash is compiled into every build that uses the parameters (holder worker, indexer, issuer/operator),
+     exactly as the research builds do (03 of 01; verifier-params milestone). Builds are reproducible so that the compiled
+     manifest hash can be audited.
+  c. Parameter files are distributed over any transport (static hosting, mirrors, torrents); the client trusts ONLY the
+     shipped manifest (the stage-1 and verifier-params behaviour); server checksums are never used.
+  d. A public page lists: transcript hashes, contributor attestations, beacon value, finalisation command and hashes,
+     manifest hash, independent verification reports (R4).
+
+R4. INDEPENDENT VERIFICATION BEFORE USE
+  a. At least two parties independent of the coordinator and of the project verify the complete transcript (phase 1 and
+     phase 2, every contribution, the beacon) and the finalisation (R2.c), and publish signed reports naming the hashes
+     they verified. The reports are linked from the manifest page.
+  b. The independent security review (00-REVIEW-BRIEF.txt) covers the ceremony design and tooling as a review item;
+     locally generated parameters, implementer self-reviews and AI-assisted reviews do NOT satisfy this requirement.
+  c. Only after R1-R4 are complete may a release enable network.kind "mainnet" and ship the manifest. readiness.json must
+     then record the manifest hash, the transcript hashes and the verification report references.
+
+R5. ISSUER KEY (not a trusted setup, but part of the ledger domain)
+  The XB3 credit path trusts the issuer's decaf377-rdsa key. Production requires: key generation inside an HSM or a
+  threshold scheme with documented custody, a rotation plan (a rotation changes the ledger domain, so it is a migration
+  event), and audit logging of every credit signed. The research issuer key is a synthetic file (issuer.secret.json) and
+  must never be reused.
+
+R6. ROTATION AND INCIDENT PLAN
+  A circuit or parameter compromise cannot be patched in place: it requires a new ledger domain and a migration of notes
+  (a boundary/claim event like 04-MIGRATION-AND-CUTOVER). The plan, its cost and the owner's decision thresholds should be
+  written before launch, together with the monitoring that would detect inflation (indexer supply vs backing invariants).
+
+WHAT THIS DOCUMENT DOES NOT DO
+  It does not choose a coordinator, contributors, a beacon or a budget; it does not claim any security for the existing
+  disposable sets; it does not replace the independent review. It is the checklist a reviewer should hold the project to.

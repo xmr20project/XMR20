@@ -1,0 +1,114 @@
+PARAMETER AUTHENTICATION — research/privacy-params-20261023 (stage 1 of the 23 Oct 2026 handoff)
+Synthetic, offline, isolated. Builds on research/privacy-holder-20261022 (unchanged).
+
+THE GAP BEING CLOSED
+--------------------
+The holder candidate downloaded the 83 MB transfer and 64 MB boundary proving keys from the test
+backend and checked only that the verifying key embedded in each file equalled the key pinned by the
+ledger domain. That does not authenticate the proving key's query vectors: a server could serve a
+proving key with the right verifying key and altered query vectors; proofs made with it do not
+verify (so funds would not move) but an adversarially chosen key can leak witness information
+(note amounts, nullifier material) through the invalid proof bytes the holder publishes or sends to
+a relay. A checksum published by the same server is not a trust anchor either.
+
+WHAT IS NOW IMPLEMENTED
+-----------------------
+1. Fixed, labelled test parameter set.  params/test-v1/ holds one Groth16 setup (generated once with
+   xmr20-integration-lab `setup`, OsRng, this machine), its parameters.json (chain genesis, ledger
+   domain, both verifying keys, issuer key) and the lab issuer secret for the test issuer role. The
+   backend serves these files as-is; it no longer generates a setup per run. params/test-other/ is a
+   second, independent setup used only to test substitution and "another ledger/version" rejection.
+
+2. Shipped manifest (format XMR20-PARAMS-1; params/make-manifest.mjs writes it).
+   manifest.json pins: format; label ("DISPOSABLE TEST SETUP — NOT PRODUCTION"); protocol
+   (key scheme XMR20-TKD1, ledger domain label XMR20-MIGRATION-REHEARSAL-DOMAIN-v1, record shapes
+   XM3 996 B 3-in/2-out and XB3 925 B 3-in/1-out); network (offline-fakechain, genesis hash); ledger
+   domain; issuer key; the complete configuration; and for parameters.json, normal.public-pk and
+   boundary.public-pk the exact byte length and sha256 (plus each proving key's verifying key).
+   manifest sha256 (test-v1): ae7ba302194ca3e6f85bd045a653f58026a4fcda9141b1ed8a86600f31611e66
+   normal.public-pk   82,675,440 B  8152016c33b1f4bb10da5c2de242b38763bb7461fac3d611dcbee0306326aced
+   boundary.public-pk 64,409,328 B  b9b5c8269adf6377480b4713c8449bc28170eb4b3ad5ed00c08b981886bc6120
+   ledger domain 759e56ff75367217038d9b5f85f6b878bf3212016922bb2a3891ea4fa6726eb8
+
+3. Trust chain in the holder.
+   build.mjs copies the manifest into the extension (vendor/parameters-manifest.json) and compiles
+   its sha256 into the holder worker bundle (__PARAMS_MANIFEST_SHA256__). On open, the worker reads
+   the shipped manifest, checks its hash against the compiled constant and its shape
+   (holder-params.js checkManifest), then:
+   - downloads the server's parameters.json, checks exact length and sha256 against the manifest,
+     parses it and hands it to the engine as `served`;
+   - the wasm engine (`params` op) validates the manifest itself (format, protocol label, scheme,
+     record shapes compiled into the engine, network kind, genesis = config.chain, domain
+     recomputed from the configuration, verifying keys consistent) and refuses a served
+     configuration that differs from the manifest's in any field ("different ledger or version").
+   On first use of a circuit the loader (holder-params.js) obtains the proving-key bytes from the
+   IndexedDB cache or the server, and ALWAYS authenticates the complete file (exact length, then
+   sha256 over every byte) before anything parses it. The engine's `set_blob` repeats the length
+   and sha256 check against the manifest it holds BEFORE deserialization, then still checks the
+   embedded verifying key. Rejected bytes are never cached; a cached entry that fails is deleted
+   and the file is downloaded again. A download interrupted mid-stream is discarded entirely
+   (no partial caching); the next attempt starts over. Only authenticated bytes are cached.
+   Versioning: the cache key is format:ledgerDomain:name:sha256, so parameters of another version
+   or ledger can never be served from the cache under this manifest.
+
+4. Order of operations in a send/redeem. select -> reserve in the journal -> load+authenticate the
+   proving key -> prove -> relay. A refused parameter file stops before any witness is used; the
+   popup shows "Parameters refused: … Nothing was proved or published." and the journal reservation
+   is released (verified in browser-params.test.mjs: zero relay requests, empty pending list, no
+   proving key loaded).
+
+WHAT THE TESTS SHOW (see RESULTS.txt for the run records)
+- Host (Rust, holder-wasm cargo test, 9/9): manifest validation; served-config mismatch refused;
+  no-manifest refused; tampered manifest fields refused; empty/truncated/padded/swapped/foreign files
+  refused before parsing with nothing loaded; ALTERED QUERY VECTOR with the expected verifying key:
+  the file deserializes to the same vk (the previous check would have accepted it), the engine
+  refuses it on sha256 before parsing, and a proof made with the altered key does not verify.
+- Node (holder-params.test.mjs): the same through the real transport with fault injection
+  (missing 404, truncated 90 %, interrupted at 40 %, corrupted query byte, foreign setup, swapped
+  circuit, for both slots), cache corruption (bit flip, foreign file, truncated entry) detected and
+  repaired on restart, restart from the verified cache with the server down, interrupted download
+  leaving nothing behind, a backend serving another setup refused end to end, then a genuine
+  authenticated proof published and confirmed.
+- Browser (browser-params.test.mjs, real popup): visible refusals for corrupted/truncated/missing/
+  interrupted files with nothing proved or published; genuine send published; cache corrupted via
+  IndexedDB then lock/unlock -> discarded and re-downloaded; restart from cache with the server
+  unable to serve; server configuration from another ledger -> row-level refusal and recovery.
+
+WHAT THIS DOES NOT MAKE TRUE
+----------------------------
+- The shipped parameters are a disposable single-party Groth16 setup made on this machine. The
+  toxic waste existed here. Authenticating their distribution says nothing about their soundness
+  or zero-knowledge in the presence of whoever ran the setup. They must never be used for value.
+- The manifest is as trustworthy as the build that ships it. Anyone who can replace the extension
+  build can replace the manifest. The compiled-in hash protects against a modified vendor JSON
+  only, not against a modified bundle.
+- The wasm engine trusts whichever manifest its host passes (the Node tests show it accepts the
+  "other" manifest when handed it); the HOST must pin the manifest, which the worker does. A
+  future hardening could compile the manifest hash into the wasm as well.
+- Point validation: the lab's native roles run full subgroup checks on every proving-key point;
+  the browser engine relies on the hash match to the generator's output instead (single-threaded
+  wasm would spend minutes validating 83 MB). A file that matches the pinned hash IS the file the
+  generator wrote; a corrupted file never reaches the parser.
+- Memory: an 83 MB and a 64 MB Uint8Array plus the parsed keys live in the worker while a circuit
+  is in use; IndexedDB holds authenticated copies (~147 MB) per extension install.
+
+SEPARATE WORK NEEDED FOR PRODUCTION PARAMETERS (not started; needs decisions + review)
+-------------------------------------------------------------------------------------
+1. Circuits frozen and reviewed (XM3 transfer, XB3 boundary, their R1CS and the Penumbra
+   components they reuse) BEFORE any setup; the setup binds the circuit.
+2. A multi-party setup (MPC, e.g. a Groth16 phase-2 ceremony over an audited phase-1 such as a
+   published powers-of-tau for BLS12-377) with independent participants, published transcripts,
+   verifiable contributions and a deterministic final-parameter derivation that anyone can re-run.
+   Alternatively a transparent/universal-setup proof system, which changes the circuits and sizes.
+3. Provenance: signed manifest (several maintainers, threshold or multiple detached signatures;
+   keys published out of band), reproducible generation of the manifest from the ceremony output,
+   version/network/domain fields exactly as in XMR20-PARAMS-1, and a documented revocation/
+   rotation path (new domain label = new ledger; wallets must refuse mixed parameters).
+4. Distribution: mirrors plus the authenticated manifest in the build (as here); content
+   addressing by sha256; downloads resumable only into a staging area that is hashed whole before
+   use; no server-side checksum consulted.
+5. Independent review of the engine's handling (this candidate) and of parameter loading in
+   every verifier (indexer, issuer, bridge operator), which currently load files from disk with
+   point validation but without a manifest check.
+6. Publishing the ledger domain, verifying keys and manifest hash in the project documentation and
+   in the extension's about screen so users and auditors can compare.

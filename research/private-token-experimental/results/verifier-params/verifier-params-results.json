@@ -1,0 +1,108 @@
+{
+ "refusals": [
+  {
+   "roleFaults": {
+    "file": "normal",
+    "kind": "missing"
+   },
+   "message": "ROLE REFUSED TO START: Service exited: Error: Parameter file normal.public-pk refused: No such file or directory (os error 2) "
+  },
+  {
+   "roleFaults": {
+    "file": "normal",
+    "kind": "truncate"
+   },
+   "message": "ROLE REFUSED TO START: Service exited: Error: Parameter file normal.public-pk refused: 74407896 bytes, the trusted manifest pins 82675440 (missing, truncated or substituted) "
+  },
+  {
+   "roleFaults": {
+    "file": "normal",
+    "kind": "corrupt-query"
+   },
+   "message": "ROLE REFUSED TO START: Service exited: Error: Parameter file normal.public-pk refused: sha256 e3c91f164b191862… differs from the trusted manifest (8152016c33b1f4bb…) "
+  },
+  {
+   "roleFaults": {
+    "file": "boundary",
+    "kind": "foreign"
+   },
+   "message": "ROLE REFUSED TO START: Service exited: Error: Parameter file boundary.public-pk refused: sha256 a8c9c490c6f23311… differs from the trusted manifest (b9b5c8269adf6377…) "
+  },
+  {
+   "roleFaults": {
+    "file": "normal",
+    "kind": "swap"
+   },
+   "message": "ROLE REFUSED TO START: Service exited: Error: Parameter file normal.public-pk refused: 64409328 bytes, the trusted manifest pins 82675440 (missing, truncated or substituted) "
+  },
+  {
+   "roleFaults": {
+    "file": "parameters",
+    "kind": "foreign"
+   },
+   "message": "ROLE REFUSED TO START: Service exited: Error: Parameter file parameters.json refused: sha256 d00c64cb5df55136… differs from the trusted manifest (413c0356e2339763…) "
+  },
+  {
+   "roleFaults": {
+    "file": "parameters",
+    "kind": "truncate"
+   },
+   "message": "ROLE REFUSED TO START: Service exited: Error: Parameter file parameters.json refused: 4258 bytes, the trusted manifest pins 4732 (missing, truncated or substituted) "
+  },
+  {
+   "roleFaults": {
+    "manifest": "foreign"
+   },
+   "message": "ROLE REFUSED TO START: Service exited: Error: Parameter file parameters.json refused: sha256 413c0356e2339763… differs from the trusted manifest (d00c64cb5df55136…) "
+  },
+  {
+   "roleFaults": {
+    "manifest": "tamper-genesis"
+   },
+   "message": "ROLE REFUSED TO START: Service exited: Error: Manifest genesis differs from its configuration "
+  },
+  {
+   "roleFaults": {
+    "manifest": "tamper-hash"
+   },
+   "message": "ROLE REFUSED TO START: Service exited: Error: Parameter file normal.public-pk refused: sha256 8152016c33b1f4bb… differs from the trusted manifest (1111111111111111…) "
+  },
+  {
+   "roleFaults": {
+    "manifest": "missing"
+   },
+   "message": "ROLE REFUSED TO START: Service exited: Error: Trusted manifest <workspace>/research/privacy-verifier-params-20261023/backend/../runs/backend-wNYu9C/trusted/manifest.json: No such file or directory (os err"
+  },
+  {
+   "roleFaults": {
+    "manifest": "pin-mismatch"
+   },
+   "message": "ROLE REFUSED TO START: Service exited: Error: Trusted manifest sha256 ae7ba302194ca3e6 does not match the pinned value 2222222222222222 "
+  },
+  {
+   "roleFaults": {
+    "indexer": "manifest circuit shape 997"
+   },
+   "message": "transfer circuit shape differs from this binary"
+  },
+  {
+   "roleFaults": {
+    "indexer": "no --trusted-manifest"
+   },
+   "message": "required; no unauthenticated parameter loading"
+  }
+ ],
+ "flow": {
+  "roleManifest": {
+   "label": "DISPOSABLE TEST SETUP — NOT PRODUCTION",
+   "sha256": "ae7ba302194ca3e6f85bd045a653f58026a4fcda9141b1ed8a86600f31611e66"
+  },
+  "credit": "57656c840a805b94bdef8c2a52ee2c0ba12d73e33f64aae068f0d5932c7689af",
+  "transfer": "9fec6f91a10e050a868de700446f38bfaab52148eed47c9a35dbd167fde8332e",
+  "redemption": "15c17577952c4351e8c36b710d0f71fd3cddfb40800a59028703dcb2fc76c502",
+  "payout": "paid",
+  "balanceA": "19550000",
+  "balanceB": "10000000",
+  "restartRecovered": true
+ }
+}

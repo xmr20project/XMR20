@@ -1,0 +1,50 @@
+REPRODUCE — research/privacy-stagenet-roles-20261023 (stagenet-aware roles, parameter service, rehearsal harness v2)
+Everything below runs OFFLINE on a regtest fakechain (SIMULATED). Nothing contacts stagenet or mainnet. Ports used:
+8951 (parameter server inside the local rehearsal), 8952/8953 (parameter-server tests), 30081/30080 (rehearsal fakechain),
+30083/30082 (negative-test fakechain). Nothing is deployed; no real funds; bridge payouts and native trading stay gated.
+
+Prerequisites (already present in this workspace; not downloaded by these steps)
+  Rust toolchain with the wasm32-unknown-unknown target (~/.cargo/bin), Node 24, the offline monerod binary at
+  operations/native-market-20261016/local-chain/bin/monerod, the disposable parameter sets params/test-v1,
+  params/test-other and params/stagenet-v0 (147 MB of proving keys each; not published), the lab helper
+  research/privacy-integration-20261022/rpc.mjs (process wrapper only).
+
+1. Build the network-aware lab roles (issuer/indexer/wallet binary):
+     cd research/privacy-stagenet-roles-20261023-lab && PATH=$HOME/.cargo/bin:$PATH cargo build --release --offline
+     -> target/release/xmr20-integration-lab
+2. Build the holder engine (adds the nativeStart / nativeAddress ops):
+     cd research/privacy-stagenet-roles-20261023/holder-wasm && PATH=$HOME/.cargo/bin:$PATH cargo build --offline --release --target wasm32-unknown-unknown
+     -> target/wasm32-unknown-unknown/release/xmr20_holder_wasm.wasm
+3. Run the local integration and negative tests (≈3-6 minutes; the last test is the complete simulated rehearsal):
+     cd research/privacy-stagenet-roles-20261023 && node --test --test-concurrency=1 stagenet-roles.test.mjs
+     Results: runs/stagenet-roles-results.json, runs/rehearsal-local.json (every step with execution mode and fee basis).
+4. Run the simulated rehearsal on its own (same flow, start height 40):
+     node stagenet/rehearsal.mjs --mode local --start-height 40 --out runs/rehearsal-local.json
+5. Serve parameters statically (transport only; clients authenticate against their own manifest):
+     node stagenet/param-server.mjs --dir params/stagenet-v0 --port 8951
+6. The STAGENET rehearsal (EXECUTED 24 Oct 2026; evidence in runs/stagenet/) needs an owner-controlled synced stagenet
+   node and faucet coins; it was run exactly as follows (README-STAGENET.txt explains each step):
+     operations/stagenet-node-20261023/start.sh                       # isolated pruned node, RPC 127.0.0.1:38091 (hours to sync)
+     node stagenet/make-stagenet-manifest.mjs params/stagenet-v0 --start-height <node height> --out runs/stagenet/trusted-manifest.json
+     node stagenet/addresses.mjs --rpc http://127.0.0.1:38091 --manifest runs/stagenet/trusted-manifest.json \
+          --params-dir params/stagenet-v0 --wallet-dir runs/stagenet/wallets --out runs/stagenet/addresses.json
+     sh stagenet/faucet-claim.sh <each printed stagenet address> runs/stagenet/faucet-claims.jsonl   # 0.01 sXMR/address/hour
+     node stagenet/rehearsal.mjs --mode stagenet --rpc http://127.0.0.1:38091 --manifest runs/stagenet/trusted-manifest.json \
+          --params-dir params/stagenet-v0 --wallet-dir runs/stagenet/wallets --param-port 8954 --out runs/stagenet/rehearsal-stagenet.json
+   A rerun with the same --wallet-dir resumes: mined credits are reused and surplus notes are baselined (no replacement
+   credits). Results: runs/stagenet/rehearsal-stagenet.json and STAGENET-RUN.txt. The wallet roots are never published.
+
+7. Focused regression of the carrier module's lost-reply recovery and pool-aware input selection (scripted daemon, < 1 s):
+     node --test holder-carrier-recovery.test.mjs
+     node --test lossy-proxy.test.mjs        # fault proxy: drop-reply/drop-request/pass-through/history (3 tests)
+8. Restart / lost-reply / stale-backup / two-installation / rollback cases on the OFFLINE chain (≈8 minutes; ports 8955, 30084-30085;
+   exit 0 only if every check passed):
+     node stagenet/recovery-cases.mjs --mode local --out runs/recovery-cases-local.json
+   Each installation is a separate process (stagenet/holder-process.mjs) behind the fault proxy (stagenet/lossy-proxy.mjs);
+   installs, snapshots and the proxy fault log are written under runs/recovery-<mode>-*/ (or --run-dir).
+9. The same cases on STAGENET (ordinary authorised test transactions only: LR, R1a, R1b, R2, R3, S; waits for real blocks, ≈2-3 h):
+     node stagenet/recovery-cases.mjs --mode stagenet --rpc http://127.0.0.1:38091 --manifest runs/stagenet/trusted-manifest.json \
+          --params-dir params/stagenet-v0 --wallet-dir runs/stagenet/wallets --param-port 8956 --run-dir runs/stagenet/recovery-run \
+          --out runs/stagenet/recovery-cases-stagenet.json
+
+Hashes: MANIFEST.sha256 (sha256sum -c MANIFEST.sha256 from the candidate root).

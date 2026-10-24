@@ -1,0 +1,171 @@
+[
+ {
+  "at": "2026-10-23T18:23:18.548Z",
+  "step": "extension loaded",
+  "id": "jigbpnljnmbbkebaopbnnhmiafgnofla",
+  "profile": "interruptions"
+ },
+ {
+  "at": "2026-10-23T18:23:21.768Z",
+  "step": "account imported; holder keys derived in the extension and registered by public token address",
+  "name": "Alpha"
+ },
+ {
+  "at": "2026-10-23T18:23:24.548Z",
+  "step": "account imported; holder keys derived in the extension and registered by public token address",
+  "name": "Beta"
+ },
+ {
+  "at": "2026-10-23T18:23:30.190Z",
+  "step": "TEST SERVICE: mined test XMR to this account for carrier fees",
+  "text": "Mined 1 coinbase output to this account (test service). It unlocks after 60 blocks; advance the chain. XMR for carrier fees: 0.000000 XMR spendable · 35.170504 XMR locked until block 310"
+ },
+ {
+  "at": "2026-10-23T18:23:30.854Z",
+  "step": "TEST SERVICE: mined test XMR to this account for carrier fees",
+  "text": "Mined 1 coinbase output to this account (test service). It unlocks after 60 blocks; advance the chain. XMR for carrier fees: 0.000000 XMR spendable · 70.338002 XMR locked until block 311"
+ },
+ {
+  "at": "2026-10-23T18:23:31.535Z",
+  "step": "TEST SERVICE: mined test XMR to this account for carrier fees",
+  "text": "Mined 1 coinbase output to this account (test service). It unlocks after 60 blocks; advance the chain. XMR for carrier fees: 0.000000 XMR spendable · 105.505433 XMR locked until block 312"
+ },
+ {
+  "at": "2026-10-23T18:23:33.643Z",
+  "step": "TEST SERVICE: mined test XMR to this account for carrier fees",
+  "text": "Mined 1 coinbase output to this account (test service). It unlocks after 60 blocks; advance the chain. XMR for carrier fees: 0.000000 XMR spendable · 35.167364 XMR locked until block 313"
+ },
+ {
+  "at": "2026-10-23T18:23:37.643Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T18:24:09.297Z",
+  "step": "a. broadcast reply lost after the daemon accepted the carrier",
+  "error": "The daemon did not answer (Failed to fetch). Your signed carrier is saved in the encrypted journal and is re-sent as the same transaction on the next refresh: one carrier, one fee, nothing lost."
+ },
+ {
+  "at": "2026-10-23T18:24:09.362Z",
+  "step": "b. second send refused while the first operation reserves the note",
+  "error": "Insufficient unreserved balance of this asset: 0 available"
+ },
+ {
+  "at": "2026-10-23T18:24:31.265Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T18:24:34.269Z",
+  "step": "a/b. after mining: Beta credited exactly once",
+  "alpha": 88.5,
+  "beta": 10
+ },
+ {
+  "at": "2026-10-23T18:24:35.851Z",
+  "step": "c1. migration interrupted after preparation (test hook)",
+  "error": "TEST HOOK: simulated interruption after claim-prepared (the popup stopped here; nothing else ran)."
+ },
+ {
+  "at": "2026-10-23T18:24:38.641Z",
+  "step": "c1. retried migration credited once",
+  "text": "Claim credited: ac1dd06db5683754… for 492.5 X to your private address. Advance the chain to see the private balance."
+ },
+ {
+  "at": "2026-10-23T18:24:40.183Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T18:24:42.942Z",
+  "step": "c2. migration interrupted after signing (test hook)",
+  "error": "TEST HOOK: simulated interruption after claim-signed (the popup stopped here; nothing else ran)."
+ },
+ {
+  "at": "2026-10-23T18:24:47.161Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T18:24:47.166Z",
+  "step": "c2. saved signed claim submitted on reconcile; credited once",
+  "alpha": 581
+ },
+ {
+  "at": "2026-10-23T18:24:49.700Z",
+  "step": "d. popup closed while proving (fee approved, nothing signed)"
+ },
+ {
+  "at": "2026-10-23T18:25:12.842Z",
+  "step": "d. nothing published; note and XMR reservations released; balance unchanged"
+ },
+ {
+  "at": "2026-10-23T18:25:43.164Z",
+  "step": "e. interrupted after proving, before the carrier was signed (test hook)",
+  "error": "TEST HOOK: simulated interruption after built (the popup stopped here; nothing else ran)."
+ },
+ {
+  "at": "2026-10-23T18:25:47.359Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T18:25:47.362Z",
+  "step": "e. after lock/reopen the saved record was carried once after an explicit fee approval",
+  "alpha": 574,
+  "beta": 509.5
+ },
+ {
+  "at": "2026-10-23T18:25:50.415Z",
+  "step": "f. background service worker terminated through the browser CDP session (Target.closeTarget)",
+  "url": "chrome-extension://jigbpnljnmbbkebaopbnnhmiafgnofla/background.js"
+ },
+ {
+  "at": "2026-10-23T18:26:51.926Z",
+  "step": "f. service worker stop did not lock the popup (session survived); the send continues"
+ },
+ {
+  "at": "2026-10-23T18:26:53.573Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T18:26:53.584Z",
+  "step": "f. service worker terminated mid-proof (Target.closeTarget): the popup kept its session (background state restored on demand), the send completed with exactly one carrier"
+ },
+ {
+  "at": "2026-10-23T18:27:28.793Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T18:27:30.523Z",
+  "step": "g. Alpha notes before concurrent sends",
+  "notes": [
+   "88500000",
+   "479500000",
+   "5000000"
+  ]
+ },
+ {
+  "at": "2026-10-23T18:28:02.997Z",
+  "step": "g. concurrent sends from two popups",
+  "popup1": " | Those notes were just reserved by another wallet window. Refresh and try again.",
+  "popup2": "Published 8952161daf147ed7… (996-byte record, 1 input, change 476.5 X; proved locally in 29 s; carrier e54f571c5e438621… 2520 bytes, tx_extra 1056 bytes, fee 0.003024 XMR paid from this wallet). Advance the chain to confirm. | "
+ },
+ {
+  "at": "2026-10-23T18:28:04.624Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T18:28:06.447Z",
+  "step": "g. after mining: balances exact, no conflicting spend",
+  "alpha": 570,
+  "beta": 513.5,
+  "published": 1,
+  "inputs": [
+   0,
+   1
+  ]
+ },
+ {
+  "at": "2026-10-23T18:28:06.479Z",
+  "step": "pool credits in the local replica",
+  "credits": 3,
+  "rejected": 0,
+  "accepted": 8
+ }
+]

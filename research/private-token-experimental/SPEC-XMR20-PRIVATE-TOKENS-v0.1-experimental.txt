@@ -1,0 +1,237 @@
+XMR20 PRIVATE TOKENS — INTEROPERABILITY SPECIFICATION v0.1 (EXPERIMENTAL)
+research/privacy-interop-20261023, 23 October 2026. Stage 4 of the private-token work package.
+
+STATUS. Experimental and unreviewed. It describes exactly what the current research implementation
+(holder-wasm 0.0.1, record formats XM3/XB3, key scheme XMR20-TKD1, parameter manifest XMR20-PARAMS-1)
+does on an OFFLINE TEST CHAIN with DISPOSABLE parameters. Nothing here is a production protocol. It
+exists so that an independent wallet can receive, decrypt, recover and send the same tokens in the
+same pool without our wallet interface and without any server holding its keys. Readiness gates of
+stages 1-3 (NO-GO for real funds; bridge payouts and native XMR trading gated; no audit) are unchanged.
+Normative words: MUST / MUST NOT / SHOULD. Byte layouts are little-endian unless stated. "H()" is
+SHA-256. "||" is concatenation. Sizes in bytes.
+
+0. VERSION IDENTITY
+   protocolVersion   "XMR20-PRIVATE-v0.1-experimental"
+   domainLabel       "XMR20-MIGRATION-REHEARSAL-DOMAIN-v1"   (fixed string inside the ledger domain)
+   keyScheme         "XMR20-TKD1"
+   manifestFormat    "XMR20-PARAMS-1"
+   records           XM3 (transfer, 996 bytes, magic 58 4D 33 FE) · XB3 (boundary, 925 bytes, magic 58 42 33 FE)
+   A wallet MUST refuse to operate with parameters, records or a chain whose identity differs from the
+   manifest it was built with (section 4). All four identifiers are expected to change before any
+   production use; wallets MUST NOT mix versions.
+
+1. CRYPTOGRAPHIC COMPONENTS (all reused, none invented here)
+   - Penumbra shielded-pool note, commitment, nullifier, key schedule, address, Groth16 spend/output
+     circuits: penumbra-sdk-* 2.1.1 (penumbra-sdk-keys, -shielded-pool, -sct, -tct, -asset) on
+     decaf377 0.10.1 / BLS12-377 (arkworks 0.4). The shielded-pool crate is vendored with its
+     IBC/FMD parts stubbed; cryptography is unchanged (holder-wasm/vendor/penumbra-sdk-shielded-pool).
+   - Signatures: decaf377-rdsa 0.11 (SpendAuth for authorization, Binding for conservation).
+   - Key derivation PRF: BLAKE2b (blake2b_simd 1.0.5). Hashes: SHA-256 (sha2 0.10).
+   - Payload encryption: Penumbra's PayloadKey (ChaCha20-Poly1305, kind Note) under a BLAKE2b KDF
+     (section 6.3); key agreement decaf377-ka.
+   - Native carrier: monero-oxide / monero-wallet 0.2.0 (vendored), CLSAG + Bulletproof+ RingCT.
+
+2. ADDRESSES
+   2.1 Token address = the Penumbra payment address at diversifier index 0 of the token full viewing
+       key: 80 raw bytes (diversifier 16 || transmission key 32 || clue key 32), F4Jumbled, bech32m with
+       HRP "penumbra" -> the only variant this version SUPPORTS as a recipient and as the wallet's own
+       address is "penumbra1…" index 0 of an XMR20-TKD1 key.
+   2.2 Supported variants and limits:
+       - Index 0 only. Other diversifier indexes of the same key are NOT scanned and MUST NOT be given
+         as recipients (the compact payload reconstructs the recipient from the diversifier; the
+         receiving wallet checks the diversifier against its index-0 address and the transparent
+         special case only, section 6.3).
+       - The Penumbra "transparent" address of the same key (all-zero diversifier, 16 zero bytes) is
+         decodable by the recipient but is not produced or displayed by this implementation.
+       - Arbitrary Penumbra addresses with a custom clue key, Penumbra wallets' own addresses, and
+         ordinary Monero addresses are NOT valid token recipients. A wallet MUST reject them.
+       - No address-side network tag exists: the same address string is valid on every network; the
+         chain/ledger identity comes from the manifest (section 4). Wallets SHOULD show the manifest
+         label next to addresses.
+   2.3 The wallet's Monero address (for carrier fees) is the ordinary Monero mainnet-format address of
+       the same root (section 3.3). It is a separate, public, unrelated-looking value.
+
+3. KEYS, ACCOUNTS, RECOVERY, VIEWING
+   3.1 Root. 32 bytes: the account's Monero private spend key, i.e. the bytes encoded by the 25-word
+       Monero mnemonic (24 data words, 1 checksum; Electrum wordlist; 3 words -> 4 bytes, little-endian
+       base-1626 with the standard "a + b*1626 + c*1626^2" decoding and the standard checksum rule).
+       root MUST be a canonical Ed25519 scalar (the mnemonic encodes one). For synthetic testing any
+       32-byte value is accepted by the engine, which reduces it mod l for the Monero keys only.
+   3.2 Token spend key.  tsk = BLAKE2b-256(key = root, personal = "XMR20-TKD1" zero-padded to 16 bytes,
+                              message = "xmr20/private-token/spend-key" || LE32(account))
+       Vector: root = 0x01 x 32, account 0 -> tsk bc5f6d2613bc46a09c0e0eadf4d63e35ef9779ed24250cbefa8bf9704c3b4c10
+       (vectors/vectors.json has more, with the resulting addresses).
+       account = 0 in this version (other accounts are defined but unsupported by the wallets here).
+       SpendKey = penumbra SpendKey::from(SpendKeyBytes(tsk)); from it the unchanged Penumbra schedule
+       gives the spend authorization key ak, nullifier key nk, full viewing key fvk = (ak, nk),
+       incoming viewing key ivk, outgoing viewing key (unused here) and the address (2.1).
+   3.3 Monero keys (carriers only). spend = root mod l; view = Hs(root) = keccak256(root) mod l; the
+       standard Monero schedule; address = mainnet legacy address of (spend·G, view·G). The wallet MUST
+       check this address equals the account's known Monero address.
+   3.4 Recovery from the phrase restores: tsk, fvk, address, every note ever sent to the address, each
+       note's spent status (its nullifier found in the public nullifier set), the Monero outputs and
+       their spent status, and therefore balances — by replaying the public chain with the shipped
+       parameters (section 7). It does NOT restore: proofs made but not published, carriers signed but
+       not broadcast, local reservations, fee quotes (they exist only in the originating wallet's
+       journal, section 9), nor the "viewing key shared" fact.
+   3.5 Viewing-only access. The TOKEN viewing key is the Penumbra full viewing key, bech32m
+       "penumbrafullviewingkey1…" (ak || nk, 64 bytes). It lets the holder decrypt incoming notes,
+       derive nullifiers (so: see spent status and exact balance) and nothing else: it cannot
+       authorize spends (no spend key). It is NOT the Monero private view key: the Monero view key
+       reveals the holder's XMR outputs (carrier fee funds) and nothing about tokens; the token
+       viewing key reveals tokens and nothing about XMR. Sharing either is an explicit act.
+   3.6 Account separation. Different roots give unrelated token keys; no public value links a token
+       address to a Monero address or output. Whoever holds the root holds both.
+
+4. PARAMETERS, NETWORK AND VERSION IDENTITY (manifest XMR20-PARAMS-1)
+   The wallet MUST ship a manifest it trusts (compiled-in hash). Fields: format; label; protocol
+   {scheme, domainLabel, records{transfer{magic,bytes,inputs,outputs}, boundary{…}}}; network{kind,
+   genesis}; ledgerDomain; issuerVk; config{chain, domain, normal_vk, boundary_vk, issuer_vk};
+   parametersJson{path,bytes,sha256}; files{normal{path,bytes,sha256,vk}, boundary{…}}; generated.
+   4.1 Ledger domain = H("XMR20-MIGRATION-REHEARSAL-DOMAIN-v1\0" || LE32(32)||genesis32 ||
+       LE32(len)||normal_vk || LE32(len)||boundary_vk || LE32(32)||issuer_vk) over the raw bytes of the
+       hex fields in that order. The manifest's ledgerDomain MUST equal this recomputation.
+   4.2 Before parsing any parameter file the wallet MUST check exact byte length and SHA-256 against
+       the manifest (downloaded or cached); a mismatch means the file is not used. After parsing, the
+       verifying key embedded in a proving key MUST equal the manifest's vk. A server-supplied
+       configuration MUST equal the manifest's config field by field.
+   4.3 Network: this version is defined only for network.kind "offline-fakechain" and a daemon whose
+       block-0 hash equals network.genesis. Mainnet/stagenet identities are not defined.
+   4.4 Verifying keys are ark-groth16 compressed VerifyingKey<Bls12_377>; proving keys are the
+       uncompressed ProvingKey serialization. Proofs are 192-byte compressed Groth16 proofs.
+
+5. VALUES, NOTES, COMMITMENTS, NULLIFIERS
+   5.1 Asset id: Penumbra asset::Id derived from the lowercase denom string "uxmr20private" ||
+       lowercase(base58 mint)[a-z0-9 only] (32 bytes, Poseidon-based, per penumbra-sdk-asset).
+       Amounts are u64 atomic units of that asset (XMR20 X: 6 decimals; "1 X" = 1,000,000).
+   5.2 Note = Penumbra Note{value{amount, asset}, rseed 32, address}; commitment = Penumbra
+       StateCommitment (Poseidon over the note fields, 32 bytes, decaf377 Fq encoding); value
+       commitment cv = Pedersen commitment of the value with a random blinding (balance::Commitment).
+   5.3 Position = the note's index in the pool's tiered commitment tree (TCT), assigned in canonical
+       chain order (section 7.4). Nullifier = Penumbra Nullifier::derive(nk, position, commitment).
+       The pool keeps a set of nullifiers; a nullifier seen in the set means that note is spent.
+   5.4 Anchor = a TCT root. Records may reference ANY root the pool has ever had (so several wallets
+       can publish concurrently without racing on the latest root).
+
+6. RECORDS (exact byte layouts; all fields are concatenated with no tags or lengths)
+   6.1 XM3 private transfer, 996 bytes
+       [0..4)      magic 58 4D 33 FE
+       [4..36)     anchor (TCT root as Fq, 32)
+       3 x inputs: cv 32 || nullifier 32                                   [36..228)
+       [228..260)  rk (randomized SpendAuth verification key, 32)
+       2 x outputs: cv 32 || payload 176 (6.3)                             [260..676)
+       [676..740)  auth signature (SpendAuth, 64) over message 6.4
+       [740..932)  Groth16 proof (192)
+       [932..996)  binding signature (Binding, 64) over the same message
+       Exactly three inputs: a sender with fewer real notes pads with zero-value notes it owns.
+       Output 0 is the payment, output 1 the change (sender's own address); both are always present.
+       A pure self-send/consolidation is a transfer to one's own address.
+   6.2 XB3 boundary record, 925 bytes
+       [0..4) magic 58 42 33 FE · [4..36) anchor · 3 x (cv 32 || nf 32) [36..228) · rk [228..260)
+       · output cv 32 || payload 176 [260..468) · kind 1 [468] · asset 32 [469..501) · amount u64 LE
+       [501..509) · binding 32 [509..541) · auth 64 [541..605) · proof 192 [605..797) · conservation
+       signature 64 [797..861) · issuer signature 64 [861..925) (all zero for redemptions).
+       kind: 1 DEPOSIT credit, 2 MIGRATION credit, 3 REDEEM. Credits mint `amount` of `asset` into the
+       single output; redemptions burn `amount` from the three inputs (change in the output). The
+       binding field ties the record to the bridge event (deposit nonce / claim id / payout request
+       binding) and MUST be nonzero. Credits are signed by the issuer; the three inputs of a credit are
+       zero-value padding notes of the issuer.
+   6.3 Compact payload, 176 bytes = commitment 32 || ephemeral public key epk 32 || ciphertext 112.
+       Encryption (sender): shared = ka(esk, transmission key of the recipient address);
+       key = BLAKE2b-256(personal "XMR20_M3_Cipher", message "compact-note-v1\0" || shared || epk ||
+       commitment); plaintext 96 = diversifier 16 || amount 16 (u128 LE) || asset 32 || rseed 32;
+       ciphertext = PayloadKey(key).encrypt(plaintext, PayloadKind::Note) (ChaCha20-Poly1305, nonce
+       zero, 16-byte tag). epk and the transmission key MUST NOT be the identity.
+       Decryption (recipient): shared = ka(ivk, epk); same key; decrypt; reconstruct the address from
+       the diversifier via ivk (index_for_diversifier -> payment_address; plus the transparent address
+       if the diversifier is all-zero); rebuild Note{address, amount, asset, rseed}; the note is
+       accepted only if its commitment equals the payload commitment AND its ephemeral public key
+       (derived from rseed and the address) equals epk AND the note is controlled by the fvk.
+       Otherwise the payload is not the recipient's (or is malformed) and MUST be ignored. This codec
+       is NOT the upstream Penumbra note ciphertext; it is recipient-only (no outgoing viewing).
+   6.4 Messages. XM3: m = H("XMR20-MULTI-INPUT-LAB-AUTH-v1\0" || domain32 || publicBody) where
+       publicBody = bytes [0..676). XB3: m = H("XMR20-MIGRATION-REHEARSAL-BOUNDARY-AUTH-v1\0" ||
+       domain || publicBody[0..541)); issuer message = H("XMR20-MIGRATION-REHEARSAL-ISSUER-v1\0" ||
+       domain || publicBody).
+   6.5 Record id = H(record bytes) (hex); carriers are identified by their Monero txid.
+
+7. SCANNING, VALIDATION, SPENT DETECTION, ROLLBACK
+   7.1 Source of truth: the Monero daemon's public chain (RPC get_info / get_block / get_transactions;
+       JSON blob + as_hex). Every block from height 0 is applied in order; a wallet MUST verify the
+       block hash chain (prev_hash) and the transaction hashes it is given.
+   7.2 Framing: a record travels as tx_extra nonce fields (tag 0x02, varint length, then 0x7F marker
+       and up to 254 record bytes per chunk; chunks in order). tx_extra MUST contain exactly one tx
+       pubkey field (0x01) and MAY contain one encrypted payment id (0x02 nonce starting 0x01, 9
+       bytes); any other field makes the extra invalid for this protocol; total extra <= 1,060 bytes.
+       Concatenated chunks MUST equal exactly one record of a known magic and size.
+   7.3 Admission (identical in every verifier; a record that fails changes nothing, the Monero
+       transaction still mined and its fee was spent): decode canonical bytes (re-encoding must equal
+       the input); anchor is a known root; all nullifiers distinct and not yet in the set; Groth16
+       proof verifies with the pinned verifying key over the public inputs (per input: anchor, cv,
+       nullifier, rk decompressed; per output: commitment, cv); auth signature verifies under rk;
+       binding signature verifies under the sum of input and output cvs (XB3: plus the public
+       amount's zero-blinding commitment, positive for credits, negative for redemptions); XB3 kind
+       in {1,2,3}, amount > 0, binding != 0, issuer signature verifies for credits and is all-zero
+       for redemptions. On success the output commitments are appended to the TCT (positions
+       assigned), nullifiers inserted, mint/burn totals updated.
+   7.4 Spent detection: a wallet derives the nullifier of each owned note from (nk, position,
+       commitment) and marks it spent when the pool's nullifier set contains it; it never needs the
+       spending transaction. Confirmations = tip - height + 1 of the carrier.
+   7.5 Rollback: if a previously seen block hash is no longer at its height, the wallet MUST discard
+       its pool state and replay from genesis (positions, nullifiers and roots all depend on order).
+       Notes created by rolled-back records disappear; notes spent by them become unspent; the
+       sender's signed carrier may be re-broadcast unchanged if its native input is still unspent.
+   7.6 Publication: the record's carrier is an ordinary Monero transaction built by the sender
+       (section 8) and sent to a daemon with send_raw_transaction. Re-sending the same transaction is
+       idempotent (already in pool / in chain -> OK).
+
+8. SENDING
+   8.1 Selection: up to three unspent notes of one asset, largest first, excluding notes reserved by
+       pending operations; total >= amount; change = total - amount to the sender's own address.
+   8.2 Proving: SpendProofs for the three inputs (padding zero notes as needed) and OutputProofs for
+       the two outputs in the combined circuit, with the pinned transfer proving key; auth = randomized
+       spend-auth signature; binding = signature under the sum of blinding factors; self-check 7.3.
+   8.3 Carrier: one 16-ring CLSAG input from the sender's own XMR, two outputs (change to self and a
+       0-amount dummy to a fresh random address), record chunks in extra, fee = monerod's fee rate x
+       weight. The exact fee MUST be shown before proving; the sender pays it. No relay is defined.
+   8.4 A sender MUST NOT publish two records spending the same note (the second is rejected and its
+       carrier fee lost); it SHOULD reserve notes and the native input from selection until the record
+       is confirmed or known rejected (section 9).
+
+9. WHAT THE PHRASE RESTORES vs THE PENDING-OPERATION JOURNAL
+   Restored by any wallet with the phrase + manifest + chain: everything in 3.4. Only in the
+   originating wallet's journal: notes reserved, fee quotes, proved-but-unpublished records, signed-but
+   -unbroadcast carriers, publication attempts. Consequences (see docs/stage3 RECOVERY-CASES.txt): a
+   second wallet of the same phrase may spend notes the first has reserved; the pool admits one
+   record; a wallet MUST check local admission before carrying or re-sending a saved record and MUST
+   show the loser as rejected, never as success; a stale carrier that was already broadcast costs its
+   fee. Journals are per installation and encrypted; no server holds them.
+
+10. COMPATIBILITY LIMITATIONS (explicit)
+   - Address index 0 only; no sub-accounts; no custom clue keys; Penumbra-native wallets cannot
+     receive these notes (different payload codec, different pool); ordinary Monero wallets see only
+     the carrier.
+   - Fixed record sizes; exactly 3 inputs / 2 outputs (XM3), 3 / 1 (XB3); one asset per record.
+   - The payload key is recipient-only: the sender cannot later decrypt its own outgoing notes except
+     the change (which is to itself). No memo field.
+   - Parameters are disposable; the network identity is an offline fakechain; nothing is defined for
+     mainnet. The issuer is a single key; credits require its signature.
+   - Carrier fee funding needs XMR in the same account; a holder without XMR cannot send.
+   - Monero mnemonic decoding (3.1) is required only for phrase import; wallets MAY accept the 32-byte
+     root directly (synthetic recovery material).
+
+11. SHARED COMPONENTS DISCLOSURE
+   Every wallet in this candidate (the extension, the CLI wallet, the Node tests) uses the SAME
+   engine (holder-wasm compiled to wasm) for keys, scanning, proving, signing and carrier
+   construction, the same loader/scanner/carrier JavaScript modules, and the same vendored upstream
+   crates. They are two applications over one cryptographic implementation, not independent
+   implementations. The independent-decoder check (section 12) covers only what can be re-derived
+   with established JavaScript libraries from this text.
+
+12. INDEPENDENT CHECKS POSSIBLE FROM THIS SPECIFICATION WITHOUT THE ENGINE
+   - tx_extra unframing, record layout parsing, magic/size/kind/asset/amount/binding fields, record
+     id, ledger-domain recomputation, manifest hash checks, mnemonic -> root, Monero carrier parsing:
+     Node crypto + standard libraries (vectors/ and independent/ in this candidate).
+   - Not possible without a decaf377/Poseidon/decaf377-rdsa implementation in JavaScript (none
+     established): note commitments, nullifiers, key agreement/decryption, signatures, proofs.
+     These are checked only by the shared engine and remain subject to independent security review.

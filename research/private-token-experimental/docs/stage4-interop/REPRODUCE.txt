@@ -1,0 +1,35 @@
+REPRODUCTION — research/privacy-interop-20261023 (stage 4: interoperability; synthetic, offline, isolated, NOT PUBLISHED)
+Builds on research/privacy-review-20261023 (stage 3, unchanged). Nothing production, no live wallet, no deployment, nothing pushed.
+
+Deliverables
+- SPEC-XMR20-PRIVATE-TOKENS-v0.1-experimental.txt   versioned, explicitly experimental interoperability contract
+- wallet-lib/private-wallet.mjs (+ README.md)        small documented wallet interface over the shared engine (no UI, no operator)
+- cli-wallet/xmr20-private-cli.mjs                   minimal second wallet application (CLI) on the library
+- interop.test.mjs                                   extension A <-> CLI B on ONE pool, 1/2/3-note inputs, recovery, view-only, negatives
+- vectors/make-vectors.mjs -> vectors/vectors.json   portable synthetic test vectors
+- independent/decode.mjs, independent/check.mjs      decoder written from the specification; vector check
+- holder-wasm (unchanged engine + one new host test: key-derivation vectors)
+
+Prerequisites: as stages 1-3 (Rust + wasm32 target, lab binary for issuer/indexer, offline monerod, Playwright 1.56.1, monero-ts 0.11.16 in
+wallet-extension/node_modules). Ports: 8940/30041 (interop test, browser), 8947/30073 (vector generation).
+
+1. Build
+   cd research/privacy-interop-20261023/holder-wasm && PATH=$HOME/.cargo/bin:$PATH cargo build --offline --release --target wasm32-unknown-unknown
+   PATH=$HOME/.cargo/bin:$PATH cargo test --offline --release          # 10 host tests (incl. the published key-derivation vectors)
+   cd ../wallet-extension && XMR20_PRIVATE_HOLDER_TEST=local node build.mjs
+
+2. Vectors and the independent check (≈3 min; starts its own backend)
+   cd research/privacy-interop-20261023
+   node vectors/make-vectors.mjs                      # writes vectors/vectors.json
+   node independent/check.mjs                         # prints checked / failed / notCheckable
+
+3. Two-wallet interoperability (real popup + CLI; ≈12 min)
+   node --test interop.test.mjs                       # evidence/verified-interop-*/, runs/interop-results.json
+
+4. CLI wallet by hand (against a backend started with `node backend/service.mjs`)
+   node cli-wallet/xmr20-private-cli.mjs init --root <64 hex> --state /tmp/x.json      # or --seed "25 words" (monero-ts) / --viewing-key …
+   node cli-wallet/xmr20-private-cli.mjs balance --state /tmp/x.json
+   node cli-wallet/xmr20-private-cli.mjs send --to penumbra1… --amount 1000000 --state /tmp/x.json   # shows the carrier fee, asks for approval
+   SYNTHETIC ONLY: the state file stores the root in clear.
+
+Processes: the tests stop what they start (`pgrep -fl "xmr20-integration-lab|monerod.*privacy-interop"` if one was killed).

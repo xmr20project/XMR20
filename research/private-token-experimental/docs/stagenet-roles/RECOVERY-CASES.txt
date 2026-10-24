@@ -1,0 +1,90 @@
+RECOVERY FROM THE PHRASE vs RECOVERY FROM THE ORIGINAL INSTALLATION'S JOURNAL
+research/privacy-review-20261023 (stage 3). Specification of the cases tested by
+browser-journal-recovery.test.mjs / holder-journal-recovery.test.mjs; outcomes recorded in RESULTS.txt.
+
+Two kinds of state exist for a holder:
+  CHAIN STATE   (public): notes created/spent, carriers mined. Recovered by ANY installation that has
+                the phrase, the shipped parameters and a node. Includes native XMR outputs and which
+                carriers spent them.
+  JOURNAL STATE (local, encrypted, per installation): operations in flight - reserved notes, a fee
+                quote, a proved record not yet carried, a signed carrier not yet seen on chain. It
+                exists ONLY in the installation that created it. The phrase cannot reconstruct a proof
+                or a signed carrier that was never published; a fresh installation simply does not
+                know about them.
+
+Case 1  OPERATION PREPARED BUT NOT PROVED (journal 'selected' or 'quoted')
+  original install : entry released after its heartbeat expires (20 s); notes and XMR input free again;
+                     nothing published, no fee.
+  phrase-only      : sees nothing; balances identical to the original after release.
+  republication    : none to do. fee: none.
+
+Case 2  PROOF COMPLETED BUT NOT PUBLISHED (journal 'built' = proved record, no carrier; or 'signed' =
+        carrier signed, never broadcast)
+  original install : 'built' waits for the holder to approve a carrier fee ("Approve carrier fee and
+                     publish"); 'signed' is re-sent as the same transaction on refresh.
+  phrase-only      : knows nothing of it; shows the notes as UNSPENT and may spend them.
+  conflict         : if the fresh install spends first, the original's saved record is doomed: the
+                     pool admits whichever carrier is mined first and REJECTS the second (duplicate
+                     nullifier). The second carrier is still a valid Monero transaction, so IF it was
+                     already signed and broadcast ITS XMR FEE IS LOST; if it was only 'built', the
+                     engine's pre-sign admission check refuses to pay a fee for it once the conflict is
+                     on chain ("fails local admission; no carrier built").
+  inflation        : impossible - one nullifier set; the loser's record creates no notes.
+  stale success    : the losing install must show 'rejected', never "Published/confirmed"; its balance
+                     follows the chain (replay), not the journal.
+  what the phrase can NOT do: reconstruct the unpublished proof or carrier; they live only in the
+                     original journal (documented limitation, not fixable by design: the proof contains
+                     fresh randomness and the carrier a fresh ring/signature).
+
+Case 3  TRANSACTION BROADCAST, REPLY LOST (journal 'signed', daemon has the carrier)
+  original install : re-sends the same blob on refresh (idempotent on monerod); once mined the record
+                     settles from chain state. One carrier, one fee (stage 2 evidence).
+  phrase-only      : sees the record once mined (chain state); nothing pending.
+  fee              : exactly one.
+
+Case 4  TRANSACTION CONFIRMED, THEN REMOVED BY A ROLLBACK (pop_blocks on the test daemon)
+  both installs    : replay detects the hash mismatch, resets and replays: the record is gone, the spent
+                     notes are UNSPENT again, the recipient's note is gone, the carrier's XMR input is
+                     unspent again (the change output disappears).
+  original install : the settled entry was already moved to history; the SAME signed carrier can be
+                     re-sent (monerod returns popped transactions to its pool, so it usually reappears
+                     by itself); republication costs no new fee (same transaction). If instead the
+                     notes are spent differently afterwards, the old carrier becomes invalid and its
+                     record is rejected if mined later; no inflation.
+  phrase-only      : consistent with the chain at every point; nothing to republish.
+  operator side    : a payout made on a rolled-back burn is NOT recovered (05-ROLLBACK-LOSS). This case
+                     is about wallet consistency only.
+
+Case 5  FRESH INSTALLATION, STALE BACKUP, TWO INSTALLATIONS WITH THE SAME PHRASE
+  fresh install    : phrase + parameters + chain = same address, balance, notes, spent status, native
+                     outputs (stage 1/2 evidence, browser-recovery.test.mjs).
+  stale backup     : an old copy of chrome.storage (vault + journal) restored into a profile: entries
+                     for records already on chain settle from chain state; a stale 'built' record whose
+                     notes were spent meanwhile is refused at carrier signing (no fee); a stale 'signed'
+                     carrier whose record is already on chain is settled without re-sending; one whose
+                     notes were spent by another install is re-sent and REJECTED by the daemon or the
+                     pool (double spend of the token notes -> record rejected; of the XMR input ->
+                     daemon double_spend -> 'conflicted'); the UI never reports it as a success.
+  two installs     : both unlocked, both spending the same notes concurrently -> exactly one record
+                     admitted; the other shows 'rejected' with the fee consequence; balances in both
+                     equal the chain. Cannot be prevented by the protocol (no shared journal);
+                     mitigated by the pre-sign admission check and by replaying before every spend.
+
+Assertions made for every case: exact token balances in every install, pending/spent state, whether
+republication is possible and what it costs (0 or one carrier fee), no duplicate credits, no record
+admitted twice, no install reporting a conflicting send as successful.
+
+EXECUTED WITH SEPARATE PROCESSES — 24 October 2026 (research/privacy-stagenet-roles-20261023)
+The cases above were re-run with each installation as its own operating-system process (stagenet/holder-process.mjs: the wallet
+library plus this journal module on a file-backed store), killed with SIGKILL at exact phases, behind a loopback proxy that drops
+the daemon's reply after the daemon answered or the request before it arrived (stagenet/lossy-proxy.mjs). Mapping:
+  Case 1  -> R1a (killed after the quote): resume releases; nothing sent; no fee.
+  Case 2  -> R1b (killed after proving, before signing) and R2 (killed after signing, before broadcast); the stale 'built' backup
+             whose notes were spent elsewhere is refused before any carrier (S).
+  Case 3  -> LR (actual lost reply, in-process recovery), R3 (lost reply AND process killed; recovery on restart), LRQ (lost request).
+             Rule: ask the daemon (get_transactions) BEFORE any retry; re-send the SAME blob only if it positively does not know it.
+  Case 4  -> RB (offline chain only): a COMPLETED entry whose record vanished is reinstated and the same carrier re-sent; no new fee.
+  Case 5  -> fresh installation in every case; stale 'signed' backup settles from chain state (S); TWO installations spending the
+             same note concurrently (offline chain only): exactly one completes; the other is refused (same XMR input) or rejected.
+Exit codes of the reference process: 0 completed/released, 2 pending or outcome unknown, 1 failed/refused/rejected/conflicted.
+Results: RESULTS.txt "RESTART, LOST-REPLY AND RECOVERY CASES"; runs/recovery-cases-local.json; runs/stagenet/recovery-cases-stagenet.json.
