@@ -1,0 +1,13 @@
+✔ static parameter service serves exactly the three parameter files and nothing else (412.330709ms)
+✔ a parameter server cannot substitute parameters: the wallet keeps its own manifest and hash checks (4439.989875ms)
+✔ roles take the network from the trusted manifest: stagenet vs fakechain, mainnet, genesis, RPC URL, start height (105140.211667ms)
+✔ rehearsal harness, LOCAL mode (simulated fakechain, start height 40): credit → transfer → recovery → transfers (179491.490291ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 291572.291375
+exit 0

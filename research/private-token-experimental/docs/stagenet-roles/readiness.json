@@ -6,7 +6,7 @@
  "bridgePayoutsGated": true,
  "candidate": "research/privacy-stagenet-roles-20261023 (+ lab crate research/privacy-stagenet-roles-20261023-lab)",
  "basedOn": "research/privacy-stagenet-rehearsal-20261023 (unchanged) <- verifier-params <- stage 4; lab crate copied from research/privacy-verifier-params-20261023-lab (unchanged)",
- "stage": "stagenet-aware roles + static parameter service + two-wallet rehearsal harness v2: BUILT AND TESTED IN SIMULATION (offline fakechain); NOT EXECUTED ON STAGENET",
+ "stage": "stagenet-aware roles + static parameter service + two-wallet rehearsal harness v2: TESTED IN SIMULATION (offline fakechain) AND EXECUTED ON PUBLIC STAGENET on 24 Oct 2026 (worthless faucet coins; not mainnet)",
  "mainnet": "refused by every component (harness preflight, roles.mjs, lab Manifest::validate, lab native::guard, engine params op, scanner)",
  "networkSelection": {
   "source": "the trusted parameter manifest (network.kind offline-fakechain | stagenet, network.genesis, network.startHeight)",
@@ -34,35 +34,32 @@
    "local": "SIMULATED on an own offline fakechain; fees/decoys are OFFLINE values",
    "stagenet": "EXECUTED ON STAGENET against an operator node; waits for real blocks; stagenet fees are not mainnet fees"
   },
-  "executedHere": "local mode only (see tests)",
-  "notExecuted": "stagenet mode (no synced stagenet node on this machine; no download started; nothing broadcast publicly)"
+  "executedHere": "local mode (tests) AND stagenet mode (attempt 3 PASSED, 04:03Z-07:05Z 24 Oct 2026; attempts 1-2 preserved)",
+  "resume": "stagenet mode reuses mined credits and baselines surplus notes from earlier attempts (no replacement credits); sender waits for native unlock; one-block-per-attempt retry budget",
+  "independentObservation": "a third-party public stagenet node is asked whether it holds each carrier (relay) and in which block it confirmed; the owner node's mining status is recorded"
  },
  "tests": {
-  "suite": "stagenet-roles.test.mjs (node --test): PASSED 4/4 in 237.7 s (runs/stagenet-roles-test.log)",
+  "suite": "stagenet-roles.test.mjs (node --test): PASSED 4/4 (runs/stagenet-roles-test.log); rerun 4/4 after each stagenet fix (runs/stagenet-roles-test-rerun.log)",
   "paramServerScope": "PASSED",
   "tamperedServerRefusedByClient": "PASSED",
   "roleNetworkSelection": "PASSED (stagenet manifest vs fakechain daemon refused at both layers; manifest kind mainnet refused at both layers; genesis mismatch refused; non-daemon URL refused; URL override wins; start height above tip -> empty pool)",
   "rehearsalLocal": "PASSED (SIMULATED, offline fakechain, start height 40): credits 3, transfers with inputs [1,3,2] and exact change, holder fees exact (3,024,000,000 piconero each at the OFFLINE rate), proving 32.2/31.3/31.4 s, recovery of both wallets from roots, all records admitted by sender/recipient/indexer (runs/rehearsal-local.json)",
-  "stagenetExecution": "NOT RUN"
+  "stagenetExecution": "EXECUTED (runs/stagenet/rehearsal-stagenet.json, STAGENET-RUN.txt): 4 credit carriers (one surplus baselined), T1 one-input / recovery of both wallets / T2 three-input / T3 two-input, exact change, exact holder fees 50,760,000 / 50,780,000 / 50,660,000 piconero at 20,000 piconero/byte (STAGENET rate, not mainnet), 1,056-byte tx_extra carriers accepted with sanity checks, relayed to and confirmed (10) by a third-party node, same-blob re-send idempotent 3/3, tokens conserved"
  },
- "prerequisitesChecked": "no monerod process, no ~/.bitmonero or stagenet data directory, no synced stagenet node, no known synthetic stagenet funds on this machine (read-only check; no wallets or credentials inspected)",
+ "prerequisitesChecked": "(superseded by stagenetRun) 23 Oct: no node existed; 24 Oct: isolated node set up, synced and used",
  "stillRequiredForTheRealStagenetRehearsal": [
-  "an owner-controlled fully synced stagenet monerod (hours of sync; not started here)",
-  "a trusted manifest for params/stagenet-v0 with startHeight = the node height at setup (stagenet/make-stagenet-manifest.mjs --start-height)",
-  "stagenet faucet coins on the issuer, wallet A and wallet B stagenet addresses printed by the preflight run (about 4 x 0.01 XMR of worthless test coins)",
-  "the run itself (\u224840+ stagenet blocks \u2248 1.5-2 hours), recorded in runs/rehearsal-stagenet.json",
-  "what it must show: public relay/mining of a 1,056-byte tx_extra carrier with the dummy output under real sanity checks, real fee rate and decoy rounds, proving/signing times, confirmation handling, many-small-output selection, issuer-funded credits, uncertain-broadcast behaviour"
+  "DONE on 24 Oct 2026 (see stagenetRun). Still open for production: reviewed multi-party parameters, independent security review, mainnet-grade measurements, the bridge/native-trading rollback-loss resolution"
  ],
  "components": {
   "privateTransfers": {
    "ready": false,
-   "status": "complete two-wallet flow with network-aware roles verified in SIMULATION only",
+   "status": "complete two-wallet flow verified in SIMULATION and EXECUTED ON STAGENET (24 Oct 2026); still NO-GO",
    "blockers": [
     "unreviewed XB3/XM3 composition and disposable setups",
     "no independent security review of the wasm engine or key scheme",
-    "no stagenet/mainnet execution; offline fees and decoys only",
     "metadata privacy analysis",
-    "carrier fingerprint (extra size) and change-chain linkage undocumented for users"
+    "carrier fingerprint (extra size) and change-chain linkage undocumented for users",
+    "no mainnet execution; stagenet fee/decoy figures only"
    ]
   },
   "migration": {
@@ -95,11 +92,30 @@
   "constant-time safety",
   "Monero-equivalent privacy",
   "any loss bound from the exposure window",
-  "stagenet or mainnet fee/decoy measurements",
-  "production parameters (the stagenet-v0 set is a disposable single-party setup bound to the stagenet genesis)"
+  "production parameters (the stagenet-v0 set is a disposable single-party setup bound to the stagenet genesis)",
+  "mainnet fee/decoy measurements (stagenet figures only)"
  ],
  "securityReview": {
   "status": "PACKAGE PREPARED (research/privacy-review-20261023/review), NOT COMMISSIONED, NOT PERFORMED"
  },
- "exposureStatementRetained": "maxPaidPerWindow is a payout-RATE control, not a loss bound; the rollback-loss counterexample stands"
+ "exposureStatementRetained": "maxPaidPerWindow is a payout-RATE control, not a loss bound; the rollback-loss counterexample stands",
+ "stagenetRun": {
+  "node": "operations/stagenet-node-20261023 (Monero v0.18.5.3, provenance re-verified; pruned; loopback RPC; outbound-only p2p; owner-authorised 6-thread mining, none of the carrier blocks ours)",
+  "trustedManifest": "runs/stagenet/trusted-manifest.json sha256 ed12e12441ab4f6d5cc6ad02e3839d9c14b3346b953ebfc277a66d3053903e9b, startHeight 2235745",
+  "faucet": "cypherfaucet.com, six 0.01 sXMR payments",
+  "defectsFoundAndFixed": [
+   "lab issuer input selection ignored Monero's 10-block spend lock (daemon: output too young) -> maturity tracked; validation untouched",
+   "harness could not resume after an interrupted attempt -> resume support"
+  ],
+  "attempts": {
+   "1": "rehearsal-stagenet-attempt1-too-young.json (credit 4b3a2c61... mined; second credit refused)",
+   "2": "rehearsal-stagenet-attempt2-node-stopped.json (credits fa2b73a8..., 5978895b... mined; node stopped by the free-space watchdog when another session filled the disk)",
+   "3": "rehearsal-stagenet.json PASSED"
+  },
+  "notShown": [
+   "mainnet fees, decoy statistics or miner policies",
+   "a real lost-reply or reorganization case (only the idempotent re-send path)",
+   "anything about the disposable setup, constant-time safety or the review blockers"
+  ]
+ }
 }

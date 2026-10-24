@@ -1,8 +1,9 @@
 STAGENET-AWARE ROLES, PARAMETER SERVICE AND REHEARSAL HARNESS v2 — research/privacy-stagenet-roles-20261023
 (+ lab crate research/privacy-stagenet-roles-20261023-lab), 23 October 2026. Synthetic, offline, isolated.
-Everything executed here ran on an offline zero-peer regtest fakechain: SIMULATED. Nothing ran on stagenet; no chain was
-downloaded; nothing was broadcast publicly; mainnet is refused by every component. Readiness unchanged: NO-GO; bridge
-payouts and native XMR trading gated; the disposable setup, the independent-review and the rollback-loss blockers stand.
+The TESTS section below ran on an offline zero-peer regtest fakechain: SIMULATED. UPDATE 24 Oct 2026: the rehearsal was
+then EXECUTED ON PUBLIC STAGENET (section "EXECUTED ON STAGENET" at the end; full detail in runs/stagenet/STAGENET-RUN.txt).
+Mainnet is refused by every component. Readiness unchanged: NO-GO; bridge payouts and native XMR trading gated; the
+disposable setup, the independent-review and the rollback-loss blockers stand.
 
 WHAT CHANGED
 Lab crate (issuer / indexer / wallet binary; copied from the verifier-params lab, which is unchanged):
@@ -74,3 +75,28 @@ refused by the client; role network selection (stagenet-vs-fakechain and mainnet
 non-daemon URL, URL override, start height above tip); simulated rehearsal with inputs [1,3,2], exact change, three
 holder-paid fees of 3,024,000,000 piconero (OFFLINE rate), proving 32.2 / 31.3 / 31.4 s, both wallets recovered from their
 roots, every record admitted by sender, recipient and indexer. All processes started by the tests were stopped (0 left).
+
+EXECUTED ON STAGENET — 24 October 2026 (owner-authorised; worthless faucet coins; not mainnet)
+Setup: Monero v0.18.5.3 monerod (provenance re-verified: archive sha256 7a083ed2… matches binaryFate's GPG-signed hashes.txt,
+fingerprint 81AC…DF92; binary sha256 28c233e0…6518) as an isolated pruned stagenet node (operations/stagenet-node-20261023,
+RPC 127.0.0.1:38091, outbound-only p2p, 6.3 GB, synced 21:50Z–03:04Z); trusted manifest runs/stagenet/trusted-manifest.json
+(startHeight 2,235,745, sha256 ed12e124…); fresh wallet roots (not published); six cypherfaucet.com payments (0.01 sXMR each);
+owner-authorised CPU mining with 6 threads (~2.2 kH/s) — our 10 blocks contained no carrier.
+Attempt 1 (03:05Z): credit 4b3a2c61… (5,000,000) relayed and mined (block 2,235,785); the second credit was refused by the
+daemon: "Transaction spends at least one output which is too young" -> lab issuer fix (10/60-block maturity in input
+selection; validation untouched); simulated suite 4/4.
+Attempt 2 (03:26Z): credits fa2b73a8… (5,000,000) and 5978895b… (3,000,000) relayed and mined (block 2,235,788); ended when
+the free-space watchdog stopped the node (another session's git packing filled the disk; nothing of ours deleted) ->
+harness resume support (reuse mined credits, baseline surplus notes; no replacement credits); simulated suite 4/4.
+Attempt 3 (04:03Z–07:05Z, 3 h 02 min, 57 steps, PASSED): reused the 5,000,000 and 3,000,000 credits, baselined the surplus
+5,000,000, issued credit cda5d1f7… (2,000,000; fee 49,240,000; 2,462 B; block 2,235,795); T1 A->B 4,000,000 ONE input,
+change 1,000,000, txid c7d959f9…, block 2,235,805, 2,538 B, holder fee 50,760,000 piconero, proving 35.1 s; recovery of A
+and B from roots in fresh instances (identical); T2 recovered A->B 5,500,000 THREE inputs, change 500,000, txid d7ab4ed2…,
+block 2,235,815, 2,539 B, fee 50,780,000, proving 36.1 s; T3 recovered B->A 9,000,000 TWO inputs, change 500,000, txid
+6eb08dfb…, block 2,235,825, 2,533 B, fee 50,660,000, proving 35.6 s. Every carrier (1,056-byte tx_extra) accepted WITH
+sanity checks, seen in a third-party public node's pool and confirmed (10) there; same-blob re-send idempotent 3/3; exact
+notes after every step; the sender's native XMR moved by exactly the quoted fee 3/3; sender, recipient and indexer admitted
+all records. Final: tokens A 14,500,000 (incl. 5,000,000 baseline), B 500,000 — conserved against 15,000,000 credited;
+native A 19,898,460,000, B 9,949,340,000. Fee rate 20,000 piconero/byte on stagenet (offline fakechain: 1,200,000) — stagenet
+fees are NOT mainnet fees. Confirmation waits 37-58 minutes per 10 blocks (low stagenet hashrate).
+Full txids, timings and the attempt files: runs/stagenet/STAGENET-RUN.txt, runs/stagenet/rehearsal-stagenet*.json.

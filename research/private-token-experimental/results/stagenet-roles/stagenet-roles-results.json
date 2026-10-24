@@ -87,10 +87,10 @@
     "amount": "4000000",
     "change": "1000000",
     "fee": "3024000000",
-    "txid": "8301110deae0bb749b3e8917b1e5e3d2805a1ed9e3595b56b69bd370001845d3",
-    "recordId": "080801df38a9a17fa51a1c8d81f0ce32ac64bde6d56e6b8e2c70bb0f97178fe0",
-    "provingMs": 32194,
-    "signMs": 81,
+    "txid": "54deba4ad9ced6760d36002e202b06132714805e45ddf7e9f5ec126ca051e93d",
+    "recordId": "aa61450be431ad2cc9422f5b2be267e60028e6e2f79fe9e49bedf6d7263ff1b1",
+    "provingMs": 36777,
+    "signMs": 90,
     "recordBytes": 996,
     "extraBytes": 1056,
     "nativeBytes": 2520
@@ -101,10 +101,10 @@
     "amount": "5500000",
     "change": "500000",
     "fee": "3024000000",
-    "txid": "fd8e79e6265902eeb16d5360f41ee5b29609cc97c2a9fa6fcb876d777d434a3a",
-    "recordId": "611e849d58299bf9e2a70c90f756d4ec33dda153c9e2680687f35367bc26b799",
-    "provingMs": 31304,
-    "signMs": 74,
+    "txid": "a7bcef1d7d61c984c24c2b9bdc7a3549ef28cb7c14080cc2165cf72b0fd05f8e",
+    "recordId": "390569a0b585d826cd31cf96d7032c01e51b208b8642fdcabe696d588aea8f78",
+    "provingMs": 33493,
+    "signMs": 78,
     "recordBytes": 996,
     "extraBytes": 1056,
     "nativeBytes": 2520
@@ -115,10 +115,10 @@
     "amount": "9000000",
     "change": "500000",
     "fee": "3024000000",
-    "txid": "9b67437a05cd1d788dcdd9ffcbcf9928e45b51bb5812f327a08232bd854cfe29",
-    "recordId": "61cc1305dfc06cbe26b238e185b45eb80f36a5070ade9155e94a6b26a2ad4d25",
-    "provingMs": 31416,
-    "signMs": 73,
+    "txid": "2351e3daebeb8cc44aab4c15aaadb3cce369b2709d6b0e6ac2087ec5a289caf3",
+    "recordId": "7a3a8611e197fcad2c6db33625b2d516c249668e876c2059b67dee6f72f3500c",
+    "provingMs": 32923,
+    "signMs": 78,
     "recordBytes": 996,
     "extraBytes": 1056,
     "nativeBytes": 2520
@@ -177,15 +177,15 @@
    ],
    "issuerPaid": [
     {
-     "txid": "9edc6da1f30f64d352d6786b63026f8eb83dded8062702ef2651b6f57b6c05fc",
+     "txid": "6d7a0b54052f5d5ecfcf352e69facfd9728574e1ec4cbe4b3b950dbd1b0539e8",
      "fee": "2938800000"
     },
     {
-     "txid": "8c3cffa1a25e54033a05da9c3fd68075be8cf8e9444cea8ce019be606958064c",
+     "txid": "5ea83b0bf527ab59b2fffbe3cfb27659b31f76044cb176b9f071f6ef842532c6",
      "fee": "2938800000"
     },
     {
-     "txid": "adfac47f8d41ddc7a6ae6ba781ee3396845872f86627f23e11caefe31bd69fbf",
+     "txid": "d0afdeed864c41f168a732f488c9393638f40301ceb15a590716a3c2a0f4d2e8",
      "fee": "2938800000"
     }
    ]

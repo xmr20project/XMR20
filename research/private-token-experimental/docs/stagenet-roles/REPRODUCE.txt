@@ -22,7 +22,16 @@ Prerequisites (already present in this workspace; not downloaded by these steps)
      node stagenet/rehearsal.mjs --mode local --start-height 40 --out runs/rehearsal-local.json
 5. Serve parameters statically (transport only; clients authenticate against their own manifest):
      node stagenet/param-server.mjs --dir params/stagenet-v0 --port 8951
-6. The REAL stagenet rehearsal is NOT reproducible from this workspace alone: it needs an owner-controlled synced
-   stagenet node and faucet coins. README-STAGENET.txt lists the exact commands and what would still have to be shown.
+6. The STAGENET rehearsal (EXECUTED 24 Oct 2026; evidence in runs/stagenet/) needs an owner-controlled synced stagenet
+   node and faucet coins; it was run exactly as follows (README-STAGENET.txt explains each step):
+     operations/stagenet-node-20261023/start.sh                       # isolated pruned node, RPC 127.0.0.1:38091 (hours to sync)
+     node stagenet/make-stagenet-manifest.mjs params/stagenet-v0 --start-height <node height> --out runs/stagenet/trusted-manifest.json
+     node stagenet/addresses.mjs --rpc http://127.0.0.1:38091 --manifest runs/stagenet/trusted-manifest.json \
+          --params-dir params/stagenet-v0 --wallet-dir runs/stagenet/wallets --out runs/stagenet/addresses.json
+     sh stagenet/faucet-claim.sh <each printed stagenet address> runs/stagenet/faucet-claims.jsonl   # 0.01 sXMR/address/hour
+     node stagenet/rehearsal.mjs --mode stagenet --rpc http://127.0.0.1:38091 --manifest runs/stagenet/trusted-manifest.json \
+          --params-dir params/stagenet-v0 --wallet-dir runs/stagenet/wallets --param-port 8954 --out runs/stagenet/rehearsal-stagenet.json
+   A rerun with the same --wallet-dir resumes: mined credits are reused and surplus notes are baselined (no replacement
+   credits). Results: runs/stagenet/rehearsal-stagenet.json and STAGENET-RUN.txt. The wallet roots are never published.
 
 Hashes: MANIFEST.sha256 (sha256sum -c MANIFEST.sha256 from the candidate root).

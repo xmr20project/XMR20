@@ -77,6 +77,15 @@ export async function runRehearsal(o){
   step('wallets',{A:{token:A.address(),native:A.nativeAddress()},B:{token:B.address(),native:B.nativeAddress()},walletDir,note:'roots stored in walletDir (0600), never logged'});
   const syncAll=async()=>{const r={};for(const [k,w] of Object.entries(wallets)){const t=Date.now();const s=await w.sync();r[k]={tip:s.tip,startHeight:s.startHeight,ms:Date.now()-t};}return r;};
   step('sync',await syncAll());
+  // ---- independent observation (stagenet only): a THIRD-PARTY public stagenet node is asked whether it saw each carrier
+  // in its pool (relay evidence independent of who mines) and in which block it was confirmed. Failures of that node are
+  // recorded, never fatal. The owner node's mining status is recorded so "mined by our own node" is never hidden.
+  const publicRpc=mode==='stagenet'?(o.publicRpc||'http://node.monerodevs.org:38089'):null;
+  const rawRpc=async(base,ep,body={})=>{const r=await closeFetch(base.replace(/\/$/,'')+'/'+ep,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(20000)});return r.json();};
+  const publicView=async(txid)=>{if(!publicRpc)return null;try{const j=await rawRpc(publicRpc,'get_transactions',{txs_hashes:[txid]});const t=(j.txs||[])[0];return t?{node:publicRpc,inPool:t.in_pool,blockHeight:t.block_height||null,confirmations:t.confirmations??null}:{node:publicRpc,seen:false,status:j.status};}catch(e){return {node:publicRpc,error:e.message.slice(0,120)};}};
+  const publicRelay=async(label,txid)=>{if(!publicRpc)return null;let v=null;for(let i=0;i<12;i++){v=await publicView(txid);if(v&&(v.inPool||v.blockHeight))break;await sleep(5000);}step('public-relay',{label,txid,...v,note:'third-party stagenet node asked whether it holds the carrier (relay evidence independent of our node)'});return v;};
+  const miningStatus=async()=>{if(mode!=='stagenet')return null;try{const m=await rawRpc(rpcUrl,'mining_status');const s={active:m.active,threads:m.threads_count,speed:m.speed,address:m.address||null};step('mining-status',{...s,note:s.active?'the OWNER node is mining stagenet blocks itself (CPU); blocks it finds are not independent third-party mining':'the owner node is not mining; every block comes from other stagenet miners'});return s;}catch(e){step('mining-status',{error:e.message.slice(0,120)});return null;}};
+  await miningStatus();
   // ---- block advancement: mine locally, WAIT on stagenet -------------------------------------------------------------
   const height=async()=>(await daemonRpc(rpcUrl,'get_info')).height-1;
   const advance=async(n,why)=>{const from=await height();const target=from+n;
@@ -95,19 +104,40 @@ export async function runRehearsal(o){
   if(missing.length)return await blocked('native XMR funding missing',{fund:missing,note:mode==='stagenet'?'send stagenet XMR from a faucet to each address, wait 10 confirmations, rerun with the same --wallet-dir':'fakechain funding failed'});
   // ---- credits -----------------------------------------------------------------------------------------------------
   const asset=await roles.assetId('uxmr20private-rehearsal');
-  const credits=[];for(const amount of CREDITS){let c=null;for(let attempt=0;attempt<4&&!c;attempt++){try{c=await roles.credit({to:A.address(),asset,amount,binding:hex(randomBytes(32))});}catch(e){if(!/native input|NotEnoughFunds|decoy selection/.test(e.message)||attempt===3)throw e;step('credit-retry',{amount,reason:e.message.slice(0,200)});await advance(1,'issuer input unlock / decoy retry');}}
-   credits.push({amount,txid:c.txid,recordId:c.recordId,issuerFee:c.fee,extraBytes:c.extraBytes,nativeBytes:c.nativeBytes});step('credit',{amount,txid:c.txid,recordId:c.recordId,issuerFee:c.fee,extraBytes:c.extraBytes,nativeBytes:c.nativeBytes,note:'issuer-funded carrier (issuer fee, not holder fee)'});}
-  await advance(CONFIRMATIONS,'credits confirm');step('sync',await syncAll());
-  const expectNotes=(k,amounts,why)=>{const st=wallets[k].status();const have=st.notes.filter(n=>n.asset===asset).map(n=>n.amount).sort();const want=[...amounts].sort();const ok=JSON.stringify(have)===JSON.stringify(want)&&(st.balances[asset]||'0')===String(sum(amounts));
-   const row=step('assert-notes',{wallet:k,why,expected:want,actual:have,balance:st.balances[asset]||'0',ok});if(!ok)throw Error(`balance/notes mismatch for ${k} (${why}): expected ${want} got ${have}`);return row;};
+  // Resume support (stagenet only; the local fakechain always starts empty): notes that already exist in A or B when the
+  // run starts come from EARLIER ATTEMPTS. A note whose amount matches a planned credit is REUSED (no replacement credit
+  // is issued, no second issuer fee); every other pre-existing note is a BASELINE note that this run never spends or counts.
+  const baseline={A:new Set(),B:new Set()};const baselineSum={A:0n,B:0n};const reused=[];let toIssue=[...CREDITS];
+  if(mode==='stagenet'){const pre=A.status().notes.filter(n=>n.asset===asset);
+   for(const n of pre){const i=toIssue.indexOf(n.amount);if(i>=0){toIssue.splice(i,1);reused.push({amount:n.amount,commitment:n.commitment,position:n.position});}else{baseline.A.add(n.commitment);baselineSum.A+=BigInt(n.amount);}}
+   for(const n of B.status().notes.filter(n=>n.asset===asset)){baseline.B.add(n.commitment);baselineSum.B+=BigInt(n.amount);}
+   const recs=Object.entries(A.status().records).map(([id,r])=>({recordId:id,txid:r.txid,height:r.height,status:r.status,kind:r.kind,confirmations:r.confirmations}));
+   if(reused.length||baseline.A.size||baseline.B.size)step('resume',{reusedCredits:reused,stillToIssue:toIssue,baselineA:[...pre.filter(n=>baseline.A.has(n.commitment)).map(n=>({amount:n.amount,commitment:n.commitment}))],baselineB:[...baseline.B],recordsSeenByA:recs,note:'notes left by earlier attempts: planned amounts are reused (no replacement credit, no extra issuer fee); the rest are baseline notes this run never spends or counts'});}
+  // On stagenet the issuer may hold only one or two faucet outputs: a credit's change relocks for CONFIRMATIONS blocks, so the
+  // retry budget there is one block per attempt for CONFIRMATIONS+3 attempts (the local fakechain keeps its 4 attempts).
+  const creditAttempts=mode==='local'?4:CONFIRMATIONS+3;
+  const credits=reused.map(r=>({...r,reused:true}));for(const amount of toIssue){let c=null;for(let attempt=0;attempt<creditAttempts&&!c;attempt++){try{c=await roles.credit({to:A.address(),asset,amount,binding:hex(randomBytes(32))});}catch(e){if(!/native input|NotEnoughFunds|decoy selection|unlocked|too young|rejected/i.test(e.message)||attempt===creditAttempts-1)throw e;step('credit-retry',{amount,attempt,reason:e.message.slice(0,200)});await advance(1,'issuer input unlock / decoy retry');}}
+   credits.push({amount,txid:c.txid,recordId:c.recordId,issuerFee:c.fee,extraBytes:c.extraBytes,nativeBytes:c.nativeBytes});step('credit',{amount,txid:c.txid,recordId:c.recordId,issuerFee:c.fee,extraBytes:c.extraBytes,nativeBytes:c.nativeBytes,note:'issuer-funded carrier (issuer fee, not holder fee)'});
+   await publicRelay('credit '+amount,c.txid);}
+  {// Confirmations: freshly issued credits need CONFIRMATIONS blocks; reused credits only need whatever is still missing.
+   let need=CONFIRMATIONS;if(toIssue.length===0){const confs=Object.values(A.status().records).filter(r=>r.status==='accepted').map(r=>Number(r.confirmations));need=Math.max(0,CONFIRMATIONS-(confs.length?Math.min(...confs):0));}
+   if(need>0)await advance(need,'credits confirm');}step('sync',await syncAll());
+  for(const c of credits){if(c.reused)continue;const v=await publicView(c.txid);if(v)step('public-confirmation',{label:'credit '+c.amount,txid:c.txid,...v});}
+  const expectNotes=(k,amounts,why)=>{const st=wallets[k].status();const have=st.notes.filter(n=>n.asset===asset&&!baseline[k].has(n.commitment)).map(n=>n.amount).sort();const want=[...amounts].sort();const ok=JSON.stringify(have)===JSON.stringify(want)&&(st.balances[asset]||'0')===String(sum(amounts)+baselineSum[k]);
+   const row=step('assert-notes',{wallet:k,why,expected:want,actual:have,balance:st.balances[asset]||'0',baselineExcluded:baselineSum[k].toString(),ok});if(!ok)throw Error(`balance/notes mismatch for ${k} (${why}): expected ${want} got ${have}`);return row;};
   expectNotes('A',CREDITS,'after three credits');expectNotes('B',[],'untouched');
   const indexerSaw=(pub,txid)=>(pub.events||[]).find(e=>e.txid===txid)?.result?.record||null;   // indexer scan: {tip, tipHash, state, events[{height,txid,result}], canonicalBlocks}
-  {const pub=await roles.indexerScan();const admitted=credits.map(c=>indexerSaw(pub,c.txid));step('indexer',{credits:credits.length,admittedByIndexer:admitted,tip:pub.tip});if(!admitted.every(a=>a==='accepted'))throw Error('indexer did not admit every credit: '+JSON.stringify(admitted));}
+  {const pub=await roles.indexerScan();const issued=credits.filter(c=>!c.reused);const admitted=issued.map(c=>indexerSaw(pub,c.txid));
+   const reusedAdmitted=reused.length?Object.values(A.status().records).filter(r=>r.status==='accepted').map(r=>({txid:r.txid,indexer:indexerSaw(pub,r.txid)})):[];
+   step('indexer',{credits:credits.length,issuedNow:issued.length,admittedByIndexer:admitted,reusedRecordsByIndexer:reusedAdmitted,tip:pub.tip});if(!admitted.every(a=>a==='accepted'))throw Error('indexer did not admit every credit: '+JSON.stringify(admitted));}
   // ---- a transfer with exact change, holder-paid fee, uncertain-broadcast re-send ------------------------------------
   const transfer=async(fromK,toK,amount,wantInputs,label)=>{const from=wallets[fromK],to=wallets[toK];const st=from.status();
-   const notes=st.notes.filter(n=>n.asset===asset).sort((a,b)=>BigInt(b.amount)>BigInt(a.amount)?1:-1).slice(0,wantInputs);
+   const notes=st.notes.filter(n=>n.asset===asset&&!baseline[fromK].has(n.commitment)).sort((a,b)=>BigInt(b.amount)>BigInt(a.amount)?1:-1).slice(0,wantInputs);
    if(notes.length!==wantInputs)throw Error(`${label}: wanted ${wantInputs} notes, have ${notes.length}`);
    const total=sum(notes.map(n=>n.amount));const change=total-BigInt(amount);if(change<0n)throw Error(label+': amount exceeds inputs');
+   // On stagenet the sender's only native output may still be locked (its change from the previous carrier unlocks CONFIRMATIONS
+   // blocks after inclusion, and inclusion is not deterministic as on the fakechain): wait block by block until something is unlocked.
+   for(let i=0;mode==='stagenet'&&BigInt(from.native().unlocked)===0n;i++){if(i>=CONFIRMATIONS+2)throw Error(label+': sender has no unlocked native XMR after waiting');step('wait-unlock',{label,wallet:fromK,locked:from.native().locked,outputs:from.native().outputs.length});await advance(1,label+' sender native unlock');await syncAll();}
    const nBefore=from.native();const totalBefore=BigInt(nBefore.unlocked)+BigInt(nBefore.locked);
    const tq=Date.now();const q=await from.quoteCarrier({kind:'send'});const quoteMs=Date.now()-tq;
    step('fee-review',{label,fee:q.fee,weight:q.weight,feePerWeight:q.feePerWeight,ringSize:q.ringSize,inputAmount:q.inputAmount,changeAmount:q.changeAmount,quoteMs,feeBasis:mode==='local'?'OFFLINE fakechain fee rate (not a real-network fee)':'stagenet dynamic fee rate (not a mainnet fee)',note:'the holder wallet pays this XMR fee from its own output; shown before approval'});
@@ -120,7 +150,9 @@ export async function runRehearsal(o){
    if(!pub.ok)throw Error(`${label}: native transaction refused by the daemon: ${pub.reason||pub.status} (token proof was valid locally)`);
    // Uncertain broadcast: the reply might have been lost; the SAME blob is re-sent. monerod accepts or reports it already known; never a second payment.
    const again=await from.publish(carrier.blob);const inPool=await from.inPool(carrier.txid);step('resend-same-blob',{label,txid:carrier.txid,ok:again.ok,status:again.status,reason:again.reason||null,inPool,note:'idempotent re-send after an uncertain broadcast; no new inputs, no second payment'});
+   await publicRelay(label,carrier.txid);
    await advance(CONFIRMATIONS,label+' confirms');step('sync',await syncAll());
+   {const v=await publicView(carrier.txid);if(v)step('public-confirmation',{label,txid:carrier.txid,...v});}
    const nAfter=from.native();const totalAfter=BigInt(nAfter.unlocked)+BigInt(nAfter.locked);const paid=(totalBefore-totalAfter).toString();
    const feeOk=paid===String(carrier.fee);step('fee-accounting',{label,wallet:fromK,nativeBefore:totalBefore.toString(),nativeAfter:totalAfter.toString(),paid,fee:String(carrier.fee),exact:feeOk,unlockedAfter:nAfter.unlocked,lockedAfter:nAfter.locked});
    if(!feeOk)throw Error(`${label}: native balance moved by ${paid}, fee was ${carrier.fee}`);
@@ -145,16 +177,18 @@ export async function runRehearsal(o){
   transfers.push(await transfer('B','A','9000000',2,'T3 two-input (recovered B)'));
   expectNotes('A',['500000','9000000'],'after T3');expectNotes('B',['500000'],'after T3');
   // ---- summary -----------------------------------------------------------------------------------------------------
-  report.summary={execution:report.execution,network:roles.network,startHeight:roles.startHeight,credits,transfers,final:{A:A.status().balances,B:B.status().balances,nativeA:native('A'),nativeB:native('B')},
-   fees:{basis:mode==='local'?'OFFLINE fakechain fee rate — not stagenet, not mainnet':'stagenet dynamic fee rate — not mainnet',holderPaid:transfers.map(t=>({label:t.label,fee:t.fee})),issuerPaid:credits.map(c=>({txid:c.txid,fee:c.issuerFee}))},
-   inputCounts:transfers.map(t=>t.inputs),recoveryTested:'roots in fresh instances (both wallets) between T1 and T2',uncertainBroadcast:'same blob re-sent after every publish',gates:report.gates};
+  report.summary={execution:report.execution,network:roles.network,startHeight:roles.startHeight,resumed:reused.length>0,credits,baselineNotesExcluded:{A:baselineSum.A.toString(),B:baselineSum.B.toString()},transfers,final:{A:A.status().balances,B:B.status().balances,nativeA:native('A'),nativeB:native('B')},
+   fees:{basis:mode==='local'?'OFFLINE fakechain fee rate — not stagenet, not mainnet':'stagenet dynamic fee rate — not mainnet',holderPaid:transfers.map(t=>({label:t.label,fee:t.fee})),issuerPaid:credits.filter(c=>!c.reused).map(c=>({txid:c.txid,fee:c.issuerFee}))},
+   inputCounts:transfers.map(t=>t.inputs),recoveryTested:'roots in fresh instances (both wallets) between T1 and T2',uncertainBroadcast:'same blob re-sent after every publish',
+   independentObservation:publicRpc?{node:publicRpc,relay:report.steps.filter(s=>s.name==='public-relay').map(s=>({label:s.label,inPool:s.inPool??null,blockHeight:s.blockHeight??null,error:s.error||null})),confirmed:report.steps.filter(s=>s.name==='public-confirmation').map(s=>({label:s.label,blockHeight:s.blockHeight??null,confirmations:s.confirmations??null,error:s.error||null}))}:null,
+   ownerNodeMining:report.steps.filter(s=>s.name==='mining-status').map(s=>({active:s.active??null,threads:s.threads??null})),gates:report.gates};
   step('done',{transfers:transfers.length,inputs:report.summary.inputCounts});
  }catch(e){report.failed={message:e.message,stack:(e.stack||'').split('\n').slice(0,6).join('\n')};step('failed',{message:e.message});}
  finally{for(const w of Object.values(wallets)){try{w.close();}catch{}}await stop();report.finishedAt=new Date().toISOString();await save();}
  return report;
 }
 if(process.argv[1]===fileURLToPath(import.meta.url)){const a=process.argv.slice(2);const opt=(k,d=null)=>{const i=a.indexOf('--'+k);return i>=0?a[i+1]:d;};
- const r=await runRehearsal({mode:opt('mode'),rpc:opt('rpc'),params:opt('params'),paramsDir:opt('params-dir'),manifest:opt('manifest'),walletDir:opt('wallet-dir'),out:opt('out'),wasm:opt('wasm'),startHeight:opt('start-height'),maxWaitMs:opt('max-wait-ms')?Number(opt('max-wait-ms')):undefined,
+ const r=await runRehearsal({mode:opt('mode'),rpc:opt('rpc'),publicRpc:opt('public-rpc'),params:opt('params'),paramsDir:opt('params-dir'),manifest:opt('manifest'),walletDir:opt('wallet-dir'),out:opt('out'),wasm:opt('wasm'),startHeight:opt('start-height'),maxWaitMs:opt('max-wait-ms')?Number(opt('max-wait-ms')):undefined,
   ports:{rpcPort:Number(opt('rpc-port','30081')),p2pPort:Number(opt('p2p-port','30080')),paramPort:Number(opt('param-port','8951'))}});
  console.log(JSON.stringify({mode:r.mode,execution:r.execution,blocked:r.blocked?.reason||null,failed:r.failed?.message||null,transfers:r.summary?.transfers?.length||0,steps:r.steps.length}));
  process.exit(r.failed?1:r.blocked?3:0);}

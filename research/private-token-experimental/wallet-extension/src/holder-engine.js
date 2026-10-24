@@ -35,7 +35,7 @@ export function createChainScanner(engine,{rpc,fetch:f=globalThis.fetch,onProgre
  const base=Math.max(0,Number(startHeight)||0);const known=[];// index = height-base -> hash
  let applied=0,received=0;
  async function reset(){engine.call({op:'reset'});known.length=0;applied=0;received=0;}
- async function seed(){if(base===0)return;const d=await json('get_output_distribution',{amounts:[0],from_height:0,to_height:base-1,cumulative:true,binary:false});const row=(d.distributions||[])[0];const start=row?.start_height||0;const i=base-1-start;const count=!row||i<0?0:Number(row.distribution[Math.min(i,row.distribution.length-1)]);engine.call({op:'nativeStart',height:base,rctOutputs:count});}
+ async function seed(){if(base===0)return;const d=await json('get_output_distribution',{amounts:[0],from_height:base-1,to_height:base-1,cumulative:true,binary:false});/* one cumulative entry (count of RingCT outputs through base-1); asking from height 0 would return millions of entries on stagenet */const row=(d.distributions||[])[0];const start=row?.start_height||0;const i=base-1-start;const count=!row||i<0?0:Number(row.distribution[Math.min(i,row.distribution.length-1)]);engine.call({op:'nativeStart',height:base,rctOutputs:count});}
  async function sync(){
   const info=await json('get_info');if(network==='stagenet'){if(info.nettype!=='stagenet')throw Error('Stagenet daemon required by the manifest (daemon reports '+info.nettype+').');}else if(info.nettype!=='fakechain'||info.offline!==true)throw Error('Offline fakechain required for this test build.');
   const tip=info.height-1;
