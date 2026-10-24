@@ -114,6 +114,10 @@ pub struct Wallet {
     // under the same explicit network (set by the trusted manifest, never by the daemon).
     network: String,
     start_height: usize,
+    // Consensus spend locks (found on stagenet, invisible on the deterministic fakechain): an output received
+    // at height h is spendable from block h+10 (coinbase h+60). Keyed by key image; `tip` is the last scanned block.
+    maturity: BTreeMap<[u8; 32], (usize, bool)>,
+    tip: usize,
 }
 impl Wallet {
     pub fn new() -> Self {
@@ -130,6 +134,8 @@ impl Wallet {
             spent: BTreeSet::new(),
             network: String::from("offline-fakechain"),
             start_height: 0,
+            maturity: BTreeMap::new(),
+            tip: 0,
         }
     }
     // SYNTHETIC keys only: used by the crash/restore rehearsal. Never for a real wallet.
@@ -164,6 +170,7 @@ impl Wallet {
         // A start height above the tip simply means nothing is scanned yet (the pool begins in the future).
         let mut previous = if first <= tip { r.block_by_number(first - 1).await?.hash() } else { [0u8; 32] };
         let mut recovered = BTreeMap::new();
+        let mut maturity = BTreeMap::new();
         for h in first..=tip {
             let b = r.block_by_number(h).await?;
             ensure!(
@@ -171,6 +178,7 @@ impl Wallet {
                 "Native chain changed during scan"
             );
             previous = b.hash();
+            let coinbase_txid = b.miner_transaction().hash();
             let scan = r.expand_to_scannable_block(b).await?;
             for tx in &scan.transactions {
                 for i in images(tx) {
@@ -181,8 +189,10 @@ impl Wallet {
                 .scan(scan)?
                 .additional_timelock_satisfied_by(tip, 0)
             {
+                let ki = image(self.secret(&o));
+                maturity.insert(ki, (h, o.transaction() == coinbase_txid));
                 self.history.insert(o.key().compress().to_bytes(), o.clone());
-                recovered.insert(image(self.secret(&o)), o);
+                recovered.insert(ki, o);
             }
         }
         ensure!(
@@ -192,7 +202,16 @@ impl Wallet {
         // `spent` is deliberately never pruned: a rollback can return an output
         // this process already used in a carrier that may still be rebroadcast.
         self.owned = recovered;
+        self.maturity = maturity;
+        self.tip = tip;
         Ok(())
+    }
+    // Monero's consensus spend lock: spendable in block tip+1 when tip + 1 >= h + 10 (coinbase: + 60).
+    fn mature(&self, ki: &[u8; 32]) -> bool {
+        match self.maturity.get(ki) {
+            Some((h, coinbase)) => self.tip + 1 >= h + if *coinbase { 60 } else { 10 },
+            None => false,
+        }
     }
     // The wallet's own one-time output keys (public data the owner already
     // knows) with amounts. Used to build legacy lots from REAL wallet outputs.
@@ -232,7 +251,12 @@ impl Wallet {
         let (ki, out) = self
             .owned
             .iter()
-            .filter(|(i, o)| !self.spent.contains(*i) && o.commitment().amount > 10_000_000_000)
+            // Input-selection policy (not validation): any unspent output above 0.001 XMR can carry the
+            // 1-piconero-class self-payment plus the fee. Stagenet faucet outputs are exactly 0.01 XMR,
+            // so the earlier "> 0.01 XMR" lab threshold would have excluded every real test output.
+            .filter(|(i, o)| {
+                !self.spent.contains(*i) && self.mature(i) && o.commitment().amount > 1_000_000_000
+            })
             .max_by_key(|(_, o)| o.commitment().amount)
             .map(|(i, o)| (*i, o.clone()))
             .context("No mature unreserved native input")?;
