@@ -1,0 +1,8 @@
+ATTEMPT 3 — labRoles-inplace: rebuilt IN the recorded target directory (research/privacy-stagenet-roles-20261023-lab/target), no RUSTFLAGS — REPRODUCED byte-for-byte
+precondition the recorded target directory held only the final artifact(s) (no deps/fingerprints), so every unit was compiled again;
+             the recorded binary was copied to this folder first (xmr20-integration-lab.recorded) and would have been restored on mismatch.
+command      cd research/privacy-stagenet-roles-20261023-lab && env -u RUSTFLAGS cargo build --release --offline --locked
+toolchain    rustc 1.99.0 (b940084d7 2026-09-28) aarch64-apple-darwin; cargo 1.99.0 (5f94df478)
+started      2026-10-25T14:13:28Z   finished 2026-10-25T14:14:52Z   Finished `release` profile [optimized] target(s) in 1m 23s
+recorded     375a49e2d0208acd35d25d41ad158cd16dbcc28d50ffca360417cef9905a160e
+produced     375a49e2d0208acd35d25d41ad158cd16dbcc28d50ffca360417cef9905a160e; cmp: 0 differing bytes

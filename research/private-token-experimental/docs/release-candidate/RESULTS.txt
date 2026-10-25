@@ -262,7 +262,48 @@ test-v1 manifest, compiled Solana custody in LiteSVM. EXECUTED ON STAGENET = ret
   Unverified: nothing within the suite's scope; outside it remain the items of section 7. Still a functional suite on synthetic
   chains and LiteSVM — not an audit, not a production rehearsal; no verdict in RELEASE-CHECKLIST 6 changes.
 
+6c. LOCKED BUILD RECIPE — ALL FOUR PINNED BINARIES REPRODUCED BYTE-FOR-BYTE (25 Oct 14:07-14:23 UTC; reproduce-builds.mjs;
+    runs/repro-builds/)
+  Why: run 5 records a content identity for the engine wasm, both lab binaries and the custody program, but until now nothing
+  tied those digests to source. The labs' own binary-manifest.json files still name a 22 Oct digest (acf4dca3…) that matches
+  neither current binary — a stale record, kept as found in those earlier candidates.
+  Source closure (cargo metadata --offline --locked --filter-platform): lab roles / lab backend = the lab crate + xmr20-multi-input-lab
+  (privacy-multi-input-20261022) + vendored monero-wallet 0.2.0 (proof-of-concepts/native-market-local/vendor) + vendored
+  penumbra-sdk-shielded-pool 2.1.1 (privacy-single-tx-20261022/vendor); 360 packages. Engine wasm = holder-wasm crate
+  (privacy-stagenet-roles-20261023/holder-wasm) + vendored getrandom 0.2.17 + the same two vendored crates; 329 packages.
+  Custody program = core-monero-send/program; 166 packages for sbpf-solana-solana. Every local file is hashed in report.json.
+  Attempts (all retained under runs/repro-builds/<key>*/attempt*.txt with logs and produced artifacts):
+    1  fresh CARGO_TARGET_DIR, no flags             labs: same size, ~910,000 differing bytes; the ONLY differing strings are the two
+                                                     monero-bulletproofs OUT_DIR paths (…/build/monero-bulletproofs-c534f740…/out/
+                                                     generators*.rs) which carry the target directory; the length change shifts the
+                                                     string table, and LC_UUID is a content hash.
+    2  fresh target dir + --remap-path-prefix        labs 125 / wasm 30 differing bytes: only the <unit hash> segment of that OUT_DIR
+       (new dir -> recorded dir)                     (c534f740… -> 0bfa9d17…; wasm 3394833e… -> 214ed360…) — cargo includes RUSTFLAGS in
+                                                     the build-script unit hash, so a remap flag changes the very segment it pins.
+       custody program                               REPRODUCED a8b7c791… (0 differing bytes): it embeds only 8 registry paths under
+                                                     the removed CARGO_HOME=<base>/.cargo-cache, which the remap restores.
+    3  rebuilt IN the recorded target directory,     REPRODUCED: lab roles 375a49e2… (1m 23s), lab backend 3fb8842c… (1m 23s), engine
+       no RUSTFLAGS (recorded artifact copied aside   wasm 2c866f39… (1m 35s); cmp 0 differing bytes each. The recorded directories held
+       first; only the artifact was left in the dir)  only the final artifact, so every unit was compiled again.
+  Recipe (reproduce-builds.mjs): inplace mode for the three path-dependent artifacts (copy recorded aside, prune, build, compare,
+  restore on mismatch, prune back), remap mode for the custody program; toolchain rustc 1.99.0 (b940084d7) / cargo 1.99.0 for host
+  and wasm32, platform-tools v1.57 (rustc 1.95.0-dev ae660768a, LLD 22.1.2 anza) for sbpf. Output: BUILD-RECIPE.txt + report.json.
+  Script runs (the script's own failures are retained, not hidden):
+    run 1 14:18Z  labs + wasm REPRODUCED (37/36/46 s); custody ERROR — cargo metadata was called without --manifest-path (program/Cargo.toml
+                  is one level below the build cwd). report-run1-custody-metadata-error.json, BUILD-RECIPE-run1.txt, reproduce-builds-run1.log.
+    run 2 14:20Z  labs + wasm REPRODUCED; custody DIFFERENT c60f06bb… — the env helper deleted RUSTFLAGS AFTER merging the explicit remap
+                  flag, so the build ran unremapped and embedded ~/.cargo/registry paths (strings diff = exactly those 8 paths).
+                  report-run2-custody-flags-dropped.json, BUILD-RECIPE-run2.txt, reproduce-builds-run2.log.
+    run 3 14:21:11-14:23:23Z  ALL FOUR REPRODUCED, exit 0: labRoles 375a49e2… (38 s; 161 source files, digest d5c8d635…), labBackend
+                  3fb8842c… (35 s; 161 files, 9b4de6ba…), wasm 2c866f39… (46 s; 118 files, d5f96c58…), custodyProgram a8b7c791… (11 s; 5 files,
+                  1c30e725…). report.json (per-file source hashes), BUILD-RECIPE.txt, reproduce-builds-run3.log. The lab target directories
+                  were pruned back to their artifacts (13 M / 19 M / 4.8 M) and the recorded binaries in them are byte-identical to before.
+  Meaning and limits: the four recorded digests ARE the compiled form of the recorded sources with the recorded toolchain, on this
+  machine. They are not path-independent (same absolute locations required), not published, and not rebuilt by anyone else;
+  a remapped engine build is a new digest and re-runs the suite. No verdict changes.
+
 7. WHAT IS NOT DONE (see RELEASE-CHECKLIST 2-5 and RELEASE-GATES)
   real cutover snapshots per token; production adapters and live-program rehearsal; reversible payout escrow; bundled trade
-  primitive; ceremony tooling and locked reproducible builds; phone proving measurements; wallet-side second node; marketplace
-  integration (gated); independent review and production parameters (none exist). Verdicts: NO-GO for real funds.
+  primitive; ceremony tooling; path-independent reproducible builds with published digests and an independent rebuild; phone
+  proving measurements; wallet-side second node; marketplace integration (gated); independent review and production parameters
+  (none exist). Verdicts: NO-GO for real funds.

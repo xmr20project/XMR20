@@ -32,6 +32,10 @@ RUN
                                          # identical; origin (run id, time, build) is kept through reuse; no mtimes, no logs
   node --test integration-suite.test.mjs # runner self-test (suite-provenance.mjs): changed dependency/binary/parameters invalidate
                                          # reuse even with preserved timestamps; --quick/--only never claim completion
+  node reproduce-builds.mjs [--only key,…] # locked build recipe: rebuilds the engine wasm, both lab binaries (in their recorded target
+                                         # directories, no RUSTFLAGS) and the custody program (platform-tools v1.57, registry remapped)
+                                         # from source, offline and --locked, and compares byte-for-byte with the digests in
+                                         # runs/integration-report.json -> runs/repro-builds/BUILD-RECIPE.txt + report.json (~7 min)
   Every suite streams to runs/suite-logs/<file>.log, is bounded in time (its whole process group is terminated at the bound) and
   echoes failures plus one heartbeat per minute; the report is runs/integration-report.json (build identity, per-row input digests,
   executed vs reused rows with their origin, and a completion claim that is only "full suite" when every row of the full suite passed).

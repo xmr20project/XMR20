@@ -1,0 +1,7 @@
+ATTEMPT 3 — wasm: rebuilt IN the recorded target directory (research/privacy-stagenet-roles-20261023/holder-wasm/target), no RUSTFLAGS
+precondition the recorded target directory held only xmr20_holder_wasm.wasm, so every unit was compiled again; the recorded wasm was copied here first.
+command      cd research/privacy-stagenet-roles-20261023/holder-wasm && env -u RUSTFLAGS cargo build --release --offline --locked --target wasm32-unknown-unknown
+toolchain    rustc 1.99.0 (b940084d7 2026-09-28), target wasm32-unknown-unknown; cargo 1.99.0 (5f94df478); profile.release opt-level 3, lto fat, codegen-units 1
+started      2026-10-25T14:13:28Z   finished 2026-10-25T14:15:04Z   Finished `release` profile [optimized] target(s) in 1m 35s
+recorded     2c866f39e64f40a209842fb5c4d59d6fe2bbf9ad910dd9aed65bc06fb396a86f (5,035,317 B)
+produced     2c866f39e64f40a209842fb5c4d59d6fe2bbf9ad910dd9aed65bc06fb396a86f; cmp: 0 differing bytes

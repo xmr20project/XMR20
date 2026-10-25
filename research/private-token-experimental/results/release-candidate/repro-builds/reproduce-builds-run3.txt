@@ -1,0 +1,18 @@
+== labRoles (inplace)
+   source files 161 digest d5c8d6359cfa0d46… ; building…
+   REPRODUCED recorded 375a49e2d0208acd… produced 375a49e2d0208acd… in 38s
+== labBackend (inplace)
+   source files 161 digest 9b4de6bafedbb358… ; building…
+   REPRODUCED recorded 3fb8842c468671fd… produced 3fb8842c468671fd… in 35s
+== wasm (inplace)
+   source files 118 digest d5f96c58083b5ce0… ; building…
+   REPRODUCED recorded 2c866f39e64f40a2… produced 2c866f39e64f40a2… in 46s
+== custodyProgram (remap)
+   source files 5 digest 1c30e72519fda7a4… ; building…
+   REPRODUCED recorded a8b7c7919485d887… produced a8b7c7919485d887… in 11s
+
+reproduced: labRoles, labBackend, wasm, custodyProgram
+different: none
+errors: none
+report: research/privacy-release-candidate-20261025/runs/repro-builds/report.json
+exit 0
