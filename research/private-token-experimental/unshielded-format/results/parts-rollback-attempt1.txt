@@ -1,0 +1,26 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✖ two-part private transfers: rollbacks of one or both parts, conflicting spend, reversed arrival, replay equality (58263.866375ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 60035.287875
+
+✖ failing tests:
+
+test at parts-rollback.test.mjs:24:1
+✖ two-part private transfers: rollbacks of one or both parts, conflicting spend, reversed arrival, replay equality (58263.866375ms)
+  Error: Distribution must cover heights 0..=338 (got 340 entries)
+      at finish (file://<workspace>/research/token-format-unshielded-20261025/wallet-extension/src/holder-engine.js:15:86)
+      at file://<workspace>/research/token-format-unshielded-20261025/wallet-extension/src/holder-engine.js:18:90
+      at guard (file://<workspace>/research/token-format-unshielded-20261025/wallet-extension/src/holder-engine.js:16:30)
+      at Object.call (file://<workspace>/research/token-format-unshielded-20261025/wallet-extension/src/holder-engine.js:18:24)
+      at Object.quote (file://<workspace>/research/token-format-unshielded-20261025/wallet-extension/src/holder-carrier.js:31:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async carry (file://<workspace>/research/token-format-unshielded-20261025/parts-rollback.test.mjs:37:48)
+      at async TestContext.<anonymous> (file://<workspace>/research/token-format-unshielded-20261025/parts-rollback.test.mjs:47:12)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3)

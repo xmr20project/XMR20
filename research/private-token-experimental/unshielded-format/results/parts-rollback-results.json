@@ -1,0 +1,91 @@
+{
+ "execution": "SIMULATED (offline fakechain, roles binary, LiteSVM custody); Penumbra published keys",
+ "cases": [
+  {
+   "at": "2026-10-25T21:27:14.716Z",
+   "name": "a: rollback of part B only; re-published identical B completes once",
+   "a": "ac120eb89edbbc07d409fc69e8d872554b898afff63153704be6560aa10f7835",
+   "b": "5268e8ef7c884b988a9c331e0f0fdc24516f50a8f5140cdfa9a04d770db5491d"
+  },
+  {
+   "at": "2026-10-25T21:27:50.937Z",
+   "name": "b: rollback of both parts; both identical carriers re-published; completed once",
+   "a": "5a07088506cd714fc838c0f714df8807afcc9dacb074c692be77021918428016",
+   "b": "609e2a23949e50f5ac4123675f3600de8ef43cf647d6fc9e4897c843ee770511"
+  },
+  {
+   "at": "2026-10-25T21:28:59.469Z",
+   "name": "c: conflicting spend — op4 completed first; op3 half can never complete (lastError: Spent token input)",
+   "a3": "71d558a441324de16c49b88eea0e7506af069d33afbe63ae59b4f2950f544203",
+   "a4": "72df2d41bf247a9303ddfad76cb702e7b978b02190173ff9e9a321281feca13d",
+   "b4": "c40d5040adbcbbfb45b27876cfd4019b353d865db12b33a1ff41264c0f2cef31"
+  },
+  {
+   "at": "2026-10-25T21:28:59.740Z",
+   "name": "c2: stale part B mined, inert",
+   "b3": "940e79c403bb50c724a26b57c3753c6c9116a714d946d85e502c75c0547ee0de"
+  },
+  {
+   "at": "2026-10-25T21:29:34.609Z",
+   "name": "d: reversed arrival completes at A; duplicate A inert",
+   "b5": "02db0d5c3dcd55fb8406d821610d67cb834cb1796b0eab100d6557c9afa198bb",
+   "a5": "ee40c51d5c4c58b7c8974fb6a8573e1d21873b21ff2190c4977b0dfd4ee580ae",
+   "dup": "cb8bb910a4f0b18ca2c5aab91314372bb2a5c09f01dd50269f0c6a912ab1eef6"
+  }
+ ],
+ "final": {
+  "pool": {
+   "accepted": 7,
+   "burned": {},
+   "completedOperations": 4,
+   "credits": [
+    {
+     "amount": "98500000",
+     "asset": "3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f",
+     "binding": "4231e43235a091826b8038d6732b0eeed84a0ae4efd3ee1e72001a3b1ba9562f",
+     "height": 327,
+     "kind": 1,
+     "owner": "e003970c0c15f44e35ea0d09abae03f1de6806188e36848d7da83e3ce36ffb01",
+     "txid": "0d27c43f0e15e6ec230ddf8182130e913cc387160a0331e013597749256c5373"
+    }
+   ],
+   "invariant": {
+    "ok": true,
+    "rows": [
+     {
+      "asset": "3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f",
+      "ok": true,
+      "outstanding": "98500000",
+      "publicSupply": "8500000",
+      "shieldedSupply": "90000000"
+     }
+    ]
+   },
+   "minted": {
+    "3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f": "98500000"
+   },
+   "nullifiers": 12,
+   "outstanding": {
+    "3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f": "98500000"
+   },
+   "pendingParts": 3,
+   "publicNotes": 1,
+   "publicSupply": {
+    "3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f": "8500000"
+   },
+   "redemptions": [],
+   "rejected": 0,
+   "root": "71086a3d142626f57d0c965069d13aab5122df7c85b4a898e1118724de6b8c10",
+   "shieldedNotes": 10,
+   "shieldedSupply": {
+    "3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f": "90000000"
+   }
+  },
+  "A": {
+   "3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f": "60000000"
+  },
+  "B": {
+   "3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f": "30000000"
+  }
+ }
+}

@@ -1,0 +1,33 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+{"step":"deposit credited publicly","net":"98500000","credit":"3091acfe83fcb7d832bb72a78b078f591ee2e65975dbfbccbce5e37137971cf6"}
+{"step":"public transfer 40 X (1 tx)","txid":"7a6c9ad12c1981112375d34a075181e72ec66fb78edc513f487db2ed9f891d12","fee":"2071200000","extraBytes":262}
+{"step":"shield 50 X (1 tx)","txid":"2c86aed10c5b2284f33641bcbab24abd6cfcc8594b6ccd54eda37313dc846386","fee":"2598000000","provingMs":3011}
+✖ unshielded-by-default: public credit, public send, shield, 2-tx private send, unshield, burn+payout, migration, recovery, rollback, disclosure audit (55138.195958ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 57039.063958
+
+✖ failing tests:
+
+test at flow.test.mjs:35:1
+✖ unshielded-by-default: public credit, public send, shield, 2-tx private send, unshield, burn+payout, migration, recovery, rollback, disclosure audit (55138.195958ms)
+  AssertionError [ERR_ASSERTION]: planned length equals the built record
+  
+  932 !== 900
+  
+      at carry (file://<workspace>/research/token-format-unshielded-20261025/flow.test.mjs:51:78)
+      at TestContext.<anonymous> (file://<workspace>/research/token-format-unshielded-20261025/flow.test.mjs:88:18)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 932,
+    expected: 900,
+    operator: 'strictEqual'
+  }
