@@ -1,0 +1,51 @@
+DRAFT ANNOUNCEMENT — XMR20 KEY CEREMONY, CALL FOR PARTICIPANTS (written 25 Oct 2026; NOT TO BE POSTED YET)
+Blocking before posting: independent security review completed, circuits frozen, tool commit and circuit fingerprints filled in,
+coordinator service and one-line installer built and tested, dates chosen by the owner. Placeholders are in <angle brackets>.
+
+------------------------------------------------------------------------------------------------------------------
+
+**Help us lock the keys for XMR20 private tokens — 30 minutes, no crypto knowledge needed**
+
+XMR20 is adding private token transfers on Monero. Private transfers are checked with zero-knowledge proofs, and proofs need a set
+of public "parameter" files that every wallet uses.
+
+**The problem.** Making those files creates a secret as a by-product. Anyone who kept that secret could print fake tokens forever,
+and nobody could ever detect it. If our team made the files alone, you would have to trust us that we deleted the secret. We do
+not think you should have to.
+
+**The fix.** The files are made by a chain of people. Each person adds their own random secret and then throws it away. The
+result is safe as long as at least ONE person in the chain really deleted theirs. The more unrelated people take part, the less
+anyone has to trust any single one of them, including us. This is how Zcash, Penumbra, RISC Zero and others made their keys.
+
+**What you would do (once, about 30 minutes, mostly waiting):**
+1. Paste one line into your terminal (Mac or Linux). It downloads our small client (about 7 MB).
+2. Run `xmr20-ceremony contribute` and type a long random sentence when asked. The client joins the queue, downloads the current
+   state (about 60 MB), does the maths for 15 to 30 minutes, and uploads your result (about 60 MB).
+3. It prints two short hashes. Post them on your own X, GitHub or Mastodon with the words "XMR20 ceremony" so nobody, including
+   us, can later swap your step out.
+4. Reboot your machine and delete the folder. Keep the hashes.
+
+You never touch funds, keys or wallets. Nothing keeps running afterwards. You are not vouching for XMR20; you are only adding
+randomness and deleting it.
+
+**If you are technical:** please build the client from source instead of using the installer (`git clone <repo> && cargo build
+--release`, about 10 minutes). Participants who build from source are the ones that make the result trustworthy, because they do
+not rely on any code we served. We would love at least a few of you.
+
+**How you check us afterwards.** When the ceremony closes we publish every contribution and the final files. Anyone can run
+`xmr20-ceremony verify` from a fresh checkout: it rebuilds the circuits from source, replays every step and confirms the published
+keys match. Your hashes will be in the published record.
+
+**Details**
+- Dates: <start> to <end> (queue, one person at a time)
+- Tool source and commit: <repo> @ <commit>
+- Circuit fingerprints (compare before you start): normal <digest>, boundary <digest>
+- Coordinator: <url>; questions in <channel>
+- Independent review of the code: <firm>, report <link>
+
+Thank you. Every contribution makes the keys harder to abuse, and your name in the transcript is permanent.
+
+------------------------------------------------------------------------------------------------------------------
+Shorter version for X (under 280 characters):
+We're running the key ceremony for XMR20 private tokens. Paste one line, wait 30 min, post a hash. No crypto knowledge, no funds,
+nothing stays running. Each participant makes the keys harder for anyone, including us, to abuse. Details: <link>

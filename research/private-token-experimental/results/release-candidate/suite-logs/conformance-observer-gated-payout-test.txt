@@ -3,7 +3,7 @@ TAP version 13
 # Subtest: independent observation gates payout admission
 ok 1 - independent observation gates payout admission
   ---
-  duration_ms: 230587.375875
+  duration_ms: 239292.801167
   type: 'test'
   ...
 1..1
@@ -14,4 +14,4 @@ ok 1 - independent observation gates payout admission
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 232368.788417
+# duration_ms 241092.561458

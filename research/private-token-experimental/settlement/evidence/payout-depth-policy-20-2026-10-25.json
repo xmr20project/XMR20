@@ -1,0 +1,93 @@
+{
+ "execution": "SIMULATED (offline zero-peer fakechain; controlled /pop_blocks rollbacks; LiteSVM Solana custody)",
+ "policy": {
+  "confirmations": 20,
+  "provisional": true,
+  "note": "risk policy, not finality"
+ },
+ "steps": [
+  {
+   "at": "2026-10-25T17:34:45.845Z",
+   "name": "case1: burn published and mined (1 confirmation)",
+   "txid": "454915f473d15acd0cd4320d71fe5ddfe28184d0adbba33a38746abb670e2d00"
+  },
+  {
+   "at": "2026-10-25T17:34:46.960Z",
+   "name": "case1a: shallow rollback (5 < burn depth 12): burn canonical, confirmations 12 -> 8, still refused, no incident",
+   "rollback": {
+    "before": 421,
+    "after": 416,
+    "popped": 5
+   }
+  },
+  {
+   "at": "2026-10-25T17:34:47.612Z",
+   "name": "case1b: rollback 9 (> burn depth 8, < D) before payout -> burn vanished, incident, paused, nothing paid",
+   "rollback": {
+    "before": 417,
+    "after": 408,
+    "popped": 9
+   },
+   "status": "orphaned"
+  },
+  {
+   "at": "2026-10-25T17:34:48.750Z",
+   "name": "case1b: re-mined, resumed, paid exactly once at D confirmations of the NEW height (D-1 refused)",
+   "paidNet": "9850000"
+  },
+  {
+   "at": "2026-10-25T17:35:12.323Z",
+   "name": "case2: burn published and mined (1 confirmation)",
+   "txid": "3e3d37e1f36554bdb49b48d482d679f44200cc2e2f0398aac19e5e112042017a"
+  },
+  {
+   "at": "2026-10-25T17:35:13.185Z",
+   "name": "case2: refused at D-1, paid at exactly D",
+   "paidNet": "9850000"
+  },
+  {
+   "at": "2026-10-25T17:35:36.710Z",
+   "name": "case3: burn published and mined (1 confirmation)",
+   "txid": "89fcf6de9a951235322a3635724406a3b49b68eaefb11329838118a4d22a5825"
+  },
+  {
+   "at": "2026-10-25T17:35:38.384Z",
+   "name": "case3: rollback beyond the depth before payout -> detected, paused, nothing paid, backing intact",
+   "rollback": {
+    "before": 474,
+    "after": 448,
+    "popped": 26
+   },
+   "status": "orphaned"
+  },
+  {
+   "at": "2026-10-25T17:35:39.210Z",
+   "name": "case3: re-mined and paid once after D fresh confirmations",
+   "paidNet": "9850000"
+  },
+  {
+   "at": "2026-10-25T17:36:02.718Z",
+   "name": "case4: burn published and mined (1 confirmation)",
+   "txid": "42b5deffde70b80c2578749c7ba1f0cb70c3f5c8134e4750e1a940836f70c783"
+  },
+  {
+   "at": "2026-10-25T17:36:04.140Z",
+   "name": "case4: COUNTEREXAMPLE PRESERVED — payout final, burn gone after a rollback deeper than D, backing short by the paid amount, operator halted",
+   "rollback": {
+    "before": 489,
+    "after": 468,
+    "popped": 21
+   },
+   "shortfall": "10000000"
+  }
+ ],
+ "summary": {
+  "confirmations": 20,
+  "case1a": "shallow rollback below the burn depth: burn canonical, confirmations re-counted, still refused, no incident",
+  "case1b": "rollback deeper than the burn but below D, before payout: detected (burnVanished), paused, re-mined, resume, refused at D-1, paid once at D of the new height",
+  "case2": "at depth: refused at D-1, paid at D",
+  "case3": "beyond depth before payout: detected, paused, nothing paid, backing intact, paid once after fresh D",
+  "case4": "beyond depth AFTER payout: LOSS preserved (paidWithoutBurn, halted, shortfall = paid amount); no reserve or insurance claimed",
+  "limits": "controlled rollbacks on an offline chain; a mined heavier fork, network partitions and real reorganisation probabilities are not modelled"
+ }
+}

@@ -1,0 +1,3090 @@
+{
+ "format": "XMR20-MIGRATION-SNAPSHOT-1",
+ "kind": "public-data reconciliation (totals and identities); NOT a per-holder cutoff snapshot",
+ "at": "2026-10-25T17:03:08.839Z",
+ "sources": {
+  "api": {
+   "path": "runs/xmr20-tokens-api-raw.json",
+   "sha256": "b5171f5cf8d559c8f143ed1fca24f90a7ad655f0480ccd14fc727e42e6d43e88",
+   "note": "public tokens API as recorded (read-only)"
+  },
+  "catalog": {
+   "path": "migration/third-party-assets.json",
+   "sha256": "d63bd008aa379e676b5ef295c8db05a6922e809984aede5e557ef566d963c673"
+  }
+ },
+ "summary": {
+  "mints": 66,
+  "withEnvelope": 57,
+  "withoutEnvelope": [
+   "RADIANCE",
+   "XMR20~3cMyj7",
+   "XMR20~5NPSXG",
+   "GROK",
+   "TEST~7JsSRe",
+   "XMR~8WcHb3",
+   "EXTREMIST",
+   "TGTEST",
+   "TURBOBOOST"
+  ],
+  "allChecksPassed": 3,
+  "problems": 71,
+  "byFee": {
+   "0": 10,
+   "150": 56,
+   "200": 0
+  },
+  "byInscriptionVersion": {
+   "1": 33,
+   "2": 24,
+   "null": 9
+  }
+ },
+ "rows": [
+  {
+   "key": "SHUM",
+   "symbol": "SHUM",
+   "name": "Should Have Used Monero",
+   "mint": "124QpGBAADh9FZ4hjTxBoyjuS8TPfw7u8Efbkot5nXMR",
+   "assetId": "uxmr20private124qpgbaadh9fz4hjtxboyjus8tpfw7u8efbkot5nxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 2,
+   "bridgeVersion": 3,
+   "moneroTxid": "711ccd76c5c9d68279fba1e6dd86991b9b649f972a97c359a2af5827f0a50908",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 8297,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "NOTME",
+   "symbol": "NOTME",
+   "name": "Wasn’t Me",
+   "mint": "2cPsFQyDFHjBDmAaF5vEKpYkdMA1WXxHv5oW8hPLuXMR",
+   "assetId": "uxmr20private2cpsfqydfhjbdmaaf5vekpykdma1wxxhv5ow8hpluxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 3,
+   "moneroTxid": "94c2383b480be19ca2a244e0b72279e8536daef15fdf87dc33c27a018a33f1ef",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 16742,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "BRAZZERS",
+   "symbol": "BRAZZERS",
+   "name": "Brazzers",
+   "mint": "2pNRTadndgjNopuQ3PvgdhhYvC1jL2d5DnsUvgGDpXMR",
+   "assetId": "uxmr20private2pnrtadndgjnopuq3pvgdhhyvc1jl2d5dnsuvggdpxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 3,
+   "moneroTxid": "fec304a554fd3eba49a5e16a2afa69fa44c0ac7234291132ed9421f8b1455009",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 16688,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "RADIANCE",
+   "symbol": "RADIANCE",
+   "name": "RADIANCE",
+   "mint": "2qWee7ddB5bDUc7YM7X7pqjqnUcfB1epcBSxpSbHcXMR",
+   "assetId": "uxmr20private2qwee7ddb5bduc7ym7x7pqjqnucfb1epcbsxpsbhcxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 0,
+   "inscriptionVersion": null,
+   "bridgeVersion": null,
+   "moneroTxid": "8f7774899d1de034ca68df1f985215506f24adf23bd912e9cdd7d0d1d3ba8c3f",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": null,
+   "api": {
+    "state": "Inscribing",
+    "supply": "1000000000000000",
+    "lockedRaw": null,
+    "xmrOutstanding": null,
+    "confirmations": 12,
+    "bridgeReady": false
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": false
+   },
+   "envelope": null
+  },
+  {
+   "key": "XCAT",
+   "symbol": "XCAT",
+   "name": "XMR Cat",
+   "mint": "2qizXDtpK92YziSqmt6Kry3Zc6CNuZxjbQodqcEsZXMR",
+   "assetId": "uxmr20private2qizxdtpk92yzisqmt6kry3zc6cnuzxjbqodqceszxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 3,
+   "moneroTxid": "76cb65bb49e8c0420dfa5e46e4bf1736743aa85636cb55c3a6652f2062a84011",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 16787,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "BOAT",
+   "symbol": "BOAT",
+   "name": "Boating Accident",
+   "mint": "36Sgm7qdZZs2CzkaiAWmfhP79JPfX5KvCkBMJKakEXMR",
+   "assetId": "uxmr20private36sgm7qdzzs2czkaiawmfhp79jpfx5kvckbmjkakexmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 3,
+   "moneroTxid": "c49a8e10e23848b8ad83cd69c71269d2e744d9f33fdbdb2cd0b4327dff8f4a8d",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 16524,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "LAUNCH",
+   "symbol": "LAUNCH",
+   "name": "LAUNCH",
+   "mint": "3FyCsVxQJwKhV6Gia9N9PpsrdPNALfhoetJSWxqNXXMR",
+   "assetId": "uxmr20private3fycsvxqjwkhv6gia9n9ppsrdpnalfhoetjswxqnxxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 3,
+   "moneroTxid": "8df46b2905b255c7c3f652cf42bfcb0c09eeac0a525decb7bca1de0391ac2209",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "6107000000",
+    "xmrOutstanding": "6107000000",
+    "confirmations": 17321,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "6107000000",
+    "units": "6107",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "QTEST~3XHWG2",
+   "symbol": "QTEST",
+   "name": "Quick Launch Test",
+   "mint": "3XHWG2dr4ytghPUCscQbGE4AMgg7joHtY66jVtewVXMR",
+   "assetId": "uxmr20private3xhwg2dr4ytghpucscqbge4amgg7johty66jvtewvxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 2,
+   "bridgeVersion": 3,
+   "moneroTxid": "eaf7f2febb2ef947c26ab0c88ac6f47893008a12f037fd17336547ecd43e36b1",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 15429,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "XMR20~3cMyj7",
+   "symbol": "XMR20",
+   "name": "XMR20",
+   "mint": "3cMyj7eVzdEDUshnwGRakHYCrW2byroj9Qa47AmHY8Cd",
+   "assetId": "uxmr20private3cmyj7evzdedushnwgrakhycrw2byroj9qa47amhy8cd",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 0,
+   "inscriptionVersion": null,
+   "bridgeVersion": null,
+   "moneroTxid": "c56115efa024f5f30c27504d1e452dca6b406b59a2f2ea6a51fead1c8b40055b",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": null,
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": null,
+    "xmrOutstanding": null,
+    "confirmations": 43,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": false
+   },
+   "envelope": null
+  },
+  {
+   "key": "PORNHUB",
+   "symbol": "PORNHUB",
+   "name": "PornHub",
+   "mint": "3dVESKeEW483oF4zQTf8rGdhSKJZW4joBNssDhQoQXMR",
+   "assetId": "uxmr20private3dveskeew483of4zqtf8rgdhskjzw4jobnssdhqoqxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 3,
+   "moneroTxid": "c74c169a14c9912fd07a2d967c643a0be75a706baca2e04fe3d07baff1fbbc67",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 17247,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "USVEU",
+   "symbol": "USVEU",
+   "name": "USA vs Europe",
+   "mint": "3ds5DRShF7LdWUrSjsNRgvSkgk8Gyyr9GzwUTA7KKXMR",
+   "assetId": "uxmr20private3ds5drshf7ldwursjsnrgvskgk8gyyr9gzwuta7kkxmr",
+   "decimals": 6,
+   "decimalsSource": {
+    "onChain": 6,
+    "rpc": "https://api.mainnet-beta.solana.com",
+    "checkedAt": "2026-10-24"
+   },
+   "transferTaxBps": 150,
+   "inscriptionVersion": 2,
+   "bridgeVersion": 3,
+   "moneroTxid": "e969031cae964f8cfa83c20c2a9df26b62c8dfc59e38b910830e11307cd8914a",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 5446,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": true,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "MGF",
+   "symbol": "MGF",
+   "name": "MONERO GENERAL FUND",
+   "mint": "3jbgYjrzBwdpRt9o9KjAVkYZX7z1gq3K1U3bYRm12XMR",
+   "assetId": "uxmr20private3jbgyjrzbwdprt9o9kjavkyzx7z1gq3k1u3byrm12xmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 2,
+   "bridgeVersion": 3,
+   "moneroTxid": "e29eefcba81be97894e08a1db8bff736f229ab8077834ee26732969fa3a0867d",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 8575,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "MM",
+   "symbol": "MM",
+   "name": "Monero Matrix",
+   "mint": "3sniVM4EevFewTK1UWpFGBoKBW25EsWrwwPP2GuRKXMR",
+   "assetId": "uxmr20private3snivm4eevfewtk1uwpfgbokbw25eswrwwpp2gurkxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 2,
+   "bridgeVersion": 3,
+   "moneroTxid": "87059c308e3d898b4055097816e25fa36e37bfbfde7889b4b7abcc3c81c68220",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 8056,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "PRIVATES",
+   "symbol": "PRIVATES",
+   "name": "Private Parts",
+   "mint": "4p3h5s97KkNBEWjsHKZE1PbSBhaEGbHMPAQ1bNDDpXMR",
+   "assetId": "uxmr20private4p3h5s97kknbewjshkze1pbsbhaegbhmpaq1bnddpxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 3,
+   "moneroTxid": "8e6adfe617dcc2d230b72cff4aa07addc1f57ce0f74bef16a304f4aa92eb7a7f",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 16679,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "PRIV",
+   "symbol": "PRIV",
+   "name": "PRIV",
+   "mint": "53UPhgdaSGqprdpUYSd4UFpGR2h46yuT4JvfEN1GcXMR",
+   "assetId": "uxmr20private53uphgdasgqprdpuysd4ufpgr2h46yut4jvfen1gcxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 2,
+   "bridgeVersion": 3,
+   "moneroTxid": "0b24fb222e68405362bedcdac63bbd1c312fbef070c7b98e851045994dbfc4c5",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 10303,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "XNINJA",
+   "symbol": "XNINJA",
+   "name": "XMR Ninja",
+   "mint": "5BbtWBJmT4B5WPUyfiZbwkfFC2fQXLTnAUL7MkaTPXMR",
+   "assetId": "uxmr20private5bbtwbjmt4b5wpuyfizbwkffc2fqxltnaul7mkatpxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 3,
+   "moneroTxid": "97128b95c1285970693777ee0997cf50abd803a90f6fcdb3b8a6e9954ce8e3b6",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 16757,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "XMR20~5NPSXG",
+   "symbol": "XMR20",
+   "name": "XMR20MODE",
+   "mint": "5NPSXGtRcdZQx5kqy8SW1e7eSrwsfPHGnoXqf6TCx9Kp",
+   "assetId": "uxmr20private5npsxgtrcdzqx5kqy8sw1e7esrwsfphgnoxqf6tcx9kp",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 0,
+   "inscriptionVersion": null,
+   "bridgeVersion": null,
+   "moneroTxid": "6674950a07d16489ecfa3dc13b4a0660961885590bbfd5e7da8f837843894220",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": null,
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": null,
+    "xmrOutstanding": null,
+    "confirmations": 22,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": false
+   },
+   "envelope": null
+  },
+  {
+   "key": "COCK",
+   "symbol": "COCK",
+   "name": "Cock",
+   "mint": "5kmakyWB7Af4q7gmgCfLN3Lbm3kuWWetCLCfKbpZ6XMR",
+   "assetId": "uxmr20private5kmakywb7af4q7gmgcfln3lbm3kuwwetclcfkbpz6xmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 3,
+   "moneroTxid": "40421e6fc0a9c69f7c61cfacc73449690be145994f5f94bbeb23a9c19cefb078",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 16671,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "DA",
+   "symbol": "DA",
+   "name": "Dacity",
+   "mint": "5zNUDAoxeyB5YRFJEJg2JEF959xnoj2CTzRBveNjLXMR",
+   "assetId": "uxmr20private5znudaoxeyb5yrfjejg2jef959xnoj2ctzrbvenjlxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 2,
+   "bridgeVersion": 3,
+   "moneroTxid": "d85e0b849afa4631cd363dd1bf4ef4e5ab6f59410028f59438343a2a161468f3",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 6659,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "OTHER",
+   "symbol": "OTHER",
+   "name": "Polymarket Cat",
+   "mint": "65JReBQXEhwzs1AoTxJQ3XZH4tX7ez7cv7BpJ8HgAXMR",
+   "assetId": "uxmr20private65jrebqxehwzs1aotxjq3xzh4tx7ez7cv7bpj8hgaxmr",
+   "decimals": 6,
+   "decimalsSource": {
+    "onChain": 6,
+    "rpc": "https://api.mainnet-beta.solana.com",
+    "checkedAt": "2026-10-24"
+   },
+   "transferTaxBps": 150,
+   "inscriptionVersion": 2,
+   "bridgeVersion": 3,
+   "moneroTxid": "d2ad888d240e3cc46d6588a2a35728df3f10d4e2f496e61c82911cce245b7ab3",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 6455,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": true,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "GROK",
+   "symbol": "GROK",
+   "name": "grok",
+   "mint": "6uwys9eCGqnG4SM3xuoaF48tFo3FDe8ecjVEUWDxDXMR",
+   "assetId": "uxmr20private6uwys9ecgqng4sm3xuoaf48tfo3fde8ecjveuwdxdxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 0,
+   "inscriptionVersion": null,
+   "bridgeVersion": null,
+   "moneroTxid": "79bdbae043d68a4bc7fe40b14e19185dc94346676642168d718d5af8b36723e3",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": null,
+   "api": {
+    "state": "Inscribing",
+    "supply": "1000000000000000",
+    "lockedRaw": null,
+    "xmrOutstanding": null,
+    "confirmations": 17,
+    "bridgeReady": false
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": false
+   },
+   "envelope": null
+  },
+  {
+   "key": "MCAT~6yUsEa",
+   "symbol": "MCAT",
+   "name": "Monero Cat",
+   "mint": "6yUsEaLtPFLPvqPjNDzZnH5y58SmySTo9DPoFpWpwXMR",
+   "assetId": "uxmr20private6yusealtpflpvqpjndzznh5y58smysto9dpofpwpwxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 3,
+   "moneroTxid": "2331ad7203111c03a69857d62ca710cee55f3e2156565e9ee610651bc61fb86f",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 16689,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "MCAT~71j7L8",
+   "symbol": "MCAT",
+   "name": "Mysterious Cat",
+   "mint": "71j7L8L44vqdRsnwxjBXusCuPuC1WHMTTQjv9SzioXMR",
+   "assetId": "uxmr20private71j7l8l44vqdrsnwxjbxuscupuc1whmttqjv9szioxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 2,
+   "bridgeVersion": 3,
+   "moneroTxid": "7f852098582b3e136409b586b3050c04322310ba0f77f5491676bd56fa20a451",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 7390,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "FLUFFY",
+   "symbol": "FLUFFY",
+   "name": "Fluffy Pony",
+   "mint": "7BAjugSWSEqXXtjKqainkPZYY2tZLW4ABGZLG1r6bXMR",
+   "assetId": "uxmr20private7bajugswseqxxtjkqainkpzyy2tzlw4abgzlg1r6bxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 3,
+   "moneroTxid": "de48ac0a72dabefd6f48f6354d263b88247bc61b822196a82c89f1ddd1d9bfef",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 16779,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "PHIS",
+   "symbol": "PHIS",
+   "name": "PHISH",
+   "mint": "7FgZmMU2hZbb4DffkjQbBykZLwJAxD5h16P9NmY8uXMR",
+   "assetId": "uxmr20private7fgzmmu2hzbb4dffkjqbbykzlwjaxd5h16p9nmy8uxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 2,
+   "bridgeVersion": 3,
+   "moneroTxid": "975a0b407c32ea0f89285474c9fb29b38e7d7bcd64b8ee2049793e6bcf07f849",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 16241,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "TEST~7JsSRe",
+   "symbol": "TEST",
+   "name": "test",
+   "mint": "7JsSRem4m6yFKJQhaje8Jd7HU8qYV7BDJ7TtBg8oBXMR",
+   "assetId": "uxmr20private7jssrem4m6yfkjqhaje8jd7hu8qyv7bdj7ttbg8obxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 0,
+   "inscriptionVersion": null,
+   "bridgeVersion": null,
+   "moneroTxid": "087faa08abd9decfb284d235b1c193449014b1ed2274ac60733b04ba868c98c8",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": null,
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": null,
+    "xmrOutstanding": null,
+    "confirmations": 11,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": false
+   },
+   "envelope": null
+  },
+  {
+   "key": "XMR~8WcHb3",
+   "symbol": "XMR",
+   "name": "xmr",
+   "mint": "8WcHb3bYuQJV2DBMFMavE5pEchEZzW41EJeFXGJpUadD",
+   "assetId": "uxmr20private8wchb3byuqjv2dbmfmave5pechezzw41ejefxgjpuadd",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 0,
+   "inscriptionVersion": null,
+   "bridgeVersion": null,
+   "moneroTxid": "a1f4a293da890594f1940b73ea7e76fac68ebb292299e5ecaf63f08ed54459a9",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": null,
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": null,
+    "xmrOutstanding": null,
+    "confirmations": 24,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": false
+   },
+   "envelope": null
+  },
+  {
+   "key": "OG",
+   "symbol": "OG",
+   "name": "MONEROG",
+   "mint": "8hWgkd4HQ5xwxfdAs3aLUy2y67kupNLDw4qED7ycXXMR",
+   "assetId": "uxmr20private8hwgkd4hq5xwxfdas3aluy2y67kupnldw4qed7ycxxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 2,
+   "bridgeVersion": 3,
+   "moneroTxid": "d73f26e0f9ae08d29e1499065f2edd2280f97249447c803de0c8de136ccddf7e",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 15026,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "HERE",
+   "symbol": "HERE",
+   "name": "HERE",
+   "mint": "8nP9ddHxMURYSHTda8AxHc7tYsthWbmr51zfmxzFtXMR",
+   "assetId": "uxmr20private8np9ddhxmuryshtda8axhc7tysthwbmr51zfmxzftxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 2,
+   "bridgeVersion": 3,
+   "moneroTxid": "538981c0de64711e9497784ce2fc7c87bf8f17e04fb58ee51dd64f772869d515",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 14545,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "COVERT",
+   "symbol": "COVERT",
+   "name": "Covert Chameleon",
+   "mint": "8zWcEgUZvQKcHgtUoYTnaC6AHX7FmtWVV9WeM4kPuXMR",
+   "assetId": "uxmr20private8zwceguzvqkchgtuoytnac6ahx7fmtwvv9wem4kpuxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 2,
+   "moneroTxid": "112994dd6bac731762217a7d7b751d210651c04e92c90e0575025b3b4b394e84",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": null,
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "9948500000",
+    "xmrOutstanding": "9948500000",
+    "confirmations": 18000,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "9948500000",
+    "units": "9948.5",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "TEST~8zgcG3",
+   "symbol": "TEST",
+   "name": "TEST",
+   "mint": "8zgcG35NjMUeSejV51e6va12GApzaoo1zvwphveYtXMR",
+   "assetId": "uxmr20private8zgcg35njmuesejv51e6va12gapzaoo1zvwphveytxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 2,
+   "bridgeVersion": 3,
+   "moneroTxid": "9a4c0099f9bfeacc298753cd0ccde7372ac5ed8dea974377f8596444edd049ca",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 16443,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "XDOG",
+   "symbol": "XDOG",
+   "name": "XMR Dog",
+   "mint": "9LpagoMeRjszW8kLyhRwQJqdwHxY8FiCakkmWKzghXMR",
+   "assetId": "uxmr20private9lpagomerjszw8klyhrwqjqdwhxy8ficakkmwkzghxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 3,
+   "moneroTxid": "7d376d2904eb7126927b4a0ccd996734e80b07f27bb8e78154237083d44c5ad5",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 16660,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "EXTREMIST",
+   "symbol": "EXTREMIST",
+   "name": "Monero Extremist",
+   "mint": "9MwJfFGc3jNkAKLwma4kkUYivs19yJsWXuPD15RegXMR",
+   "assetId": "uxmr20private9mwjffgc3jnkaklwma4kkuyivs19yjswxupd15regxmr",
+   "decimals": 6,
+   "decimalsSource": {
+    "onChain": 6,
+    "rpc": "https://api.mainnet-beta.solana.com",
+    "checkedAt": "2026-10-24"
+   },
+   "transferTaxBps": 0,
+   "inscriptionVersion": null,
+   "bridgeVersion": null,
+   "moneroTxid": "92e06b68ae170eb7140a2bb6919f53f3e81d5275f6ce5dca5907a762aae45a25",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": null,
+   "api": {
+    "state": "Inscribing",
+    "supply": "1000000000000000",
+    "lockedRaw": null,
+    "xmrOutstanding": null,
+    "confirmations": 16,
+    "bridgeReady": false
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": true,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": false
+   },
+   "envelope": null
+  },
+  {
+   "key": "MINU",
+   "symbol": "MINU",
+   "name": "Monero Inu",
+   "mint": "9iNtJKefts9R3GeNTa6EQYiPuWwdZCjWh1xxHGV7PXMR",
+   "assetId": "uxmr20private9intjkefts9r3genta6eqyipuwwdzcjwh1xxhgv7pxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 3,
+   "moneroTxid": "9d99c1af6c426e42dcc15d4603ed4ecd6998a6a7ab7eee45b8bf45bfd25d4fc4",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 16771,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "SEED25",
+   "symbol": "SEED25",
+   "name": "25 Words",
+   "mint": "AZHDrmZGqJ9nh3GkWD19HWm2Md2Pg8MEEwMDbjkfsXMR",
+   "assetId": "uxmr20privateazhdrmzgqj9nh3gkwd19hwm2md2pg8meewmdbjkfsxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 3,
+   "moneroTxid": "2dd27d08bd8e1014256798f31d456d513c6d485e588fa90442533750d75a6c20",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 16575,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "NOB",
+   "symbol": "NOB",
+   "name": "NOB",
+   "mint": "ApuLmYyfwWsovn3PeNzdeXyfYM8ZSaf71TpCxmUe4XMR",
+   "assetId": "uxmr20privateapulmyyfwwsovn3penzdexyfym8zsaf71tpcxmue4xmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 3,
+   "moneroTxid": "7fec03c77b342a46ce5810d360fa8bacd8211c2051df579427d0566dbf89ed85",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 16690,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "XCHUD",
+   "symbol": "XCHUD",
+   "name": "XMR Chud",
+   "mint": "AqAS7MfMTRVdJTeQVKibRa5qUStgjmvTDw6ouKVcmXMR",
+   "assetId": "uxmr20privateaqas7mfmtrvdjteqvkibra5qustgjmvtdw6oukvcmxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 2,
+   "bridgeVersion": 3,
+   "moneroTxid": "92e58335d05395140c1c8a93ea3fc1c1ac3b87b0b455a5cdf017903eee16f731",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 8569,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "PLUG",
+   "symbol": "PLUG",
+   "name": "MONERO PLUG",
+   "mint": "BBFmQqW7bz1M2CdomncZa7fUh5xv5gwb4Evdmr8w2XMR",
+   "assetId": "uxmr20privatebbfmqqw7bz1m2cdomncza7fuh5xv5gwb4evdmr8w2xmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 3,
+   "moneroTxid": "86957a0023f3964ac74e1d631b6bb7a7d5642c8ae8da064056cc92843ba437f7",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 16584,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "XMR~BMiyCC",
+   "symbol": "XMR",
+   "name": "Xanax Milker Revolution",
+   "mint": "BMiyCC9UJtF9doaj9FVWpYtRU1wE6dXg3vkATBKtzXMR",
+   "assetId": "uxmr20privatebmiycc9ujtf9doaj9fvwpytru1we6dxg3vkatbktzxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 2,
+   "bridgeVersion": 3,
+   "moneroTxid": "1420448ce8514a044dfa8dafef131000d2c84804878405fba5182331ed5518e3",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 15933,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "XCHAD",
+   "symbol": "XCHAD",
+   "name": "Private Chad",
+   "mint": "BqQ6zChVcwse9JVWKipwpgGs7mVrniWX1VHrXz1QjXMR",
+   "assetId": "uxmr20privatebqq6zchvcwse9jvwkipwpggs7mvrniwx1vhrxz1qjxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 3,
+   "moneroTxid": "d7a1e5a2f9a6da2cdeab5602e30f18f81e4b8c5991746b228375640a85381a55",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 16586,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "FLUFFYPONY",
+   "symbol": "FLUFFYPONY",
+   "name": "FLUFFY PONY",
+   "mint": "BsvhceoY7FcX8QYHip2PVmEgmz83527MDiw4N8jAzXMR",
+   "assetId": "uxmr20privatebsvhceoy7fcx8qyhip2pvmegmz83527mdiw4n8jazxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 2,
+   "bridgeVersion": 3,
+   "moneroTxid": "8cc78c166ed22aef9ff03b50a1fc90eb9d194198510f9197b24e1f37e5fa99d4",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 8576,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "XMRPEPE",
+   "symbol": "XMRPEPE",
+   "name": "Private Pepe",
+   "mint": "BuyKzbeF4e7ocpfiAA3TmNj9dtc59MqAPFYucXmpEXMR",
+   "assetId": "uxmr20privatebuykzbef4e7ocpfiaa3tmnj9dtc59mqapfyucxmpexmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 3,
+   "moneroTxid": "2e5879b22e553b8254a1ed2ee57a4d1ebb473443b959e85cc865fb6410aa4d1a",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 16662,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "TEST~Bv6ir3",
+   "symbol": "TEST",
+   "name": "TESTT",
+   "mint": "Bv6ir3xBF2HnTbWYQ9xEiMjVvA85qMZhFbTFJEf7WXMR",
+   "assetId": "uxmr20privatebv6ir3xbf2hntbwyq9xeimjvva85qmzhfbtfjef7wxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 2,
+   "bridgeVersion": 3,
+   "moneroTxid": "9fda7b65a58dccdf9a1add13fdf6e98d4b677e3b1fbeee08f6452146f495dc98",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 14460,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "XMRC",
+   "symbol": "XMRC",
+   "name": "XMR Cypherpunk",
+   "mint": "C4rywUdrwo6cSWkQ7dS6zL2VskBo25aJEFk5SsPpWXMR",
+   "assetId": "uxmr20privatec4rywudrwo6cswkq7ds6zl2vskbo25ajefk5ssppwxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 2,
+   "bridgeVersion": 3,
+   "moneroTxid": "15f1a4c968574069d48d2c087df99e68ee839dc6497d0e84f9e51b323b411358",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 16281,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "JEWB",
+   "symbol": "JEWB",
+   "name": "jewsbox",
+   "mint": "C4yLUfhUfmJpiFd3gSU9kWA7gg6UnaQJns1QBvKozXMR",
+   "assetId": "uxmr20privatec4ylufhufmjpifd3gsu9kwa7gg6unaqjns1qbvkozxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 3,
+   "moneroTxid": "ff76a45eca2d913cae7b2267ad722422ee0d3794033cc66046c4780a685b888e",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 17258,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "XXX69",
+   "symbol": "XXX69",
+   "name": "XXX69",
+   "mint": "CmHoyHELwiDNkhSFhCXco6tzam6dNutzbSs7Nvq8JXMR",
+   "assetId": "uxmr20privatecmhoyhelwidnkhsfhcxco6tzam6dnutzbss7nvq8jxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 2,
+   "bridgeVersion": 3,
+   "moneroTxid": "97b8cfd81e0988d4ed393a6cb2e3c8229c277251d4f13d6e8461d9a66fecad4a",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 15792,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "XMR20~Cy5TzD",
+   "symbol": "XMR20",
+   "name": "XMR20",
+   "mint": "Cy5TzDyJ4mo6MBAbpwUcAgdfNiXYKrYUPrvhPGVU6XMR",
+   "assetId": "uxmr20privatecy5tzdyj4mo6mbabpwucagdfnixykryuprvhpgvu6xmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 2,
+   "moneroTxid": "2b545793fe0b5659090d2657b805613e3bbcf59b6f4f6e32940e6e58d74cba51",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": null,
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "14767732821887",
+    "xmrOutstanding": "4732821887",
+    "confirmations": 18160,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "4732821887",
+    "units": "4732.821887",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "GHOSTINU",
+   "symbol": "GHOSTINU",
+   "name": "Ghost Inu",
+   "mint": "DKyJKRHBhu8aFSWe7yqv9D1TNgKbh4zBxjGMCXYwYXMR",
+   "assetId": "uxmr20privatedkyjkrhbhu8afswe7yqv9d1tngkbh4zbxjgmcxywyxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 3,
+   "moneroTxid": "90980e457baaa69e0c995b5440e3a000fc2a321bf2b77b90b7eda0bdfda7009a",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 17270,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "TGTEST",
+   "symbol": "TGTEST",
+   "name": "TGtest",
+   "mint": "DMQhUTgUVmKmYHStVspSdWT9DD9YCYbBpwMaVdecM7Tb",
+   "assetId": "uxmr20privatedmqhutguvmkmyhstvspsdwt9dd9ycybbpwmavdecm7tb",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 0,
+   "inscriptionVersion": null,
+   "bridgeVersion": null,
+   "moneroTxid": "f02f152ce6b67434f839e214516cf14d9414bfd6430300e3ad904e4126f3638f",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": null,
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": null,
+    "xmrOutstanding": null,
+    "confirmations": 10,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": false
+   },
+   "envelope": null
+  },
+  {
+   "key": "MONEROCHAN",
+   "symbol": "MONEROCHAN",
+   "name": "Monero Chan",
+   "mint": "Db6fwWFB6BAhkSiRW1txGzvEnCVWokRQ1Pn95UqV9XMR",
+   "assetId": "uxmr20privatedb6fwwfb6bahksirw1txgzvencvwokrq1pn95uqv9xmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 3,
+   "moneroTxid": "0c1078a1764505ad95cfec99f667253746800e2537108dc93a7feda953a765b3",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "9850000",
+    "xmrOutstanding": "9850000",
+    "confirmations": 17281,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "9850000",
+    "units": "9.85",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "TESTT",
+   "symbol": "TESTT",
+   "name": "testt",
+   "mint": "FLhxjJigTUPVvHaJvuPgaCUs5hP26TBYj7MXgByVcXMR",
+   "assetId": "uxmr20privateflhxjjigtupvvhajvupgacus5hp26tbyj7mxgbyvcxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 2,
+   "bridgeVersion": 3,
+   "moneroTxid": "09ad268d904f17dc2bb9054406eaba59d7219b3bc835c5d9106b1ef44a570810",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Inscribed",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 16343,
+    "bridgeReady": false
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "HARRY",
+   "symbol": "HARRY",
+   "name": "HARRY THE INDIAN",
+   "mint": "FhGLDxCZ9mkaUhon5Ug9P53Qkr3PLFVR5xJ6KzAb1XMR",
+   "assetId": "uxmr20privatefhgldxcz9mkauhon5ug9p53qkr3plfvr5xj6kzab1xmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 3,
+   "moneroTxid": "6e01c058212a8c6a3149465337d227151f7447419abe084c4d0e4aa74a951b9b",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 16669,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "MONKEY",
+   "symbol": "MONKEY",
+   "name": "MONERO MONKEY",
+   "mint": "FqLo6y9dVg9hvVGVYfUkPSG8efkvt11dngxEBf4hxXMR",
+   "assetId": "uxmr20privatefqlo6y9dvg9hvvgvyfukpsg8efkvt11dngxebf4hxxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 3,
+   "moneroTxid": "32e68f391b554ab6f4da312156f96bdd499ef0e144f37cb7644675510c4a0db1",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 16555,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "HORSEMEAT",
+   "symbol": "HORSEMEAT",
+   "name": "HorseMeat",
+   "mint": "FwQSBHqy9QbjqEWeKomv1dh3ExLeHUj4qQL2RzQ5LXMR",
+   "assetId": "uxmr20privatefwqsbhqy9qbjqewekomv1dh3exlehuj4qql2rzq5lxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 3,
+   "moneroTxid": "d07331c6e8fcb38cc299bcb2c95519d71e42b47ecef2e7aacf4de07545a657be",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Inscribed",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 17270,
+    "bridgeReady": false
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "QTEST~GwnWD8",
+   "symbol": "QTEST",
+   "name": "Quick Launch Test",
+   "mint": "GwnWD8ygt5DNWtyQZ6JG66StsaHaiTZYdxVBtagBWXMR",
+   "assetId": "uxmr20privategwnwd8ygt5dnwtyqz6jg66stsahaitzydxvbtagbwxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 2,
+   "bridgeVersion": 3,
+   "moneroTxid": "ab284f0c11bc7fd68ee38a9fd3f85a187076c1d0a1fbbeee24ba9c06a51cfb32",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 15223,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "ANON",
+   "symbol": "ANON",
+   "name": "Anonymous",
+   "mint": "H2nzua6gpe9PcTp3wvjueD4VvEkVgQMDBySrs8SvCXMR",
+   "assetId": "uxmr20privateh2nzua6gpe9pctp3wvjued4vvekvgqmdbysrs8svcxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 3,
+   "moneroTxid": "156e7e4eb131d86706a7430f97470f0233c08469eb8d675a1e6a5dc663a439da",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 17245,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "MONEGRO",
+   "symbol": "MONEGRO",
+   "name": "Monegro",
+   "mint": "HBkDwdpe9mf9KZ9WDg19iP2jjfpfjXhpZZjDp37EpXMR",
+   "assetId": "uxmr20privatehbkdwdpe9mf9kz9wdg19ip2jjfpfjxhpzzjdp37epxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 3,
+   "moneroTxid": "02cfc8674da405802feda9d556eeb6a26cba77ac3cd597042fbf9610b0ab274a",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Inscribed",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 16564,
+    "bridgeReady": false
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "TEST~HE5SZw",
+   "symbol": "TEST",
+   "name": "TEST",
+   "mint": "HE5SZwRTb5Q4oWbuz8JVmxiEyAcKzJKXZuG83NxKpKTn",
+   "assetId": "uxmr20privatehe5szwrtb5q4owbuz8jvmxieyackzjkxzug83nxkpktn",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 0,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 1,
+   "moneroTxid": "dbccfd271ac722a85527b9eca38d31119a28748e26bfb3412c8cab994a63b42b",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": null,
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "975200000000",
+    "xmrOutstanding": "975200000000",
+    "confirmations": 18578,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "975200000000",
+    "units": "975200",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "HORSEMEAT4",
+   "symbol": "HORSEMEAT4",
+   "name": "200PoundsHorseMeat.com",
+   "mint": "HH8GhvAWJscy7uDSkLCeBknVnVLZV26Cin9xuwwQeXMR",
+   "assetId": "uxmr20privatehh8ghvawjscy7udsklcebknvnvlzv26cin9xuwwqexmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 3,
+   "moneroTxid": "0c29e6e08f03e8075b1ca01174e53201f8e52df3a10ba886948c1d7d18a440ea",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Inscribed",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 17260,
+    "bridgeReady": false
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "SHIP",
+   "symbol": "SHIP",
+   "name": "Ship",
+   "mint": "HKjTtpkNBoootBop9GHdCGzWpzbiwKP5mBbtgRZQcXMR",
+   "assetId": "uxmr20privatehkjttpknboootbop9ghdcgzwpzbiwkp5mbbtgrzqcxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 2,
+   "bridgeVersion": 3,
+   "moneroTxid": "8b96f8b1108df2991641f9797c06f5e0e7705991fedaf7fc91433f76cc155ce3",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Inscribed",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 15844,
+    "bridgeReady": false
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "UNIT8200",
+   "symbol": "UNIT8200",
+   "name": "UNIT8200",
+   "mint": "HU4wsq6cBmv2TdtgxxLSzx1GqAakzu759VvSDx8uhXMR",
+   "assetId": "uxmr20privatehu4wsq6cbmv2tdtgxxlszx1gqaakzu759vvsdx8uhxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 2,
+   "bridgeVersion": 3,
+   "moneroTxid": "b94ff90a3efcbbb7a3a1e64e27ec916605f3d86aab05882346bcb7f44d3b9307",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 15039,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "XTAC",
+   "symbol": "XTAC",
+   "name": "Tacoshi",
+   "mint": "HitiJphamArNBrDotTiJZEfsyWApZ7YTZfY34jJkgXMR",
+   "assetId": "uxmr20privatehitijphamarnbrdottijzefsywapz7ytzfy34jjkgxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 3,
+   "moneroTxid": "cac031276e8e69930e8a9dd6dfb87b0429ae70532fb095d7e1fa38b00a20b40a",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 16493,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "LUKE",
+   "symbol": "LUKE",
+   "name": "Monero Cat",
+   "mint": "KzTQBqjkz1fCybZW1Wm44UDvYNr1VAbzupCaLvDfXMR",
+   "assetId": "uxmr20privatekztqbqjkz1fcybzw1wm44udvynr1vabzupcalvdfxmr",
+   "decimals": 6,
+   "decimalsSource": {
+    "onChain": 6,
+    "rpc": "https://api.mainnet-beta.solana.com",
+    "checkedAt": "2026-10-24"
+   },
+   "transferTaxBps": 150,
+   "inscriptionVersion": 2,
+   "bridgeVersion": 3,
+   "moneroTxid": "4dc4cee22bd24053c31574581a3e92947af58690abe64d693f9220438501ea90",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 4425,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": true,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "MOGERO",
+   "symbol": "MOGERO",
+   "name": "Mogero",
+   "mint": "Vzqs1uojCiemuERZSwssEHuVDG7vmZqK5MsgYvCAXMR",
+   "assetId": "uxmr20privatevzqs1uojciemuerzswssehuvdg7vmzqk5msgyvcaxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 3,
+   "moneroTxid": "784dff3748eefc1c10f273b165b87321ea3740b49fdaf5a0f0158b9e713ab7d6",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 16720,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "PEPERO",
+   "symbol": "PEPERO",
+   "name": "Pepero",
+   "mint": "YasBeoc4VF8vSjzpKWLCBheMxTCE6Zg4Px1GedetXMR",
+   "assetId": "uxmr20privateyasbeoc4vf8vsjzpkwlcbhemxtce6zg4px1gedetxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 150,
+   "inscriptionVersion": 1,
+   "bridgeVersion": 3,
+   "moneroTxid": "68932a5872f17b8f524b6dc2d2b1a73da52903c1679824ab144a1c023f716d14",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": "2wEBASzbdj13KJtmjK7UFhug38oGaWsfvMGhQ3umr265",
+   "api": {
+    "state": "Launched",
+    "supply": "1000000000000000",
+    "lockedRaw": "0",
+    "xmrOutstanding": "0",
+    "confirmations": 16517,
+    "bridgeReady": true
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": true,
+    "backingOrder": true
+   },
+   "envelope": {
+    "moneroOutstandingRaw": "0",
+    "units": "0",
+    "meaning": "upper bound of all private entitlements for this mint (sum of legacy lots at the cutoff must not exceed it)"
+   }
+  },
+  {
+   "key": "TURBOBOOST",
+   "symbol": "TURBOBOOST",
+   "name": "TURBOBOOST",
+   "mint": "mfjQv1DidAp4LwiTd38AJSp9SbQXwp67qgvUX1YwXMR",
+   "assetId": "uxmr20privatemfjqv1didap4lwitd38ajsp9sbqxwp67qgvux1ywxmr",
+   "decimals": 6,
+   "decimalsSource": "XMR20 Token-2022 launch layout (6) — verify against the mint account at cutover",
+   "transferTaxBps": 0,
+   "inscriptionVersion": null,
+   "bridgeVersion": null,
+   "moneroTxid": "2e2632f2513432ef33ebdd9e41f03c4bb4fcc7937e168b53cadc9393524ff460",
+   "solanaNetworkLabel": "mainnet-beta",
+   "moneroNetworkLabel": "mainnet",
+   "bridgeProgramId": null,
+   "api": {
+    "state": "Inscribing",
+    "supply": "1000000000000000",
+    "lockedRaw": null,
+    "xmrOutstanding": null,
+    "confirmations": 14,
+    "bridgeReady": false
+   },
+   "checks": {
+    "mintFormat": true,
+    "mintUnique": true,
+    "decimals": true,
+    "decimalsVerified": false,
+    "feePolicyKnown": true,
+    "inPublicApi": true,
+    "supplyPresent": true,
+    "outstandingPresent": false
+   },
+   "envelope": null
+  }
+ ],
+ "problems": [
+  {
+   "mint": "5zNUDAoxeyB5YRFJEJg2JEF959xnoj2CTzRBveNjLXMR",
+   "key": "DA",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "71j7L8L44vqdRsnwxjBXusCuPuC1WHMTTQjv9SzioXMR",
+   "key": "MCAT~71j7L8",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "3sniVM4EevFewTK1UWpFGBoKBW25EsWrwwPP2GuRKXMR",
+   "key": "MM",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "124QpGBAADh9FZ4hjTxBoyjuS8TPfw7u8Efbkot5nXMR",
+   "key": "SHUM",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "AqAS7MfMTRVdJTeQVKibRa5qUStgjmvTDw6ouKVcmXMR",
+   "key": "XCHUD",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "3jbgYjrzBwdpRt9o9KjAVkYZX7z1gq3K1U3bYRm12XMR",
+   "key": "MGF",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "BsvhceoY7FcX8QYHip2PVmEgmz83527MDiw4N8jAzXMR",
+   "key": "FLUFFYPONY",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "53UPhgdaSGqprdpUYSd4UFpGR2h46yuT4JvfEN1GcXMR",
+   "key": "PRIV",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "Bv6ir3xBF2HnTbWYQ9xEiMjVvA85qMZhFbTFJEf7WXMR",
+   "key": "TEST~Bv6ir3",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "8nP9ddHxMURYSHTda8AxHc7tYsthWbmr51zfmxzFtXMR",
+   "key": "HERE",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "8hWgkd4HQ5xwxfdAs3aLUy2y67kupNLDw4qED7ycXXMR",
+   "key": "OG",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "HU4wsq6cBmv2TdtgxxLSzx1GqAakzu759VvSDx8uhXMR",
+   "key": "UNIT8200",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "GwnWD8ygt5DNWtyQZ6JG66StsaHaiTZYdxVBtagBWXMR",
+   "key": "QTEST~GwnWD8",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "3XHWG2dr4ytghPUCscQbGE4AMgg7joHtY66jVtewVXMR",
+   "key": "QTEST~3XHWG2",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "CmHoyHELwiDNkhSFhCXco6tzam6dNutzbSs7Nvq8JXMR",
+   "key": "XXX69",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "HKjTtpkNBoootBop9GHdCGzWpzbiwKP5mBbtgRZQcXMR",
+   "key": "SHIP",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "BMiyCC9UJtF9doaj9FVWpYtRU1wE6dXg3vkATBKtzXMR",
+   "key": "XMR~BMiyCC",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "7FgZmMU2hZbb4DffkjQbBykZLwJAxD5h16P9NmY8uXMR",
+   "key": "PHIS",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "C4rywUdrwo6cSWkQ7dS6zL2VskBo25aJEFk5SsPpWXMR",
+   "key": "XMRC",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "FLhxjJigTUPVvHaJvuPgaCUs5hP26TBYj7MXgByVcXMR",
+   "key": "TESTT",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "8zgcG35NjMUeSejV51e6va12GApzaoo1zvwphveYtXMR",
+   "key": "TEST~8zgcG3",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "HitiJphamArNBrDotTiJZEfsyWApZ7YTZfY34jJkgXMR",
+   "key": "XTAC",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "YasBeoc4VF8vSjzpKWLCBheMxTCE6Zg4Px1GedetXMR",
+   "key": "PEPERO",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "36Sgm7qdZZs2CzkaiAWmfhP79JPfX5KvCkBMJKakEXMR",
+   "key": "BOAT",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "FqLo6y9dVg9hvVGVYfUkPSG8efkvt11dngxEBf4hxXMR",
+   "key": "MONKEY",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "HBkDwdpe9mf9KZ9WDg19iP2jjfpfjXhpZZjDp37EpXMR",
+   "key": "MONEGRO",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "AZHDrmZGqJ9nh3GkWD19HWm2Md2Pg8MEEwMDbjkfsXMR",
+   "key": "SEED25",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "BBFmQqW7bz1M2CdomncZa7fUh5xv5gwb4Evdmr8w2XMR",
+   "key": "PLUG",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "BqQ6zChVcwse9JVWKipwpgGs7mVrniWX1VHrXz1QjXMR",
+   "key": "XCHAD",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "9LpagoMeRjszW8kLyhRwQJqdwHxY8FiCakkmWKzghXMR",
+   "key": "XDOG",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "BuyKzbeF4e7ocpfiAA3TmNj9dtc59MqAPFYucXmpEXMR",
+   "key": "XMRPEPE",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "FhGLDxCZ9mkaUhon5Ug9P53Qkr3PLFVR5xJ6KzAb1XMR",
+   "key": "HARRY",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "5kmakyWB7Af4q7gmgCfLN3Lbm3kuWWetCLCfKbpZ6XMR",
+   "key": "COCK",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "4p3h5s97KkNBEWjsHKZE1PbSBhaEGbHMPAQ1bNDDpXMR",
+   "key": "PRIVATES",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "2pNRTadndgjNopuQ3PvgdhhYvC1jL2d5DnsUvgGDpXMR",
+   "key": "BRAZZERS",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "6yUsEaLtPFLPvqPjNDzZnH5y58SmySTo9DPoFpWpwXMR",
+   "key": "MCAT~6yUsEa",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "ApuLmYyfwWsovn3PeNzdeXyfYM8ZSaf71TpCxmUe4XMR",
+   "key": "NOB",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "Vzqs1uojCiemuERZSwssEHuVDG7vmZqK5MsgYvCAXMR",
+   "key": "MOGERO",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "2cPsFQyDFHjBDmAaF5vEKpYkdMA1WXxHv5oW8hPLuXMR",
+   "key": "NOTME",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "5BbtWBJmT4B5WPUyfiZbwkfFC2fQXLTnAUL7MkaTPXMR",
+   "key": "XNINJA",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "9iNtJKefts9R3GeNTa6EQYiPuWwdZCjWh1xxHGV7PXMR",
+   "key": "MINU",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "7BAjugSWSEqXXtjKqainkPZYY2tZLW4ABGZLG1r6bXMR",
+   "key": "FLUFFY",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "2qizXDtpK92YziSqmt6Kry3Zc6CNuZxjbQodqcEsZXMR",
+   "key": "XCAT",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "HH8GhvAWJscy7uDSkLCeBknVnVLZV26Cin9xuwwQeXMR",
+   "key": "HORSEMEAT4",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "C4yLUfhUfmJpiFd3gSU9kWA7gg6UnaQJns1QBvKozXMR",
+   "key": "JEWB",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "DKyJKRHBhu8aFSWe7yqv9D1TNgKbh4zBxjGMCXYwYXMR",
+   "key": "GHOSTINU",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "H2nzua6gpe9PcTp3wvjueD4VvEkVgQMDBySrs8SvCXMR",
+   "key": "ANON",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "FwQSBHqy9QbjqEWeKomv1dh3ExLeHUj4qQL2RzQ5LXMR",
+   "key": "HORSEMEAT",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "Db6fwWFB6BAhkSiRW1txGzvEnCVWokRQ1Pn95UqV9XMR",
+   "key": "MONEROCHAN",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "3dVESKeEW483oF4zQTf8rGdhSKJZW4joBNssDhQoQXMR",
+   "key": "PORNHUB",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "3FyCsVxQJwKhV6Gia9N9PpsrdPNALfhoetJSWxqNXXMR",
+   "key": "LAUNCH",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "8zWcEgUZvQKcHgtUoYTnaC6AHX7FmtWVV9WeM4kPuXMR",
+   "key": "COVERT",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "Cy5TzDyJ4mo6MBAbpwUcAgdfNiXYKrYUPrvhPGVU6XMR",
+   "key": "XMR20~Cy5TzD",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "HE5SZwRTb5Q4oWbuz8JVmxiEyAcKzJKXZuG83NxKpKTn",
+   "key": "TEST~HE5SZw",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "DMQhUTgUVmKmYHStVspSdWT9DD9YCYbBpwMaVdecM7Tb",
+   "key": "TGTEST",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "DMQhUTgUVmKmYHStVspSdWT9DD9YCYbBpwMaVdecM7Tb",
+   "key": "TGTEST",
+   "check": "outstandingPresent",
+   "message": "lockedRaw/xmrOutstanding missing from the public row: the migration envelope cannot be derived from public data for this mint"
+  },
+  {
+   "mint": "5NPSXGtRcdZQx5kqy8SW1e7eSrwsfPHGnoXqf6TCx9Kp",
+   "key": "XMR20~5NPSXG",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "5NPSXGtRcdZQx5kqy8SW1e7eSrwsfPHGnoXqf6TCx9Kp",
+   "key": "XMR20~5NPSXG",
+   "check": "outstandingPresent",
+   "message": "lockedRaw/xmrOutstanding missing from the public row: the migration envelope cannot be derived from public data for this mint"
+  },
+  {
+   "mint": "8WcHb3bYuQJV2DBMFMavE5pEchEZzW41EJeFXGJpUadD",
+   "key": "XMR~8WcHb3",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "8WcHb3bYuQJV2DBMFMavE5pEchEZzW41EJeFXGJpUadD",
+   "key": "XMR~8WcHb3",
+   "check": "outstandingPresent",
+   "message": "lockedRaw/xmrOutstanding missing from the public row: the migration envelope cannot be derived from public data for this mint"
+  },
+  {
+   "mint": "3cMyj7eVzdEDUshnwGRakHYCrW2byroj9Qa47AmHY8Cd",
+   "key": "XMR20~3cMyj7",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "3cMyj7eVzdEDUshnwGRakHYCrW2byroj9Qa47AmHY8Cd",
+   "key": "XMR20~3cMyj7",
+   "check": "outstandingPresent",
+   "message": "lockedRaw/xmrOutstanding missing from the public row: the migration envelope cannot be derived from public data for this mint"
+  },
+  {
+   "mint": "2qWee7ddB5bDUc7YM7X7pqjqnUcfB1epcBSxpSbHcXMR",
+   "key": "RADIANCE",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "2qWee7ddB5bDUc7YM7X7pqjqnUcfB1epcBSxpSbHcXMR",
+   "key": "RADIANCE",
+   "check": "outstandingPresent",
+   "message": "lockedRaw/xmrOutstanding missing from the public row: the migration envelope cannot be derived from public data for this mint"
+  },
+  {
+   "mint": "mfjQv1DidAp4LwiTd38AJSp9SbQXwp67qgvUX1YwXMR",
+   "key": "TURBOBOOST",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "mfjQv1DidAp4LwiTd38AJSp9SbQXwp67qgvUX1YwXMR",
+   "key": "TURBOBOOST",
+   "check": "outstandingPresent",
+   "message": "lockedRaw/xmrOutstanding missing from the public row: the migration envelope cannot be derived from public data for this mint"
+  },
+  {
+   "mint": "9MwJfFGc3jNkAKLwma4kkUYivs19yJsWXuPD15RegXMR",
+   "key": "EXTREMIST",
+   "check": "outstandingPresent",
+   "message": "lockedRaw/xmrOutstanding missing from the public row: the migration envelope cannot be derived from public data for this mint"
+  },
+  {
+   "mint": "6uwys9eCGqnG4SM3xuoaF48tFo3FDe8ecjVEUWDxDXMR",
+   "key": "GROK",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "6uwys9eCGqnG4SM3xuoaF48tFo3FDe8ecjVEUWDxDXMR",
+   "key": "GROK",
+   "check": "outstandingPresent",
+   "message": "lockedRaw/xmrOutstanding missing from the public row: the migration envelope cannot be derived from public data for this mint"
+  },
+  {
+   "mint": "7JsSRem4m6yFKJQhaje8Jd7HU8qYV7BDJ7TtBg8oBXMR",
+   "key": "TEST~7JsSRe",
+   "check": "decimalsVerified",
+   "message": "no on-chain decimals check recorded"
+  },
+  {
+   "mint": "7JsSRem4m6yFKJQhaje8Jd7HU8qYV7BDJ7TtBg8oBXMR",
+   "key": "TEST~7JsSRe",
+   "check": "outstandingPresent",
+   "message": "lockedRaw/xmrOutstanding missing from the public row: the migration envelope cannot be derived from public data for this mint"
+  }
+ ],
+ "digest": "915c0cc4deb4af04be4f45bbf591c6622ab41da638fb0af517af60e50bc138a6",
+ "dependencies": [
+  "per-holder lots: replay of the legacy inscription records from a Monero MAINNET node at the cutoff height through the isolated cutover indexer (not performed; no mainnet node in this candidate)",
+  "cutoff height: owner decision (not chosen)",
+  "live Solana reads (mint supply, vault balance, withheld fees) for a fresh reconciliation: public RPC, read-only, opt-in --live-solana (not performed here)"
+ ]
+}

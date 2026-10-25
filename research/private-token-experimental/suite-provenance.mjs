@@ -32,6 +32,8 @@ export const SHARED=[
  {key:'custodyProgram',when:t=>/xmr20_joint_escrow\.so/.test(t),files:['proof-of-concepts/joint-escrow-wallet/core-monero-send/target/sbpf-solana-solana/release/xmr20_joint_escrow.so']},
  {key:'paramsTestV1',when:t=>/params\//.test(t),files:['params/test-v1/manifest.json','params/test-v1/parameters.json','params/test-v1/normal.public-pk','params/test-v1/boundary.public-pk']},
  {key:'paramsTestOther',when:t=>/params\//.test(t),files:['params/test-other/manifest.json','params/test-other/parameters.json','params/test-other/normal.public-pk','params/test-other/boundary.public-pk']},
+ {key:'paramsCeremony',when:t=>/ceremony-rehearsal-v1/.test(t),files:['params/ceremony-rehearsal-v1/manifest.json','params/ceremony-rehearsal-v1/parameters.json','params/ceremony-rehearsal-v1/attestation.json','params/ceremony-rehearsal-v1/normal.public-pk','params/ceremony-rehearsal-v1/boundary.public-pk']},
+ {key:'ceremonyTool',when:t=>/xmr20-params-ceremony/.test(t),files:['ceremony/target/release/xmr20-params-ceremony']},
  {key:'trustedStagenetManifest',when:t=>/stagenet-v0-trusted/.test(t),files:['params/stagenet-v0-trusted/manifest.json']},
  {key:'vectors',when:t=>/vectors\/vectors\.json/.test(t),files:['vectors/vectors.json']},
 ];

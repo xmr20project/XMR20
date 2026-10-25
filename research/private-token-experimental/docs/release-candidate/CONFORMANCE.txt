@@ -71,3 +71,15 @@ rules that the spec leaves to implementations and names the vector/test that che
   wallet-lib wraps the same engine; roles.mjs/param-server.mjs shared by every harness. Mocked/simulated: offline fakechain
   (regtest, instant blocks, unrealistic fee rate), LiteSVM Solana custody (compiled program, no network), lab issuer with a
   synthetic key, witness process on the same machine (market lab). Real: stagenet node, faucet, third-party node views.
+
+7. OPERATOR PAYOUT RULES ADDED 25 Oct (backend/operator.mjs — candidate copy; the earlier lab's operator is unchanged)
+  R-OP-1 depth: a redemption is payable only when its burn has >= D confirmations counted from the burn's CURRENT canonical
+         height (D is per operator instance; the lab default is 10, the provisional policy under test is 20).
+  R-OP-2 reorganisation before payout: if a pending redemption's burn changes height, or leaves canonical history after it had a
+         recorded height, the operator records an incident (burnReorganised / burnVanished) and PAUSES payouts. Paused is not
+         halted: nothing was lost; an explicit `resume` (a reviewed operator action) re-opens payouts, and the next payout
+         re-validates R-OP-1 against the new height — resume never pays by itself.
+  R-OP-3 loss: a paid redemption whose burn leaves canonical history latches `paidWithoutBurn` and HALTS the operator; a halted
+         operator cannot be resumed (the loss is final on Solana; counterexample A).
+  R-OP-4 exposure: a redemption above the single-payout limit is refused at redeemPrepare, before anything is proved or burned.
+  Tested by settlement/payout-depth-policy.test.mjs (D = 20; rollbacks below / at / beyond the depth, before and after payout).

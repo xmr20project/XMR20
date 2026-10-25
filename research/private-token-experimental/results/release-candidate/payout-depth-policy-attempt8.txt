@@ -1,0 +1,31 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+{"step":"case1: burn published and mined (1 confirmation)","txid":"454915f473d15acd0cd4320d71fe5ddfe28184d0adbba33a38746abb670e2d00"}
+backend: Only 12 confirmations
+backend: Only 8 confirmations
+{"step":"case1a: shallow rollback (5 < burn depth 12): burn canonical, confirmations 12 -> 8, still refused, no incident","rollback":{"before":421,"after":416,"popped":5}}
+backend: Operator paused after a reorganisation incident; review the incident and resume explicitly: {"kind":"burnVanished","txid":"454915f473d15acd0cd4320d71fe5ddfe28184d0adbba33a38746abb670e2d00","previousHeight":410,"tip":409,"note":"A burn with recorded confirmations left canonical history before payout (reorganisation). Nothing was paid; payouts paused until resume."}
+{"step":"case1b: rollback 9 (> burn depth 8, < D) before payout -> burn vanished, incident, paused, nothing paid","rollback":{"before":417,"after":408,"popped":9},"status":"orphaned"}
+backend: Operator paused after a reorganisation incident; review the incident and resume explicitly: {"kind":"burnVanished","txid":"454915f473d15acd0cd4320d71fe5ddfe28184d0adbba33a38746abb670e2d00","previousHeight":410,"tip":409,"note":"A burn with recorded confirmations left canonical history before payout (reorganisation). Nothing was paid; payouts paused until resume."}
+backend: Only 19 confirmations
+{"step":"case1b: re-mined, resumed, paid exactly once at D confirmations of the NEW height (D-1 refused)","paidNet":"9850000"}
+{"step":"case2: burn published and mined (1 confirmation)","txid":"3e3d37e1f36554bdb49b48d482d679f44200cc2e2f0398aac19e5e112042017a"}
+backend: Only 19 confirmations
+{"step":"case2: refused at D-1, paid at exactly D","paidNet":"9850000"}
+{"step":"case3: burn published and mined (1 confirmation)","txid":"89fcf6de9a951235322a3635724406a3b49b68eaefb11329838118a4d22a5825"}
+backend: Operator paused after a reorganisation incident; review the incident and resume explicitly: {"kind":"burnVanished","txid":"89fcf6de9a951235322a3635724406a3b49b68eaefb11329838118a4d22a5825","previousHeight":450,"tip":449,"note":"A burn with recorded confirmations left canonical history before payout (reorganisation). Nothing was paid; payouts paused until resume."}
+{"step":"case3: rollback beyond the depth before payout -> detected, paused, nothing paid, backing intact","rollback":{"before":474,"after":448,"popped":26},"status":"orphaned"}
+{"step":"case3: re-mined and paid once after D fresh confirmations","paidNet":"9850000"}
+{"step":"case4: burn published and mined (1 confirmation)","txid":"42b5deffde70b80c2578749c7ba1f0cb70c3f5c8134e4750e1a940836f70c783"}
+backend: Operator halted after incident: {"kind":"paidWithoutBurn","txid":"42b5deffde70b80c2578749c7ba1f0cb70c3f5c8134e4750e1a940836f70c783","amount":"10000000","tip":469,"note":"Solana payout is final; the Monero burn left canonical history. Cannot be revoked."}
+backend: Cannot resume a halted operator (loss incident)
+{"step":"case4: COUNTEREXAMPLE PRESERVED — payout final, burn gone after a rollback deeper than D, backing short by the paid amount, operator halted","rollback":{"before":489,"after":468,"popped":21},"shortfall":"10000000"}
+✔ payout depth policy D=20: rollbacks below/at/beyond the depth before payout are detected, pause payouts and re-validate; the post-payout loss is preserved (285585.1585ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 287389.022083
+exit 0

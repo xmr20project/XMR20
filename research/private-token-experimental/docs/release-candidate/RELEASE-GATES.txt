@@ -38,7 +38,12 @@ GATES PER COMPONENT (E = engineering evidence, R = independent review, P = produ
     E10 independent observation gates payout admission ....................... MET in this candidate (backend observers; offline agreement only with the primary; stagenet third-party views recorded)
     E11 live program / liquidity rehearsal on devnet or a mainnet fork ....... OPEN
     E12 reversible payout escrow (SETTLEMENT-DESIGN 4.7) if adopted .......... OPEN (not built)
-    D  finality policy with numbers (depth D, window T), funded loss reserve, incident stop ... OPEN — counterexample A stands
+    E13 reorganisation detection + pause + explicit resume before payout; depth re-validated against the burn's current height ... MET (simulation, D = 20; RESULTS 12)
+    E14 live program / test-mint rehearsal on DEVNET .......................... BLOCKED (faucet refused; plan + fresh keys in runs/devnet; RESULTS 11)
+    D  finality policy with numbers (depth D, window T), funded loss reserve, incident stop ... OPEN — counterexample A stands;
+       owner decision 25 Oct: D = 10 for this candidate, reorg hardening deferred (SETTLEMENT-DESIGN 9); window/reserve/stop not chosen;
+       evening handoff: PROVISIONAL D = 20 implemented and tested with detection/pause/resume (CONFORMANCE 7; RESULTS 12) — a policy, not finality;
+       counterexample A reproduced again at D = 20; the production depth is still an owner decision
     R/P as above ............................................................. OPEN
   NATIVE XMR TRADING
     counterexample B stands; no construction demonstrated; GATED. D: keep off the private format or fund 4.1 + 4.4 research.

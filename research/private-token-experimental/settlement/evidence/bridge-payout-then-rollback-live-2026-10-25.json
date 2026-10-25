@@ -3,13 +3,13 @@
  "confirmations": 10,
  "steps": [
   {
-   "at": "2026-10-25T02:23:49.567Z",
+   "at": "2026-10-25T16:48:18.248Z",
    "name": "deposited and credited",
-   "credit": "e7745fd78c102c8a28cf8c939f0c93a85e659b2ce3f3f92966a55fcb08d15d40",
+   "credit": "912ae69a2d2c03c198f2bfc6ec0b3abbba5b5915ca29212351e8a217cc5f1640",
    "balanceA": "98500000"
   },
   {
-   "at": "2026-10-25T02:24:21.010Z",
+   "at": "2026-10-25T16:48:49.929Z",
    "name": "backing before the burn",
    "asset": "3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f",
    "reserve": "1083500000",
@@ -30,9 +30,9 @@
    "halted": false
   },
   {
-   "at": "2026-10-25T02:24:44.381Z",
+   "at": "2026-10-25T16:49:13.794Z",
    "name": "burn paid out on Solana (irreversible program execution)",
-   "burnTxid": "0d38ccabb71067c3c4af19b3d85a1b9d73030bcd8bafcaa739afdb58e8e85e9c",
+   "burnTxid": "fc1b04e7edb5c4a232dec5d104d4463e65e674d665e8231174eb510a0248fd15",
    "burnHeight": 334,
    "payoutNet": "39400000",
    "liabilities": {
@@ -56,14 +56,14 @@
    }
   },
   {
-   "at": "2026-10-25T02:24:44.959Z",
+   "at": "2026-10-25T16:49:14.413Z",
    "name": "rollback removed the burn",
    "popped": 11,
    "from": 343,
    "to": 332
   },
   {
-   "at": "2026-10-25T02:25:14.765Z",
+   "at": "2026-10-25T16:49:44.854Z",
    "name": "COUNTEREXAMPLE REPRODUCED: payout final, burn gone, note re-spent, backing short",
    "liabilities": {
     "asset": "3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f",
@@ -86,12 +86,12 @@
    },
    "incident": {
     "kind": "paidWithoutBurn",
-    "txid": "0d38ccabb71067c3c4af19b3d85a1b9d73030bcd8bafcaa739afdb58e8e85e9c",
+    "txid": "fc1b04e7edb5c4a232dec5d104d4463e65e674d665e8231174eb510a0248fd15",
     "amount": "40000000",
     "tip": 342,
     "note": "Solana payout is final; the Monero burn left canonical history. Cannot be revoked."
    },
-   "respendTxid": "b55fd7aac39c51583dcb3496f06548a5d6a58f75e9a804b920d15826589be416",
+   "respendTxid": "1006b94be7282c1d4671eb454576e98dffb6fb6807f331d15cdee286efd41548",
    "burnVerifyAfter": "rejected"
   }
  ],
@@ -100,8 +100,8 @@
   "paidAmount": "40000000",
   "shortfall": "40000000",
   "lossBearer": "operator backing shared by all holders (no per-holder insurance)",
-  "burnTxid": "0d38ccabb71067c3c4af19b3d85a1b9d73030bcd8bafcaa739afdb58e8e85e9c",
-  "respendTxid": "b55fd7aac39c51583dcb3496f06548a5d6a58f75e9a804b920d15826589be416",
+  "burnTxid": "fc1b04e7edb5c4a232dec5d104d4463e65e674d665e8231174eb510a0248fd15",
+  "respendTxid": "1006b94be7282c1d4671eb454576e98dffb6fb6807f331d15cdee286efd41548",
   "incident": "paidWithoutBurn",
   "failingAssumption": "a burn with CONFIRMATIONS Monero confirmations is treated as final when releasing an IRREVERSIBLE Solana payout; Monero offers no finality and no maximum reorganisation depth, so the burn can leave canonical history after the payout and any instance without the local reservation can re-spend the notes"
  }

@@ -78,6 +78,50 @@ test-v1 manifest, compiled Solana custody in LiteSVM. EXECUTED ON STAGENET = ret
     production legacy indexer must export (mint, legacy owner key, amount) rows per token at the cutoff height); the old-path
     stop in the SHIPPING indexer is not integrated (RELEASE-CHECKLIST 3); nothing touched real holdings.
 
+4b. CATALOG TOKENS THROUGH THE REAL POPUP — PASSED 1/1 on attempt 8 (25 Oct 16:36-16:40 UTC; browser-catalog-migration-bridge.test.mjs;
+    runs/catalog-popup-results.json; evidence/verified-catalog-popup-2026-10-25T16-36-11; attempts 1-7 in runs/catalog-popup-attempt*.log)
+  Why: section 4 proves the migration/bridge rule per mint through the wallet LIBRARY. The owner's intended experience is the
+  extension UI, and the popup had only ever exercised the synthetic main token. This suite drives two catalog tokens with
+  different REAL transfer-fee settings through the actual popup (offline fakechain, LiteSVM custody with the real mint bytes):
+    EXTREMIST (0 bps, mint 9MwJfFGc…)  legacy 10,000 -> "Migrate to private" -> exactly 10,000 private, no fee -> 4,000 to the
+                                        second account with change exactly 6,000 -> a 4,000 redemption REFUSED before anything is
+                                        proved or burned (lab single-payout exposure limit, max 100 units) -> redeem 100: payout
+                                        refused at 1 confirmation ("Only 1 confirmations"), PAID exactly 100 at depth 10, a second
+                                        request returns status paid / repeated:true and pays nothing (Solana +100.000000 exactly) ->
+                                        deposit 100 from Solana -> private credit exactly 100.
+    LUKE (150 bps, mint KzTQBqjk…)     migration INTERRUPTED after the claim was signed (popup stopped by the test hook) -> the saved
+                                        signed claim is submitted by the next reconcile, exactly one credit (pool credits 2 = 1 per
+                                        claim) -> exactly 10,000 private -> redeem 100 -> PAID 98.5 (Solana +98.500000) -> deposit
+                                        100 -> credit 98.5.
+    Fresh profile:                      the first account's phrase alone restores EXTREMIST 6,000.000000 and LUKE 98.500000; its
+                                        migrated EXTREMIST lot is not offered again; its unmigrated LUKE lot still is.
+    Audit:                              0 external requests completed (production endpoints blocked by the test build's CSP), 0 secret
+                                        leaks, no key image or carrier in the backend's 9 audited files. Carrier fees 0.003024 XMR
+                                        (transfer, 2,520 weight bytes) and 0.002938 XMR (redemptions, 2,449 bytes), paid by the holder.
+  Attempts (retained; the wallet fixes are the point):
+    1  FAILED, 71 s   popup error "Unknown legacy lot for this account": the popup's migrate button, and the automatic resubmission
+                      of a saved signed claim, never sent the token symbol, so the lab backend looked for the lot under the main token.
+                      The library-level suite passes the symbol itself and could not see this. FIX (wallet-extension/src/private-format.js):
+                      claimPrepare/claimSubmit carry symbol; journal claim entries record symbol+asset; resubmission uses them
+                      (older entries default to the main token); amounts use the asset's own decimals; the deposit note states this
+                      mint's own fee (or "no token transfer fee") instead of a fixed 1.5 %. Test extension rebuilt (app.js c955b8ae…).
+    2  FAILED, 984 s  timed out waiting for the fee review: the test's send helper did not watch the popup's error line. Test fix.
+    3  FAILED, 84 s   "No spendable XMR for the carrier fee … unlocked 0, locked 0": the account had no XMR at all.
+    4  FAILED, 89 s   diagnostics added: Alpha 0 XMR, Beta 140 XMR — the popup stays on the account imported LAST, so the test had
+                      funded Beta four times. Test fix (switch to Alpha before funding); not a wallet defect.
+    5  FAILED, 214 s  waited for a payout button right after the burn: the operator lists a payout only once the burn is in a block.
+                      Test fix (mine one block first).
+    6  FAILED, 152 s  the operator REFUSED the early payout with "Only 1 confirmations" — correct behaviour that the test treated as a
+                      failure. Test fix (the refusal is the expected below-depth outcome).
+    7  FAILED, 156 s  "Exposure: single payout above lab limit" AFTER the 4,000 EXTREMIST burn was published: the popup let the holder
+                      burn more than the operator may pay in one payout, so the tokens were burned and the payout refused. REAL GAP.
+                      FIX: redeemPrepare now takes the amount and refuses above the single-payout limit BEFORE anything is proved or
+                      burned (backend/service.mjs; message names the limit); the popup sends the amount. Test extension rebuilt
+                      (app.js bdbad7fe…). The suite now asserts the refusal leaves no pending operation and the balance untouched.
+    8  PASSED, 211 s  as summarised above.
+  Scope statement: real mint identities and fee bytes, SYNTHETIC holdings and lots (10,000 per holder per token from the test
+  service's snapshot), offline chain, simulated custody. No real holder data was read or touched.
+
 5. RETAINED FROM THE PREVIOUS CANDIDATES (not re-run; see their RESULTS)
   stagenet real-popup run PASSED (two fresh accounts, send with change 80c2be96…, actual lost reply 4aacb060… recovered by lookup,
   reopen/lock without re-send, exact balances/fees, third-party confirmation, fresh-installation recovery); offline popup suites
@@ -301,6 +345,134 @@ test-v1 manifest, compiled Solana custody in LiteSVM. EXECUTED ON STAGENET = ret
   Meaning and limits: the four recorded digests ARE the compiled form of the recorded sources with the recorded toolchain, on this
   machine. They are not path-independent (same absolute locations required), not published, and not rebuilt by anyone else;
   a remapped engine build is a new digest and re-runs the suite. No verdict changes.
+
+6d. INTEGRATION SUITE — RUN 6 (25 Oct 16:40-17:31Z; INTERMEDIATE, superseded by run 7): 19/20 rows, 1 FAILED
+  Started on the build with the catalog popup fixes (app.js bdbad7fe…, redeemPrepare amount check). While it ran, the evening handoff
+  work changed backend/service.mjs (per-instance confirmations, operator copy, resume action) and added suites, so rows executed after
+  ~17:00 ran on a mixed build and the run is NOT a final verification. Executed 11, reused 9 (from run 5, identical digests), failed 1:
+  "real popup: journal recovery" (17:11-17:17Z, 372 s): assertion "B re-sent the SAME carrier after the rollback" did not become true
+  within the suite's bounded refresh loop. At that time the machine was also running the ceremony rehearsal (one core at 100 %) and
+  the depth-policy test (proving). Treated as an open item until run 7 executes the suite alone: a repeat failure in isolation is a
+  regression to be fixed, a pass is load-induced timing. Report kept: runs/integration-report-run6.json; runner log
+  runs/integration-suite-run6-runner.log; the row's own log runs/suite-logs/browser-journal-recovery-test.log (overwritten by run 7).
+
+6e. JOURNAL-RECOVERY CASE 4 AFTER THE ROLLBACK — INVESTIGATED, ASSERTION CORRECTED, SUITE PASSES ALONE (25 Oct 17:38-18:05Z)
+  Isolated reruns reproduced the run-6 failure (attempts 1-2: runs/journal-recovery-isolated-attempt{1,2}.log), so it was not load.
+  Diagnostic (attempt 2 dumped the popup journal; runs/diag-resend-after-rollback.mjs reproduced the sequence with the wallet library):
+  after the 12-block rollback the popup DID retry the identical signed carrier exactly once (lookup-before-retry) and the fakechain
+  daemon REFUSED it with status "Failed" and no reason flag; the popup marked the operation 'refused', kept the proved record and offered
+  a new carrier for it — the designed behaviour for a carrier the node will not take. The test, however, asserted the OTHER legitimate
+  outcome only (same carrier accepted again, as in the passing runs of 24-25 Oct 02:52). Which outcome occurs depends on whether the
+  carrier's 16 ring members include an output created in the rolled-back blocks (they vanish with the blocks; the library reproduction
+  drew older decoys and was accepted again). Four isolated runs today all hit the refusal; earlier runs hit acceptance; the daemon gives
+  no flag, so the exact refusal reason is not established — recorded as such.
+  Correction (no property weakened; the property is now stated exactly): after a rollback the saved carrier is retried exactly once and
+  never silently dropped; EITHER it is accepted (same txid, no new fee) OR it is refused, the proved record is retained with the daemon's
+  reason, the refused carrier is absent from the daemon, and a NEW carrier approved from the pending list carries the SAME record (same
+  record id, different txid); in both cases the record settles once and exactly ONE carrier fee is paid in total (the rolled-back
+  carrier's fee returned with the rollback). Attempt 3 PASSED 1/1 (18:05Z) through outcome (ii): new carrier 8287c459…, one fee.
+  Residual: the acceptance path (i) is no longer exercised by today's runs; it remains covered by the retained 02:52 evidence.
+
+9. MIGRATION PREPARATION ADDED 25 Oct (handoff priority 3)
+  9a. PUBLIC-DATA SNAPSHOT + RECONCILIATION (migration/snapshot-reconcile.mjs; test 3/3): over the recorded public tokens API (24 Oct)
+      and the catalog (66 mints): identity (mint, decimals + their recorded on-chain check, inscription/bridge versions, chain
+      labels), fee policy (0/150 bps; 200 documented but absent), supply figures, backing order supply >= lockedRaw >= xmrOutstanding
+      and the MIGRATION ENVELOPE = Monero-side outstanding amount (upper bound of all private entitlements per mint). Result on the
+      24 Oct data (runs/migration-snapshot-20261025.json, digest 915c0cc4…): 66 mints, 57 with an envelope, 9 WITHOUT (their public
+      rows lack lockedRaw/xmrOutstanding: RADIANCE, XMR20~3cMyj7, XMR20~5NPSXG, GROK, TEST~7JsSRe, XMR~8WcHb3, EXTREMIST, TGTEST,
+      TURBOBOOST — for these the envelope needs a live reconciliation, recorded as a dependency, not guessed), 71 recorded problems
+      (mostly "no on-chain decimals check recorded" for the 61 mints that are not test instances). The digest is reproducible and
+      changes with any source change (tested). What public data cannot give: per-holder lots — those need the legacy inscription
+      records replayed from a Monero MAINNET node at the cutoff height through the isolated cutover indexer; not performed (no
+      mainnet node in this candidate; cutoff height is the owner's decision). Synthetic lots used by the lab are checked against the
+      envelope rule where known.
+  9b. CUTOFF BOUNDARIES AND ROLLBACKS (migration/cutover-rollback.test.mjs; 2/2, pure replay on the isolated XN1 copy): a rollback
+      BELOW the cutover checkpoint is refused ("migration suspension and full reconciliation"), a rollback AT/ABOVE it is processed
+      and leaves the rights snapshot id unchanged; a MOVE after the checkpoint is visible and never honoured; the right is still
+      claimable once by the snapshot owner after the rollback; a second cutover cannot be declared; a claim made against another
+      snapshot is refused. (Interrupted migration, duplicates from the same and a fresh installation, late registrant and the
+      10,000 -> 10,000 conversion with fees handled separately remain in migration/legacy-migration.test.mjs and 4b.)
+      Housekeeping: the lab crate folder privacy-stagenet-roles-20261023-lab received the same node_modules symlink every other
+      candidate has (no files copied) so its ES modules resolve when imported from here.
+  9c. PRODUCTION CHANGEOVER STEPS (prepared, none executed): (1) owner chooses the cutoff height; (2) legacy indexer replay to that
+      height on an isolated copy -> per-mint rights snapshot (rows: claim id, legacy owner key, amount) -> snapshot id published;
+      (3) reconcile each mint's row sum against its envelope (9a) and the live Solana vault/supply (read-only); (4) shipping indexer
+      stops honouring old-path issuance at the cutoff (NOT integrated: gate E7); (5) wallets ship the manifest + snapshot id; claims
+      open; (6) disclosure of post-cutoff activity (visible, never honoured). No cutoff chosen, no holder frozen, nothing activated.
+
+10. NATIVE MARKETPLACE SETTLEMENT (handoff priority 6; production trading DISABLED) — settlement/model/bundled-trade.test.mjs 6/6
+  Construction modelled: listing reservation record + ONE bundled Monero transaction (XMR payment + token delivery spending the
+  reserved output). Fair under reordering (also two lots interleaved), under a conflicting spend before the bundle (the reservation
+  makes the indexer reject it — without the reservation the buyer loses, which is what it fixes), under rebroadcast of a captured
+  bundle while the listing is intact, and under duplicate submission. RETAINED COUNTEREXAMPLE B': the listing is reorganised away
+  while the bundle is (or is rebroadcast) canonical -> XMR moves, no tokens, buyer loses; the construction only moves the required
+  reorganisation from the bundle to the listing. The seller is never short (delivery exists only inside the paying bundle). Next
+  candidates recorded: seller bond held by a party that sees both legs (trusted/escrow, 4.3/4.4); buyer signs only after the listing
+  has D confirmations (shrinks, does not remove). Evidence settlement/evidence/bundled-trade-model-2026-10-25.json.
+
+11. SOLANA DEVNET REHEARSAL (handoff priority 4) — PREPARED, BLOCKED ON FAUCET FUNDING
+  Fresh devnet-only keypairs created in runs/devnet (operator 4HUkGrLY…, two holders; never published); the devnet faucet refused
+  every airdrop request from this machine (rate limit; attempts logged). Deploying the 203,472-byte program needs ~1.5 SOL; the web
+  faucet needs an interactive GitHub login (owner action); the owner's own devnet keypair is deliberately not used. The plan, the
+  reuse of the proof-of-concept's RPC adapters and the real-vs-mock table are in runs/devnet/README.txt. Nothing on devnet was run.
+
+12. PROVISIONAL 20-CONFIRMATION WITHDRAWAL POLICY (handoff priority 5) — settlement/payout-depth-policy.test.mjs PASSED on attempt 8
+    (runs/payout-depth-policy-results.json; settlement/evidence/payout-depth-policy-20-2026-10-25.json; attempts 1-7 in runs/)
+  Implementation: backend/operator.mjs (candidate copy; the earlier lab's operator untouched) + backend/service.mjs: the depth is per
+  instance (startBackend({confirmations}); default stays 10), reorganisation DETECTION on every reconcile (a pending burn that changes
+  height -> burnReorganised; one that leaves canonical history after it had a recorded height -> burnVanished), PAUSE of payouts on
+  such an incident (distinct from the loss latch), an explicit `resume` test action, and re-validation of the depth against the burn's
+  CURRENT height on every payout. Rules written as CONFORMANCE 7 (R-OP-1..4). SIMULATED: offline fakechain, controlled /pop_blocks
+  rollbacks with the pool flushed, LiteSVM custody, wallet-lib holder; D = 20.
+    case 1a  shallow rollback (5 blocks) below the burn's 12 confirmations, before payout: burn stays canonical, confirmations
+             re-counted 12 -> 8, payout refused "Only 8 confirmations", no incident (correct: nothing about the burn changed).
+    case 1b  rollback of 9 (> the burn's 8, < D), before payout: burn leaves history -> burnVanished incident, payouts PAUSED, nothing
+             paid; the honest wallet re-publishes the IDENTICAL carrier (same txid); confirmations restart from the new height; while
+             paused the payout is refused; after `resume` it is refused at D-1 ("Only 19 confirmations") and PAID exactly once at D
+             (net 9.85 X); a second request returns repeated:true; backing holds.
+    case 2   at the depth, no reorganisation: refused at 19, paid at exactly 20.
+    case 3   rollback of 26 (> D) before payout on a burn with 25 confirmations: detected, paused, NOTHING paid, backing intact; after
+             re-publication and resume, paid once at 20 fresh confirmations.
+    case 4   PRESERVED LOSS: paid at 20, then a rollback of 21 removes the burn -> backing invariant fails by exactly the paid amount
+             (shortfall 10,000,000), paidWithoutBurn incident, operator HALTED; no further payouts; `resume` refused ("halted").
+  Attempts and causes (test-side only; no operator defect found): 1 wrong engine op; 2-3 wrong action route / unhelpful error text;
+  4 the lab's backing invariant needs both synthetic legacy lots registered; 5-7 the test expected a 5-block rollback to remove a
+  12-deep burn (it correctly does not) — case 1 split into 1a/1b. What this is NOT: finality, a reorganisation probability, a
+  reserve or insurance. The owner said 10 in chat and the handoff says 20; both numbers are now exercised (10 by every other suite,
+  20 here); the production number is still the owner's decision.
+
+13. PROOF-SYSTEM ALTERNATIVES STUDY (25 Oct 19:30-20:30Z; PROOF-SYSTEM-ALTERNATIVES.txt) — DESK STUDY, NO PROTOTYPE MEASUREMENT
+  Question (owner): keep one-transaction private transfers AND avoid an XMR20-specific trusted setup? Requirements separated (R1 bytes,
+  R2 setup). Byte arithmetic with the SPEC 7.2 framing (python, retained in the file): XM3 today 996 B record / 1,056 B tx_extra;
+  with a 128 B compressed BN254 Groth16 (RISC Zero / SP1 wrapper) 932 B / 992 B FITS; with the vendors' uncompressed 256 B seal
+  1,060 B / 1,123 B DOES NOT FIT; a zkVM-native record with signatures folded into the program 612 B / 667 B. PLONK (600-900 B),
+  Marlin, Bulletproofs, Halo2, STARKs do not fit. Primary documentation read (section 9 of the file): RISC Zero's Groth16 prover is
+  x86-only ("Apple Silicon is currently unsupported (even via Docker)"); SP1 Groth16 wrapping needs "roughly 14GB" RAM, 16+ cores,
+  Docker; SP1's own docs call its Groth16 setup one with "higher trust assumptions" (18 named contributors); RISC Zero's ceremony was
+  PSE-coordinated on the Hermez 2^23 ptau (238 contributions per a search summary, blog unreachable). Penumbra phase-1 degree claim
+  in ceremony/README.txt corrected to UNVERIFIED (its code runs phase 1 per circuit degree). Guest cycle figures in 5.3 are ESTIMATES
+  (~30-300 M cycles per XM3); the prepared probe (proof-of-concepts/zkvm-wrapper-probe/README.txt) was not run because installing the
+  vendor toolchain was refused by the session permission policy, and the Groth16 wrap could not run on this Apple-silicon laptop
+  regardless. Recommendation: keep XM3/XB3 and the combined Groth16 circuits; meet R2 with the small XMR20 phase-2 ceremony (measured
+  7-18 min of compute per circuit per participant). Participant guide drafted: ceremony/PARTICIPANT-GUIDE.txt (not circulated).
+
+8. PARAMETER-CEREMONY TOOLING AND REHEARSAL (handoff priority 2; ceremony/; 25 Oct 17:09–21:12Z) — REHEARSAL, DISPOSABLE OUTPUT
+   Tool: ceremony/target/release/xmr20-params-ceremony (init | contribute | transition | finalize | verify [--quick]) over a vendored
+   single-circuit subset of penumbra-sdk-proof-setup 2.1.1; circuits recompiled from source at init and verify (normal: 135,684
+   constraints, degree 2^18, R1CS dae1a919…; boundary: 121,809, 2^17, fe8033a3…). Chain executed on this laptop, THREE contributions per
+   phase per circuit by PROCESSES ON ONE MACHINE = ZERO independent participants (labelled so in ceremony.json, attestation.json and the
+   manifest): phase-1 contributions normal [50, 247, 448] s, boundary [20, 117, 213] s (each contribution
+   re-verifies its predecessors, hence the growth); transitions once per circuit (cached root.bin); phase-2 contributions normal
+   [1100, 1089, 779] s, boundary [385, 407, 429] s; finalize 3,114 s (normal.public-pk 82,675,440 B sha256 da712798…,
+   boundary.public-pk 64,409,328 B sha256 33745cd2…); FULL verify (circuits recompiled, both logs replayed with every contribution
+   validated and linked, transition recomputed, keys recombined and compared byte-for-byte with the files and the manifest) ok=true in
+   3764 s (20:09–21:12Z), vkMatches true for both circuits. Build attempts 1–4 retained (runs/ceremony-build-attempt*.log).
+   ceremony/ceremony-rehearsal.test.mjs (verify --quick, tamper cases, manifest binding, end-to-end prove/verify with the rehearsed keys on
+   the backend) was STARTED at 21:17Z and was still running at publication time (its quick verify alone exceeds 40 CPU-minutes); its
+   result and params/ceremony-rehearsal-v1/manifest.json follow in a later commit. Participant guide and announcement DRAFTS written
+   (ceremony/PARTICIPANT-GUIDE.txt, ANNOUNCEMENT-DRAFT.txt); nobody contacted. Phase-1 reuse of Penumbra's ceremony: degree UNVERIFIED
+   (ceremony/README.txt 3). Superseded in direction by the unshielded-format candidate (research/token-format-unshielded-20261025), which
+   needs no XMR20 setup at all; this tooling remains the path if a composed XMR20 circuit is ever adopted.
 
 7. WHAT IS NOT DONE (see RELEASE-CHECKLIST 2-5 and RELEASE-GATES)
   real cutover snapshots per token; production adapters and live-program rehearsal; reversible payout escrow; bundled trade
