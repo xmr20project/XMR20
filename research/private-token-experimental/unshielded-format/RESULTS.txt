@@ -1,0 +1,113 @@
+RESULTS — UNSHIELDED-BY-DEFAULT TOKEN FORMAT CANDIDATE (research/token-format-unshielded-20261025), 25 October 2026
+Everything below is SIMULATED (offline fakechain monerod 0.18 regtest, roles binary, LiteSVM custody) unless stated. Numbers are
+MEASURED where a run file is named; "estimate" is written out where it applies. Independent review: NOT performed. No real funds,
+no deployment, no change to the installed wallet, the live website, the bridge or any earlier evidence. Attempts are retained.
+
+1. WHAT WAS BUILT (all offline, pinned versions; builds reproducible with the commands in README.txt)
+  core/ (xmr20-unshielded-core)     keys.rs (owner key + unified address), public.rs (XP1/XC1/XR1), shield.rs (XS1/XU1), private2.rs
+                                     (XMA/XMB), penumbra.rs (Penumbra circuits + published keys), pool.rs (indexer), transport.rs, manifest.rs
+  format/ (xmr20-unshielded-lab)    roles binary: setup | indexer | issuer; 10,404,128 B; built 21:02Z
+  holder-wasm/                      engine wasm 5,334,721 B (xmr20_holder_wasm.wasm), ops in DESIGN 4 + `plan`
+  wallet-extension/                 test build "XMR20 Wallet — Unshielded format test" 0.1.97; popup module src/token-format.js;
+                                     app.js sha256 7f9b0d1c03a2c212…, vendor/holder.wasm faea8f10c243ef12…
+  params/penumbra-2.1.1/            spend_pk.bin 21,673,392 B sha256 87eca85b…, output_pk.bin 7,257,360 B sha256 c9e97866… (= the git-lfs ids
+                                     in penumbra-sdk-proof-params 2.1.1; fetched 20:31Z via the GitHub LFS batch API, verified)
+  params/test-v2/                   parameters.json, manifest.json (XMR20-PARAMS-2, sha256 93efe1b7fc13d139…), issuer.secret.json (lab),
+                                     key copies; ledger domain 93c114417b149524…; genesis 418015bb… (regtest fakechain)
+
+2. CORE UNIT TESTS — PASSED 10/10 (runs/core-tests-attempt3.log; attempts 1–2 retained: attempt 1 failed on a wrong Penumbra sign
+   convention in the shield conservation key (fixed: a shield PROVIDES +value, an unshield REQUIRES -value) and on a size arithmetic
+   slip in a test; attempt 2 failed because a rebuilt credit wire was not byte-identical to the original (test fixed to reuse the wire).
+   Measured record and tx_extra sizes with the real framing (transport::frame; relay limit 1,060):
+     public credit XC1      173 B record   210 B tx_extra
+     public transfer XP1    110..390 B     up to 442 B      (max 4 in / 4 out)
+     public burn XR1        213..309 B     up to 349 B
+     shield XS1             637..733 B     690 B (1 input) .. 778 B
+     unshield XU1           924 B          973 B           (ONE shielded input; two inputs with change would be 1,180 B — does not fit; DESIGN 2.6)
+     private part A XMA     932 B          981 B
+     private part B XMB     900 B          949 B
+   Covered: owner-key derivation and unified-address codec (round trip, checksum, Monero address refused); Penumbra key ids (swapped
+   verifying key refused); credit/transfer/burn with duplicates, foreign issuer, wrong signer, non-conservation, replay; shield (+ wrong
+   stated total refused), unshield (+ replay refused, tampered amount refused); two-part transfer: B-first pending, look-alike A with a
+   garbage proof does not block the genuine pair, completion exactly once, duplicates inert, conflicting operation never completes
+   ("Spent token input"), recipient spends what it received; backing invariant after every step.
+
+3. END-TO-END FLOW THROUGH THE REAL ENGINE (flow.test.mjs) — PASSED on attempt 5 (runs/flow-attempt5.log, runs/flow-results.json)
+   Attempts retained: 1 engine refused the fee placeholder (framing needs a known magic; fixed in native.rs), 2 test compared the wrong
+   planned length for part B (test fixed), 3 the legacy registry copied from the earlier lab required a penumbra1 owner (candidate copy
+   backend/migration-registry.mjs accepts the unified address), 4 the completing part's counterpart record stayed "pending" (engine now
+   marks both parts accepted on completion; test asserts both).
+   Measured on the fakechain (fee rate 1,200,000 piconero/byte, far above mainnet; every carrier 1 input / 2 outputs):
+     operation             record   tx_extra   carrier   fee (piconero)      proving (Node, M4 Pro)
+     public transfer       214 B    262 B      1,726 B   2,071,200,000       none
+     shield                645 B    701 B      2,165 B   2,598,000,000       3.0 s
+     private part A        932 B    992 B      2,456 B   2,947,200,000       33.8 s for both parts (3 spends + 2 outputs)
+     private part B        900 B    960 B      2,424 B   2,908,800,000
+     unshield              924 B    984 B      2,448 B   2,937,600,000       12.5 s
+     public burn           213 B    261 B      1,725 B   2,070,000,000       none
+   Transaction counts as the holder sees them: public transfer 1, shield 1, private transfer 2, unshield 1, burn 1, deposit 0 (issuer
+   pays the credit carrier), migration 0 (issuer pays). A private transfer needs TWO spendable XMR outputs (10-block lock).
+   Steps verified: deposit 100 X -> PUBLIC credit 98.5 (fee once on deposit) · public send 40 with change 58.5 · replay refused and never
+   signed again · shield 50 (public 8.5 / shielded 50) · private 30 to B in two carriers (nothing moves after part A alone; B sees 30 only
+   when both are canonical; shielded supply unchanged by a private transfer; duplicates inert) · B unshields 10 of its 30 note (public 50,
+   shielded 20, change note) · B burns 25 publicly: payout refused at 1 confirmation, paid 24.625 X once after 10, repeat returns
+   `repeated` · operator liabilities balanced · migration of the synthetic legacy lot (492,500,000) -> exactly that as a PUBLIC note,
+   duplicate refused · recovery: a fresh engine from the same root rebuilds both balances, a wrong root sees nothing, a viewing key sees
+   the shielded balance only (no public ownership) · rollback: part A mined, 2 blocks popped, half forgotten by replay, identical carriers
+   re-published, operation completed once · indexer summary == holder replica (root, notes, nullifiers, supplies, completed ops) ·
+   DISCLOSURE AUDIT: 20 native key images/output keys known to the wallets, 8 records: none appears in any record or in the backend's
+   request log; every carrier's tx_extra is one tx pubkey + the record chunks, within 1,060 bytes.
+   Final pool: outstanding 566,000,000 == publicSupply 526,000,000 + shieldedSupply 40,000,000 (invariant ok).
+
+4. TWO-PART TRANSFERS UNDER ROLLBACK AND CONFLICT (parts-rollback.test.mjs) — PASSED on attempt 2 (runs/parts-rollback-attempt2.log,
+   runs/parts-rollback-results.json; 199 s). Cases, each followed by the backing invariant and indexer == holder replica checks:
+     a. both parts mined; rollback removes ONLY part B: the recipient's 20 X disappears, the sender's notes are unspent again, part A is
+        back to "pending", part B's record is forgotten; the identical signed carrier B is accepted again -> completed once (1 completed op).
+     b. rollback removes BOTH parts (mined in one block): both forgotten; both identical carriers re-published -> completed once.
+     c. conflicting spend: op3's part A on chain; op4 (same note) published complete and applied first; op3 can never complete — local
+        admission reports "Spent token input"; a stale part B mined afterwards is inert (completed ops unchanged).
+     d. reversed arrival: part B mined first (pending, nothing moves), part A later completes; both records accepted; a duplicate copy of
+        A under a new carrier is inert.
+   
+   Attempt 1 (runs/parts-rollback-attempt1.log) failed on the test itself: it quoted a carrier without syncing the engine first
+   ("Distribution must cover heights 0..=338 (got 340 entries)"): the engine refuses a fee quote when its native view is behind the
+   daemon — the popup always refreshes before an operation; the test now syncs before every quote.
+
+5. THE REAL POPUP (browser-flow.test.mjs) — PASSED on attempt 3 (runs/browser-flow-attempt3.log; evidence/verified-popup-unshielded-
+   2026-10-25T21-28-45/: 22 screenshots, steps.json, network-audit.json, results.json; 146 s wall clock with proving in Chromium's wasm).
+   Attempts retained: 1 the test's regex expected a space the review text does not contain; 2 the payout button sits in a collapsed
+   <details> (test opens it). The popup itself needed no change. Verified in the actual extension UI (test build 0.1.97, two wallets):
+     deposit 100 X -> PUBLIC balance 98.5 (detail shows "Public balance" and "shielded" separately) · Send mode "Public transfer — 1
+     transaction" (review: "1 Monero transaction", fee 2,071,200,000 piconero) · Shield 50 (review names the boundary disclosure; fee
+     2,598,000,000) · Send mode "Private transfer — 2 transactions" (review lists Transaction 1 / Transaction 2 fees and the total
+     5,856,000,000; two carriers with different XMR inputs; recipient sees public 20 / shielded 30 only after both are mined) · Bridge
+     redeem of 25 with public 20 REFUSED: "Insufficient PUBLIC balance. The bridge does not unshield for you: use Unshield first" · Unshield
+     10 (1 transaction; fee 2,937,600,000) · redeem 25 publicly -> payout "Paid 24.625 X" once · INTERRUPTION between the two carriers of
+     a private transfer (test hook after the first publish): the journal shows carrier 1 published / carrier 2 never left; a lone part A
+     moves nothing; on refresh the wallet re-sends the SAME second carrier (same txid, no new fee) and the transfer completes · legacy lot ->
+     PUBLIC note of exactly the lot · Send form at 320x440 keeps Send and Back visible · fresh-profile restore from the phrase rebuilds
+     the same public and shielded balances and address · audit: 2,561 requests, 0 external, 0 secret leaks (seeds/Solana secrets never
+     in a request), backend files free of the test secrets, no key image in backend requests.
+   
+
+6. DISCLOSURE REQUIREMENT (R-F) — HOW IT IS MET AND WHAT REMAINS
+   Met by construction: public ownership is a derived decaf377-rdsa key (keyed BLAKE2b from the root, domain "xmr20/public-token/owner-key"),
+   algebraically unrelated to any Monero key; records carry note ids (hashes), asset ids, amounts, owner keys and Penumbra public data only;
+   migration claims use the plain Monero signature under the old output key (no key image); carriers are ordinary 1-in/2-out RingCT
+   transactions built by monero-oxide with unchanged gamma decoy selection (the record only sets tx_extra; its size is the only change to
+   the transaction shape). Verified by the audit in 3 and by the browser suite's network audit (no key image or carrier blob to the backend).
+   Residual (not zero privacy impact): public amounts and owner keys in unshielded mode; the fee payer, timing and record sizes of every
+   carrier; the two carriers of a private transfer share an operation id (linkable to each other); shield/unshield publish amounts and link
+   the owner key to a shielded event; the claim links P to the unified address; historical XN1 disclosures stay public.
+
+7. WHAT IS NOT DONE / BLOCKERS (honest list)
+   - Independent security review: NOT performed (owner deferred). The new code (core/, holder-wasm/, token-format.js) is unreviewed.
+   - Penumbra ceremony transcript: not verified here; trust statement inherited (DESIGN 5). Key provenance pinned by bytes and ids only.
+   - Production snapshot/cutover: documented (MIGRATION-CUTOVER.txt), not executed; no live cutoff chosen; real holdings untouched.
+   - Bridge/marketplace settlement: the rollback-loss counterexample after an irreversible payout is unchanged by the format (the operator
+     copy keeps detection/pause/halt); marketplace trading stays disabled; nothing here addresses them.
+   - Stagenet/devnet: not run for this format (offline fakechain only). The stagenet service copy (backend/stagenet-service.mjs) is
+     untouched and not adapted.
+   - Unshield takes one note per transaction (measured blocker: 1,180 B > 1,011 B for two inputs with change).
+   - Proving in the browser takes tens of seconds per private transfer (Penumbra keys, 29 MB download once).
+   - Mainnet: refused by the engine and the worker as before.

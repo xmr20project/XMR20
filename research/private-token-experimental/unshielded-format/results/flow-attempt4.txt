@@ -1,0 +1,39 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+{"step":"deposit credited publicly","net":"98500000","credit":"71b032d8ab078dcf4b33683d8d9fc5b9128427984cb6bfb90d00eafc45df6c7a"}
+{"step":"public transfer 40 X (1 tx)","txid":"19fa2afa7a8f9afa737aa6f5cac8d8c6f8fdc06807529df216643715476894de","fee":"2071200000","extraBytes":262}
+{"step":"shield 50 X (1 tx)","txid":"e8abd8847545496a80242d7ce4099aa74087ad690587664e2f80783fe6b9a436","fee":"2598000000","provingMs":3011}
+{"step":"private transfer 30 X (2 txs)","txids":["21a4978c8956788e0cc3dbd1c843fc82540c5cefcf77116358def36f8d89d799","9fbee3c6f6ca0620c2f781aab3a939260ee75cc90f96fea80dae4d3e11594d95"],"fees":["2947200000","2908800000"],"provingMs":33597}
+{"step":"unshield 10 X (1 tx)","txid":"014f8a7de641ad6130f52a4499158ee2ee956d9ba7e931bee62064dacf26e078","fee":"2937600000","provingMs":12338}
+backend: Only 1 confirmations
+{"step":"burn 25 X -> payout 24.625 X once","txid":"d58595e122449d5616ca40c702ca0f33fb54f0adee8197ad5808e70d75bb678f","fee":"2070000000"}
+backend: Claim already consumed
+{"step":"legacy lot migrated to a PUBLIC note, exactly the lot","amount":"492500000","credit":"61059e0f70925df678807042858d4eb1c6fab0f8d05d78192c7e2b5012d6ed34"}
+{"step":"recovery from root; wrong root empty; viewing key shielded-only"}
+✖ unshielded-by-default: public credit, public send, shield, 2-tx private send, unshield, burn+payout, migration, recovery, rollback, disclosure audit (105488.177375ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 107312.532584
+
+✖ failing tests:
+
+test at flow.test.mjs:35:1
+✖ unshielded-by-default: public credit, public send, shield, 2-tx private send, unshield, burn+payout, migration, recovery, rollback, disclosure audit (105488.177375ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file://<workspace>/research/token-format-unshielded-20261025/flow.test.mjs:137:124)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual'
+  }

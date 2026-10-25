@@ -1,0 +1,15 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+{"step":"a: rollback of part B only; re-published identical B completes once","a":"ac120eb89edbbc07d409fc69e8d872554b898afff63153704be6560aa10f7835","b":"5268e8ef7c884b988a9c331e0f0fdc24516f50a8f5140cdfa9a04d770db5491d"}
+{"step":"b: rollback of both parts; both identical carriers re-published; completed once","a":"5a07088506cd714fc838c0f714df8807afcc9dacb074c692be77021918428016","b":"609e2a23949e50f5ac4123675f3600de8ef43cf647d6fc9e4897c843ee770511"}
+{"step":"c: conflicting spend — op4 completed first; op3 half can never complete (lastError: Spent token input)","a3":"71d558a441324de16c49b88eea0e7506af069d33afbe63ae59b4f2950f544203","a4":"72df2d41bf247a9303ddfad76cb702e7b978b02190173ff9e9a321281feca13d","b4":"c40d5040adbcbbfb45b27876cfd4019b353d8
+{"step":"c2: stale part B mined, inert","b3":"940e79c403bb50c724a26b57c3753c6c9116a714d946d85e502c75c0547ee0de"}
+{"step":"d: reversed arrival completes at A; duplicate A inert","b5":"02db0d5c3dcd55fb8406d821610d67cb834cb1796b0eab100d6557c9afa198bb","a5":"ee40c51d5c4c58b7c8974fb6a8573e1d21873b21ff2190c4977b0dfd4ee580ae","dup":"cb8bb910a4f0b18ca2c5aab91314372bb2a5c09f01dd50269f0c6a912ab1eef6"}
+✔ two-part private transfers: rollbacks of one or both parts, conflicting spend, reversed arrival, replay equality (199235.219375ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 200969.688292

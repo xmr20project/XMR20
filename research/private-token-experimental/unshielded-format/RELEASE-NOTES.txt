@@ -1,0 +1,28 @@
+RELEASE NOTES / READINESS STATEMENT — unshielded-by-default token format candidate, 25 October 2026
+
+READY FOR THE OWNER TO TEST EXPERIMENTALLY (offline test chain, synthetic balances; TRY-THE-TEST-WALLET.txt):
+  - Public tokens by default: deposits and migration credits arrive as public notes; public transfers in one Monero transaction.
+  - Explicit Shield (1 tx) and Unshield (1 tx per note); private transfers between shielded balances in two Monero transactions, applied
+    exactly once when both are canonical; recipients stay shielded until they choose to unshield.
+  - Bridge redemption from the public balance only; the wallet never unshields silently.
+  - Exact atomic accounting; backing invariant publicSupply + shieldedSupply == minted - burned checked by the indexer; operator
+    liabilities balanced in the tested flows; per-mint fee rules unchanged (fee once on deposit / once at payout).
+  - Fee review before approval shows the transaction count and every carrier fee; journal recovery per carrier (lookup before retry);
+    fresh-install recovery from the phrase; viewing key shares shielded balances only.
+  - No XMR20-specific trusted setup any more: Penumbra's published circuits and ceremony keys (29 MB) replace the 147 MB disposable sets.
+  - The demonstrated native output/key-image disclosure is absent from every record path (audited in the Node and browser suites).
+
+NOT READY FOR REAL FUNDS. Reasons, each a blocker on its own:
+  1. No independent security review of the new format, the engine, the popup module or the indexer (owner deferred; nobody contacted).
+  2. Penumbra's ceremony transcript was not verified by us; we pin their published key bytes and ids and inherit their trust statement.
+  3. Only the offline fakechain was exercised; no stagenet or devnet run of this format; mainnet is refused by the software.
+  4. The production migration snapshot/cutover is documented, not executed; no live cutoff exists; the custody reserve was never
+     reconciled against the deployed system.
+  5. Bridge payout after an irreversible payout followed by a deep reorganisation remains a loss counterexample (unchanged by the format);
+     marketplace settlement remains an open design; trading stays disabled.
+  6. Browser proving takes tens of seconds per private transfer and needs two spendable XMR outputs; unshield moves one note per
+     transaction. Acceptable for a test wallet, to be judged for a product.
+
+OWNER DECISIONS NEEDED: commission the review; decide the confirmation depth for payouts (10 lab default, 20 tested in the earlier
+candidate); decide the cutover procedure and date for migration; decide whether a stagenet run of this format should precede any public
+test; decide the public message about unshielded-mode privacy (amounts and owner keys are public by default).

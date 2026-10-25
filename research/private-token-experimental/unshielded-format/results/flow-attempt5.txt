@@ -1,0 +1,23 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+{"step":"deposit credited publicly","net":"98500000","credit":"d6105b06a68f84b3f318128b27712c0f53de2597086fcb7da57e8cce577ba6f5"}
+{"step":"public transfer 40 X (1 tx)","txid":"38f856daf315cc7743eb2de264e34a286909837346e70bc9908fa5a8cc909293","fee":"2071200000","extraBytes":262}
+{"step":"shield 50 X (1 tx)","txid":"3744514aa5e165e41b56ddfbd749b8e9bab4ffa15b70c114963d092ba5688c6b","fee":"2598000000","provingMs":3012}
+{"step":"private transfer 30 X (2 txs)","txids":["f5ae126cd4cf0b9451c09e48213fdaf71732fab567a47f82fa6b05baa6ae0b39","01a793160f24f869f40021cf306d51fe6a8dd37a17889b2937941d5180498b00"],"fees":["2947200000","2908800000"],"provingMs":33768}
+{"step":"unshield 10 X (1 tx)","txid":"d1c021d6528da3e2775b8e3f1b1cbed8d50ebe8617a4a0f1048895f1d4c71be4","fee":"2937600000","provingMs":12508}
+backend: Only 1 confirmations
+{"step":"burn 25 X -> payout 24.625 X once","txid":"c8f329bfef73fd1adc6055099a07de802090ae29dcf1649f7181ce0299e8b206","fee":"2070000000"}
+backend: Claim already consumed
+{"step":"legacy lot migrated to a PUBLIC note, exactly the lot","amount":"492500000","credit":"26818c5ab778c70ac22d030d6843dabf9d9d801625f4f7cfcec91bd8f231bc30"}
+{"step":"recovery from root; wrong root empty; viewing key shielded-only"}
+{"step":"rollback of part A before part B; identical carriers re-published; completed once","popped":2,"txids":["2bb892128c5d9f646018a393967b65986a55aea04c0b597d27d8287ae06af7d9","c74b06337385a6f2d6e0f707617e388ef8beda29e667bc8862101ad70ae4a11b"]}
+{"step":"indexer replay equals the holder replica","root":"c65995939e8537065f806596db3f5d9634dab66a1c6d2b0ba9a68216297e120d"}
+{"step":"disclosure audit passed","needles":20,"records":8}
+✔ unshielded-by-default: public credit, public send, shield, 2-tx private send, unshield, burn+payout, migration, recovery, rollback, disclosure audit (105022.067ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 106785.267542
