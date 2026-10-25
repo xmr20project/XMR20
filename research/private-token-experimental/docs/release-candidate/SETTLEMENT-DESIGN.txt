@@ -107,3 +107,24 @@ Bridge payouts and native XMR trading remain GATED. Private transfers are unaffe
   more confirmations (changes D, not the existence of the loss); two nodes agreeing (protects against one lying/eclipsed node,
   not against a real reorganisation both nodes follow); wallet reservations (per installation; backups and fresh recoveries do
   not have them); rate limits (bound payouts per window; a single rollback can remove several windows' burns at once).
+
+9. OWNER DECISIONS — 25 October 2026 (recorded verbatim in substance; they change SCOPE and POLICY, not the analysis above)
+  - Focus now: private transfers, the bridge (Solana -> private -> Solana) and the legacy -> private migration. The native XMR
+    marketplace is deferred ("we can focus on marketplace afterwards"); no marketplace component is part of the current candidate.
+  - Confirmation depth for the bridge in this candidate: 10 blocks ("10 confirmations should be enough for now"). This is a
+    product policy with a stated assumption (section 4.6), chosen knowing the 18-block reorg of September 2025 and that a
+    majority miner earns the rewards of a secret chain. It does NOT close counterexample A.
+  - Reorg hardening is deferred to "another day". The two constructions discussed with the owner remain on the table and
+    neither is built: (a) "payout finalises the burn" — a signed, append-only list of paid burns published by the bridge that
+    every indexer consumes, so a burn's coin tags count as spent forever and a reorg cannot give the attacker both sides (adds
+    the bridge publisher as a named trust point; replay-from-scratch must include the list); (b) reversible payout escrow with
+    a clawback window, optionally tiered by amount (4.7), with per-window payout caps sized below an attacker's gain.
+  - Unshield-to-bridge was discussed and NOT adopted as a safety measure: it moves counterexamples A and B onto the public
+    path without shrinking them. It remains available as a scope simplification.
+  Consequence for gates: BRIDGING D stays OPEN (depth chosen, window/reserve/stop not chosen); production payouts stay gated.
+  Addendum (same day, Codex handoff forwarded by the owner): a PROVISIONAL 20-confirmation withdrawal policy is implemented and
+  tested in the lab (CONFORMANCE 7; settlement/payout-depth-policy.test.mjs), with reorganisation detection, pause and explicit
+  resume; it does not change the analysis: counterexample A is reproduced again at D = 20 (case 4). The marketplace construction
+  "listing reservation + one bundled transaction" is modelled (settlement/model/bundled-trade.test.mjs): fair under reordering,
+  conflicting spends and rebroadcast; counterexample B' (listing reorganised, bundle canonical: buyer pays, no tokens) RETAINED.
+  Next candidates recorded there. The owner's final depth number remains open (10 said in chat, 20 in the handoff).

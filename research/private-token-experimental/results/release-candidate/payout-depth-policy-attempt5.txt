@@ -1,0 +1,32 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+{"step":"case1: burn published and mined (1 confirmation)","txid":"880cb9fe96779a1515757c7daf75e30fad683a447adcffa155966b1df5ce8d22"}
+backend: Only 12 confirmations
+✖ payout depth policy D=20: rollbacks below/at/beyond the depth before payout are detected, pause payouts and re-validate; the post-payout loss is preserved (208033.595709ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 209862.511625
+
+✖ failing tests:
+
+test at settlement/payout-depth-policy.test.mjs:29:1
+✖ payout depth policy D=20: rollbacks below/at/beyond the depth before payout are detected, pause payouts and re-validate; the post-payout loss is preserved (208033.595709ms)
+  AssertionError [ERR_ASSERTION]: payouts PAUSED after the burn left canonical history
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file://<workspace>/research/privacy-release-candidate-20261025/settlement/payout-depth-policy.test.mjs:66:76)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual'
+  }
+exit 1

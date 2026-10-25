@@ -19,7 +19,8 @@ This checklist is built from current code and evidence only. A blocker closed by
   extension           XMR20 Stagenet — Test funds only 0.1.94: app.js df30a0a624967c83…, private-holder.worker.js 0cf9670e9dea772f…
                       (built from wallet-extension/src in this candidate; rebuild: XMR20_PRIVATE_HOLDER_TEST=stagenet node build.mjs)
                       XMR20 Wallet — Private holder test 0.1.93 (offline fakechain build used by the popup suites and the interop
-                      test; built 25 Oct in this candidate with XMR20_PRIVATE_HOLDER_TEST=local): app.js 82c3b69e647fc377…,
+                      test; REBUILT 25 Oct 16:35 UTC in this candidate with XMR20_PRIVATE_HOLDER_TEST=local after the catalog fixes): app.js bdbad7fe380f5482…
+                      (was 82c3b69e… in run 5),
                       background.js 5e87784b2093abfd…, private-holder.worker.js 6333f2feb1ce3922…, vendor/holder.wasm = the engine
                       above (2c866f39…). app.js/background.js/approval.js/manifest reproduce byte-for-byte the 24 Oct build of
                       the previous candidate; the worker differs because that earlier local build predates the 18:16 source edit
@@ -51,7 +52,21 @@ This checklist is built from current code and evidence only. A blocker closed by
     REPLAY EQUIVALENCE clean-vs-incremental (conformance/indexer-replay-equivalence.test.mjs, this candidate).
   - Bridge in simulation: deposits signed in the popup, private credits, redemption burns, exactly-once payout, backing
     invariants and exposure RATE controls, legacy claims with duplicate refusal (stage 3 and integration labs).
+  - Catalog tokens through the REAL popup (browser-catalog-migration-bridge.test.mjs, RESULTS 4b): EXTREMIST (0 bps) and LUKE
+    (150 bps, real mint bytes) migrated in the UI (one of them interrupted after signing and completed automatically), transferred
+    with exact change, bridged back with payout refused below the depth and paid exactly at depth 10, never twice, deposited at each
+    mint's own fee, restored into a fresh profile. Two wallet defects found and fixed by it: claims never named their token (every
+    catalog claim failed), and a redemption above the operator's single-payout limit burned tokens before the refusal (now refused
+    before proving). Synthetic lots and holdings; lab exposure limits (100 units per payout) remain lab policy, not a product rule.
   - Both settlement counterexamples reproduced and preserved (SETTLEMENT-DESIGN.txt; settlement/).
+  - PROVISIONAL 20-confirmation withdrawal policy (RESULTS 12; CONFORMANCE 7): reorganisation detection, pause, explicit resume,
+    depth re-validated against the burn's current height; rollbacks below/at/beyond the depth before and after payout; the
+    post-payout loss reproduced again at 20 (no reserve, insurance or depth assumption introduced). SIMULATED.
+  - Marketplace construction "listing reservation + bundled trade" modelled (RESULTS 10): fair under reordering, conflicting spends
+    and rebroadcast; counterexample B' (listing reorganised) RETAINED; trading stays disabled.
+  - Migration preparation (RESULTS 9): public-data snapshot/reconciliation over all 66 mints with reproducible digest and per-mint
+    envelopes where derivable (57/66), cutoff-boundary and rollback rules on the isolated legacy indexer, changeover steps written;
+    no cutoff chosen, no holder frozen.
   - Third-party legacy migration (SYNTHETIC holdings): one catalog-driven rule for XMR20-launched tokens, exercised end to
     end on FIVE selected existing mints (EXTREMIST acceptance journey: 10,000 legacy -> exactly 10,000 private, interrupted/
     duplicate/cutoff/fresh-installation, private transfer, redemption to the same mint; XTAC, LUKE, XMR20~5NPSXG and COVERT by
@@ -92,6 +107,8 @@ This checklist is built from current code and evidence only. A blocker closed by
   - Reversible payout escrow on Solana (SETTLEMENT-DESIGN 4.7) if the product adopts it; nothing exists today.
   - Bundled trade transaction primitive (SETTLEMENT-DESIGN 4.1) and any operator-arbiter escrow (4.4) — not built.
   - Ceremony tooling: constraint-system digest tool, transcript verifier, deterministic finalisation (review/08 R1.b, R2.c).
+  - Live program rehearsal on Solana DEVNET: prepared (fresh test keys, plan, real-vs-mock table in runs/devnet/README.txt) but
+    BLOCKED: the devnet faucet refused every request from this machine; the web faucet needs an owner login (RESULTS 11).
   - Reproducible builds beyond this machine: the locked recipe (section 0) reproduces every pinned binary here, but the wasm and
     lab binaries are path-dependent (embedded build-script output path), no digest is published, and nobody independent has
     rebuilt them. Needed: a remapped, path-independent engine build adopted as the next pinned digest (full suite re-run), the
@@ -111,6 +128,16 @@ This checklist is built from current code and evidence only. A blocker closed by
   - Whether the marketplace stays off the private format (product decision).
 
 5. INDEPENDENT REVIEW AND PRODUCTION-PARAMETER REQUIREMENTS (none satisfied; nothing commissioned; nothing paid)
+  - Independent security review: NOT performed; deliberately deferred by the owner on 25 Oct (nobody contacted). Nothing in this
+    candidate — including AI-assisted review — counts as it.
+  - Parameter setup TOOLING: built and rehearsed in ceremony/ (RESULTS 8; ceremony/README.txt explains the existing setup, its risk,
+    the correct procedure for our composed circuits and exact instructions for independent participants). The rehearsal's
+    participants were processes on one laptop: ZERO independent participants; its output is disposable and labelled so.
+  - Alternatives to an XMR20-specific setup were studied on 25 Oct (PROOF-SYSTEM-ALTERNATIVES.txt): a zkVM Groth16 wrapper (RISC
+    Zero / SP1, vendor ceremonies) would FIT the 1,060-byte tx_extra (932-byte record with a 128-byte compressed BN254 proof) but its
+    final proving step is documented as x86-64 + Docker only, 14-16 GB RAM, multi-GB artifacts — unusable from the browser wallet and
+    forbidden to outsource. PLONK/transparent systems do not fit the budget. Recommendation: keep XM3/XB3 + combined Groth16 and run
+    the small XMR20 phase-2 ceremony. Measured vs estimated figures are separated in that file; no prototype measurement was taken.
   - Independent security review per review/00-REVIEW-BRIEF.txt: XM3/XB3 composition soundness/malleability, compact codec,
     XMR20-TKD1 coupling, carrier construction, journal/recovery semantics, constant-time behaviour, Solana adapter.
   - Production parameters per review/08: frozen circuits with published digests, multi-party phase 1/2 with transcripts and

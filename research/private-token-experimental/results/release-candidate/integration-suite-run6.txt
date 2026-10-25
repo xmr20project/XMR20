@@ -1,0 +1,318 @@
+[suite] run 2026-10-25T16-40-16-918Z-378b05; fingerprinting inputs…
+[suite] REUSED journal: 1/1 (executed 2026-10-25T02:16:07.989Z in run 2026-10-25T02-16-07-943Z-6b37fd; identical inputs: 2 files, digest 5ab31d8dfc130bdd…)
+[suite] REUSED carrier lookup-before-retry: 6/6 (executed 2026-10-25T02:16:08.409Z in run 2026-10-25T02-16-07-943Z-6b37fd; identical inputs: 2 files, digest 955208dd65821851…)
+[suite] REUSED fault proxy: 3/3 (executed 2026-10-25T02:16:08.476Z in run 2026-10-25T02-16-07-943Z-6b37fd; identical inputs: 2 files, digest e688107d822ff80a…)
+  [parameter authentication] not reused: inputs changed: backend/service.mjs
+[suite] parameter authentication (holder-params.test.mjs)…
+  [parameter authentication] … 60s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [parameter authentication] … 120s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [parameter authentication] # pass 1
+  [parameter authentication] # fail 0
+  [parameter authentication] # cancelled 0
+[suite] PASS parameter authentication: 1/1 in 153s
+  [engine + records] not reused: inputs changed: backend/service.mjs
+[suite] engine + records (holder-engine.test.mjs)…
+  [engine + records] … 60s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [engine + records] … 120s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [engine + records] … 180s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [engine + records] … 240s; last: # backend: Only 9 confirmations
+  [engine + records] # pass 1
+  [engine + records] # fail 0
+  [engine + records] # cancelled 0
+[suite] PASS engine + records: 1/1 in 272s
+[suite] REUSED finality model (trading, abstract): 9/9 (executed 2026-10-25T02:22:54.211Z in run 2026-10-25T02-16-07-943Z-6b37fd; identical inputs: 1 files, digest aad01b95af618f30…)
+  [COUNTEREXAMPLE A live (bridge payout then rollback)] not reused: inputs changed: backend/service.mjs
+[suite] COUNTEREXAMPLE A live (bridge payout then rollback) (settlement/bridge-rollback-loss.test.mjs)…
+  [COUNTEREXAMPLE A live (bridge payout then rollback)] … 60s; last: # {"step":"deposited and credited","credit":"912ae69a2d2c03c198f2bfc6ec0b3abbba5b5915ca29212351e8a217cc5f1640","balanceA":"98500000"}
+  [COUNTEREXAMPLE A live (bridge payout then rollback)] … 120s; last: # {"step":"rollback removed the burn","popped":11,"from":343,"to":332}
+  [COUNTEREXAMPLE A live (bridge payout then rollback)] # pass 1
+  [COUNTEREXAMPLE A live (bridge payout then rollback)] # fail 0
+  [COUNTEREXAMPLE A live (bridge payout then rollback)] # cancelled 0
+[suite] PASS COUNTEREXAMPLE A live (bridge payout then rollback): 1/1 in 144s
+[suite] REUSED indexer replay equivalence + restart + rollback: 1/1 (executed 2026-10-25T02:25:17.042Z in run 2026-10-25T02-16-07-943Z-6b37fd; identical inputs: 19 files, digest c9c10b22b87d143b…)
+[suite] REUSED operator journal corruption: 1/1 (executed 2026-10-25T02:27:20.307Z in run 2026-10-25T02-16-07-943Z-6b37fd; identical inputs: 3 files, digest 0de55fca5a96053e…)
+  [observer-gated payout] not reused: inputs changed: backend/service.mjs
+[suite] observer-gated payout (conformance/observer-gated-payout.test.mjs)…
+  [observer-gated payout] … 60s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [observer-gated payout] … 120s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [observer-gated payout] … 180s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [observer-gated payout] … 240s; last:   ...
+  [observer-gated payout] # pass 1
+  [observer-gated payout] # fail 0
+  [observer-gated payout] # cancelled 0
+[suite] PASS observer-gated payout: 1/1 in 241s
+  [catalog migration: 5 selected mints + 1 added after startup (synthetic holdings), exact entitlement, per-mint fees; asset ids of all 66 catalog entries] not reused: inputs changed: backend/service.mjs
+[suite] catalog migration: 5 selected mints + 1 added after startup (synthetic holdings), exact entitlement, per-mint fees; asset ids of all 66 catalog entries (migration/legacy-migration.test.mjs)…
+  [catalog migration: 5 selected mints + 1 added after startup (synthetic holdings), exact entitlement, per-mint fees; asset ids of all 66 catalog entries] … 60s; last: # {"step":"duplicates, cutoff ownership, late registration, old path closed","lateRegistrant":{"X":"0","LUKE":"0","XTAC":"0","COVERT":"0","X
+  [catalog migration: 5 selected mints + 1 added after startup (synthetic holdings), exact entitlement, per-mint fees; asset ids of all 66 catalog entries] … 120s; last: # backend: Claim already consumed
+  [catalog migration: 5 selected mints + 1 added after startup (synthetic holdings), exact entitlement, per-mint fees; asset ids of all 66 catalog entries] … 180s; last: # backend: Claim already consumed
+  [catalog migration: 5 selected mints + 1 added after startup (synthetic holdings), exact entitlement, per-mint fees; asset ids of all 66 catalog entries] … 240s; last: # backend: Claim already consumed
+  [catalog migration: 5 selected mints + 1 added after startup (synthetic holdings), exact entitlement, per-mint fees; asset ids of all 66 catalog entries] # pass 1
+  [catalog migration: 5 selected mints + 1 added after startup (synthetic holdings), exact entitlement, per-mint fees; asset ids of all 66 catalog entries] # fail 0
+  [catalog migration: 5 selected mints + 1 added after startup (synthetic holdings), exact entitlement, per-mint fees; asset ids of all 66 catalog entries] # cancelled 0
+[suite] PASS catalog migration: 5 selected mints + 1 added after startup (synthetic holdings), exact entitlement, per-mint fees; asset ids of all 66 catalog entries: 1/1 in 268s
+[suite] REUSED independent checker over the interop vectors: 1/1 (executed 2026-10-25T02:35:38.294Z in run 2026-10-25T02-16-07-943Z-6b37fd; identical inputs: 11 files, digest 68a0e649d5760571…)
+  [two-wallet interop: real popup A + CLI wallet B on one pool; tamper/duplicate admission] not reused: inputs changed: backend/service.mjs, wallet-extension/extension-private-holder-test/app.js
+[suite] two-wallet interop: real popup A + CLI wallet B on one pool; tamper/duplicate admission (interop.test.mjs)…
+  [two-wallet interop: real popup A + CLI wallet B on one pool; tamper/duplicate admission] … 60s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [two-wallet interop: real popup A + CLI wallet B on one pool; tamper/duplicate admission] … 120s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [two-wallet interop: real popup A + CLI wallet B on one pool; tamper/duplicate admission] … 180s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [two-wallet interop: real popup A + CLI wallet B on one pool; tamper/duplicate admission] … 240s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [two-wallet interop: real popup A + CLI wallet B on one pool; tamper/duplicate admission] … 300s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [two-wallet interop: real popup A + CLI wallet B on one pool; tamper/duplicate admission] … 360s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [two-wallet interop: real popup A + CLI wallet B on one pool; tamper/duplicate admission] # pass 1
+  [two-wallet interop: real popup A + CLI wallet B on one pool; tamper/duplicate admission] # fail 0
+  [two-wallet interop: real popup A + CLI wallet B on one pool; tamper/duplicate admission] # cancelled 0
+[suite] PASS two-wallet interop: real popup A + CLI wallet B on one pool; tamper/duplicate admission: 1/1 in 369s
+[suite] REUSED stagenet-aware roles (simulation): 4/4 (executed 2026-10-25T02:35:38.658Z in run 2026-10-25T02-16-07-943Z-6b37fd; identical inputs: 22 files, digest eb58df7182b38137…)
+[suite] REUSED suite runner: provenance + reuse rules: 4/4 (executed 2026-10-25T01:55:15.953Z in run 2026-10-25T01-49-50-049Z-12c787; identical inputs: 23 files, digest a536bcdb3957e43a…)
+  [real popup: carriers incl. actual lost reply] not reused: inputs changed: ../privacy-integration-20261022/operator.mjs, backend/service.mjs, wallet-extension/extension-private-holder-test/app.js, backend/operator.mjs
+[suite] real popup: carriers incl. actual lost reply (browser-carrier.test.mjs)…
+  [real popup: carriers incl. actual lost reply] … 60s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: carriers incl. actual lost reply] … 120s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: carriers incl. actual lost reply] … 180s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: carriers incl. actual lost reply] … 240s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: carriers incl. actual lost reply] … 300s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: carriers incl. actual lost reply] … 360s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: carriers incl. actual lost reply] … 420s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: carriers incl. actual lost reply] # pass 1
+  [real popup: carriers incl. actual lost reply] # fail 0
+  [real popup: carriers incl. actual lost reply] # cancelled 0
+[suite] PASS real popup: carriers incl. actual lost reply: 1/1 in 463s
+  [real popup: recovery] not reused: inputs changed: ../privacy-integration-20261022/operator.mjs, backend/service.mjs, wallet-extension/extension-private-holder-test/app.js, backend/operator.mjs
+[suite] real popup: recovery (browser-recovery.test.mjs)…
+  [real popup: recovery] … 60s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: recovery] … 120s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: recovery] … 180s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: recovery] … 240s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: recovery] … 300s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: recovery] # pass 1
+  [real popup: recovery] # fail 0
+  [real popup: recovery] # cancelled 0
+[suite] PASS real popup: recovery: 1/1 in 318s
+  [real popup: journal recovery] not reused: inputs changed: ../privacy-integration-20261022/operator.mjs, backend/service.mjs, wallet-extension/extension-private-holder-test/app.js, backend/operator.mjs
+[suite] real popup: journal recovery (browser-journal-recovery.test.mjs)…
+  [real popup: journal recovery] … 60s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: journal recovery] … 120s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: journal recovery] … 180s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: journal recovery] … 240s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: journal recovery] … 300s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: journal recovery] … 360s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: journal recovery] not ok 1 - journal-vs-phrase recovery through two installations with the same phrase
+  [real popup: journal recovery]   failureType: 'testCodeFailure'
+  [real popup: journal recovery]   error: 'B re-sent the SAME carrier after the rollback'
+  [real popup: journal recovery]   code: 'ERR_ASSERTION'
+  [real popup: journal recovery] # pass 0
+  [real popup: journal recovery] # fail 1
+  [real popup: journal recovery] # cancelled 0
+[suite] FAIL real popup: journal recovery: 0/1 in 372s (exit 1; see runs/suite-logs/browser-journal-recovery-test.log)
+  [real popup: interruptions] not reused: inputs changed: ../privacy-integration-20261022/operator.mjs, backend/service.mjs, wallet-extension/extension-private-holder-test/app.js, backend/operator.mjs
+[suite] real popup: interruptions (browser-interruptions.test.mjs)…
+  [real popup: interruptions] … 60s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: interruptions] … 120s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: interruptions] … 180s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: interruptions] … 240s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: interruptions] … 300s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: interruptions] # pass 1
+  [real popup: interruptions] # fail 0
+  [real popup: interruptions] # cancelled 0
+[suite] PASS real popup: interruptions: 1/1 in 322s
+  [real popup: catalog tokens (EXTREMIST 0 bps, LUKE 150 bps from real mint bytes): migrate incl. interrupted claim, transfer, bridge out + payout at depth, deposit, fresh-profile recovery] not reused: no earlier row
+[suite] real popup: catalog tokens (EXTREMIST 0 bps, LUKE 150 bps from real mint bytes): migrate incl. interrupted claim, transfer, bridge out + payout at depth, deposit, fresh-profile recovery (browser-catalog-migration-bridge.test.mjs)…
+  [real popup: catalog tokens (EXTREMIST 0 bps, LUKE 150 bps from real mint bytes): migrate incl. interrupted claim, transfer, bridge out + payout at depth, deposit, fresh-profile recovery] … 60s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: catalog tokens (EXTREMIST 0 bps, LUKE 150 bps from real mint bytes): migrate incl. interrupted claim, transfer, bridge out + payout at depth, deposit, fresh-profile recovery] … 120s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: catalog tokens (EXTREMIST 0 bps, LUKE 150 bps from real mint bytes): migrate incl. interrupted claim, transfer, bridge out + payout at depth, deposit, fresh-profile recovery] … 180s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: catalog tokens (EXTREMIST 0 bps, LUKE 150 bps from real mint bytes): migrate incl. interrupted claim, transfer, bridge out + payout at depth, deposit, fresh-profile recovery] # pass 1
+  [real popup: catalog tokens (EXTREMIST 0 bps, LUKE 150 bps from real mint bytes): migrate incl. interrupted claim, transfer, bridge out + payout at depth, deposit, fresh-profile recovery] # fail 0
+  [real popup: catalog tokens (EXTREMIST 0 bps, LUKE 150 bps from real mint bytes): migrate incl. interrupted claim, transfer, bridge out + payout at depth, deposit, fresh-profile recovery] # cancelled 0
+[suite] PASS real popup: catalog tokens (EXTREMIST 0 bps, LUKE 150 bps from real mint bytes): migrate incl. interrupted claim, transfer, bridge out + payout at depth, deposit, fresh-profile recovery: 1/1 in 205s
+{
+ "runId": "2026-10-25T16-40-16-918Z-378b05",
+ "passed": false,
+ "complete": false,
+ "claim": "FAILED: at least one row did not pass",
+ "executed": 11,
+ "reused": 9,
+ "failedSuites": 1,
+ "suites": [
+  {
+   "name": "journal",
+   "ok": true,
+   "pass": 1,
+   "fail": 0,
+   "seconds": 0,
+   "reused": true,
+   "origin": "2026-10-25T02-16-07-943Z-6b37fd",
+   "inputs": "5ab31d8dfc130bdd"
+  },
+  {
+   "name": "carrier lookup-before-retry",
+   "ok": true,
+   "pass": 6,
+   "fail": 0,
+   "seconds": 0,
+   "reused": true,
+   "origin": "2026-10-25T02-16-07-943Z-6b37fd",
+   "inputs": "955208dd65821851"
+  },
+  {
+   "name": "fault proxy",
+   "ok": true,
+   "pass": 3,
+   "fail": 0,
+   "seconds": 0,
+   "reused": true,
+   "origin": "2026-10-25T02-16-07-943Z-6b37fd",
+   "inputs": "e688107d822ff80a"
+  },
+  {
+   "name": "parameter authentication",
+   "ok": true,
+   "pass": 1,
+   "fail": 0,
+   "seconds": 153,
+   "inputs": "f3135ce47601bbaf"
+  },
+  {
+   "name": "engine + records",
+   "ok": true,
+   "pass": 1,
+   "fail": 0,
+   "seconds": 272,
+   "inputs": "a676ada073ea7d37"
+  },
+  {
+   "name": "finality model (trading, abstract)",
+   "ok": true,
+   "pass": 9,
+   "fail": 0,
+   "seconds": 0,
+   "reused": true,
+   "origin": "2026-10-25T02-16-07-943Z-6b37fd",
+   "inputs": "aad01b95af618f30"
+  },
+  {
+   "name": "COUNTEREXAMPLE A live (bridge payout then rollback)",
+   "ok": true,
+   "pass": 1,
+   "fail": 0,
+   "seconds": 144,
+   "inputs": "66994b47ad1e9406"
+  },
+  {
+   "name": "indexer replay equivalence + restart + rollback",
+   "ok": true,
+   "pass": 1,
+   "fail": 0,
+   "seconds": 123,
+   "reused": true,
+   "origin": "2026-10-25T02-16-07-943Z-6b37fd",
+   "inputs": "c9c10b22b87d143b"
+  },
+  {
+   "name": "operator journal corruption",
+   "ok": true,
+   "pass": 1,
+   "fail": 0,
+   "seconds": 0,
+   "reused": true,
+   "origin": "2026-10-25T02-16-07-943Z-6b37fd",
+   "inputs": "0de55fca5a96053e"
+  },
+  {
+   "name": "observer-gated payout",
+   "ok": true,
+   "pass": 1,
+   "fail": 0,
+   "seconds": 241,
+   "inputs": "707855a59f807a45"
+  },
+  {
+   "name": "catalog migration: 5 selected mints + 1 added after startup (synthetic holdings), exact entitlement, per-mint fees; asset ids of all 66 catalog entries",
+   "ok": true,
+   "pass": 1,
+   "fail": 0,
+   "seconds": 268,
+   "inputs": "4c34bd435c1a0131"
+  },
+  {
+   "name": "independent checker over the interop vectors",
+   "ok": true,
+   "pass": 1,
+   "fail": 0,
+   "seconds": 0,
+   "reused": true,
+   "origin": "2026-10-25T02-16-07-943Z-6b37fd",
+   "inputs": "68a0e649d5760571"
+  },
+  {
+   "name": "two-wallet interop: real popup A + CLI wallet B on one pool; tamper/duplicate admission",
+   "ok": true,
+   "pass": 1,
+   "fail": 0,
+   "seconds": 369,
+   "inputs": "bbe8a3d967ad4e35"
+  },
+  {
+   "name": "stagenet-aware roles (simulation)",
+   "ok": true,
+   "pass": 4,
+   "fail": 0,
+   "seconds": 238,
+   "reused": true,
+   "origin": "2026-10-25T02-16-07-943Z-6b37fd",
+   "inputs": "eb58df7182b38137"
+  },
+  {
+   "name": "suite runner: provenance + reuse rules",
+   "ok": true,
+   "pass": 4,
+   "fail": 0,
+   "seconds": 0,
+   "reused": true,
+   "origin": "2026-10-25T01-49-50-049Z-12c787",
+   "inputs": "a536bcdb3957e43a"
+  },
+  {
+   "name": "real popup: carriers incl. actual lost reply",
+   "ok": true,
+   "pass": 1,
+   "fail": 0,
+   "seconds": 463,
+   "inputs": "68e747c80d6941b6"
+  },
+  {
+   "name": "real popup: recovery",
+   "ok": true,
+   "pass": 1,
+   "fail": 0,
+   "seconds": 318,
+   "inputs": "bbd3266ba1b30a1f"
+  },
+  {
+   "name": "real popup: journal recovery",
+   "ok": false,
+   "pass": 0,
+   "fail": 1,
+   "seconds": 372,
+   "inputs": "15a852dfe7d2fd84"
+  },
+  {
+   "name": "real popup: interruptions",
+   "ok": true,
+   "pass": 1,
+   "fail": 0,
+   "seconds": 322,
+   "inputs": "2cf68c159c43a36d"
+  },
+  {
+   "name": "real popup: catalog tokens (EXTREMIST 0 bps, LUKE 150 bps from real mint bytes): migrate incl. interrupted claim, transfer, bridge out + payout at depth, deposit, fresh-profile recovery",
+   "ok": true,
+   "pass": 1,
+   "fail": 0,
+   "seconds": 205,
+   "inputs": "357dc92c380b7fe3"
+  }
+ ]
+}
+exit 1

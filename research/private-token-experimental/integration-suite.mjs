@@ -44,7 +44,13 @@ const SUITES=[
  {name:'real popup: carriers incl. actual lost reply',file:'browser-carrier.test.mjs',kind:'SIMULATED fakechain, Playwright Chromium',browser:true,timeout:60*MIN},
  {name:'real popup: recovery',file:'browser-recovery.test.mjs',kind:'SIMULATED',browser:true,timeout:60*MIN},
  {name:'real popup: journal recovery',file:'browser-journal-recovery.test.mjs',kind:'SIMULATED',browser:true,timeout:60*MIN},
- {name:'real popup: interruptions',file:'browser-interruptions.test.mjs',kind:'SIMULATED',browser:true,timeout:60*MIN}]),
+ {name:'real popup: interruptions',file:'browser-interruptions.test.mjs',kind:'SIMULATED',browser:true,timeout:60*MIN},
+ {name:'migration: public-data snapshot + reconciliation (66 mints; envelopes; reproducible digest)',file:'migration/snapshot-reconcile.test.mjs',kind:'offline (recorded public API + catalog)',timeout:5*MIN},
+ {name:'migration: cutover boundaries + rollbacks on the isolated legacy indexer',file:'migration/cutover-rollback.test.mjs',kind:'offline replay',timeout:5*MIN},
+ {name:'marketplace model: listing reservation + bundled trade (B\' retained)',file:'settlement/model/bundled-trade.test.mjs',kind:'ABSTRACT MODEL',timeout:5*MIN},
+ {name:'payout depth policy D=20: rollbacks below/at/beyond before+after payout (loss preserved)',file:'settlement/payout-depth-policy.test.mjs',kind:'SIMULATED fakechain + LiteSVM, controlled /pop_blocks',timeout:60*MIN},
+ {name:'parameter ceremony REHEARSAL: verify, tamper refusal, manifest binding, prove+verify with rehearsed keys',file:'ceremony/ceremony-rehearsal.test.mjs',kind:'offline; needs runs/ceremony-rehearsal + params/ceremony-rehearsal-v1',timeout:40*MIN},
+ {name:'real popup: catalog tokens (EXTREMIST 0 bps, LUKE 150 bps from real mint bytes): migrate incl. interrupted claim, transfer, bridge out + payout at depth, deposit, fresh-profile recovery',file:'browser-catalog-migration-bridge.test.mjs',kind:'SIMULATED fakechain + LiteSVM custody, Playwright Chromium',browser:true,timeout:60*MIN}]),
 ];
 const FULL_COUNT=SUITES.length+(quick?4:0);
 const slug=s=>s.file.replace(/\.mjs$/,'').replace(/[\/.]/g,'-');

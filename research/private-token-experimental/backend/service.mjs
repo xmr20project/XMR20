@@ -47,7 +47,7 @@ import {bridgeInstruction,decodeBridgeReceipt} from '../../../proof-of-concepts/
 import {service} from '../../privacy-integration-20261022/rpc.mjs';
 import {createBridge,net as netOf,tax} from './solana.mjs';   // this candidate: per-token mint identity (any XMR20-launched token)
 import {Registry,PROFILE,legacyMessageHash} from '../../privacy-integration-20261022/migration.mjs';
-import {Operator,bindingFor,CONFIRMATIONS,EXPOSURE} from '../../privacy-integration-20261022/operator.mjs';
+import {Operator,bindingFor,CONFIRMATIONS as DEFAULT_CONFIRMATIONS,EXPOSURE} from './operator.mjs';
 import {ORDER} from '../../../website/services/native-market/xn1/proofs.mjs';
 import {le} from '../../../website/services/native-market/xn1/bytes.mjs';
 const dir=fileURLToPath(new URL('./',import.meta.url)),lab=path.resolve(dir,'../../privacy-integration-20261022'),root=path.resolve(dir,'../../..');
@@ -85,7 +85,10 @@ export const PARAMS_ROOT=path.resolve(dir,'../params');
 // observers (this candidate): RPC URLs of INDEPENDENT Monero nodes that must agree before a payout is admitted. The gate is a
 // control against one lying, eclipsed or stale node; it does NOT remove the rollback-loss counterexample (two honest nodes
 // follow the same reorganisation). requireObservers=true refuses payouts when no observer is configured.
-export async function startBackend({rpcPort=30041,p2pPort=30040,httpPort=8940,log=()=>{},origins=[EXTENSION_ORIGIN],paramsSet='test-v1',faults={},roleFaults=null,observers=[],requireObservers=false}={}){
+// confirmations: payout/credit depth used by this service instance (default = the lab's 10). A PROVISIONAL risk policy, not finality:
+// settlement/payout-depth-policy.test.mjs exercises 20 with rollbacks below, at and beyond the threshold.
+export async function startBackend({rpcPort=30041,p2pPort=30040,httpPort=8940,log=()=>{},origins=[EXTENSION_ORIGIN],paramsSet='test-v1',faults={},roleFaults=null,observers=[],requireObservers=false,confirmations=DEFAULT_CONFIRMATIONS}={}){
+ const CONFIRMATIONS=Number(confirmations);assert.ok(Number.isInteger(CONFIRMATIONS)&&CONFIRMATIONS>=1&&CONFIRMATIONS<=200,'confirmations');
  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
  const run=await mkdtemp((await mkdir(dir+'../runs',{recursive:true}),dir+'../runs/backend-'));await mkdir(run+'/chain');await writeFile(run+'/chain/config','');
  const audit=async(line)=>appendFile(run+'/requests.log',JSON.stringify({at:new Date().toISOString(),...line})+'\n');
@@ -139,7 +142,7 @@ export async function startBackend({rpcPort=30041,p2pPort=30040,httpPort=8940,lo
  // One cutover snapshot per asset: rights fixed by the rows registered BEFORE the asset's registry is built (first operation).
  const snapshotOf=(a)=>({profile:PROFILE,kind:'synthetic-extension-test-snapshot',asset:a.symbol,checkpoint:{height:'registration'},rows:a.legacyRows.map(r=>({claim:r.claim,amount:r.amount,legacyOwner:r.P}))});
  const operatorFor=async(symbol)=>{const a=assets[symbol];if(a.operator)return a.operator;const registry=a.legacyLot?(a.registry??=new Registry(snapshotOf(a))):new Registry({rows:[]});
-  a.operator=await Operator.open({file:run+'/operator-'+symbol+'.json',bridge:a.bridge,node:issuer,registry,asset:a.asset});if(a.legacyLot){const m=a.bridge.migrateLegacy();assert.ok(m.ok,'legacy migration to reserve');a.cutover={migratedToReserveAtTip:(await rpc('get_info')).height-1,legacyPositionAfter:a.bridge.state().legacyPosition};}return a.operator;};
+  a.operator=await Operator.open({file:run+'/operator-'+symbol+'.json',bridge:a.bridge,node:issuer,registry,asset:a.asset,confirmations:CONFIRMATIONS});if(a.legacyLot){const m=a.bridge.migrateLegacy();assert.ok(m.ok,'legacy migration to reserve');a.cutover={migratedToReserveAtTip:(await rpc('get_info')).height-1,legacyPositionAfter:a.bridge.state().legacyPosition};}return a.operator;};
  await operatorFor('S');
  // Holder records are keyed by TOKEN ADDRESS (the public identity the extension derives). An extension install id is only an alias, so a fresh install that derives the same address finds the same bridge-side facts (Solana account, legacy lots). Nothing private is kept here.
  const holders=new Map(),aliases=new Map();
@@ -152,7 +155,7 @@ export async function startBackend({rpcPort=30041,p2pPort=30040,httpPort=8940,lo
  async function state(id){const s=await indexer.call({op:'scan'});const registered=aliases.has(id);const h=registered?holder(id):null;
   const out={tip:s.public.tip,confirmations:CONFIRMATIONS,exposure:EXPOSURE,rpcUrl:`http://127.0.0.1:${rpcPort}`,registered,tokenAddress:h?.tokenAddress??null,relay:null,carrierFunding:'holder',assets:[]};
   for(const a of Object.values(assets)){const op=a.operator;if(op)await op.reconcile(s);
-   const row={symbol:a.symbol,ticker:a.ticker||a.symbol,catalog:a.catalog||null,name:a.name,asset:a.asset,mint:a.bridge.mint,decimals:a.decimals,feeBps:a.bridge.feeBps,layout:a.layout,liabilities:op?op.liabilities(s):null,payouts:[],cutover:a.cutover||null};
+   const row={symbol:a.symbol,ticker:a.ticker||a.symbol,catalog:a.catalog||null,name:a.name,asset:a.asset,mint:a.bridge.mint,decimals:a.decimals,feeBps:a.bridge.feeBps,layout:a.layout,liabilities:op?op.liabilities(s):null,payouts:[],cutover:a.cutover||null,operator:op?{halted:op.state.halted,paused:op.state.paused,confirmations:op.confirmations,incidents:op.state.incidents}:null};
    if(h){row.payouts=op?Object.entries(op.state.payouts).filter(([,p])=>op.state.requests[p.binding]?.destination===h.sol).map(([txid,p])=>({txid,amount:p.amount,status:p.status,confirmations:p.confirmations})):[];row.solanaBalance=h.ata[a.symbol]?a.bridge.tokenBalance(h.ata[a.symbol]):'0';row.viewingKeyShared=h.viewingShared.has(a.symbol);
     if(a.legacyLot){row.legacy=a.legacyRows.filter(r=>r.tokenAddress===h.tokenAddress).map(r=>({claim:r.claim,amount:r.amount,P:r.P,txPublicKey:r.R,outputIndex:r.index,claimed:Boolean(a.operator?.state.credits[r.claim])}));}}
    out.assets.push(row);}
@@ -185,7 +188,9 @@ export async function startBackend({rpcPort=30041,p2pPort=30040,httpPort=8940,lo
    return {receipt:{nonce:receipt.nonce,net:String(receipt.net)},credit:{txid:c.txid,status:c.status,binding:receipt.nonce},note:'Credit published on the test chain; your wallet sees it after '+CONFIRMATIONS+' confirmations.'};},
   // TEST SERVICE: mine `blocks` coinbase rewards to this holder's public Monero address (carrier-fee funding for the test). Coinbase matures after 60 blocks.
   async fund({id,blocks}){const h=holder(id);const n=Math.min(10,Math.max(1,Number(blocks)||1));assert.match(h.xmr,/^4[1-9A-HJ-NP-Za-km-z]{94}$/,'Registered Monero address required');await mineTo(h.xmr,n);await audit({action:'fund',id,blocks:n});return {funded:n,address:h.xmr,maturesAfter:60,tip:(await rpc('get_info')).height-1,note:'TEST SERVICE: '+n+' coinbase output(s) mined to this account. Mainnet XMR is bought or received, never mined by a service.'};},
-  async redeemPrepare({id,symbol}){const h=holder(id),a=assets[symbol];assert.ok(a,'asset');const op=await operatorFor(symbol);const request=randomBytes(32).toString('hex'),destination=h.sol,binding=bindingFor(destination,request);op.registerRedemption(binding,destination,request);await op.persist();await audit({action:'redeemPrepare',id,symbol,binding});return {binding,destination,request,confirmations:CONFIRMATIONS};},
+  // amount (optional, atomic units): refused HERE, before anything is proved or burned, when a single payout would exceed the lab
+  // exposure limit — otherwise the holder could burn tokens the operator then refuses to pay (found by the catalog popup suite).
+  async redeemPrepare({id,symbol,amount=null}){const h=holder(id),a=assets[symbol];assert.ok(a,'asset');const op=await operatorFor(symbol);if(amount!==null){assert.ok(/^\d+$/.test(String(amount)),'amount');assert.ok(BigInt(amount)<=BigInt(op.exposure.maxSinglePayout),`Exposure: single payout above lab limit (max ${op.exposure.maxSinglePayout} atomic units per payout); nothing was proved or burned`);}const request=randomBytes(32).toString('hex'),destination=h.sol,binding=bindingFor(destination,request);op.registerRedemption(binding,destination,request);await op.persist();await audit({action:'redeemPrepare',id,symbol,binding,amount});return {binding,destination,request,confirmations:CONFIRMATIONS,maxSinglePayout:op.exposure.maxSinglePayout};},
   // Independent observation GATE: every configured observer must report the burn mined at the same height with the same block
   // hash as the primary node and with at least CONFIRMATIONS confirmations. Any disagreement, missing answer or missing
   // observer (when required) WITHHOLDS the payout (status stays pending; nothing is paid). The outcome is returned and audited.
@@ -196,6 +201,8 @@ export async function startBackend({rpcPort=30041,p2pPort=30040,httpPort=8940,lo
    const agree=o=>o.known&&!o.inPool&&o.height===mine.height&&o.blockHash===mine.blockHash&&o.confirmations>=CONFIRMATIONS;
    const ok=Boolean(pt)&&mine.known&&!mine.inPool&&mine.confirmations>=CONFIRMATIONS&&(!requireObservers||observers.length>0)&&others.every(agree);
    return {ok,txid,primary:mine,observers:others,reason:ok?null:!pt?'primary node does not know the burn':requireObservers&&!observers.length?'no independent observer configured':others.filter(o=>!agree(o)).map(o=>o.url+': '+(o.error||(!o.known?'unknown':o.inPool?'in pool':o.height!==mine.height||o.blockHash!==mine.blockHash?'different block':'only '+o.confirmations+' confirmations'))).join('; ')||'primary below confirmations'};},
+  // TEST SERVICE: explicit operator recovery after a reorganisation incident (never automatic).
+  async resume({symbol,note}){const op=await operatorFor(symbol);const r=await op.resume(note);await audit({action:'resume',symbol,note:note||null});return r;},
   async payout({symbol,txid}){const op=await operatorFor(symbol);const a=assets[symbol];const s=await indexer.call({op:'scan'});await op.reconcile(s);
    if(observers.length||requireObservers){const obs=await actions.observe({txid});await audit({action:'observe',txid,ok:obs.ok,reason:obs.reason});if(!obs.ok)throw Error('Payout withheld: independent observation does not confirm the burn ('+obs.reason+'). Nothing was paid; the redemption stays pending.');}
    const p=await op.payout(txid);return {status:p.status,net:p.receipt?a.bridge.net(BigInt(p.amount)).toString():null,feeBps:a.bridge.feeBps,repeated:Boolean(p.repeated)};},

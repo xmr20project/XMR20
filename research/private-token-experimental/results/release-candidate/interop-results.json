@@ -22,7 +22,7 @@
    "inputs": 1,
    "change": "15",
    "carrier": {
-    "txid": "79979af972cb2cdcd6e72511a9eb31c0bf303d81d8c16fbf87cb099c2221b9df",
+    "txid": "c6b2f56f05a20d85ce9b80af07efc8852a4f819b0b6d45818832c7ecce2952fb",
     "fee": "3024000000",
     "nativeBytes": 2520,
     "extraBytes": 1056
@@ -49,7 +49,7 @@
    "inputs": 1,
    "change": "400000",
    "carrier": {
-    "txid": "d8db5bddf14f1c42b9192f3cad06ec97c3fba5d52f94cca187834bd959641683",
+    "txid": "3dd37cffe0bc67d2e45e4ffe301b12cbfa5e17ba15cecf0d8a154b7400bcf844",
     "fee": "3024000000"
    },
    "admittedFirstBy": "independent verifier V1"

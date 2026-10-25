@@ -1,11 +1,11 @@
 TAP version 13
 # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
 # backend: Only 9 confirmations
-# {"initialTip":318,"depositCredit":{"txid":"cb1f34624d9b6f3c372f1675013a3ea0945b3cdce8332f18e902c6dd33811b4c","status":"published","binding":"557a42e13a75ba44fbd7ebc4b537cd4ba03392b6fee24f30e71290a60f3e4273"},"normalPk":{"authenticated":true,"bytes":82675440,"label":"DISPOSABLE TEST SETUP — NOT PRODUCTION","manifest":"XMR20-PARAMS-1","sha256":"8152016c33b1f4bb10da5c2de242b38763bb7461fac3d611dcbee0306326aced","slot":0,"source":"download","path":"normal.public-pk"},"sendProvingMs":29635,"sendCarrier":{"nativeBytes":2520,"extraBytes":1056,"fee":"3024000000"},"threeInputProvingMs":29893,"threeInputCarrier":{"nativeBytes":2520,"extraBytes":1056,"fee":"3024000000"},"boundaryPk":{"authenticated":true,"bytes":64409328,"label":"DISPOSABLE TEST SETUP — NOT PRODUCTION","manifest":"XMR20-PARAMS-1","sha256":"b9b5c8269adf6377480b4713c8449bc28170eb4b3ad5ed00c08b981886bc6120","slot":1,"source":"download","path":"boundary.public-pk"},"redeemProvingMs":22912,"redeemCarrier":{"nativeBytes":2450,"extraBytes":985,"fee":"2940000000"},"recovery":{"tip":378,"applied":6,"notes":2,"spent":4},"engineMemoryBytes":406913024,"wasmBytes":5035317}
+# {"initialTip":318,"depositCredit":{"txid":"65f3a28134ad07feb55b59b7329179bdf2ce3d90fda42f0e3f4d1203ed8b8cbe","status":"published","binding":"eb13f9f639d704198b2f0fe237878e8b910ad0640f9874dd8176dedbded1450f"},"normalPk":{"authenticated":true,"bytes":82675440,"label":"DISPOSABLE TEST SETUP — NOT PRODUCTION","manifest":"XMR20-PARAMS-1","sha256":"8152016c33b1f4bb10da5c2de242b38763bb7461fac3d611dcbee0306326aced","slot":0,"source":"download","path":"normal.public-pk"},"sendProvingMs":30283,"sendCarrier":{"nativeBytes":2520,"extraBytes":1056,"fee":"3024000000"},"threeInputProvingMs":30054,"threeInputCarrier":{"nativeBytes":2520,"extraBytes":1056,"fee":"3024000000"},"boundaryPk":{"authenticated":true,"bytes":64409328,"label":"DISPOSABLE TEST SETUP — NOT PRODUCTION","manifest":"XMR20-PARAMS-1","sha256":"b9b5c8269adf6377480b4713c8449bc28170eb4b3ad5ed00c08b981886bc6120","slot":1,"source":"download","path":"boundary.public-pk"},"redeemProvingMs":23104,"redeemCarrier":{"nativeBytes":2449,"extraBytes":985,"fee":"2938800000"},"recovery":{"tip":378,"applied":6,"notes":2,"spent":4},"engineMemoryBytes":406913024,"wasmBytes":5035317}
 # Subtest: holder engine: keys, replay, spend, redeem, recovery (wasm in Node)
 ok 1 - holder engine: keys, replay, spend, redeem, recovery (wasm in Node)
   ---
-  duration_ms: 262197.836292
+  duration_ms: 270058.362834
   type: 'test'
   ...
 1..1
@@ -16,4 +16,4 @@ ok 1 - holder engine: keys, replay, spend, redeem, recovery (wasm in Node)
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 264049.657458
+# duration_ms 271863.255208
