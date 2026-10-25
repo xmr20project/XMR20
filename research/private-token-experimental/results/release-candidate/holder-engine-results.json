@@ -1,0 +1,54 @@
+{
+ "initialTip": 318,
+ "depositCredit": {
+  "txid": "369271d513d41f77cc1485779529e860962a82541c0fbb04f2422d36452bf9b2",
+  "status": "published",
+  "binding": "5ecd97773d86fcc82f666bc0eb37241fd1aa3a9c22618c8d8beba6c3c7479100"
+ },
+ "normalPk": {
+  "authenticated": true,
+  "bytes": 82675440,
+  "label": "DISPOSABLE TEST SETUP — NOT PRODUCTION",
+  "manifest": "XMR20-PARAMS-1",
+  "sha256": "8152016c33b1f4bb10da5c2de242b38763bb7461fac3d611dcbee0306326aced",
+  "slot": 0,
+  "source": "download",
+  "path": "normal.public-pk"
+ },
+ "sendProvingMs": 29991,
+ "sendCarrier": {
+  "nativeBytes": 2520,
+  "extraBytes": 1056,
+  "fee": "3024000000"
+ },
+ "threeInputProvingMs": 30261,
+ "threeInputCarrier": {
+  "nativeBytes": 2520,
+  "extraBytes": 1056,
+  "fee": "3024000000"
+ },
+ "boundaryPk": {
+  "authenticated": true,
+  "bytes": 64409328,
+  "label": "DISPOSABLE TEST SETUP — NOT PRODUCTION",
+  "manifest": "XMR20-PARAMS-1",
+  "sha256": "b9b5c8269adf6377480b4713c8449bc28170eb4b3ad5ed00c08b981886bc6120",
+  "slot": 1,
+  "source": "download",
+  "path": "boundary.public-pk"
+ },
+ "redeemProvingMs": 23212,
+ "redeemCarrier": {
+  "nativeBytes": 2449,
+  "extraBytes": 985,
+  "fee": "2938800000"
+ },
+ "recovery": {
+  "tip": 378,
+  "applied": 6,
+  "notes": 2,
+  "spent": 4
+ },
+ "engineMemoryBytes": 406913024,
+ "wasmBytes": 5035317
+}

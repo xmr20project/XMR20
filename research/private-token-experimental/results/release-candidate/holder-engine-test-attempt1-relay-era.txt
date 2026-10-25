@@ -1,0 +1,22 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+backend: Unknown action
+✖ holder engine: keys, replay, spend, redeem, recovery (wasm in Node) (86077.0765ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 87915.581292
+
+✖ failing tests:
+
+test at holder-engine.test.mjs:29:1
+✖ holder engine: keys, replay, spend, redeem, recovery (wasm in Node) (86077.0765ms)
+  Error: Unknown action
+      at post (file://<workspace>/research/privacy-release-candidate-20261025/holder-engine.test.mjs:25:251)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async TestContext.<anonymous> (file://<workspace>/research/privacy-release-candidate-20261025/holder-engine.test.mjs:53:17)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3)

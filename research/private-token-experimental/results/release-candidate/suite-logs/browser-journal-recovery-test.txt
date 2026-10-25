@@ -1,0 +1,17 @@
+TAP version 13
+# bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+# Subtest: journal-vs-phrase recovery through two installations with the same phrase
+ok 1 - journal-vs-phrase recovery through two installations with the same phrase
+  ---
+  duration_ms: 313452.642541
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 315394.103

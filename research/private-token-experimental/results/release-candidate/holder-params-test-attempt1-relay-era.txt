@@ -1,0 +1,22 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+backend: Unknown action
+✖ parameter authentication: shipped manifest is the only trust anchor (92301.266459ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 94157.944416
+
+✖ failing tests:
+
+test at holder-params.test.mjs:31:1
+✖ parameter authentication: shipped manifest is the only trust anchor (92301.266459ms)
+  Error: Unknown action
+      at post (file://<workspace>/research/privacy-release-candidate-20261025/holder-params.test.mjs:24:224)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async TestContext.<anonymous> (file://<workspace>/research/privacy-release-candidate-20261025/holder-params.test.mjs:89:13)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3)

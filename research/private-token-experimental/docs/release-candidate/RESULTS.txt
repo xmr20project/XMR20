@@ -1,0 +1,158 @@
+RESULTS — RELEASE CANDIDATE research/privacy-release-candidate-20261025, 25 October 2026 (runs on 24-25 Oct, Europe/London)
+Every row names its execution class. SIMULATED = offline zero-peer regtest fakechain (Monero v0.18.5.3), lab roles bound to the
+test-v1 manifest, compiled Solana custody in LiteSVM. EXECUTED ON STAGENET = retained results of privacy-stagenet-wallet-20261024
+(not re-run here). Failed attempts are kept with their causes. Nothing here is an independent audit; verdicts are unchanged.
+
+1. BASELINE AND VERSIONS                       RELEASE-CHECKLIST.txt 0-6 (wasm 2c866f39…, lab 375a49e2…, manifests ae7ba302… /
+                                               066d839b… / ed12e124…, protocol v0.1-experimental, Node 24.1.0, Monero 0.18.5.3)
+
+2. SETTLEMENT COUNTEREXAMPLES (SETTLEMENT-DESIGN.txt)
+  A bridge payout then rollback — LIVE, SIMULATED   settlement/bridge-rollback-loss.test.mjs PASSED 1/1 = loss reproduced
+    (runs/bridge-rollback-loss-test.log; settlement/evidence/bridge-payout-then-rollback-live-2026-10-24.json): deposit 100 X ->
+    credit 98.5 -> self-send to isolate a 40 X note -> XB3 burn 40 X, 10 confirmations, PAID on Solana (net 39.4) -> rollback 11
+    blocks -> backup installation re-spends the 40 X note to B (B holds 40 X) -> burn record fails admission -> operator buckets:
+    reserve 792.8M vs owed 832.8M, SHORTFALL exactly 40,000,000; incident paidWithoutBurn; halted. Attempt 1 failed before the
+    burn because the test service mines at most 50 blocks per call (coinbase not matured) — harness-only, fixed.
+  B buyer pays, no tokens — MODEL + PRESERVED        settlement/model/finality-model.test.mjs 9/9 (PASS = loss case retained);
+    real-daemon evidence settlement/evidence/trading-buyer-pays-no-tokens-20261022-verified-nejEGH.json preserved unchanged.
+  Constructions evaluated (4.1-4.8): none eliminates A or B; recommendation = product decision (4.7+4.6 for the bridge; 4.4/4.5 or
+    4.8 for trading). Payouts and trading GATED.
+
+3. CONFORMANCE (CONFORMANCE.txt; conformance/)
+  indexer replay equivalence — SIMULATED       PASSED 1/1 (runs/indexer-replay-equivalence-test.log; conformance/evidence/indexer-
+    replay-equivalence-2026-10-24.json): clean replay == incremental state digest after credits (tip 294, 3 events), after
+    transfers (316, 5), after a 12-block rollback (304, 4: t2 gone, t1 kept, B's spend reverted) and after re-sending t2's SAME
+    carrier (315, 5; re-admitted at height 305; no new fee); a restarted indexer process equals the incremental one.
+  observer-gated payout — SIMULATED            PASSED 1/1 (runs/observer-gated-payout-test.log; conformance/evidence/observer-gated-
+    payout-2026-10-24.json): unrelated-chain observer -> payout WITHHELD (reason: unknown), redemption stays pending; observers
+    required but none configured -> WITHHELD; agreeing observer -> paid once (net 48,511,250), repeat returns the receipt.
+    Limitation: offline there is no second node synced to the same fakechain; agreement is shown with the primary as observer;
+    on stagenet a third-party node's view was recorded. The gate does not remove counterexample A.
+  operator journal corruption — unit           PASSED 1/1 (runs/operator-journal-corruption-test.log): round trip; no temp file
+    left; journal of another asset refused; truncated journal REFUSES to open (no silent reset); restored backup opens.
+  state vectors                                conformance/states-vectors.json (vocabulary, transitions, invariants) — consumed by
+    documentation; the reference process (stagenet/holder-process.mjs) and the popup implement them (recovery cases 76/76 & 57/57,
+    popup suites, retained from the previous candidates).
+
+4. THIRD-PARTY LEGACY MIGRATION — EVERY XMR20-LAUNCHED TOKEN (migration/)
+  catalog                                      migration/third-party-assets.json: 66 launched tokens from the public tokens list
+    (read-only snapshot 24 Oct 2026 21:4xZ of https://api.xmr20.org/api/xmr20/tokens): variants inscriptionVersion {1:33, 2:24,
+    none:9}, transfer tax {150 bps:56, 0:10}, bridge version {3:54, 2:2, 1:1, none:9}, 12 without a Solana bridge program; Solana
+    label 'mainnet-beta' in the API for all; launch inscriptions on Monero carry chain 'mainnet' OR 'mainnet-beta' and fee 150 or
+    200 (migration/LEGACY-FORMAT-VARIANTS.txt, samples per version parsed from mainnet launch transactions via a public node).
+    Tickers are NOT unique (MCAT, TEST, QTEST, XMR, XMR20 repeat): assets are keyed by mint. Decimals verified on chain (6,
+    Token-2022) for the five instantiated tokens.
+  acceptance test — SIMULATED                  migration/legacy-migration.test.mjs: PASSED 1/1 (attempt 11; runs/legacy-migration-test.log; migration/evidence/
+    legacy-migration-extremist-2026-10-24.json). EXTREMIST: legacy lot 10,000,000,000 visible at the REAL mint address (synthetic
+    custody, decimals 6); claim prepared and signed with the legacy one-time key; operator crashed after the credit was journaled
+    (built) and before publication -> the second submit was refused by the journal and the SAME credit was published on retry
+    (no second credit, registry row consumed once); balance EXACTLY 10,000 private EXTREMIST in one note; reserve unchanged,
+    rights bucket -10,000 and private-notes bucket +10,000 (no deposit, no bridge tax); credit carrier fee 2,938,800,000 piconero
+    paid by the ISSUER (offline rate), holder paid 0 XMR. Duplicate claim refused from the same and from a FRESH installation of
+    the phrase (which sees the migrated 10,000 and the lot as claimed); another key's signature refused ("Legacy signature
+    rejected"); a lot id outside the cutover snapshot is unknown; a holder registering after the cutover gets no lot; a second
+    cutover migration leaves the reserve and the zero legacy position unchanged (old path closed). Private transfer H->K
+    2,500 (change 7,500 exact). Redemption of 100 EXTREMIST (the lab operator's single-payout exposure limit is 100 units and
+    was NOT raised) paid on the EXTREMIST mint, net 98,500,000 under the synthetic custody's single 1.5% fee, XMR20 mint
+    untouched, backing holds. SAME PATH for XTAC (v1, 150 bps), LUKE (v2), XMR20~5NPSXG (no inscription version, 0 bps, no
+    bridge program), COVERT (v1, no bridge program) and for USVEU added AFTER startup (future launch): each exactly 10,000,
+    backing true, duplicate refused. Attempts 1-10 preserved (runs/legacy-migration-test-attempt*.log): harness-only causes —
+    legacy position needs the holder funded above the fixture's 1e9, orphaned fakechain on startup failure, assertion texts,
+    BigInt in a request, lab exposure limit, a swallowed line comment, lot cap vs funded position, backing read before cutover,
+    token accounts for later-added tokens.
+  Per-token FEE POLICY (closed 25 Oct): the custody program takes its fee from the mint's own Token-2022 transfer-fee extension,
+    so each catalog token is instantiated with its REAL mint account bytes (read-only observation; 150-bps mints carry the
+    extension, the zero-fee mints EXTREMIST and XMR20~5NPSXG do not). Verified exactly: EXTREMIST deposit 50 -> 50 net and
+    redemption 100 -> 100 net (0 bps); XTAC/LUKE/COVERT/USVEU deposit 50 -> 49.25 and redemption 20 -> 19.7 (150 bps);
+    XMR20~5NPSXG 50 -> 50 and 20 -> 20; backing invariant true after every operation; migration itself always credits the
+    full entitlement with no fee. Earlier attempts 11-15 (single 1.5% fee, missing import, K unfunded, later-added token
+    accounts unseeded) are kept. Known limitations: legacy lots are SYNTHETIC (no real cutover snapshot was taken; the
+    production legacy indexer must export (mint, legacy owner key, amount) rows per token at the cutoff height); the old-path
+    stop in the SHIPPING indexer is not integrated (RELEASE-CHECKLIST 3); nothing touched real holdings.
+
+5. RETAINED FROM THE PREVIOUS CANDIDATES (not re-run; see their RESULTS)
+  stagenet real-popup run PASSED (two fresh accounts, send with change 80c2be96…, actual lost reply 4aacb060… recovered by lookup,
+  reopen/lock without re-send, exact balances/fees, third-party confirmation, fresh-installation recovery); offline popup suites
+  4/4; recovery cases offline 76/76 and stagenet 57/57; stagenet rehearsal attempt 3; interop vectors; verifier-params.
+
+5b. STALE STAGE-1 SUITES FOUND BY THE INTEGRATION RUN AND PORTED (no assertion weakened)
+  The first integration run failed holder-params.test.mjs and holder-engine.test.mjs with "Unknown action": both still called the
+  stage-1 `relay` service action, which stage 2 removed when carriers became holder-funded (no relay exists in any backend since
+  privacy-carrier-20261023); neither suite had been run since (no logs in the later candidates). Failed evidence kept:
+  runs/holder-params-test-attempt1-relay-era.log, runs/holder-engine-test-attempt1-relay-era.log. Port: the holder registers its
+  own Monero address, is funded by the TEST SERVICE, and quotes/signs/publishes its own carrier; the relay's "repeated" check
+  became an idempotent re-send of the SAME blob (same txid known to the daemon); the relay's "Spent or duplicate token input"
+  refusal became the holder's own admission check refusing to sign a carrier for the conflicting record (same pool rule, no fee
+  spent) plus assert.rejects on the carrier path. Every original assertion on parameters, balances, change, records,
+  confirmations, payouts, recovery, viewing keys and reorg replay is unchanged.
+  holder-params.test.mjs PASSED 1/1 (runs/holder-params-test.log): manifest pin, foreign/truncated/missing parameters.json,
+    missing/truncated/interrupted/corrupt-query/foreign/swapped proving keys rejected before use (both slots), corrupted/foreign/
+    short cache entries discarded, cache-only restart with a faulty server, interrupted download retried, genuine proof and
+    holder-funded publication, other-ledger backend refused end to end.
+  holder-engine.test.mjs PASSED 1/1 (runs/holder-engine-test.log): derivation, replay, deposit credit, 1/2/3-input sends with
+    exact change, idempotent re-send, conflicting record refused by local admission, redemption with exactly-once payout at 10
+    confirmations, fresh-root recovery paying with recovered XMR, wrong root, viewing-only engine, reset+replay equality.
+
+5c. STALLED INTEGRATION RUN (attempt 2, 24 Oct 23:50 local) — DIAGNOSED, PRESERVED, FIXED (no assertion changed)
+  Observation: the run passed its first ten suites and then stayed at interop.test.mjs for over an hour; runs/interop-results.json
+    had zero transfers, the evidence folder held steps.json=[] and a zero-request audit, the test runner, its child and one
+    Playwright Chromium stayed alive without a fakechain, and no integration-report.json was written.
+  Cause (confirmed by reproduction, runs/interop-attempt1-stalled/harness-fix-smoke.txt case 3): this candidate had NO
+    wallet-extension/extension-private-holder-test build — only the stagenet build had been copied — so Chromium was started with
+    a non-existent --load-extension path, no extension service worker appeared and h.launch threw
+    "browserContext.waitForEvent: Timeout 30000ms exceeded while waiting for event "serviceworker"" 30 s after launching the
+    browser. h.launch created the context and waited BEFORE returning it, so the test's `context` stayed null: its finally closed
+    the backend and wrote the empty audit, the test failed, and the still-open browser kept the process alive. The runner buffered
+    all child output until exit and had no bound. The hypothesis "launch leaks the context when the service-worker wait throws" is
+    CONFIRMED; the trigger was the missing build. Evidence: runs/interop-attempt1-stalled/ (README, process snapshot, the attempt's
+    suite log ending in the shell's "exit 143" from the termination, interop-results.json, empty evidence folder).
+  Cleanup: exactly four processes were terminated (suite runner 89967, `node --test interop.test.mjs` 4756, its child 4757, its
+    Chromium 5608); the stagenet node and everything else were left alone.
+  Fixes: (1) wallet-extension/server-patch/extension-auth.mjs (plain source the copy had dropped; the build imports it) restored
+    and the local test extension built inside the candidate (identity in RELEASE-CHECKLIST 0; nothing installed changed);
+    (2) browser-harness.mjs h.launch refuses a missing build before any browser starts and, if the service worker never appears,
+    closes the context itself and throws an error naming the build (smoke: valid build loads in 1.1 s; missing build refused;
+    service-worker-less build -> error after 30 s, browser closed, process exits); (3) integration-suite.mjs streams each suite's
+    output to runs/suite-logs/, echoes failures and a heartbeat per minute (bounded), bounds every suite and terminates its whole
+    process group at the bound, and reports the build identity (wasm, extension bundles, manifest, backend, harness sha256).
+  Coverage reconciled: the runner now includes migration/legacy-migration.test.mjs (it was missing from the list), runs
+    independent/check.mjs as its own row (the former "interop vectors + independent checker" row never invoked it), and names
+    the interop row for what the test does (real popup A + CLI wallet B on one pool). The ten PASS rows of attempt 2 are carried
+    into the completing run (their files and the backend modules are older than that run; the runner lists every file modified
+    since; none of the carried suites imports browser-harness.mjs or the runner).
+
+6. INTEGRATION SUITE — COMPLETE, 18/18 ROWS PASS (runs/integration-suite.log, runs/integration-report.json, runs/suite-logs/)
+  Run 3 (25 Oct 00:36:43-01:13:17 UTC; `node integration-suite.mjs --carry runs/integration-suite-attempt2-interop-stalled.log`;
+  exit 0). Build identity recorded in the report: Node v24.1.0; engine wasm 2c866f39…; test extension app.js 82c3b69e…,
+  private-holder.worker.js 6333f2fe…, vendor/holder.wasm 2c866f39…; test-v1 manifest ae7ba302…; backend/service.mjs 70264aeb…;
+  browser-harness.mjs 6846f484….
+  CARRIED from run 2 (same files; the runner found only browser-harness.mjs and integration-suite.mjs modified since run 2 started,
+  neither imported by these suites; the rebuilt extension folder is excluded from that scan and the restored server-patch/
+  extension-auth.mjs keeps its original timestamp — both are only used by the browser rows, which were all executed):
+    journal 1/1 · carrier lookup-before-retry 6/6 · fault proxy 3/3 · parameter authentication 1/1 (151 s) · engine + records 1/1
+    (271 s) · finality model 9/9 · COUNTEREXAMPLE A live 1/1 (145 s; loss reproduced) · indexer replay equivalence 1/1 (127 s) ·
+    operator journal corruption 1/1 · observer-gated payout 1/1 (240 s)
+  EXECUTED in run 3:
+    legacy migration, every catalog token, exact entitlement, per-mint fees   1/1   264 s   (section 4; evidence rewritten)
+    independent checker over the interop vectors (independent/check.mjs)      exit 0        (runs/suite-logs/independent-check.log)
+    two-wallet interop: real popup A + CLI wallet B on one pool               1/1   293 s   4 transfers (1/2/3 inputs; change
+      78.5 / 15 / 1 / 0.5 exact), CLI recovery of the popup account from its phrase (same address, 98 X, 4 notes), viewing-only
+      state sees 0.5 X and cannot spend, random root sees nothing, tampered and re-published records rejected, other-manifest CLI
+      refused, one pool admitted 8 records, 530 requests all to the test backend (40) or daemon (477), 0 external, 0 secret leaks
+      (runs/interop-results.json; evidence/verified-interop-2026-10-25T00-41-08)
+    stagenet-aware roles (simulation)                                         4/4   236 s
+    real popup: carriers incl. actual lost reply                              1/1   453 s
+    real popup: recovery                                                      1/1   314 s
+    real popup: journal recovery                                              1/1   315 s
+    real popup: interruptions                                                 1/1   318 s
+  Retained, not re-run: the stagenet real-popup run of 24 Oct (EXECUTED ON STAGENET; section 5).
+  Attempts: run 1 (24 Oct) FAILED the two stale stage-1 suites (5b; runs/integration-suite-attempt1-stale-suites.log); run 2
+  STALLED at interop (5c; runs/integration-suite-attempt2-interop-stalled.log); run 3 complete. No assertion was changed in any fix.
+  Timing: 8 executed rows 2,193 s; the carried rows had taken 934 s in run 2.
+  This is a passing functional suite on synthetic chains and LiteSVM. It is not an audit, not a production rehearsal and does not
+  change any verdict in RELEASE-CHECKLIST 6.
+
+7. WHAT IS NOT DONE (see RELEASE-CHECKLIST 2-5 and RELEASE-GATES)
+  real cutover snapshots per token; production adapters and live-program rehearsal; reversible payout escrow; bundled trade
+  primitive; ceremony tooling and locked reproducible builds; phone proving measurements; wallet-side second node; marketplace
+  integration (gated); independent review and production parameters (none exist). Verdicts: NO-GO for real funds.

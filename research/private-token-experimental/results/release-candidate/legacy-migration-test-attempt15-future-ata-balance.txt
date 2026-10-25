@@ -1,0 +1,49 @@
+TAP version 13
+# bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+# {"step":"catalog: every launched token has a unique derived asset id","tokens":66,"instantiatedNow":["EXTREMIST","XTAC","LUKE","XMR20~5NPSXG","COVERT"],"future":"USVEU"}
+# {"step":"legacy position visible","asset":"eea2bc81c55c6dda47c68bd82eba01f4da645e95f3bc1dbdbe1050b6aee46a12","mintStandIn":"9MwJfFGc3jNkAKLwma4kkUYivs19yJsWXuPD15RegXMR","realMint":"9MwJfFGc3jNkAKLwma4kkUYivs19yJsWXuPD15RegXMR","decimals":6,"lot":"10000000000"}
+# backend: SIMULATED CRASH after the credit was journaled (built), before publication
+# backend: Claim already consumed
+# {"step":"migrated","credit":"9d4f964b371fd5b7a15ed925e9e419447f991c26d4937e4dfa772f4d2602c500","balance":"10000000000","backing":{"asset":"eea2bc81c55c6dda47c68bd82eba01f4da645e95f3bc1dbdbe1050b6aee46a12","reserve":"20000000000","owed":"20000000000","ok":true,"shortfall":"0","lossBearer":"operator b
+# backend: Claim already consumed
+# backend: Claim already consumed
+# backend: Legacy signature rejected
+# backend: Unknown legacy lot for this account
+# {"step":"duplicates, cutoff ownership, late registration, old path closed","lateRegistrant":{"X":"0","LUKE":"0","XTAC":"0","COVERT":"0","XMR20~5NPSXG":"0","EXTREMIST":"0"},"cutover":{"migratedToReserveAtTip":322,"legacyPositionAfter":"0"}}
+# {"step":"private transfer of migrated tokens","txid":"e4921c38f3baec309af5d20cfbb9e63fc39466c342e086e2960de3268eb50b95","feePiconero":"3024000000","change":"7500000000"}
+# {"step":"redeemed to the same Solana asset","burn":"07c77ed68f7273f464e40f4f52f023035028ccc6789b2e2fef884ef1045cacba","net":"100000000","feeBps":0,"mint":"9MwJfFGc3jNkAKLwma4kkUYivs19yJsWXuPD15RegXMR","backing":{"asset":"eea2bc81c55c6dda47c68bd82eba01f4da645e95f3bc1dbdbe1050b6aee46a12","reserve":"19
+# {"step":"deposit per EXTREMIST fee policy","gross":"50000000","net":"50000000","feeBps":0,"backing":true}
+# backend: Claim already consumed
+# backend: Claim already consumed
+# backend: Claim already consumed
+# backend: Claim already consumed
+# {"step":"other catalog tokens migrated by the same path","others":[{"symbol":"XTAC","asset":"9fdadb5d7dd447a58c1c058804f0f847b230c68a514568bcbb44737174f5320a","mint":"HitiJphamArNBrDotTiJZEfsyWApZ7YTZfY34jJkgXMR","decimals":6,"feeBps":150,"credit":"bececaee169c92cd7dd394e841c36f4270233bddb2e8e717ed7
+# backend: Claim already consumed
+# backend: Solana deposit rejected: Program CD1DETa7zSkFGRArnbfZXLeMtEoo6tdZvHkdUm4c2kSW invoke [1] | Program CD1DETa7zSkFGRArnbfZXLeMtEoo6tdZvHkdUm4c2kSW consumed 21421 of 200000 compute units | Program CD1DETa7zSkFGRArnbfZXLeMtEoo6tdZvHkdUm4c2kSW failed: invalid program argument
+# Subtest: 10,000 legacy EXTREMIST -> exactly 10,000 private EXTREMIST; interrupted/duplicate/cutoff/recovery; transfer; redemption to the same mint
+not ok 1 - 10,000 legacy EXTREMIST -> exactly 10,000 private EXTREMIST; interrupted/duplicate/cutoff/recovery; transfer; redemption to the same mint
+  ---
+  duration_ms: 250659.4965
+  type: 'test'
+  location: '<workspace>/research/privacy-release-candidate-20261025/migration/legacy-migration.test.mjs:42:1'
+  failureType: 'testCodeFailure'
+  error: 'Solana deposit rejected: Program CD1DETa7zSkFGRArnbfZXLeMtEoo6tdZvHkdUm4c2kSW invoke [1] | Program CD1DETa7zSkFGRArnbfZXLeMtEoo6tdZvHkdUm4c2kSW consumed 21421 of 200000 compute units | Program CD1DETa7zSkFGRArnbfZXLeMtEoo6tdZvHkdUm4c2kSW failed: invalid program argument'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    post (file://<workspace>/research/privacy-release-candidate-20261025/migration/legacy-migration.test.mjs:31:210)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async migrate (file://<workspace>/research/privacy-release-candidate-20261025/migration/legacy-migration.test.mjs:126:95)
+    async TestContext.<anonymous> (file://<workspace>/research/privacy-release-candidate-20261025/migration/legacy-migration.test.mjs:137:233)
+    async Test.run (node:internal/test_runner/test:1069:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 252486.888
+exit 1

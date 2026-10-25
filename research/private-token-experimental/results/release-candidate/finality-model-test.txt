@@ -1,0 +1,19 @@
+{"abstractForkCases":3600,"stableReservationCases":2400,"crossBoundaryCases":{"cases":1200,"originRemoved":220,"reservationRemoved":111},"productionSafetyEstablished":false}
+✔ release baseline contains ten reservation confirmations, not irreversible finality (0.440708ms)
+✔ all modeled replacement tails preserve fairness when the reservation prefix survives (3.082542ms)
+✔ cross-boundary exploration retains payment losses and never confiscates conflicting receipts (1.622541ms)
+✔ missing reservation alone can recover from the captured full authorization (0.05925ms)
+✔ unchanged proof origin does not prevent a genuine competing spend after reservation rollback (0.046542ms)
+✔ native child ancestry alone cannot require valid parent token data (0.048792ms)
+✔ a vanished origin root defeats inline recovery even without a competing token spend (0.049334ms)
+✔ native cancellation wins protect the price; losing the race cannot recall payment (0.047958ms)
+✔ reorganizing only the purchase can reverse or replay both legs while retaining the reservation (0.062708ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 44.114167
+exit 0
