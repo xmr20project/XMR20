@@ -26,9 +26,15 @@ RUN
   (cd wallet-extension && XMR20_PRIVATE_HOLDER_TEST=local node build.mjs)   # once: the offline test extension the popup suites load
   node integration-suite.mjs --quick     # unit, settlement, conformance, migration, checker, interop (real popup), roles (~40 min)
   node integration-suite.mjs             # + the four real-popup suites on the offline fakechain
-  node integration-suite.mjs --carry runs/<earlier integration-suite log>   # carries PASS rows of unchanged suites, lists what changed
+  node integration-suite.mjs --carry runs/<earlier integration-report.json>  # reuses a PASS row only when the recorded CONTENT
+                                         # identities of that suite's inputs (sources, spawned scripts, wasm, lab binaries, monerod,
+                                         # custody program, parameter manifests + proving-key bytes, built extension, toolchain) are
+                                         # identical; origin (run id, time, build) is kept through reuse; no mtimes, no logs
+  node --test integration-suite.test.mjs # runner self-test (suite-provenance.mjs): changed dependency/binary/parameters invalidate
+                                         # reuse even with preserved timestamps; --quick/--only never claim completion
   Every suite streams to runs/suite-logs/<file>.log, is bounded in time (its whole process group is terminated at the bound) and
-  echoes failures plus one heartbeat per minute; the report is runs/integration-report.json (with the build identity).
+  echoes failures plus one heartbeat per minute; the report is runs/integration-report.json (build identity, per-row input digests,
+  executed vs reused rows with their origin, and a completion claim that is only "full suite" when every row of the full suite passed).
   Stagenet (real network, hours, faucet-limited): see privacy-stagenet-wallet-20261024 (launch.sh, browser-stagenet.test.mjs).
 
 BOUNDARIES

@@ -1,9 +1,9 @@
 {
  "initialTip": 318,
  "depositCredit": {
-  "txid": "369271d513d41f77cc1485779529e860962a82541c0fbb04f2422d36452bf9b2",
+  "txid": "cb1f34624d9b6f3c372f1675013a3ea0945b3cdce8332f18e902c6dd33811b4c",
   "status": "published",
-  "binding": "5ecd97773d86fcc82f666bc0eb37241fd1aa3a9c22618c8d8beba6c3c7479100"
+  "binding": "557a42e13a75ba44fbd7ebc4b537cd4ba03392b6fee24f30e71290a60f3e4273"
  },
  "normalPk": {
   "authenticated": true,
@@ -15,13 +15,13 @@
   "source": "download",
   "path": "normal.public-pk"
  },
- "sendProvingMs": 29991,
+ "sendProvingMs": 29635,
  "sendCarrier": {
   "nativeBytes": 2520,
   "extraBytes": 1056,
   "fee": "3024000000"
  },
- "threeInputProvingMs": 30261,
+ "threeInputProvingMs": 29893,
  "threeInputCarrier": {
   "nativeBytes": 2520,
   "extraBytes": 1056,
@@ -37,11 +37,11 @@
   "source": "download",
   "path": "boundary.public-pk"
  },
- "redeemProvingMs": 23212,
+ "redeemProvingMs": 22912,
  "redeemCarrier": {
-  "nativeBytes": 2449,
+  "nativeBytes": 2450,
   "extraBytes": 985,
-  "fee": "2938800000"
+  "fee": "2940000000"
  },
  "recovery": {
   "tip": 378,

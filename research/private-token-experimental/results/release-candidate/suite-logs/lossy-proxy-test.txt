@@ -1,0 +1,28 @@
+TAP version 13
+# Subtest: drop-reply: daemon answered, client connection destroyed, fault recorded with the daemon answer
+ok 1 - drop-reply: daemon answered, client connection destroyed, fault recorded with the daemon answer
+  ---
+  duration_ms: 19.469417
+  type: 'test'
+  ...
+# Subtest: drop-request: nothing reaches the daemon
+ok 2 - drop-request: nothing reaches the daemon
+  ---
+  duration_ms: 1.234542
+  type: 'test'
+  ...
+# Subtest: pass-through is unchanged and history survives clearing the per-case events view
+ok 3 - pass-through is unchanged and history survives clearing the per-case events view
+  ---
+  duration_ms: 5.663458
+  type: 'test'
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 3
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 77.636875

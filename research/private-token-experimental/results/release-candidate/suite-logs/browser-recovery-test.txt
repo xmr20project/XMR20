@@ -3,7 +3,7 @@ TAP version 13
 # Subtest: fresh-install recovery of holder-controlled private tokens (two profiles)
 ok 1 - fresh-install recovery of holder-controlled private tokens (two profiles)
   ---
-  duration_ms: 311805.775
+  duration_ms: 307577.835833
   type: 'test'
   ...
 1..1
@@ -14,4 +14,4 @@ ok 1 - fresh-install recovery of holder-controlled private tokens (two profiles)
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 313746.62375
+# duration_ms 309513.90475

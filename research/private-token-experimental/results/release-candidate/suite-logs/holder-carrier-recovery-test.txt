@@ -1,0 +1,46 @@
+TAP version 13
+# Subtest: lost reply: daemon knows the txid -> recovered by lookup, nothing re-sent
+ok 1 - lost reply: daemon knows the txid -> recovered by lookup, nothing re-sent
+  ---
+  duration_ms: 1.244458
+  type: 'test'
+  ...
+# Subtest: lost request: daemon does not know the txid -> the SAME blob is re-sent once and accepted
+ok 2 - lost request: daemon does not know the txid -> the SAME blob is re-sent once and accepted
+  ---
+  duration_ms: 1.245875
+  type: 'test'
+  ...
+# Subtest: daemon refusal is final: no lookup, no retry, no "accepted"
+ok 3 - daemon refusal is final: no lookup, no retry, no "accepted"
+  ---
+  duration_ms: 0.126125
+  type: 'test'
+  ...
+# Subtest: everything uncertain -> UNCERTAIN, bounded attempts, never ok
+ok 4 - everything uncertain -> UNCERTAIN, bounded attempts, never ok
+  ---
+  duration_ms: 7.63975
+  type: 'test'
+  ...
+# Subtest: lookup distinguishes pool, chain and unknown
+ok 5 - lookup distinguishes pool, chain and unknown
+  ---
+  duration_ms: 0.157084
+  type: 'test'
+  ...
+# Subtest: quote excludes key images spent in the daemon pool (pool-aware input selection)
+ok 6 - quote excludes key images spent in the daemon pool (pool-aware input selection)
+  ---
+  duration_ms: 0.294292
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 43.0825

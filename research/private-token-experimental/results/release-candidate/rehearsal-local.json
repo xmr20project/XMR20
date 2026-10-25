@@ -1,5 +1,5 @@
 {
- "startedAt": "2026-10-25T00:47:25.274Z",
+ "startedAt": "2026-10-25T02:37:02.894Z",
  "mode": "local",
  "execution": "SIMULATED on an offline fakechain (not stagenet, not mainnet)",
  "sanityChecks": false,
@@ -9,9 +9,9 @@
  },
  "steps": [
   {
-   "at": "2026-10-25T00:47:25.275Z",
+   "at": "2026-10-25T02:37:02.897Z",
    "name": "manifest",
-   "path": "<workspace>/research/privacy-release-candidate-20261025/runs/rehearsal-local-kEOTUs/trusted-manifest.json",
+   "path": "<workspace>/research/privacy-release-candidate-20261025/runs/rehearsal-local-3nOnga/trusted-manifest.json",
    "sha256": "8b58f52e94c5e65a1104ed9a568610b7f933d5b5eef66a034f2069c090b00fb9",
    "label": "DISPOSABLE TEST SETUP — NOT PRODUCTION",
    "network": {
@@ -22,7 +22,7 @@
    "ledgerDomain": "759e56ff75367217038d9b5f85f6b878bf3212016922bb2a3891ea4fa6726eb8"
   },
   {
-   "at": "2026-10-25T00:47:25.684Z",
+   "at": "2026-10-25T02:37:04.116Z",
    "name": "daemon",
    "rpcUrl": "http://127.0.0.1:30081",
    "nettype": "fakechain",
@@ -34,7 +34,7 @@
    "startHeight": 40
   },
   {
-   "at": "2026-10-25T00:47:25.744Z",
+   "at": "2026-10-25T02:37:04.179Z",
    "name": "param-server",
    "url": "http://127.0.0.1:8951",
    "files": {
@@ -54,7 +54,7 @@
    "note": "serves parameters.json and the two proving keys only; the wallets authenticate them against their own manifest"
   },
   {
-   "at": "2026-10-25T00:48:05.038Z",
+   "at": "2026-10-25T02:37:43.482Z",
    "name": "roles",
    "network": "offline-fakechain",
    "startHeight": 40,
@@ -72,26 +72,26 @@
    }
   },
   {
-   "at": "2026-10-25T00:48:05.176Z",
+   "at": "2026-10-25T02:37:43.620Z",
    "name": "wallets",
    "A": {
-    "token": "penumbra1p5ru3pvrpdcqk60ywf7rus265j6f63gt7gc5stvu466dt2mye99y27haj3c2qxh9ku7jzzt8ye8f0yegwnfn06v6lacdkvugm6tu3tjlfzaf5hmtqvnrwewh6w9fyuhfczvj5u",
-    "native": "42dURQCEnPXbfpVk9GLBkB8kUQ6Ee38kygv5HJzqjAFBJLiDsAKuwKehNSM23L5r1P6UeDWBXvNJ33uzMmRuzZDz1T6pc18"
+    "token": "penumbra1pxvxz4zkltrqchezz2hw5h3hag0nx2wxpzy6xrem90fjj0qv5ngu60g5aatpqhfzl9j4cyxnkzeckk7c9l07rcalujkjpr9j8fuyg093f2cvz0ccx6puzdwmzm3kqj4zn5t6rq",
+    "native": "48hUd4BsADjc6qha8P92wTAxTawhRSaMzCjqzaWLAP7xMYgQUFYRWLtXSCq9S1Qb1g64adjUKqYcHDx6ydptiKDwTHXsd4z"
    },
    "B": {
-    "token": "penumbra168ty7t0t9sgv2364p6dcl8ajush4y5d2sxz2rw6h8u6v2x9dk5ss45xzxus67sjm0ll6aptsh4rycy67vk5tl2kuxaf3fvdrat9mns74xntyua7ssrmg3xhh4tshz39qcds42j",
-    "native": "44Zk7toPihR1tz2rT23fQ4DorKFHemCGUC3JJg4R3SCSZ7uATwYjLVq2XevreC3XufCdfzHa9TSzc8udzNCecQTG5k79gFD"
+    "token": "penumbra1w2utvzdfw6e38z6twvk6xptwqksat6qq9rvky58znu35whg9ndeennkpmregakrzpgyhechuf6tglsuq954y9f0lpgwq4kghy7czshupyx8fe3qzdkdfy8pruhk5g57t2uygqv",
+    "native": "4B4WmSMSGnMFd9MXPYADiR2RJuPsV55EZaD4hKbpB2ZJgzLGL85RYgiZd3EuaY8v1geGjB7PGmeckedXM2NWntB9MBmcict"
    },
-   "walletDir": "<workspace>/research/privacy-release-candidate-20261025/runs/rehearsal-local-kEOTUs/wallets",
+   "walletDir": "<workspace>/research/privacy-release-candidate-20261025/runs/rehearsal-local-3nOnga/wallets",
    "note": "roots stored in walletDir (0600), never logged"
   },
   {
-   "at": "2026-10-25T00:48:05.179Z",
+   "at": "2026-10-25T02:37:43.622Z",
    "name": "sync",
    "A": {
     "tip": 0,
     "startHeight": 40,
-    "ms": 2
+    "ms": 1
    },
    "B": {
     "tip": 0,
@@ -100,27 +100,27 @@
    }
   },
   {
-   "at": "2026-10-25T00:48:13.536Z",
+   "at": "2026-10-25T02:37:52.048Z",
    "name": "fund",
    "simulated": true,
    "note": "coinbase mined to issuer, A and B on the fakechain; matured. 250 further blocks give the gamma decoy sampler enough outputs (a tiny chain hits the round limit); irrelevant on stagenet."
   },
   {
-   "at": "2026-10-25T00:48:13.780Z",
+   "at": "2026-10-25T02:37:52.292Z",
    "name": "sync",
    "A": {
     "tip": 301,
     "startHeight": 40,
-    "ms": 137
+    "ms": 131
    },
    "B": {
     "tip": 301,
     "startHeight": 40,
-    "ms": 107
+    "ms": 113
    }
   },
   {
-   "at": "2026-10-25T00:48:13.871Z",
+   "at": "2026-10-25T02:37:52.387Z",
    "name": "native-balances",
    "issuer": "6894258712729209",
    "A": {
@@ -135,40 +135,40 @@
    }
   },
   {
-   "at": "2026-10-25T00:48:15.385Z",
+   "at": "2026-10-25T02:37:53.912Z",
    "name": "credit",
    "amount": "5000000",
-   "txid": "0fff3f34580c223fb92ae56ca81f580121fa4c78d3fae4762c930d9d0f1bff14",
-   "recordId": "6f6c34f9639c080355d388eed5e6b949f9092c85a98130f9fe3c27c0cb930b8f",
+   "txid": "c87448a2a927ed616ef59d049252bb4304ad89e5182aaa45ef0e70c0807465c4",
+   "recordId": "8799cba6cb67ada0c2b0b05af4cfe601b82e37de0261b0dae5d08429faeba3fc",
    "issuerFee": "2938800000",
    "extraBytes": 985,
    "nativeBytes": 2449,
    "note": "issuer-funded carrier (issuer fee, not holder fee)"
   },
   {
-   "at": "2026-10-25T00:48:16.864Z",
+   "at": "2026-10-25T02:37:55.384Z",
    "name": "credit",
    "amount": "3000000",
-   "txid": "8a0b934f10b5e6d3d45b381716c7f19131d38b9eedd7374424fde8e15c45737c",
-   "recordId": "7399366dbd0602823aab60e2574c2fb81238b45c8023aef14214985ea07f512c",
+   "txid": "93f80747262b5b8547a9a253551d7131f1c44ced436d5b0448da0a2ae261c235",
+   "recordId": "64215da2c6564f2056a28636dc63b39a3add0049ee51d905f7fb00852650f66c",
    "issuerFee": "2938800000",
    "extraBytes": 985,
    "nativeBytes": 2449,
    "note": "issuer-funded carrier (issuer fee, not holder fee)"
   },
   {
-   "at": "2026-10-25T00:48:18.332Z",
+   "at": "2026-10-25T02:37:56.850Z",
    "name": "credit",
    "amount": "2000000",
-   "txid": "1602128179b1690e847245e6d15175402f237111b1f9759e5d9020c38f092ccd",
-   "recordId": "84a11a47876e736a642e1dc26e1ee3b39fa781264a0c8b49d4722167b3b51040",
+   "txid": "df6068bfa98ed4fa43124505abb65d104c1bf3cc0da9cb6b0ddac3b4c4ec37d2",
+   "recordId": "d336e0cff2760c369a92c521b79211b0f659acb540296dae93c131665793d4f4",
    "issuerFee": "2938800000",
    "extraBytes": 985,
    "nativeBytes": 2449,
    "note": "issuer-funded carrier (issuer fee, not holder fee)"
   },
   {
-   "at": "2026-10-25T00:48:18.594Z",
+   "at": "2026-10-25T02:37:57.117Z",
    "name": "advance",
    "blocks": 10,
    "from": 301,
@@ -177,7 +177,7 @@
    "simulated": true
   },
   {
-   "at": "2026-10-25T00:48:18.761Z",
+   "at": "2026-10-25T02:37:57.285Z",
    "name": "sync",
    "A": {
     "tip": 311,
@@ -187,11 +187,11 @@
    "B": {
     "tip": 311,
     "startHeight": 40,
-    "ms": 80
+    "ms": 81
    }
   },
   {
-   "at": "2026-10-25T00:48:18.777Z",
+   "at": "2026-10-25T02:37:57.302Z",
    "name": "assert-notes",
    "wallet": "A",
    "why": "after three credits",
@@ -210,7 +210,7 @@
    "ok": true
   },
   {
-   "at": "2026-10-25T00:48:18.779Z",
+   "at": "2026-10-25T02:37:57.304Z",
    "name": "assert-notes",
    "wallet": "B",
    "why": "untouched",
@@ -221,7 +221,7 @@
    "ok": true
   },
   {
-   "at": "2026-10-25T00:48:18.841Z",
+   "at": "2026-10-25T02:37:57.366Z",
    "name": "indexer",
    "credits": 3,
    "issuedNow": 3,
@@ -234,7 +234,7 @@
    "tip": 311
   },
   {
-   "at": "2026-10-25T00:48:18.867Z",
+   "at": "2026-10-25T02:37:57.390Z",
    "name": "fee-review",
    "label": "T1 one-input",
    "fee": "3024000000",
@@ -243,12 +243,12 @@
    "ringSize": 16,
    "inputAmount": "35181318765116",
    "changeAmount": "35178294765116",
-   "quoteMs": 11,
+   "quoteMs": 9,
    "feeBasis": "OFFLINE fakechain fee rate (not a real-network fee)",
    "note": "the holder wallet pays this XMR fee from its own output; shown before approval"
   },
   {
-   "at": "2026-10-25T00:48:50.948Z",
+   "at": "2026-10-25T02:38:29.540Z",
    "name": "proof",
    "label": "T1 one-input",
    "inputs": 1,
@@ -257,18 +257,18 @@
    ],
    "amount": "4000000",
    "change": "1000000",
-   "recordId": "5b4aa860987a71b5508bb71ca9eb3b1ead75a2b915ff46d2305672608cf6f1f5",
+   "recordId": "79d8c06a29c0710cbfc61d5e70017946d2d1b7f64e078fbc60ac37e89a804641",
    "recordBytes": 996,
-   "provingMs": 31975,
-   "signMs": 80,
+   "provingMs": 32043,
+   "signMs": 81,
    "localAdmission": "accepted",
-   "memoryBytes": 385941504
+   "memoryBytes": 365953024
   },
   {
-   "at": "2026-10-25T00:48:50.957Z",
+   "at": "2026-10-25T02:38:29.548Z",
    "name": "publish",
    "label": "T1 one-input",
-   "txid": "35d1067c1478ddb8bee2f524cc8aed1adf5168a0c895e40bcb5d111328851f4a",
+   "txid": "08ebfbf09398d0b667254f6447a9caff041bd84e04cbe43bd5d369ddc6cc2927",
    "fee": "3024000000",
    "extraBytes": 1056,
    "nativeBytes": 2520,
@@ -278,10 +278,10 @@
    "sanityChecks": false
   },
   {
-   "at": "2026-10-25T00:48:50.958Z",
+   "at": "2026-10-25T02:38:29.549Z",
    "name": "resend-same-blob",
    "label": "T1 one-input",
-   "txid": "35d1067c1478ddb8bee2f524cc8aed1adf5168a0c895e40bcb5d111328851f4a",
+   "txid": "08ebfbf09398d0b667254f6447a9caff041bd84e04cbe43bd5d369ddc6cc2927",
    "ok": true,
    "status": "OK",
    "reason": null,
@@ -289,7 +289,7 @@
    "note": "idempotent re-send after an uncertain broadcast; no new inputs, no second payment"
   },
   {
-   "at": "2026-10-25T00:48:51.227Z",
+   "at": "2026-10-25T02:38:29.836Z",
    "name": "advance",
    "blocks": 10,
    "from": 311,
@@ -298,7 +298,7 @@
    "simulated": true
   },
   {
-   "at": "2026-10-25T00:48:51.292Z",
+   "at": "2026-10-25T02:38:29.903Z",
    "name": "sync",
    "A": {
     "tip": 321,
@@ -308,11 +308,11 @@
    "B": {
     "tip": 321,
     "startHeight": 40,
-    "ms": 32
+    "ms": 34
    }
   },
   {
-   "at": "2026-10-25T00:48:51.292Z",
+   "at": "2026-10-25T02:38:29.903Z",
    "name": "fee-accounting",
    "label": "T1 one-input",
    "wallet": "A",
@@ -325,16 +325,16 @@
    "lockedAfter": "0"
   },
   {
-   "at": "2026-10-25T00:48:51.371Z",
+   "at": "2026-10-25T02:38:29.982Z",
    "name": "admission",
    "label": "T1 one-input",
-   "recordId": "5b4aa860987a71b5508bb71ca9eb3b1ead75a2b915ff46d2305672608cf6f1f5",
+   "recordId": "79d8c06a29c0710cbfc61d5e70017946d2d1b7f64e078fbc60ac37e89a804641",
    "sender": "accepted",
    "recipient": "accepted",
    "indexer": "accepted"
   },
   {
-   "at": "2026-10-25T00:48:51.390Z",
+   "at": "2026-10-25T02:38:30.001Z",
    "name": "assert-notes",
    "wallet": "A",
    "why": "after T1 (change 1,000,000 back to A)",
@@ -353,7 +353,7 @@
    "ok": true
   },
   {
-   "at": "2026-10-25T00:48:51.397Z",
+   "at": "2026-10-25T02:38:30.008Z",
    "name": "assert-notes",
    "wallet": "B",
    "why": "after T1",
@@ -368,7 +368,7 @@
    "ok": true
   },
   {
-   "at": "2026-10-25T00:48:51.997Z",
+   "at": "2026-10-25T02:38:30.603Z",
    "name": "recovery",
    "wallet": "A",
    "fromRoot": true,
@@ -384,13 +384,13 @@
    "sync": {
     "tip": 321,
     "startHeight": 40,
-    "ms": 215
+    "ms": 219
    },
-   "ms": 574,
+   "ms": 570,
    "note": "balances and notes rebuilt from the chain; a recovery root cannot reconstruct unpublished pending transactions (none were pending here)"
   },
   {
-   "at": "2026-10-25T00:48:52.004Z",
+   "at": "2026-10-25T02:38:30.610Z",
    "name": "recovery",
    "wallet": "B",
    "fromRoot": true,
@@ -406,13 +406,13 @@
    "sync": {
     "tip": 321,
     "startHeight": 40,
-    "ms": 222
+    "ms": 213
    },
-   "ms": 581,
+   "ms": 577,
    "note": "balances and notes rebuilt from the chain; a recovery root cannot reconstruct unpublished pending transactions (none were pending here)"
   },
   {
-   "at": "2026-10-25T00:48:52.034Z",
+   "at": "2026-10-25T02:38:30.637Z",
    "name": "fee-review",
    "label": "T2 three-input (recovered A)",
    "fee": "3024000000",
@@ -421,12 +421,12 @@
    "ringSize": 16,
    "inputAmount": "35181251662076",
    "changeAmount": "35178227662076",
-   "quoteMs": 11,
+   "quoteMs": 8,
    "feeBasis": "OFFLINE fakechain fee rate (not a real-network fee)",
    "note": "the holder wallet pays this XMR fee from its own output; shown before approval"
   },
   {
-   "at": "2026-10-25T00:49:23.274Z",
+   "at": "2026-10-25T02:39:01.980Z",
    "name": "proof",
    "label": "T2 three-input (recovered A)",
    "inputs": 3,
@@ -437,18 +437,18 @@
    ],
    "amount": "5500000",
    "change": "500000",
-   "recordId": "d8f3d84698e082556cbd0b154170d06c6ba7bd37ca4e24fc545d65b12a7c618e",
+   "recordId": "ad8c928ccc2e3f730e77dabb2550255d7f89fb2b6cd0a6f40f2f2d9c9c9362db",
    "recordBytes": 996,
-   "provingMs": 31141,
-   "signMs": 72,
+   "provingMs": 31244,
+   "signMs": 73,
    "localAdmission": "accepted",
    "memoryBytes": 385941504
   },
   {
-   "at": "2026-10-25T00:49:23.281Z",
+   "at": "2026-10-25T02:39:01.987Z",
    "name": "publish",
    "label": "T2 three-input (recovered A)",
-   "txid": "1dbeb7406f70c88ab84b68d4f63d2352ae223d52edeb9f1e17ee46c29cec568c",
+   "txid": "c48b877e33758bb0330decd42df24543da31a749c3396b29b19ab41defa6f3aa",
    "fee": "3024000000",
    "extraBytes": 1056,
    "nativeBytes": 2520,
@@ -458,10 +458,10 @@
    "sanityChecks": false
   },
   {
-   "at": "2026-10-25T00:49:23.281Z",
+   "at": "2026-10-25T02:39:01.988Z",
    "name": "resend-same-blob",
    "label": "T2 three-input (recovered A)",
-   "txid": "1dbeb7406f70c88ab84b68d4f63d2352ae223d52edeb9f1e17ee46c29cec568c",
+   "txid": "c48b877e33758bb0330decd42df24543da31a749c3396b29b19ab41defa6f3aa",
    "ok": true,
    "status": "OK",
    "reason": null,
@@ -469,7 +469,7 @@
    "note": "idempotent re-send after an uncertain broadcast; no new inputs, no second payment"
   },
   {
-   "at": "2026-10-25T00:49:23.560Z",
+   "at": "2026-10-25T02:39:02.258Z",
    "name": "advance",
    "blocks": 10,
    "from": 321,
@@ -478,7 +478,7 @@
    "simulated": true
   },
   {
-   "at": "2026-10-25T00:49:23.626Z",
+   "at": "2026-10-25T02:39:02.324Z",
    "name": "sync",
    "A": {
     "tip": 331,
@@ -492,7 +492,7 @@
    }
   },
   {
-   "at": "2026-10-25T00:49:23.626Z",
+   "at": "2026-10-25T02:39:02.324Z",
    "name": "fee-accounting",
    "label": "T2 three-input (recovered A)",
    "wallet": "A",
@@ -505,16 +505,16 @@
    "lockedAfter": "0"
   },
   {
-   "at": "2026-10-25T00:49:23.721Z",
+   "at": "2026-10-25T02:39:02.420Z",
    "name": "admission",
    "label": "T2 three-input (recovered A)",
-   "recordId": "d8f3d84698e082556cbd0b154170d06c6ba7bd37ca4e24fc545d65b12a7c618e",
+   "recordId": "ad8c928ccc2e3f730e77dabb2550255d7f89fb2b6cd0a6f40f2f2d9c9c9362db",
    "sender": "accepted",
    "recipient": "accepted",
    "indexer": "accepted"
   },
   {
-   "at": "2026-10-25T00:49:23.745Z",
+   "at": "2026-10-25T02:39:02.443Z",
    "name": "assert-notes",
    "wallet": "A",
    "why": "after T2",
@@ -529,7 +529,7 @@
    "ok": true
   },
   {
-   "at": "2026-10-25T00:49:23.756Z",
+   "at": "2026-10-25T02:39:02.455Z",
    "name": "assert-notes",
    "wallet": "B",
    "why": "after T2",
@@ -546,7 +546,7 @@
    "ok": true
   },
   {
-   "at": "2026-10-25T00:49:23.776Z",
+   "at": "2026-10-25T02:39:02.474Z",
    "name": "fee-review",
    "label": "T3 two-input (recovered B)",
    "fee": "3024000000",
@@ -560,7 +560,7 @@
    "note": "the holder wallet pays this XMR fee from its own output; shown before approval"
   },
   {
-   "at": "2026-10-25T00:49:54.784Z",
+   "at": "2026-10-25T02:39:33.581Z",
    "name": "proof",
    "label": "T3 two-input (recovered B)",
    "inputs": 2,
@@ -570,18 +570,18 @@
    ],
    "amount": "9000000",
    "change": "500000",
-   "recordId": "0bf6c65ee917726c1ba9e378c8201aad4a9e7c4825f2cec1fda4a17311a5d508",
+   "recordId": "7b8d292d581c3ddfd2301e94b39a9544367156f220cb17e901b823151b96bc83",
    "recordBytes": 996,
-   "provingMs": 30909,
+   "provingMs": 31008,
    "signMs": 73,
    "localAdmission": "accepted",
    "memoryBytes": 385941504
   },
   {
-   "at": "2026-10-25T00:49:54.792Z",
+   "at": "2026-10-25T02:39:33.589Z",
    "name": "publish",
    "label": "T3 two-input (recovered B)",
-   "txid": "332fd1a26079a9bb0728dd859d291c9bfa1c1bf0af066470fcad3fd8fb065f1d",
+   "txid": "9d26dc55051ca68b188b6aa4850b85809a3d392a77b10b8c78fae4ff9291c716",
    "fee": "3024000000",
    "extraBytes": 1056,
    "nativeBytes": 2520,
@@ -591,10 +591,10 @@
    "sanityChecks": false
   },
   {
-   "at": "2026-10-25T00:49:54.793Z",
+   "at": "2026-10-25T02:39:33.590Z",
    "name": "resend-same-blob",
    "label": "T3 two-input (recovered B)",
-   "txid": "332fd1a26079a9bb0728dd859d291c9bfa1c1bf0af066470fcad3fd8fb065f1d",
+   "txid": "9d26dc55051ca68b188b6aa4850b85809a3d392a77b10b8c78fae4ff9291c716",
    "ok": true,
    "status": "OK",
    "reason": null,
@@ -602,7 +602,7 @@
    "note": "idempotent re-send after an uncertain broadcast; no new inputs, no second payment"
   },
   {
-   "at": "2026-10-25T00:49:55.070Z",
+   "at": "2026-10-25T02:39:33.860Z",
    "name": "advance",
    "blocks": 10,
    "from": 331,
@@ -611,7 +611,7 @@
    "simulated": true
   },
   {
-   "at": "2026-10-25T00:49:55.136Z",
+   "at": "2026-10-25T02:39:33.926Z",
    "name": "sync",
    "A": {
     "tip": 341,
@@ -625,7 +625,7 @@
    }
   },
   {
-   "at": "2026-10-25T00:49:55.136Z",
+   "at": "2026-10-25T02:39:33.926Z",
    "name": "fee-accounting",
    "label": "T3 two-input (recovered B)",
    "wallet": "B",
@@ -638,16 +638,16 @@
    "lockedAfter": "0"
   },
   {
-   "at": "2026-10-25T00:49:55.248Z",
+   "at": "2026-10-25T02:39:34.037Z",
    "name": "admission",
    "label": "T3 two-input (recovered B)",
-   "recordId": "0bf6c65ee917726c1ba9e378c8201aad4a9e7c4825f2cec1fda4a17311a5d508",
+   "recordId": "7b8d292d581c3ddfd2301e94b39a9544367156f220cb17e901b823151b96bc83",
    "sender": "accepted",
    "recipient": "accepted",
    "indexer": "accepted"
   },
   {
-   "at": "2026-10-25T00:49:55.277Z",
+   "at": "2026-10-25T02:39:34.065Z",
    "name": "assert-notes",
    "wallet": "A",
    "why": "after T3",
@@ -664,7 +664,7 @@
    "ok": true
   },
   {
-   "at": "2026-10-25T00:49:55.293Z",
+   "at": "2026-10-25T02:39:34.082Z",
    "name": "assert-notes",
    "wallet": "B",
    "why": "after T3",
@@ -679,7 +679,7 @@
    "ok": true
   },
   {
-   "at": "2026-10-25T00:49:55.338Z",
+   "at": "2026-10-25T02:39:34.127Z",
    "name": "done",
    "transfers": 3,
    "inputs": [
@@ -699,24 +699,24 @@
   "credits": [
    {
     "amount": "5000000",
-    "txid": "0fff3f34580c223fb92ae56ca81f580121fa4c78d3fae4762c930d9d0f1bff14",
-    "recordId": "6f6c34f9639c080355d388eed5e6b949f9092c85a98130f9fe3c27c0cb930b8f",
+    "txid": "c87448a2a927ed616ef59d049252bb4304ad89e5182aaa45ef0e70c0807465c4",
+    "recordId": "8799cba6cb67ada0c2b0b05af4cfe601b82e37de0261b0dae5d08429faeba3fc",
     "issuerFee": "2938800000",
     "extraBytes": 985,
     "nativeBytes": 2449
    },
    {
     "amount": "3000000",
-    "txid": "8a0b934f10b5e6d3d45b381716c7f19131d38b9eedd7374424fde8e15c45737c",
-    "recordId": "7399366dbd0602823aab60e2574c2fb81238b45c8023aef14214985ea07f512c",
+    "txid": "93f80747262b5b8547a9a253551d7131f1c44ced436d5b0448da0a2ae261c235",
+    "recordId": "64215da2c6564f2056a28636dc63b39a3add0049ee51d905f7fb00852650f66c",
     "issuerFee": "2938800000",
     "extraBytes": 985,
     "nativeBytes": 2449
    },
    {
     "amount": "2000000",
-    "txid": "1602128179b1690e847245e6d15175402f237111b1f9759e5d9020c38f092ccd",
-    "recordId": "84a11a47876e736a642e1dc26e1ee3b39fa781264a0c8b49d4722167b3b51040",
+    "txid": "df6068bfa98ed4fa43124505abb65d104c1bf3cc0da9cb6b0ddac3b4c4ec37d2",
+    "recordId": "d336e0cff2760c369a92c521b79211b0f659acb540296dae93c131665793d4f4",
     "issuerFee": "2938800000",
     "extraBytes": 985,
     "nativeBytes": 2449
@@ -733,10 +733,10 @@
     "amount": "4000000",
     "change": "1000000",
     "fee": "3024000000",
-    "txid": "35d1067c1478ddb8bee2f524cc8aed1adf5168a0c895e40bcb5d111328851f4a",
-    "recordId": "5b4aa860987a71b5508bb71ca9eb3b1ead75a2b915ff46d2305672608cf6f1f5",
-    "provingMs": 31975,
-    "signMs": 80,
+    "txid": "08ebfbf09398d0b667254f6447a9caff041bd84e04cbe43bd5d369ddc6cc2927",
+    "recordId": "79d8c06a29c0710cbfc61d5e70017946d2d1b7f64e078fbc60ac37e89a804641",
+    "provingMs": 32043,
+    "signMs": 81,
     "recordBytes": 996,
     "extraBytes": 1056,
     "nativeBytes": 2520
@@ -747,10 +747,10 @@
     "amount": "5500000",
     "change": "500000",
     "fee": "3024000000",
-    "txid": "1dbeb7406f70c88ab84b68d4f63d2352ae223d52edeb9f1e17ee46c29cec568c",
-    "recordId": "d8f3d84698e082556cbd0b154170d06c6ba7bd37ca4e24fc545d65b12a7c618e",
-    "provingMs": 31141,
-    "signMs": 72,
+    "txid": "c48b877e33758bb0330decd42df24543da31a749c3396b29b19ab41defa6f3aa",
+    "recordId": "ad8c928ccc2e3f730e77dabb2550255d7f89fb2b6cd0a6f40f2f2d9c9c9362db",
+    "provingMs": 31244,
+    "signMs": 73,
     "recordBytes": 996,
     "extraBytes": 1056,
     "nativeBytes": 2520
@@ -761,9 +761,9 @@
     "amount": "9000000",
     "change": "500000",
     "fee": "3024000000",
-    "txid": "332fd1a26079a9bb0728dd859d291c9bfa1c1bf0af066470fcad3fd8fb065f1d",
-    "recordId": "0bf6c65ee917726c1ba9e378c8201aad4a9e7c4825f2cec1fda4a17311a5d508",
-    "provingMs": 30909,
+    "txid": "9d26dc55051ca68b188b6aa4850b85809a3d392a77b10b8c78fae4ff9291c716",
+    "recordId": "7b8d292d581c3ddfd2301e94b39a9544367156f220cb17e901b823151b96bc83",
+    "provingMs": 31008,
     "signMs": 73,
     "recordBytes": 996,
     "extraBytes": 1056,
@@ -806,15 +806,15 @@
    ],
    "issuerPaid": [
     {
-     "txid": "0fff3f34580c223fb92ae56ca81f580121fa4c78d3fae4762c930d9d0f1bff14",
+     "txid": "c87448a2a927ed616ef59d049252bb4304ad89e5182aaa45ef0e70c0807465c4",
      "fee": "2938800000"
     },
     {
-     "txid": "8a0b934f10b5e6d3d45b381716c7f19131d38b9eedd7374424fde8e15c45737c",
+     "txid": "93f80747262b5b8547a9a253551d7131f1c44ced436d5b0448da0a2ae261c235",
      "fee": "2938800000"
     },
     {
-     "txid": "1602128179b1690e847245e6d15175402f237111b1f9759e5d9020c38f092ccd",
+     "txid": "df6068bfa98ed4fa43124505abb65d104c1bf3cc0da9cb6b0ddac3b4c4ec37d2",
      "fee": "2938800000"
     }
    ]
@@ -833,5 +833,5 @@
    "nativeTrading": "gated (not exercised)"
   }
  },
- "finishedAt": "2026-10-25T00:49:55.352Z"
+ "finishedAt": "2026-10-25T02:39:34.137Z"
 }

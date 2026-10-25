@@ -2,7 +2,7 @@
  "execution": "SIMULATED (offline fakechain, LiteSVM custody, synthetic EXTREMIST mint stand-in)",
  "steps": [
   {
-   "at": "2026-10-25T00:37:30.789Z",
+   "at": "2026-10-25T02:32:01.693Z",
    "name": "catalog: every launched token has a unique derived asset id",
    "tokens": 66,
    "instantiatedNow": [
@@ -15,7 +15,7 @@
    "future": "USVEU"
   },
   {
-   "at": "2026-10-25T00:37:33.064Z",
+   "at": "2026-10-25T02:32:04.045Z",
    "name": "legacy position visible",
    "asset": "eea2bc81c55c6dda47c68bd82eba01f4da645e95f3bc1dbdbe1050b6aee46a12",
    "mintStandIn": "9MwJfFGc3jNkAKLwma4kkUYivs19yJsWXuPD15RegXMR",
@@ -24,9 +24,9 @@
    "lot": "10000000000"
   },
   {
-   "at": "2026-10-25T00:37:35.429Z",
+   "at": "2026-10-25T02:32:06.485Z",
    "name": "migrated",
-   "credit": "111b90f4f3787113e6d540a786287f5279e45502355a27d72bbf9d3cafd15f62",
+   "credit": "d81210121d7138781f9258924a2048e0ed12c3b95605b40980de1fe0aa91b139",
    "balance": "10000000000",
    "backing": {
     "asset": "eea2bc81c55c6dda47c68bd82eba01f4da645e95f3bc1dbdbe1050b6aee46a12",
@@ -52,7 +52,7 @@
    "interruptedThenRecovered": true
   },
   {
-   "at": "2026-10-25T00:37:35.832Z",
+   "at": "2026-10-25T02:32:06.903Z",
    "name": "duplicates, cutoff ownership, late registration, old path closed",
    "lateRegistrant": {
     "X": "0",
@@ -68,16 +68,16 @@
    }
   },
   {
-   "at": "2026-10-25T00:38:08.312Z",
+   "at": "2026-10-25T02:32:39.375Z",
    "name": "private transfer of migrated tokens",
-   "txid": "086d81a396fc2ce8219c31ebc5ab4f525f549ccaf0cafb90d73977082db69982",
+   "txid": "de56312e35bb1c162487ebbadf160111f9e19d9774d9d3d920606c369c2a75e9",
    "feePiconero": "3024000000",
    "change": "7500000000"
   },
   {
-   "at": "2026-10-25T00:38:32.776Z",
+   "at": "2026-10-25T02:33:03.875Z",
    "name": "redeemed to the same Solana asset",
-   "burn": "8e62736227b9671532e9678dc0c6c98c16733914c411a8ab6cf8d102fd9da1cd",
+   "burn": "5888317aa5b57e905fc939131e817984d21acbfa581b4e46873b95e06b06500e",
    "net": "100000000",
    "feeBps": 0,
    "mint": "9MwJfFGc3jNkAKLwma4kkUYivs19yJsWXuPD15RegXMR",
@@ -102,7 +102,7 @@
    }
   },
   {
-   "at": "2026-10-25T00:38:34.761Z",
+   "at": "2026-10-25T02:33:05.818Z",
    "name": "deposit per EXTREMIST fee policy",
    "gross": "50000000",
    "net": "50000000",
@@ -110,7 +110,7 @@
    "backing": true
   },
   {
-   "at": "2026-10-25T00:40:35.104Z",
+   "at": "2026-10-25T02:35:05.775Z",
    "name": "other catalog tokens migrated by the same path",
    "others": [
     {
@@ -119,7 +119,7 @@
      "mint": "HitiJphamArNBrDotTiJZEfsyWApZ7YTZfY34jJkgXMR",
      "decimals": 6,
      "feeBps": 150,
-     "credit": "968e66d83e0f6083331afe47e5a0efac565da20ca6cc9c26552d54f162e18984",
+     "credit": "7d65b5c7fbf0230fc6802c72815b5c3135b3a0c91fa62806ffb9158c0319bf49",
      "amount": "10000000000",
      "depositNet": "49250000",
      "redeemed": "20000000",
@@ -132,7 +132,7 @@
      "mint": "KzTQBqjkz1fCybZW1Wm44UDvYNr1VAbzupCaLvDfXMR",
      "decimals": 6,
      "feeBps": 150,
-     "credit": "1ff60eb54fa0dc7376413eb00850d5ddef4fb4d236f6f002193947b54c9e8aad",
+     "credit": "7ef917392d0d99e33429ef6a346ba76a3290eaaa09d030137d4f5c9577a86442",
      "amount": "10000000000",
      "depositNet": "49250000",
      "redeemed": "20000000",
@@ -145,7 +145,7 @@
      "mint": "5NPSXGtRcdZQx5kqy8SW1e7eSrwsfPHGnoXqf6TCx9Kp",
      "decimals": 6,
      "feeBps": 0,
-     "credit": "6f3dcc9e31a90130d24ffadc99569d2297f5b922f93ff4913c621830575d7f54",
+     "credit": "58f43915fce94cc7d4a3076489a0391dc8bfac200f0aba2e25da0159235a41ad",
      "amount": "10000000000",
      "depositNet": "50000000",
      "redeemed": "20000000",
@@ -158,7 +158,7 @@
      "mint": "8zWcEgUZvQKcHgtUoYTnaC6AHX7FmtWVV9WeM4kPuXMR",
      "decimals": 6,
      "feeBps": 150,
-     "credit": "f4b3cab8f4dbcf135ad2bc7ef789014486e9a90b10c63b33234dd77df4cd8f03",
+     "credit": "a6251b54406f4fba27ec1d3d1c429be6d4c2fdcbcafdb501c54b86c187cf0cbc",
      "amount": "10000000000",
      "depositNet": "49250000",
      "redeemed": "20000000",
@@ -168,7 +168,7 @@
    ]
   },
   {
-   "at": "2026-10-25T00:41:05.540Z",
+   "at": "2026-10-25T02:35:36.061Z",
    "name": "FUTURE token added after startup migrated by the same path",
    "added": {
     "symbol": "USVEU",
@@ -184,7 +184,7 @@
     "mint": "3ds5DRShF7LdWUrSjsNRgvSkgk8Gyyr9GzwUTA7KKXMR",
     "decimals": 6,
     "feeBps": 150,
-    "credit": "4126d8e29f5555b0cfe3ab71ca7bf3047e90f7a22078aa7a5fa441743ba10647",
+    "credit": "9f1753fa27759b558d988222e2b9495c6c8fa8daf4b92f5ff043f38058966ec2",
     "amount": "10000000000",
     "depositNet": "49250000",
     "redeemed": "20000000",
@@ -216,7 +216,7 @@
     "mint": "HitiJphamArNBrDotTiJZEfsyWApZ7YTZfY34jJkgXMR",
     "decimals": 6,
     "feeBps": 150,
-    "credit": "968e66d83e0f6083331afe47e5a0efac565da20ca6cc9c26552d54f162e18984",
+    "credit": "7d65b5c7fbf0230fc6802c72815b5c3135b3a0c91fa62806ffb9158c0319bf49",
     "amount": "10000000000",
     "depositNet": "49250000",
     "redeemed": "20000000",
@@ -229,7 +229,7 @@
     "mint": "KzTQBqjkz1fCybZW1Wm44UDvYNr1VAbzupCaLvDfXMR",
     "decimals": 6,
     "feeBps": 150,
-    "credit": "1ff60eb54fa0dc7376413eb00850d5ddef4fb4d236f6f002193947b54c9e8aad",
+    "credit": "7ef917392d0d99e33429ef6a346ba76a3290eaaa09d030137d4f5c9577a86442",
     "amount": "10000000000",
     "depositNet": "49250000",
     "redeemed": "20000000",
@@ -242,7 +242,7 @@
     "mint": "5NPSXGtRcdZQx5kqy8SW1e7eSrwsfPHGnoXqf6TCx9Kp",
     "decimals": 6,
     "feeBps": 0,
-    "credit": "6f3dcc9e31a90130d24ffadc99569d2297f5b922f93ff4913c621830575d7f54",
+    "credit": "58f43915fce94cc7d4a3076489a0391dc8bfac200f0aba2e25da0159235a41ad",
     "amount": "10000000000",
     "depositNet": "50000000",
     "redeemed": "20000000",
@@ -255,7 +255,7 @@
     "mint": "8zWcEgUZvQKcHgtUoYTnaC6AHX7FmtWVV9WeM4kPuXMR",
     "decimals": 6,
     "feeBps": 150,
-    "credit": "f4b3cab8f4dbcf135ad2bc7ef789014486e9a90b10c63b33234dd77df4cd8f03",
+    "credit": "a6251b54406f4fba27ec1d3d1c429be6d4c2fdcbcafdb501c54b86c187cf0cbc",
     "amount": "10000000000",
     "depositNet": "49250000",
     "redeemed": "20000000",
@@ -269,7 +269,7 @@
    "mint": "3ds5DRShF7LdWUrSjsNRgvSkgk8Gyyr9GzwUTA7KKXMR",
    "decimals": 6,
    "feeBps": 150,
-   "credit": "4126d8e29f5555b0cfe3ab71ca7bf3047e90f7a22078aa7a5fa441743ba10647",
+   "credit": "9f1753fa27759b558d988222e2b9495c6c8fa8daf4b92f5ff043f38058966ec2",
    "amount": "10000000000",
    "depositNet": "49250000",
    "redeemed": "20000000",
