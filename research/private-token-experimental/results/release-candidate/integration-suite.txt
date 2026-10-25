@@ -1,0 +1,222 @@
+[suite] CARRIED journal: 1/1 (from runs/integration-suite-attempt2-interop-stalled.log)
+[suite] CARRIED carrier lookup-before-retry: 6/6 (from runs/integration-suite-attempt2-interop-stalled.log)
+[suite] CARRIED fault proxy: 3/3 (from runs/integration-suite-attempt2-interop-stalled.log)
+[suite] CARRIED parameter authentication: 1/1 (from runs/integration-suite-attempt2-interop-stalled.log)
+[suite] CARRIED engine + records: 1/1 (from runs/integration-suite-attempt2-interop-stalled.log)
+[suite] CARRIED finality model (trading, abstract): 9/9 (from runs/integration-suite-attempt2-interop-stalled.log)
+[suite] CARRIED COUNTEREXAMPLE A live (bridge payout then rollback): 1/1 (from runs/integration-suite-attempt2-interop-stalled.log)
+[suite] CARRIED indexer replay equivalence + restart + rollback: 1/1 (from runs/integration-suite-attempt2-interop-stalled.log)
+[suite] CARRIED operator journal corruption: 1/1 (from runs/integration-suite-attempt2-interop-stalled.log)
+[suite] CARRIED observer-gated payout: 1/1 (from runs/integration-suite-attempt2-interop-stalled.log)
+[suite] legacy migration: every catalog token, exact entitlement, per-mint fees (migration/legacy-migration.test.mjs)…
+  [legacy migration: every catalog token, exact entitlement, per-mint fees] … 60s; last: # {"step":"duplicates, cutoff ownership, late registration, old path closed","lateRegistrant":{"X":"0","LUKE":"0","XTAC":"0","COVERT":"0","X
+  [legacy migration: every catalog token, exact entitlement, per-mint fees] … 120s; last: # backend: Claim already consumed
+  [legacy migration: every catalog token, exact entitlement, per-mint fees] … 180s; last: # backend: Claim already consumed
+  [legacy migration: every catalog token, exact entitlement, per-mint fees] … 240s; last: # backend: Claim already consumed
+  [legacy migration: every catalog token, exact entitlement, per-mint fees] # pass 1
+  [legacy migration: every catalog token, exact entitlement, per-mint fees] # fail 0
+  [legacy migration: every catalog token, exact entitlement, per-mint fees] # cancelled 0
+[suite] PASS legacy migration: every catalog token, exact entitlement, per-mint fees: 1/1 in 264s
+[suite] independent checker over the interop vectors (independent/check.mjs)…
+[suite] PASS independent checker over the interop vectors: 1/1 in 0s
+[suite] two-wallet interop: real popup A + CLI wallet B on one pool (interop.test.mjs)…
+  [two-wallet interop: real popup A + CLI wallet B on one pool] … 60s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [two-wallet interop: real popup A + CLI wallet B on one pool] … 120s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [two-wallet interop: real popup A + CLI wallet B on one pool] … 180s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [two-wallet interop: real popup A + CLI wallet B on one pool] … 240s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [two-wallet interop: real popup A + CLI wallet B on one pool] # pass 1
+  [two-wallet interop: real popup A + CLI wallet B on one pool] # fail 0
+  [two-wallet interop: real popup A + CLI wallet B on one pool] # cancelled 0
+[suite] PASS two-wallet interop: real popup A + CLI wallet B on one pool: 1/1 in 293s
+[suite] stagenet-aware roles (simulation) (stagenet-roles.test.mjs)…
+  [stagenet-aware roles (simulation)] … 60s; last:   ...
+  [stagenet-aware roles (simulation)] … 120s; last:   ...
+  [stagenet-aware roles (simulation)] … 180s; last:   ...
+  [stagenet-aware roles (simulation)] # pass 4
+  [stagenet-aware roles (simulation)] # fail 0
+  [stagenet-aware roles (simulation)] # cancelled 0
+[suite] PASS stagenet-aware roles (simulation): 4/4 in 236s
+[suite] real popup: carriers incl. actual lost reply (browser-carrier.test.mjs)…
+  [real popup: carriers incl. actual lost reply] … 60s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: carriers incl. actual lost reply] … 120s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: carriers incl. actual lost reply] … 180s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: carriers incl. actual lost reply] … 240s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: carriers incl. actual lost reply] … 300s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: carriers incl. actual lost reply] … 360s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: carriers incl. actual lost reply] … 420s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: carriers incl. actual lost reply] # pass 1
+  [real popup: carriers incl. actual lost reply] # fail 0
+  [real popup: carriers incl. actual lost reply] # cancelled 0
+[suite] PASS real popup: carriers incl. actual lost reply: 1/1 in 453s
+[suite] real popup: recovery (browser-recovery.test.mjs)…
+  [real popup: recovery] … 60s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: recovery] … 120s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: recovery] … 180s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: recovery] … 240s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: recovery] … 300s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: recovery] # pass 1
+  [real popup: recovery] # fail 0
+  [real popup: recovery] # cancelled 0
+[suite] PASS real popup: recovery: 1/1 in 314s
+[suite] real popup: journal recovery (browser-journal-recovery.test.mjs)…
+  [real popup: journal recovery] … 60s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: journal recovery] … 120s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: journal recovery] … 180s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: journal recovery] … 240s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: journal recovery] … 300s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: journal recovery] # pass 1
+  [real popup: journal recovery] # fail 0
+  [real popup: journal recovery] # cancelled 0
+[suite] PASS real popup: journal recovery: 1/1 in 315s
+[suite] real popup: interruptions (browser-interruptions.test.mjs)…
+  [real popup: interruptions] … 60s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: interruptions] … 120s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: interruptions] … 180s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: interruptions] … 240s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: interruptions] … 300s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [real popup: interruptions] # pass 1
+  [real popup: interruptions] # fail 0
+  [real popup: interruptions] # cancelled 0
+[suite] PASS real popup: interruptions: 1/1 in 318s
+{
+ "passed": true,
+ "failedSuites": 0,
+ "suites": [
+  {
+   "name": "journal",
+   "ok": true,
+   "pass": 1,
+   "fail": 0,
+   "seconds": 0,
+   "carried": true
+  },
+  {
+   "name": "carrier lookup-before-retry",
+   "ok": true,
+   "pass": 6,
+   "fail": 0,
+   "seconds": 0,
+   "carried": true
+  },
+  {
+   "name": "fault proxy",
+   "ok": true,
+   "pass": 3,
+   "fail": 0,
+   "seconds": 0,
+   "carried": true
+  },
+  {
+   "name": "parameter authentication",
+   "ok": true,
+   "pass": 1,
+   "fail": 0,
+   "seconds": 151,
+   "carried": true
+  },
+  {
+   "name": "engine + records",
+   "ok": true,
+   "pass": 1,
+   "fail": 0,
+   "seconds": 271,
+   "carried": true
+  },
+  {
+   "name": "finality model (trading, abstract)",
+   "ok": true,
+   "pass": 9,
+   "fail": 0,
+   "seconds": 0,
+   "carried": true
+  },
+  {
+   "name": "COUNTEREXAMPLE A live (bridge payout then rollback)",
+   "ok": true,
+   "pass": 1,
+   "fail": 0,
+   "seconds": 145,
+   "carried": true
+  },
+  {
+   "name": "indexer replay equivalence + restart + rollback",
+   "ok": true,
+   "pass": 1,
+   "fail": 0,
+   "seconds": 127,
+   "carried": true
+  },
+  {
+   "name": "operator journal corruption",
+   "ok": true,
+   "pass": 1,
+   "fail": 0,
+   "seconds": 0,
+   "carried": true
+  },
+  {
+   "name": "observer-gated payout",
+   "ok": true,
+   "pass": 1,
+   "fail": 0,
+   "seconds": 240,
+   "carried": true
+  },
+  {
+   "name": "legacy migration: every catalog token, exact entitlement, per-mint fees",
+   "ok": true,
+   "pass": 1,
+   "fail": 0,
+   "seconds": 264
+  },
+  {
+   "name": "independent checker over the interop vectors",
+   "ok": true,
+   "pass": 1,
+   "fail": 0,
+   "seconds": 0
+  },
+  {
+   "name": "two-wallet interop: real popup A + CLI wallet B on one pool",
+   "ok": true,
+   "pass": 1,
+   "fail": 0,
+   "seconds": 293
+  },
+  {
+   "name": "stagenet-aware roles (simulation)",
+   "ok": true,
+   "pass": 4,
+   "fail": 0,
+   "seconds": 236
+  },
+  {
+   "name": "real popup: carriers incl. actual lost reply",
+   "ok": true,
+   "pass": 1,
+   "fail": 0,
+   "seconds": 453
+  },
+  {
+   "name": "real popup: recovery",
+   "ok": true,
+   "pass": 1,
+   "fail": 0,
+   "seconds": 314
+  },
+  {
+   "name": "real popup: journal recovery",
+   "ok": true,
+   "pass": 1,
+   "fail": 0,
+   "seconds": 315
+  },
+  {
+   "name": "real popup: interruptions",
+   "ok": true,
+   "pass": 1,
+   "fail": 0,
+   "seconds": 318
+  }
+ ]
+}

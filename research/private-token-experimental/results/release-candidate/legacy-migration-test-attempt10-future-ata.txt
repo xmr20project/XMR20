@@ -1,0 +1,47 @@
+TAP version 13
+# bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+# {"step":"catalog: every launched token has a unique derived asset id","tokens":66,"instantiatedNow":["EXTREMIST","XTAC","LUKE","XMR20~5NPSXG","COVERT"],"future":"USVEU"}
+# {"step":"legacy position visible","asset":"eea2bc81c55c6dda47c68bd82eba01f4da645e95f3bc1dbdbe1050b6aee46a12","mintStandIn":"9MwJfFGc3jNkAKLwma4kkUYivs19yJsWXuPD15RegXMR","realMint":"9MwJfFGc3jNkAKLwma4kkUYivs19yJsWXuPD15RegXMR","decimals":6,"lot":"10000000000"}
+# backend: SIMULATED CRASH after the credit was journaled (built), before publication
+# backend: Claim already consumed
+# {"step":"migrated","credit":"27280fee64e02142d6671cf68d61e663f40a63fc6b9077a2192bb3174e1a8d97","balance":"10000000000","backing":{"asset":"eea2bc81c55c6dda47c68bd82eba01f4da645e95f3bc1dbdbe1050b6aee46a12","reserve":"20000000000","owed":"20000000000","ok":true,"shortfall":"0","lossBearer":"operator b
+# backend: Claim already consumed
+# backend: Claim already consumed
+# backend: Legacy signature rejected
+# backend: Unknown legacy lot for this account
+# {"step":"duplicates, cutoff ownership, late registration, old path closed","lateRegistrant":{"X":"0","LUKE":"0","XTAC":"0","COVERT":"0","XMR20~5NPSXG":"0","EXTREMIST":"0"},"cutover":{"migratedToReserveAtTip":322,"legacyPositionAfter":"0"}}
+# {"step":"private transfer of migrated tokens","txid":"a594a4534410dd8def86477dab8c75d891fa52544c4683a4ca2ad0d471af5179","feePiconero":"3024000000","change":"7500000000"}
+# {"step":"redeemed to the same Solana asset","burn":"03e7825a7f20feb9b863d84488dfe9dff36a03f8b64a86762ea9a81ccf01dad9","net":"98500000","mint":"9MwJfFGc3jNkAKLwma4kkUYivs19yJsWXuPD15RegXMR","backing":{"asset":"eea2bc81c55c6dda47c68bd82eba01f4da645e95f3bc1dbdbe1050b6aee46a12","reserve":"19900000000","
+# backend: Claim already consumed
+# backend: Claim already consumed
+# backend: Claim already consumed
+# backend: Claim already consumed
+# {"step":"other catalog tokens migrated by the same path","others":[{"symbol":"XTAC","asset":"9fdadb5d7dd447a58c1c058804f0f847b230c68a514568bcbb44737174f5320a","mint":"HitiJphamArNBrDotTiJZEfsyWApZ7YTZfY34jJkgXMR","decimals":6,"credit":"d955ef5e11a06dbbb47d4003c8316172a498348a6bff4876d6796c2330da7cdc
+# backend: Cannot read properties of undefined (reading 'toBase58')
+# Subtest: 10,000 legacy EXTREMIST -> exactly 10,000 private EXTREMIST; interrupted/duplicate/cutoff/recovery; transfer; redemption to the same mint
+not ok 1 - 10,000 legacy EXTREMIST -> exactly 10,000 private EXTREMIST; interrupted/duplicate/cutoff/recovery; transfer; redemption to the same mint
+  ---
+  duration_ms: 127662.695625
+  type: 'test'
+  location: '<workspace>/research/privacy-release-candidate-20261025/migration/legacy-migration.test.mjs:42:1'
+  failureType: 'testCodeFailure'
+  error: "Cannot read properties of undefined (reading 'toBase58')"
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    post (file://<workspace>/research/privacy-release-candidate-20261025/migration/legacy-migration.test.mjs:31:210)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async migrate (file://<workspace>/research/privacy-release-candidate-20261025/migration/legacy-migration.test.mjs:110:53)
+    async TestContext.<anonymous> (file://<workspace>/research/privacy-release-candidate-20261025/migration/legacy-migration.test.mjs:120:233)
+    async Test.run (node:internal/test_runner/test:1069:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 129490.441875
+exit 1

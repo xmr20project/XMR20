@@ -1,0 +1,202 @@
+{
+ "note": "Legacy inscription payloads parsed from tx_extra (0x02 extra-nonce chunks concatenated) of each token's Monero launch transaction, read-only from a public mainnet node; one sample per inscriptionVersion. Documents the variants the cutover snapshot must accept.",
+ "samples": [
+  {
+   "inscriptionVersion": 2,
+   "ticker": "LUKE",
+   "mint": "KzTQBqjkz1fCybZW1Wm44UDvYNr1VAbzupCaLvDfXMR",
+   "moneroTxid": "4dc4cee22bd24053c31574581a3e92947af58690abe64d693f9220438501ea90",
+   "extraFields": [
+    "pubkey",
+    "nonce:245",
+    "nonce:245",
+    "nonce:116",
+    "nonce:9"
+   ],
+   "payloadBytes": 615,
+   "json": [],
+   "binaryTags": [
+    "XM2",
+    "XM2",
+    "XM2"
+   ],
+   "payloadHead": "XM2\u0000\u0003XMR20M1{\"record\":{\"chain\":\"mainnet\",\"creato",
+   "chunkHeaders": [
+    "584d320003",
+    "584d320103",
+    "584d320203",
+    "0155b247ae"
+   ],
+   "framing": "each 0x02 extra-nonce chunk = 'XM2' + 2 header bytes + payload slice; payload reassembled by concatenation",
+   "reassembledBytes": 591,
+   "otherChunks": [
+    "0155b247"
+   ],
+   "payload": {
+    "record": {
+     "chain": "mainnet",
+     "creator": "7HCKA6cikfXaP5N5pbpDXKjDq6AhSTZmaaAVmzZGT5uH",
+     "fee": "150",
+     "initial": "0",
+     "max": "1000000000000000",
+     "meta": "d0387b561891f6bcb9b256e7f0d0f66638168ee10543ca5c8db620c6342f318a",
+     "mint": "KzTQBqjkz1fCybZW1Wm44UDvYNr1VAbzupCaLvDfXMR",
+     "net": "mainnet",
+     "nonce": "6023df51c22c1fa0a100bd0229b63447",
+     "op": "deploy",
+     "owner": "4AMg1kDaXkWckE3uyd1YqoBKvn4z8ATxmWQVdtjF6aGU4sT278XoyhUV1Ve88ZMCXNXQJpjW2553NWERfMZcNsBtCkMLiNM",
+     "p": "xmr20",
+     "tick": "LUKE",
+     "v": 2
+    },
+    "signature": "SigV2Mz13AE3Qq7rQewdGbhh9UfbnuMvx1moaB7xyv6on8soqMASPeWJ9g4m4Dp1HtEggnq1PqeMG3wVzeFby4RfSoooW"
+   },
+   "payloadHeadHex": "584d5232304d317b227265636f726422"
+  },
+  {
+   "inscriptionVersion": 1,
+   "ticker": "XTAC",
+   "mint": "HitiJphamArNBrDotTiJZEfsyWApZ7YTZfY34jJkgXMR",
+   "moneroTxid": "cac031276e8e69930e8a9dd6dfb87b0429ae70532fb095d7e1fa38b00a20b40a",
+   "extraFields": [
+    "pubkey",
+    "nonce:245",
+    "nonce:245",
+    "nonce:122",
+    "nonce:9"
+   ],
+   "payloadBytes": 621,
+   "json": [
+    {
+     "record": {
+      "chain": "mainnet-beta",
+      "creator": "5APouNJGXtLCox3wj3MM71bbijMRWabUBNyiuZCEj27p",
+      "fee": "150",
+      "initial": "0",
+      "max": "1000000000000000",
+      "meta": "e9e0541881eb00efcb5b5ded76599664cc60982126662cefe9e42e9d690d0f7c",
+      "mint": "HitiJphamXM2\u0001\u0003ArNBrDotTiJZEfsyWApZ7YTZfY34jJkgXMR",
+      "net": "mainnet",
+      "nonce": "78301dd39ea84a4787ef00c43d53962d",
+      "op": "deploy",
+      "owner": "4AMg1kDaXkWckE3uyd1YqoBKvn4z8ATxmWQVdtjF6aGU4sT278XoyhUV1Ve88ZMCXNXQJpjW2553NWERfMZcNsBtCkMLiNM",
+      "p": "xmr20",
+      "tick": "XTACXM2\u0002\u0003",
+      "v": 1
+     },
+     "signature": "SigV2AMFQcmEmK5h8pRnmTJcux9FyKychDDPkXZTTUuK5R4uSByCkabpHaN8FGn7eNSra23dmoW29Tm6ePAUwydShZN58"
+    }
+   ],
+   "binaryTags": [
+    "XM2",
+    "XM2",
+    "XM2"
+   ],
+   "payloadHead": "XM2\u0000\u0003XMR20M1{\"record\":{\"chain\":\"mainnet-beta\",\"c",
+   "chunkHeaders": [
+    "584d320003",
+    "584d320103",
+    "584d320203",
+    "0193537de4"
+   ],
+   "framing": "each 0x02 extra-nonce chunk = 'XM2' + 2 header bytes + payload slice; payload reassembled by concatenation",
+   "reassembledBytes": 597,
+   "otherChunks": [
+    "0193537d"
+   ],
+   "payload": {
+    "record": {
+     "chain": "mainnet-beta",
+     "creator": "5APouNJGXtLCox3wj3MM71bbijMRWabUBNyiuZCEj27p",
+     "fee": "150",
+     "initial": "0",
+     "max": "1000000000000000",
+     "meta": "e9e0541881eb00efcb5b5ded76599664cc60982126662cefe9e42e9d690d0f7c",
+     "mint": "HitiJphamArNBrDotTiJZEfsyWApZ7YTZfY34jJkgXMR",
+     "net": "mainnet",
+     "nonce": "78301dd39ea84a4787ef00c43d53962d",
+     "op": "deploy",
+     "owner": "4AMg1kDaXkWckE3uyd1YqoBKvn4z8ATxmWQVdtjF6aGU4sT278XoyhUV1Ve88ZMCXNXQJpjW2553NWERfMZcNsBtCkMLiNM",
+     "p": "xmr20",
+     "tick": "XTAC",
+     "v": 1
+    },
+    "signature": "SigV2AMFQcmEmK5h8pRnmTJcux9FyKychDDPkXZTTUuK5R4uSByCkabpHaN8FGn7eNSra23dmoW29Tm6ePAUwydShZN58"
+   },
+   "payloadHeadHex": "584d5232304d317b227265636f726422"
+  },
+  {
+   "inscriptionVersion": null,
+   "ticker": "XMR20",
+   "mint": "5NPSXGtRcdZQx5kqy8SW1e7eSrwsfPHGnoXqf6TCx9Kp",
+   "moneroTxid": "6674950a07d16489ecfa3dc13b4a0660961885590bbfd5e7da8f837843894220",
+   "extraFields": [
+    "pubkey",
+    "nonce:245",
+    "nonce:245",
+    "nonce:118",
+    "nonce:9"
+   ],
+   "payloadBytes": 617,
+   "json": [
+    {
+     "record": {
+      "chain": "mainnet",
+      "creator": "B5FQRBsPBw4E239c5mpis3hX1LTf6mGMm7iEEpF1NMJ3",
+      "fee": "200",
+      "initial": "0",
+      "max": "1000000000000000",
+      "meta": "75177ebd5528eb9aff4321819f9ad4bf021edc85d2d86d96fcd4d91c7a5ad6e1",
+      "mint": "5NPSXGtRcdZQx5XM2\u0001\u0003kqy8SW1e7eSrwsfPHGnoXqf6TCx9Kp",
+      "net": "mainnet",
+      "nonce": "e277c06d3619dba3ffa02820197d1db2",
+      "op": "deploy",
+      "owner": "4AMg1kDaXkWckE3uyd1YqoBKvn4z8ATxmWQVdtjF6aGU4sT278XoyhUV1Ve88ZMCXNXQJpjW2553NWERfMZcNsBtCkMLiNM",
+      "p": "xmr20",
+      "tick": "XMR20",
+      "vXM2\u0002\u0003": 2
+     },
+     "signature": "SigV2BBTrEDeKskSG3iDgTNjsRk1QnfDteNu4XXKW1PyKN7UnHx5xM8HBXpWZ4A6NhMxZZNFCjTunXB1EYYZGki3fmN4X"
+    }
+   ],
+   "binaryTags": [
+    "XM2",
+    "XM2",
+    "XM2",
+    "XB1"
+   ],
+   "payloadHead": "XM2\u0000\u0003XMR20M1{\"record\":{\"chain\":\"mainnet\",\"creato",
+   "chunkHeaders": [
+    "584d320003",
+    "584d320103",
+    "584d320203",
+    "01a60c4bb6"
+   ],
+   "framing": "each 0x02 extra-nonce chunk = 'XM2' + 2 header bytes + payload slice; payload reassembled by concatenation",
+   "reassembledBytes": 593,
+   "otherChunks": [
+    "01a60c4b"
+   ],
+   "payload": {
+    "record": {
+     "chain": "mainnet",
+     "creator": "B5FQRBsPBw4E239c5mpis3hX1LTf6mGMm7iEEpF1NMJ3",
+     "fee": "200",
+     "initial": "0",
+     "max": "1000000000000000",
+     "meta": "75177ebd5528eb9aff4321819f9ad4bf021edc85d2d86d96fcd4d91c7a5ad6e1",
+     "mint": "5NPSXGtRcdZQx5kqy8SW1e7eSrwsfPHGnoXqf6TCx9Kp",
+     "net": "mainnet",
+     "nonce": "e277c06d3619dba3ffa02820197d1db2",
+     "op": "deploy",
+     "owner": "4AMg1kDaXkWckE3uyd1YqoBKvn4z8ATxmWQVdtjF6aGU4sT278XoyhUV1Ve88ZMCXNXQJpjW2553NWERfMZcNsBtCkMLiNM",
+     "p": "xmr20",
+     "tick": "XMR20",
+     "v": 2
+    },
+    "signature": "SigV2BBTrEDeKskSG3iDgTNjsRk1QnfDteNu4XXKW1PyKN7UnHx5xM8HBXpWZ4A6NhMxZZNFCjTunXB1EYYZGki3fmN4X"
+   },
+   "payloadHeadHex": "584d5232304d317b227265636f726422"
+  }
+ ]
+}

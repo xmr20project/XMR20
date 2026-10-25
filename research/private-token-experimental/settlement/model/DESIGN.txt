@@ -1,0 +1,132 @@
+PERSISTENT SETTLEMENT CONTAINMENT FOR PRIVATE XMR20
+22 October 2026. Isolated synthetic laboratory; no current XMR20 integration.
+
+Purpose and guarantee
+---------------------
+Implement the operational controls proposed in the preserved FINALITY-SPEC.txt:
+../privacy-market-repair-20261022/FINALITY-SPEC.txt
+The XL3 private token protocol and its 996-byte record remain unchanged. The
+controls live in the encrypted holder wallet and its signing controller. They
+add no native source output, real ring position, input amount/mask or ownership
+opening to public records. Existing native transactions expose their ring/key
+images independently; recording those already-public images in the public
+indexer's event list does not identify the real source.
+
+This is conditional settlement containment, NOT payment revocation or a new
+atomic-swap construction. Correct token/XMR settlement still assumes that the
+accepted reservation prefix remains canonical. The native daemon does not
+enforce token state. A captured native payment can outlive the token reservation
+and pay a seller without tokens being delivered. The real-daemon counterexample
+is intentionally retained, including when both honest wallets have halted.
+
+Policy state and persistence
+----------------------------
+The wallet retains an accepted block height/hash, its first incident, and every
+committed purchase's guard, offer, native transaction ID, exact cancellation ID,
+request ID, price/fee, accepted prefix, checked tip and observed outcome. It also
+retains seller-received signed cancellations. This data is in the existing
+XChaCha20-Poly1305 encrypted append-only synthetic vault. No new plaintext
+wallet database is added. Synthetic evidence files may contain test balances,
+public transaction bytes and holder observations; they contain no unlock keys.
+
+Every successful payment is recorded BEFORE the result is exported. A crash or
+lost acknowledgement leaves it conservatively outstanding even if the caller
+never received a signature. Exact retries use the original request ID and
+saved bytes; a second request ID cannot manufacture another payment for that
+guard. Native input/ring history remains frozen and is restored unchanged.
+
+An observation that changes policy is committed even when the requested
+operation returns an error. The controller processes that checkpoint before
+delivering the error. Financial responses require the durable local snapshot,
+authenticated witness acknowledgement, and local checkpoint write. Local
+write failure or missing witness acknowledgement withholds the response.
+
+An already-running wallet can keep viewing during witness outage. New anchor
+or incident state is durably saved in its local encrypted vault. The controller
+marks signing unavailable and retains the pending checkpoint. It does not claim
+an external acknowledgement. Before any subsequent financial command it must
+acknowledge the pending state; otherwise it stops the process. A new signing
+process requires a live retained witness and catches up to the latest local
+snapshot before returning ready. Restoring all newer vault/witness/checkpoint
+state to an old version remains outside this guarantee, as previously tested.
+
+Accepted history and incident latch
+----------------------------------
+The explicit lab setting is ten confirmations, counting the inclusion block.
+The accepted checkpoint advances to the highest replayed confirmed block.
+The whole replay is anchored to a captured native tip and rechecked for changes.
+The previous accepted block is queried directly when necessary: removing one
+unaccepted tip block does not imply the older accepted block disappeared merely
+because it temporarily has one fewer confirmation.
+
+If the old accepted block is removed or replaced, record the FIRST incident and
+preserve the old accepted anchor. If a known native purchase confirms without
+its authorized token outcome, latch an incident as well. There is no reset API,
+expiry or automatic re-enable on restart, normal new blocks, zero outstanding
+payments, or a return of the old branch. RPC failure blocks the requested
+financial action; it is not treated as proof of a reorganization.
+
+Once latched, refuse draft, send, lock, carrier, release, synthetic replacement,
+and cached financial responses. Allow balance viewing and recovery. The
+cancellation-only recovery operation returns EXACT previously saved signed
+cancellations, without new signatures or purchase proposals. The seller can
+restore its own received cancellation while the buyer is stopped. A relay can
+publish those bytes, subject to native consensus, fee inclusion and spend races.
+The wallet cannot stop a different party publishing already captured bytes.
+
+The payment-release path still rechecks its exact captured tip after signing
+and on cached retry. A failed financial action attempts a fresh stable replay
+before returning, so a prefix loss detected during release is also latched.
+A shallow tail-only change withholds the raced release without inventing a
+confirmed-prefix incident. No observation is a guarantee about a future fork.
+
+Exposure accounting
+-------------------
+DISPOSABLE TEST SETTINGS ONLY: at most two outstanding native purchases, with
+sum(price + actual purchase fee) <= 250,000,000,000 atomic XMR (0.25 XMR).
+These constants are serialized, validated on restore and cannot be changed by
+a request field. They are not a recommended mainnet limit or risk estimate.
+
+Before signing a new usable purchase, check both limits. No quote timeout,
+submission response, mempool entry or nine-confirmation observation releases
+capacity. A fully replayed ten-confirmed spend of its native guard determines:
+- Exact purchase plus accepted buyer token outcome: settled.
+- Exact saved self-return cancellation: cancelled.
+- Another confirmed guard spend: other_guard_spend, NOT a claimed XMR refund.
+- Exact purchase without its token outcome: paid_without_tokens and incident.
+- No confirmed guard spend: outstanding.
+
+History is never deleted when capacity clears. Every replay recomputes outcomes;
+an orphaned purchase or cancellation can become outstanding again. This can
+exceed a limit after a fork; the incident remains latched. Failure losses remain
+explicit in history even after their native guards are spent.
+
+These limits bound pending buyer purchases observed by this one honest wallet
+under its retained-prefix assumption. They do not insure loss, cap cumulative
+loss across history, limit seller token exposure, cover every signed cancellation
+fee or native carrier, constrain multiple wallets, or control malicious clients.
+Accepted completed history can be replaced after capacity has been reused.
+
+Finite implementation limits and trust
+-------------------------------------
+The native selector retains its existing 256 frozen-input history. This policy
+also limits purchase and seller-cancellation histories to 256 each. Encrypted
+snapshots remain capped at 2 MB and 1,024 versions; no production compaction,
+long-running storage, garbage collection or seed-only recovery is implemented.
+The harness uses a trusted local offline daemon and a separately stored witness
+PROCESS ON THE SAME COMPUTER. It does not verify hostile RPC consensus or offer
+independent-host incident monitoring. Witness authentication is freshness data,
+not proof of Monero finality. Pinned normal decoy selection is not a privacy audit.
+
+Release boundary
+----------------
+The production answer remains NO-GO. Required external cryptographic/setup/
+privacy and finality/exposure review, independent observation/freshness operation,
+fee-liveness policy, private-backed Solana bridge, production wallet/indexer and
+holder migration are not provided by these controls. Existing legacy bridge
+trust is unchanged. No claim of Monero-equivalent anonymity or 100% security.
+
+The new run uses only policy-enforcing wallets. It preconstructs the adversarial
+conflicting token/native transaction BEFORE the relevant reservation, then
+publishes existing bytes after the incident. It has no wallet mode that disables
+the new controls. The entire prior lab and its evidence remain hash-pinned.

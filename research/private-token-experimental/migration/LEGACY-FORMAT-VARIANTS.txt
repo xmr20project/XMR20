@@ -1,0 +1,25 @@
+LEGACY INSCRIPTION FORMAT VARIANTS — what the cutover snapshot must accept (documented from mainnet launch transactions, read-only)
+research/privacy-release-candidate-20261025/migration, 25 October 2026. Samples: migration/legacy-inscription-variants.json.
+
+FRAMING (identical across versions): the launch record rides in tx_extra 0x02 extra-nonce chunks; each chunk = 'XM2' + chunk index
+byte + chunk count byte + payload slice; concatenating the slices gives one JSON object {"record": {...}, ...}. Some launches carry
+an additional 'XB1' chunk (bridge record). Chunk headers seen: 0155b247ae, 0193537de4, 01a60c4bb6, 584d320003, 584d320103, 584d320203.
+
+inscriptionVersion 2: LUKE (mint KzTQBqjk…, tx 4dc4cee22bd2…) record keys: ['chain', 'creator', 'fee', 'initial', 'max', 'meta', 'mint', 'net', 'nonce', 'op', 'owner', 'p', 'tick', 'v']; top-level keys: ['record', 'signature']
+   chain label: 'mainnet'; net: None; fee bps: '150'; max: '1000000000000000'; mint in record: True
+inscriptionVersion 1: XTAC (mint HitiJpha…, tx cac031276e8e…) record keys: ['chain', 'creator', 'fee', 'initial', 'max', 'meta', 'mint', 'net', 'nonce', 'op', 'owner', 'p', 'tick', 'v']; top-level keys: ['record', 'signature']
+   chain label: 'mainnet-beta'; net: None; fee bps: '150'; max: '1000000000000000'; mint in record: True
+inscriptionVersion None: XMR20 (mint 5NPSXGtR…, tx 6674950a07d1…) record keys: ['chain', 'creator', 'fee', 'initial', 'max', 'meta', 'mint', 'net', 'nonce', 'op', 'owner', 'p', 'tick', 'v']; top-level keys: ['record', 'signature']
+   chain label: 'mainnet'; net: None; fee bps: '200'; max: '1000000000000000'; mint in record: True
+
+RULES FOR THE MIGRATION PATH (CONFORMANCE 6):
+  - The Solana chain label inside the record ('mainnet' or 'mainnet-beta') and the record's fee field (150 or 200 bps at launch) are
+    informational for migration: the asset identity is the Solana MINT (record.mint == catalog mint for every sample), the amount is
+    the holder's legacy balance from the legacy indexer at the cutoff height, and the owner is the legacy output key. Nothing in
+    the private path parses the launch JSON; the production legacy indexer, which already indexes every version, exports the rows.
+  - Tokens without a Solana bridge program (12 of 66) migrate the same way; they simply have no Solana redemption path.
+  - Per-token transfer tax (150 or 0 bps) is enforced by the custody program from the mint's own transfer-fee extension on every
+    deposit and redemption (tested with the real mint bytes of five tokens); migration never applies it.
+  - Future launches: any new inscription version must be added to the LEGACY INDEXER's parser; the migration path is unchanged
+    as long as it receives (mint, legacy owner key, amount) rows. The catalog is the list of mints; nothing is per-ticker
+    (tickers repeat: MCAT, TEST, QTEST, XMR, XMR20 appear more than once).

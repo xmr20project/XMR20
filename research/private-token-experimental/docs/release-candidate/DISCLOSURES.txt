@@ -1,0 +1,65 @@
+PRIVACY AND CRYPTOGRAPHIC READINESS — WHAT EACH PARTY LEARNS, AND THE SPECIFIC CHECKS MADE
+research/privacy-release-candidate-20261025, 25 October 2026. Consolidates review/02-OBSERVERS.txt (stage 3 + stagenet
+measurements) with this candidate's additions (bridge mappings, marketplace, migration). AI-assisted self-review; NOT an
+independent security review. Nothing below claims Monero-equivalent privacy for the token layer.
+
+A. WHAT IS PUBLIC (anyone with a node)
+  - The SET of carrier transactions and their timing: 1,056-byte (XM3) / 985-byte (XB3) tx_extra chunks are recognisable;
+    stagenet carriers measured 2,533-2,539 B and 2,462-2,466 B. Carriers are fingerprintable; nothing hides that a
+    transaction is a carrier. Each record also leaves one ordinary Monero key image (the carrier's input) — as any payment.
+  - XM3 transfers: anchor, 3 nullifiers, value commitments, rk, ciphertexts, proof, signatures. NOT amounts, asset, sender,
+    recipient, which earlier record created the notes, or which inputs are padding.
+  - XB3 boundary records: PUBLIC kind, asset id, amount and binding. So per asset the credit/burn schedule and total minted
+    and burned are public; a LISTING PRICE or a BRIDGE AMOUNT is public and must never be described as hidden.
+  - Change-chain linkage: a holder with few XMR outputs produces carriers linked through its own change, exactly like a chain
+    of ordinary payments from one wallet. No claim about resistance to statistical ring analysis.
+  - Retry behaviour: identical re-sends reveal nothing new (same txid); the lookup queries are seen by the holder's own node.
+
+B. COUNTERPARTIES
+  - A recipient learns the note (amount, asset, rseed) and nothing about the sender's address or other notes (memo-free codec).
+  - A trade counterparty (marketplace, GATED) would learn the lot, price and the native payment outputs it is paid to; the
+    reservation/purchase pair reveals the trade's existence and timing publicly through XB3-style public fields.
+
+C. OPERATOR (bridge) — inherent to a custodial bridge
+  - Map {token address -> Solana address -> public stagenet/mainnet Monero address} for every holder who bridges or migrates;
+    the deposit/redeem/migration ledger (amounts, timing, destinations). Private transfers between holders stay hidden from
+    it. In this candidate the operator additionally learns which legacy lots (one-time output keys) migrated to which private
+    address: the migration claim binds the lot to the new private address publicly (the credit record's binding), so the
+    historical legacy ownership -> private address link is PUBLIC and cannot be erased later.
+  - The operator never receives seeds, spend keys, viewing keys (except the explicit `view` action), key images, carriers or
+    record bytes (field-name refusal + request audit; re-verified by this candidate's test services).
+
+D. VIEWING-KEY HOLDERS (explicit holder action)
+  - Full incoming history, amounts and spent status of that holder (nullifier key component); cannot spend; revocable only
+    by moving funds to a new address.
+
+E. THE HOLDER'S NODE
+  - Standard wallet exposure (blocks, get_outs incl. the real spend among 15 decoys, the signed carrier, fee/distribution
+    queries) plus the fact that this IP publishes token records. Own node or Tor/i2p is the standard mitigation.
+
+F. SPECIFIC CHECKS (where, result)
+  native source-output / key-image association   none in any record or RPC payload (stage 3 03; holder-leak-regression
+                                                 test; backend field refusal; grep audits of request logs) — PASS
+  cross-asset / cross-domain replay               records carry ledger domain + asset in value commitments; wrong-domain and
+                                                 foreign-parameter vectors refused (interop vectors, verifier-params) — PASS
+  unauthorized issuance / inflation               only issuer-signed XB3 credits mint; indexer supply = sum of credits - burns
+                                                 (replay equivalence state digest; operator backing invariant) — PASS in
+                                                 simulation; soundness of the composition itself is UNREVIEWED (G)
+  malformed encodings                             fixed-length records; tampered-byte vectors rejected; independent/check.mjs
+                                                 decodes without the engine — PASS
+  recovery / key-derivation consistency           phrase -> same token address, same stagenet/mainnet-format native address,
+                                                 same notes in a fresh installation (recovery cases; stagenet popup run;
+                                                 migration test H2) — PASS
+  migration disclosure                            lot -> private address link is public at claim time (C) — DOCUMENTED
+  marketplace disclosures                         listing price, lot and native payment destinations public — DOCUMENTED (gated)
+
+G. CRYPTOGRAPHIC READINESS (what exists, what does not)
+  - Circuits: unchanged upstream penumbra-sdk-shielded-pool 2.1.1 Spend/Output circuits composed 3+2 / 3+1 with one shared
+    randomizer (holder-wasm/src/xm3.rs, boundary.rs). The COMPOSITION is not reviewed (review/06 E.1-2).
+  - Parameters: every set is a disposable single-party Groth16 setup made with the laboratory `setup` command (the same
+    development approach as Penumbra's local generator, https://guide.penumbra.zone/dev/parameter_setup). Not production.
+  - Ceremony tooling (review/08 R1.b, R2.c): NOT BUILT. Required before any mainnet kind: constraint-system digest tool,
+    locked reproducible builds with published hashes, transcript verifier, deterministic finalisation. This candidate records
+    the exact circuit sources and locks (RELEASE-CHECKLIST 0) so that a digest tool can be bound to them; it does not fake one.
+  - Independent review: none commissioned; review/00-REVIEW-BRIEF.txt is the package; no contributors, audits or provenance
+    are claimed.

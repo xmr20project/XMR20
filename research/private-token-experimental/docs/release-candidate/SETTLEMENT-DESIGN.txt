@@ -1,0 +1,109 @@
+SETTLEMENT DESIGN — THE TWO COUNTEREXAMPLES, WHICH ASSUMPTION FAILS, WHAT COULD CLOSE THEM
+research/privacy-release-candidate-20261025, 25 October 2026. Internal analysis, not an audit. Nothing here is a fix.
+Bridge payouts and native XMR trading remain GATED. Private transfers are unaffected by this document.
+
+0. GROUND RULES
+  - Monero has no finality. There is no maximum reorganisation depth (18-block reorg on record, Sept 2025). Any construction
+    that says "after N confirmations" is an ASSUMPTION about depth, never a guarantee.
+  - The private format exists to avoid the native source-output -> key-image association (review/03). No construction below
+    reintroduces it: records never name a real ring member, a key image or an amount of the carrier.
+  - The Monero node validates ONLY the native transaction. It never validates a token record. Whatever a token record says,
+    the XMR in the same transaction moves if the native transaction is valid.
+  - "More confirmations", "two nodes agree", "wallet reservations", "rate limits" change WHEN or HOW OFTEN the loss happens.
+    None of them eliminates either counterexample. They are controls, not solutions.
+
+1. COUNTEREXAMPLE A — BRIDGE: PAYOUT ON A BURN THAT LATER DISAPPEARS
+  Reproduced live in this candidate: settlement/bridge-rollback-loss.test.mjs -> settlement/evidence/bridge-payout-then-
+  rollback-live-<date>.json (PASS = loss reproduced). Prior evidence preserved: settlement/evidence/bridge-payout-then-
+  rollback-20261022-verified-oSuMwR.json (privacy-integration-20261022).
+  Sequence: deposit 100 X -> credit -> A burns 40 X (XB3 redemption, 10 confirmations) -> operator pays 40 X (net of fee) on
+  Solana (irreversible program execution) -> rollback of 11 blocks removes the burn -> a second installation of the same
+  phrase (backup; no journal reservation) spends the same 40 X note to B -> B holds 40 X AND the Solana payout stands.
+  Operator backing: reserve = owed before; after, owed exceeds reserve by exactly 40,000,000; incident paidWithoutBurn; halt.
+  THE ASSUMPTION THAT FAILS: "a burn with CONFIRMATIONS confirmations is final, so an irreversible action on another chain may
+  be taken against it". Two independent facts break it together: (i) Monero can drop the burn at any depth; (ii) once it is
+  dropped the burned note is simply unspent, and NOTHING in the protocol remembers that it was once burned — a burn is not a
+  nullifier in the Solana world. The local journal reservation is per installation; a backup, a second installation or a
+  fresh recovery from the phrase does not have it. Preventing backups is wallet convenience, not security.
+  WHO LOSES: the operator's backing shared by all holders (no per-holder insurance), by exactly the paid amount per event.
+  Exposure controls bound the RATE (payouts per window), not the loss (ERRATUM: 400 exposed under a 200 cap).
+
+2. COUNTEREXAMPLE B — NATIVE TRADING: BUYER PAYS XMR, RECEIVES NO TOKENS
+  Preserved evidence: settlement/evidence/trading-buyer-pays-no-tokens-20261022-verified-nejEGH.json (real-daemon rollback,
+  privacy-settlement-policy-20261022); abstract model re-run here: settlement/model/finality-model.test.mjs 9/9 (the model
+  PASSES by retaining the loss case: "native child ancestry alone cannot require valid parent token data").
+  Sequence: seller publishes a RESERVATION record locking the lot (10 confirmations) -> buyer's signing controller releases a
+  native purchase transaction (XMR to the seller, buyer's receipt record in its tx_extra, bound to the reservation) -> rollback
+  removes the reservation -> a genuine conflicting spend of the seller's note (by the seller's keys: another installation or a
+  stale backup, or a dishonest seller) becomes canonical -> the captured purchase is rebroadcast and MINES: the native
+  transaction is valid, the receipt record is rejected by every verifier -> seller has XMR, buyer has nothing.
+  THE ASSUMPTION THAT FAILS: "the canonical prefix through the reservation remains unchanged for the lifetime of the exported
+  native signature" (conditional finality) AND "a valid native transaction implies a valid token outcome". The second is
+  false by construction: the node does not read records. Once the buyer's signature exists it is a bearer instrument on XMR
+  only. Honest wallets can halt; nobody can revoke a captured Monero signature.
+  WHO LOSES: the buyer, the full price plus fee; the seller (or whoever holds the seller's keys) gains.
+
+3. WHAT A REAL SOLUTION WOULD HAVE TO DO, AND WHY THE NATIVE LAYER CANNOT
+  To eliminate B the XMR payment must become INVALID when the token outcome is invalid. Monero transactions have no scripts,
+  no covenants, no timelocks after inclusion and no way to reference token state. The only lever that makes a native spend
+  depend on something is the KEY: who can produce the signature. The only lever that ties two token events together is the
+  RECORD: the same record cannot be valid twice. Every construction must be built from those two levers.
+  To eliminate A the Solana payout must become REVERSIBLE for as long as the burn can disappear, or the burn must be made
+  unforgettable. A burn cannot be made unforgettable on Monero (the chain forgets it with the block). It can be made
+  unforgettable on Solana only if Solana knows the burn — i.e. if the payout itself records the burn's note commitment and
+  the credit path refuses to re-credit a note whose burn was paid. That turns a re-spend after rollback into a loss for the
+  RE-SPENDER's counterparty (B, who accepted a note whose burn was already paid) instead of the operator — it moves the loss,
+  it does not remove it, and B cannot know (privacy) that the note was once burned. Rejected: it silently changes who pays.
+
+4. CANDIDATE CONSTRUCTIONS EVALUATED (none demonstrated; none adopted)
+  4.1 PROTOCOL: bundled trade transaction (one native tx carries the buyer's XMR payment AND the seller's pre-signed transfer
+      record to the buyer). Reorg-consistent by construction: both legs are in one transaction, so a rollback reverts both
+      together; no key image or source output is named. RESIDUAL: the native tx can still mine while the record is invalid
+      if the seller's note was spent elsewhere in a transaction that became canonical first (seller equivocation, including
+      an honest seller's stale backup). So B is narrowed from "any reorg across the reservation" to "seller double-signed the
+      same note", which is attributable to the seller's keys but not provable to a third party without the seller's view
+      key. Custody: none. Privacy: unchanged (ordinary carrier). Liveness: buyer needs the seller's signed record off-chain
+      first; seller needs nothing. Loss: buyer, on seller equivocation. CLASS: protocol improvement, not a solution.
+  4.2 PROTOCOL: adaptor signature on the buyer's payment, completed by a secret the seller must reveal to publish the record.
+      Gives atomicity at PUBLICATION, not at finality: after the record is published the seller holds a complete signature and
+      can broadcast it after a rollback that removed the record. Same residual as 4.1, more complexity, and Monero's CLSAG
+      adaptor machinery is research-grade. CLASS: no improvement over 4.1 for this failure. Not pursued.
+  4.3 ESCROW (two-party): buyer pays into a 2-of-2 shared-key output (additive key shares, Monero native multisig or a shared
+      one-time key); release transaction co-signed only after the buyer sees the receipt record at the agreed depth; refund
+      co-signed otherwise. No timelock exists on Monero, so a party that disappears locks the funds forever. Safety: no
+      asymmetric theft; Liveness: fails on any non-cooperation; Custody: joint; Privacy: the release/refund are ordinary
+      transactions. CLASS: trusted-cooperation arrangement; converts loss into stuck funds; not acceptable without an arbiter.
+  4.4 ESCROW (operator arbiter, 2-of-3): as 4.3 plus an operator share that can complete release or refund after an evidence
+      window. CLASS: TRUSTED OPERATOR with custody over trade funds during the window; the operator learns trade identities.
+      It removes the asymmetric loss at the price of trust and custody. Honest option if the product accepts it.
+  4.5 SELLER BOND: seller posts XMR collateral with the operator; buyer claims it on proven non-delivery. Proof of non-delivery
+      requires the seller's view key or the operator reading the receipt outcome — the operator decides; CLASS: trusted
+      operator + compensation arrangement; privacy cost on the seller.
+  4.6 CONFIRMATION POLICY + RESERVE (bridge): payout only at depth D with a funded loss reserve sized to an explicit assumed
+      depth; incident halt on any accepted-prefix change. CLASS: PRODUCT decision with a stated assumption. Loss bound only
+      under the assumption; unbounded if the assumption fails. This is what the lab operator already does (D=10, lab reserve).
+  4.7 REVERSIBLE PAYOUT ESCROW (bridge): the Solana payout lands in a program escrow with a clawback window T; the operator
+      (or a 2-of-3 with the redeemer) can revoke within T if the burn left canonical history; after T the payout is final.
+      Loss then requires a Monero reorganisation deeper than D that also happens AFTER T has elapsed; D and T are explicit
+      numbers. CLASS: trusted operator (clawback authority) + confirmation policy; it does not reintroduce any disclosure;
+      it changes the exposure from "any reorg > D" to "reorg > D after T", which is a product-grade improvement but still an
+      assumption. Requires a new Solana program path (not present in the compiled custody used here).
+  4.8 KEEP TRADING OFF THE PRIVATE FORMAT: trade only public tokens or trade through the bridge + a Solana venue. CLASS:
+      product decision; no settlement risk on the private format; the native marketplace stays off.
+
+5. RECOMMENDATION (for the product owner; nothing adopted by this candidate)
+  Bridge (A): adopt 4.7 + 4.6 together as the design to review: explicit depth D, clawback window T, funded reserve sized to
+  the assumed depth, incident halt, two independent nodes gating payout admission (implemented here as a gate, section 7 of
+  RELEASE-CHECKLIST). State plainly that loss is possible for reorganisations deeper than D after T, and that the operator holds
+  clawback authority during T. Until the Solana escrow path exists and is reviewed, payouts stay gated.
+  Trading (B): no protocol construction demonstrated. 4.1 is the right protocol primitive to build next (it is strictly better
+  than the current reservation/purchase pair and needs no new disclosure), but it does not remove seller-equivocation loss; the
+  remaining choice is 4.4/4.5 (trusted operator, custody, identity exposure to the operator) or 4.8 (keep native trading off
+  the private format). Native trading therefore stays GATED. Do not describe 4.1 as atomic.
+  What this candidate implements on the basis of this analysis: nothing that claims to close A or B. It implements the gate
+  (independent node agreement for payout admission) and keeps every verdict NO-GO for bridging and trading.
+
+6. CONTROLS THAT MUST NOT BE PRESENTED AS SOLUTIONS
+  more confirmations (changes D, not the existence of the loss); two nodes agreeing (protects against one lying/eclipsed node,
+  not against a real reorganisation both nodes follow); wallet reservations (per installation; backups and fresh recoveries do
+  not have them); rate limits (bound payouts per window; a single rollback can remove several windows' burns at once).
