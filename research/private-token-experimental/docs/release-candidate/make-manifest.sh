@@ -8,5 +8,6 @@ cd "$(dirname "$0")" || exit 1
  echo holder-wasm/target/wasm32-unknown-unknown/release/xmr20_holder_wasm.wasm
  echo params/stagenet-v0-trusted/manifest.json
  ls runs/*.log runs/*.json 2>/dev/null
+ find runs/repro-builds -type f 2>/dev/null
 } | sort -u | while IFS= read -r f; do [ -f "$f" ] && shasum -a 256 "$f"; done > MANIFEST.sha256
 wc -l MANIFEST.sha256

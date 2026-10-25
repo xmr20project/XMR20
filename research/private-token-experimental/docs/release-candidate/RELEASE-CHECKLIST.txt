@@ -26,6 +26,14 @@ This checklist is built from current code and evidence only. A blocker closed by
                       (stagenet-aware native-address check), which the current source and the stagenet build contain.
   toolchain           rustc/cargo 1.99.0; Node v24.1.0; Monero v0.18.5.3 (node + fakechain); Playwright 1.56.1 (Chromium 1194);
                       Solana custody: compiled program in LiteSVM (proof-of-concepts/joint-escrow-wallet, pinned by that lab)
+  build reproduction  25 Oct: all four pinned binaries REBUILT BYTE-FOR-BYTE from their recorded sources on this machine
+                      (reproduce-builds.mjs -> runs/repro-builds/BUILD-RECIPE.txt + report.json with per-file source hashes):
+                      engine wasm 2c866f39… and lab roles 375a49e2… / lab backend 3fb8842c… (rustc 1.99.0, --offline --locked, in the
+                      recorded target directories), custody program a8b7c791… (platform-tools v1.57 = rustc 1.95.0-dev + LLD 22.1.2,
+                      registry path remapped). Measured path dependence: the wasm and lab binaries embed the absolute path of the
+                      monero-bulletproofs build-script output directory, and any RUSTFLAGS changes that directory's hash, so the
+                      recorded digests reproduce only in the recorded absolute locations; a path-independent (remapped) build is a
+                      NEW digest and would re-run the suite. Published digests and an independent rebuild do not exist (section 3).
   spec                SPEC-XMR20-PRIVATE-TOKENS-v0.1-experimental.txt (this folder) + CONFORMANCE.txt (this candidate);
                       interop vectors vectors/vectors.json; independent checker independent/check.mjs
 
@@ -83,8 +91,11 @@ This checklist is built from current code and evidence only. A blocker closed by
   - Production bridge adapter path (authentication, operator key custody, live program compatibility rehearsal on devnet/fork).
   - Reversible payout escrow on Solana (SETTLEMENT-DESIGN 4.7) if the product adopts it; nothing exists today.
   - Bundled trade transaction primitive (SETTLEMENT-DESIGN 4.1) and any operator-arbiter escrow (4.4) — not built.
-  - Ceremony tooling: constraint-system digest tool, transcript verifier, deterministic finalisation (review/08 R1.b, R2.c);
-    reproducible (locked) builds of the engine and roles with published digests.
+  - Ceremony tooling: constraint-system digest tool, transcript verifier, deterministic finalisation (review/08 R1.b, R2.c).
+  - Reproducible builds beyond this machine: the locked recipe (section 0) reproduces every pinned binary here, but the wasm and
+    lab binaries are path-dependent (embedded build-script output path), no digest is published, and nobody independent has
+    rebuilt them. Needed: a remapped, path-independent engine build adopted as the next pinned digest (full suite re-run), the
+    digest published with the recipe, and at least one rebuild by someone else.
   - Monitoring/reconciliation service, incident stops and runbooks as deployable components (only lab latches exist).
   - Legacy cutover enforcement in the shipping indexer (the lab registry refuses duplicate claims; the production path
     that must stop old-style issuance is not integrated here). REAL cutover snapshots per token (legacy lots from the actual

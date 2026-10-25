@@ -1,0 +1,9 @@
+ATTEMPT 2 — wasm-remap: fresh CARGO_TARGET_DIR + RUSTFLAGS=--remap-path-prefix=<new target dir>=<recorded target dir> (NOT byte-identical; cause identified)
+started    2026-10-25T14:10:03Z   finished 2026-10-25T14:11:49Z   Finished `release` profile [optimized] target(s) in 1m 46s
+recorded   2c866f39e64f40a209842fb5c4d59d6fe2bbf9ad910dd9aed65bc06fb396a86f
+produced   17e42e554cc6b8c85fd567d5d32ec0813c7dfa38a2d35273ceebc43973fabecd
+difference 30 bytes: only the hash segment of the embedded build-script output directory
+           (…/release/build/monero-bulletproofs-3394833e94c40cc2/out/ recorded vs monero-bulletproofs-214ed3603969d2bb/out/ produced)
+           — cargo includes RUSTFLAGS in that unit hash, so any remap flag changes the segment it is trying to pin. Attempt 1 (no RUSTFLAGS)
+           had the recorded hash segment (3394833e94c40cc2) but the new directory path. Attempt 3 therefore builds IN the recorded target directory
+           with no RUSTFLAGS (recorded artifact copied aside first).

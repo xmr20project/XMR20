@@ -1,0 +1,9 @@
+ATTEMPT 2 — labBackend-remap: fresh CARGO_TARGET_DIR + RUSTFLAGS=--remap-path-prefix=<new target dir>=<recorded target dir> (NOT byte-identical; cause identified)
+started    2026-10-25T14:10:03Z   finished 2026-10-25T14:11:38Z   Finished `release` profile [optimized] target(s) in 1m 34s
+recorded   3fb8842c468671fdfe667e8d6eac759745587c264c03b6e0cd2e135def630aa1
+produced   0880e7f691f2c0ebef1fe39ee061739002609ac7eabed7ccf5306d1ccbf1d522
+difference 125 bytes: only the hash segment of the embedded build-script output directory
+           (…/release/build/monero-bulletproofs-c534f7400f2d66b4/out/ recorded vs monero-bulletproofs-0bfa9d1731556a8b/out/ produced) plus LC_UUID (content hash)
+           — cargo includes RUSTFLAGS in that unit hash, so any remap flag changes the segment it is trying to pin. Attempt 1 (no RUSTFLAGS)
+           had the recorded hash segment (c534f7400f2d66b4) but the new directory path. Attempt 3 therefore builds IN the recorded target directory
+           with no RUSTFLAGS (recorded artifact copied aside first).
