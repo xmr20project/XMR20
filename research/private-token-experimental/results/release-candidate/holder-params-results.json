@@ -80,11 +80,11 @@
   }
  ],
  "corruptQueryOffset": 41337720,
- "normalLoadMs": 1330,
- "cacheLoadMs": 1222,
- "provingMs": 30611,
+ "normalLoadMs": 1273,
+ "cacheLoadMs": 1171,
+ "provingMs": 29818,
  "carrier": {
-  "txid": "ae208fccb2d0fdf3c5be987177099d9a19a71e11f8b4d31f3acc1dc6d83b4d2a",
+  "txid": "5e304e2a05a7261dcf7d23d3b411cce68cc99e8541c906a6722ba41e76a22e7b",
   "nativeBytes": 2520,
   "extraBytes": 1056,
   "fee": "3024000000"

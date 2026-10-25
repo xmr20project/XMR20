@@ -58,10 +58,47 @@ test('extension A and CLI wallet B interoperate on one pool',{timeout:3600000},a
   const vb=await run(['balance','--state',stateV,...base]);assert.equal(vb.json.balances[X],'500000');const vs=await run(['send','--to',alphaAddress,'--amount','100000','--state',stateV,...base]);assert.notEqual(vs.code,0);assert.match(vs.err,/viewing-only/);results.viewOnly={balance:vb.json.balances[X],sendRefused:true};
   // 6. Wrong keys: a random root sees nothing.
   const wr=await run(['init','--root',Buffer.from(require_random(32)).toString('hex'),'--state',stateW,...base]);assert.equal(wr.code,0);const wb=await run(['balance','--state',stateW,...base]);assert.deepEqual(wb.json.balances,{});
-  // 7. Malformed record: a tampered record is rejected locally; duplicate spend: re-publishing a spent note's record is rejected by the pool.
-  const stB=JSON.parse(await readFile(stateB,'utf8'));const last=stB.history.find(x=>x.wire)||Object.values(stB.pending).find(x=>x.wire);assert.ok(last?.wire);
-  const bad=Buffer.from(last.wire,'hex');bad[300]^=1;const v1=await run(['verify','--wire',bad.toString('hex'),'--state',stateB,...base]);assert.equal(v1.json.record,'rejected');assert.doesNotMatch(v1.json.error||'',/Unknown transfer root/,'rejected for the tampering, not for a stale pool');
-  const v2=await run(['verify','--wire',last.wire,'--state',stateB,...base]);assert.equal(v2.json.record,'rejected','already-spent notes (duplicate nullifier)');assert.match(v2.json.error||'',/Spent or duplicate/);results.negative={malformed:v1.json.error,duplicate:v2.json.error};
+  // 7. TAMPER and DUPLICATE, separated (the earlier check mutated an already-published record, so both variants failed on the
+  //    spent inputs and nothing about tampering was shown — see runs/interop-results-run3-CORRECTION.txt). Here B builds a VALID,
+  //    UNSPENT record (wallet-lib over the same engine, B's root) and two INDEPENDENT verifier states (fresh engines under random
+  //    roots, synced to the same tip, byte-identical public view) judge it: V1 admits the original; V2 rejects byte-level
+  //    mutations of the proof, the auth signature, the binding signature and a truncation for THAT reason — not for spent
+  //    inputs, a stale root, the network or the version — and V2's state is unchanged afterwards (admission never commits on
+  //    rejection; it still admits the original). The holder engine refuses to pay a carrier fee for the tampered record. Only
+  //    then is the original published and mined; afterwards the SAME wire is a duplicate spend for a fresh verifier and for B.
+  const {openPrivateWallet,memoryCache}=await import('./wallet-lib/private-wallet.mjs');
+  const wasmBytes=await readFile(dir+'holder-wasm/target/wasm32-unknown-unknown/release/xmr20_holder_wasm.wasm');const manifest=JSON.parse(await readFile(dir+'params/test-v1/manifest.json','utf8'));
+  // connection:close — these wallets run in the SAME Node process as the test backend; a 30 s synchronous wasm proof would otherwise leave a stale keep-alive socket (fetch failed / ECONNRESET), as in holder-engine.test.mjs. Attempt 1 of this step failed exactly there (runs/interop-test-attempt1-tamper-step.log).
+  const closeFetch=(u,o={})=>fetch(u,{...o,headers:{...(o.headers||{}),connection:'close'}});
+  const openLib=o=>openPrivateWallet({wasm:wasmBytes,manifest,daemonRpc:backend.rpcUrl,parameterServer:'http://127.0.0.1:8940',cache:memoryCache(),fetch:closeFetch,...o});
+  const libB=await openLib({root:rootB});await libB.sync();assert.equal(libB.status().balances[X],'500000','B holds the 0.5 change note');
+  const selT=libB.select({asset:X,amount:'100000'});const builtT=await libB.prove({kind:'send',to:alphaAddress,amount:'100000',notes:selT.notes});assert.equal(builtT.bytes,996);const wire=builtT.wire,W=Buffer.from(wire,'hex');
+  const V1=await openLib({root:Buffer.from(require_random(32)).toString('hex')}),V2=await openLib({root:Buffer.from(require_random(32)).toString('hex')});await V1.sync();await V2.sync();
+  const view=l=>{const {tokenAddress,canSpend,...pub}=l.status();return JSON.stringify(pub);};// public view only (balances/notes are empty for random roots)
+  assert.equal(view(V1),view(V2),'two independent verifier states are byte-identical before judging');const v2Before=view(V2);
+  const okV1=V1.verify(wire);assert.equal(okV1.record,'accepted','V1 admits the valid unspent record');
+  const mutate=i=>{const b=Buffer.from(W);b[i]^=1;return b.toString('hex');};const forTheTampering=e=>assert.doesNotMatch(e,/Spent|duplicate|root|network|domain|version|genesis/i,'rejected for the tampering itself, not for spent inputs / stale root / wrong network');
+  // Two tamper classes per field (SPEC 6.1 offsets). SUBSTITUTION takes the field from ANOTHER valid record of B (decodes fine, so
+  // admission reaches the cryptographic check and fails THERE with the engine's exact message); a BIT FLIP corrupts the field's
+  // encoding (compressed group element / scalar no longer decodes: ark-serialize "invalid data"), also a rejection of that field.
+  const stB=JSON.parse(await readFile(stateB,'utf8'));const other=Buffer.from((stB.history.find(x=>x.wire)||Object.values(stB.pending).find(x=>x.wire)).wire,'hex');assert.equal(other.length,996);
+  const substitute=(a,z)=>{const b=Buffer.from(W);other.copy(b,a,a,z);return b.toString('hex');};
+  const sProof=V2.verify(substitute(740,932));assert.equal(sProof.record,'rejected');assert.match(sProof.error,/Combined proof rejected/);forTheTampering(sProof.error);// Groth16 proof of another record: verification fails
+  const sAuth=V2.verify(substitute(676,740));assert.equal(sAuth.record,'rejected');assert.match(sAuth.error,/signature/i);forTheTampering(sAuth.error);// SpendAuth signature of another record under this rk
+  const sBind=V2.verify(substitute(932,996));assert.equal(sBind.record,'rejected');assert.match(sBind.error,/Conservation rejected/);forTheTampering(sBind.error);// binding signature of another record
+  const tProof=V2.verify(mutate(800));assert.equal(tProof.record,'rejected');assert.match(tProof.error,/proof|invalid data/i);forTheTampering(tProof.error);// corrupted proof encoding
+  const tAuth=V2.verify(mutate(700));assert.equal(tAuth.record,'rejected');assert.match(tAuth.error,/signature|invalid/i);forTheTampering(tAuth.error);// corrupted auth signature
+  const tBind=V2.verify(mutate(950));assert.equal(tBind.record,'rejected');assert.match(tBind.error,/Conservation|signature|invalid/i);forTheTampering(tBind.error);// corrupted binding signature
+  const tTrunc=V2.verify(wire.slice(0,-2));assert.equal(tTrunc.record,'rejected');assert.match(tTrunc.error,/Fixed experimental record required|Truncated|Canonical|Malformed/i);forTheTampering(tTrunc.error);// encoding/size rule (SPEC 7.2): one byte short is not a record
+  assert.equal(view(V2),v2Before,'rejected records changed nothing in the verifier state');const okV2=V2.verify(wire);assert.equal(okV2.record,'accepted','V2 still admits the untampered record after the rejections');
+  const qT=await libB.quoteCarrier({kind:'send'});assert.throws(()=>libB.signCarrier(qT.quoteId,substitute(740,932)),/fails local admission.*Combined proof rejected/,'the holder refuses to spend XMR on a carrier for a tampered record');libB.cancelQuote(qT.quoteId);
+  const qO=await libB.quoteCarrier({kind:'send'});const carT=libB.signCarrier(qO.quoteId,wire);const pubT=await libB.publish(carT.blob);assert.equal(pubT.ok,true);
+  results.transfers.push({from:'CLI B (wallet-lib, same root)',to:'extension A',amount:'0.1',inputs:builtT.inputs,change:builtT.change,carrier:{txid:carT.txid,fee:carT.fee},admittedFirstBy:'independent verifier V1'});
+  await h.mine();assert.equal(bal(await h.balanceText()),98.1,'A received the record that the independent verifier admitted');
+  await V1.sync();const dupV=V1.verify(wire);assert.equal(dupV.record,'rejected');assert.match(dupV.error,/Spent or duplicate/,'duplicate spend: the same wire after it was mined');
+  const dupB=await run(['verify','--wire',wire,'--state',stateB,...base]);assert.equal(dupB.json.record,'rejected');assert.match(dupB.json.error||'',/Spent or duplicate/);
+  results.negative={tamper:{proofSubstituted:sProof.error,authSignatureSubstituted:sAuth.error,bindingSignatureSubstituted:sBind.error,proofCorrupted:tProof.error,authSignatureCorrupted:tAuth.error,bindingSignatureCorrupted:tBind.error,truncated:tTrunc.error,verifierStateUnchanged:true,originalAdmitted:{V1:okV1.record,V2afterRejections:okV2.record},holderRefusedCarrierForTampered:true},duplicate:{independentVerifier:dupV.error,cliB:dupB.json.error}};
+  for(const l of [libB,V1,V2])l.close();
   // 8. Mismatched parameters: a CLI built with the OTHER manifest refuses this server's configuration.
   const mx=await run(['init','--root',rootB,'--state',stateX,'--manifest',dir+'params/test-other/manifest.json',...base]);assert.notEqual(mx.code,0);assert.match(mx.err,/another version or ledger|different ledger/);results.mismatchedParameters=mx.err.trim().slice(0,160);
   // 9. One pool: the public indexer saw every record from both wallets (no per-wallet pool).

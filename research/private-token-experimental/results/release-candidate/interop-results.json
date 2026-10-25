@@ -22,7 +22,7 @@
    "inputs": 1,
    "change": "15",
    "carrier": {
-    "txid": "d0d6aa8d222104c815152b9d9ef13ef5992810cb92eea7194789ef6e7dc1fb05",
+    "txid": "79979af972cb2cdcd6e72511a9eb31c0bf303d81d8c16fbf87cb099c2221b9df",
     "fee": "3024000000",
     "nativeBytes": 2520,
     "extraBytes": 1056
@@ -41,6 +41,18 @@
    "amount": "6.5",
    "inputs": 3,
    "change": "0.5"
+  },
+  {
+   "from": "CLI B (wallet-lib, same root)",
+   "to": "extension A",
+   "amount": "0.1",
+   "inputs": 1,
+   "change": "400000",
+   "carrier": {
+    "txid": "d8db5bddf14f1c42b9192f3cad06ec97c3fba5d52f94cca187834bd959641683",
+    "fee": "3024000000"
+   },
+   "admittedFirstBy": "independent verifier V1"
   }
  ],
  "recovery": {
@@ -53,11 +65,28 @@
   "sendRefused": true
  },
  "negative": {
-  "malformed": "Spent or duplicate token input",
-  "duplicate": "Spent or duplicate token input"
+  "tamper": {
+   "proofSubstituted": "Combined proof rejected",
+   "authSignatureSubstituted": "Invalid signature.",
+   "bindingSignatureSubstituted": "Conservation rejected",
+   "proofCorrupted": "the input buffer contained invalid data",
+   "authSignatureCorrupted": "Invalid signature.",
+   "bindingSignatureCorrupted": "Conservation rejected",
+   "truncated": "Fixed experimental record required",
+   "verifierStateUnchanged": true,
+   "originalAdmitted": {
+    "V1": "accepted",
+    "V2afterRejections": "accepted"
+   },
+   "holderRefusedCarrierForTampered": true
+  },
+  "duplicate": {
+   "independentVerifier": "Spent or duplicate token input",
+   "cliB": "Spent or duplicate token input"
+  }
  },
  "mismatchedParameters": "error: Served parameters.json rejected: sha256 413c0356e2339763… differs from the shipped manifest (d00c64cb5df55136…). The parameter server serves another vers",
  "pool": {
-  "accepted": 8
+  "accepted": 9
  }
 }

@@ -55,7 +55,8 @@ rules that the spec leaves to implementations and names the vector/test that che
     decimals come from the mint account; later deposits and redemptions follow the mint's own Token-2022 transfer-fee
     setting (0 or 150 bps), enforced by the custody program and tested with real mint bytes. The catalog migration/third-party-assets.json (66 launched tokens in the 24 Oct
     snapshot) is the source; a new launch is appended (or registered at runtime) with no per-token code
-    (migration/legacy-migration.test.mjs: EXTREMIST full journey, LUKE and USVEU by the same path, OTHER added after startup).
+    (migration/legacy-migration.test.mjs: asset ids of all 66 entries; end-to-end EXTREMIST journey; XTAC, LUKE, XMR20~5NPSXG
+    and COVERT by the same path; USVEU added after startup — six mints, synthetic holdings).
   - Legacy migration: claim consumes the registry row once; a second claim with the same id is refused; a claim journaled as
     built is re-consumed after restart (no double entitlement); old-path issuance must be stopped at cutover (NOT enforced by
     this candidate's shipping path — RELEASE-CHECKLIST 3).

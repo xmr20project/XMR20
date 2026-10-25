@@ -44,14 +44,26 @@ This checklist is built from current code and evidence only. A blocker closed by
   - Bridge in simulation: deposits signed in the popup, private credits, redemption burns, exactly-once payout, backing
     invariants and exposure RATE controls, legacy claims with duplicate refusal (stage 3 and integration labs).
   - Both settlement counterexamples reproduced and preserved (SETTLEMENT-DESIGN.txt; settlement/).
-  - Third-party legacy migration (SYNTHETIC balances): any XMR20-launched token by one catalog-driven rule; EXTREMIST
-    acceptance journey (10,000 legacy -> exactly 10,000 private, interrupted/duplicate/cutoff/fresh-installation, private
-    transfer, redemption to the same mint), two more catalog tokens by the same path, one token added after startup
-    (migration/legacy-migration.test.mjs; catalog of 66 launched tokens; real mint account bytes and decimals verified on chain
-    for the six used); later deposits and redemptions follow each token's own transfer-fee setting exactly (0 or 150 bps).
+  - Third-party legacy migration (SYNTHETIC holdings): one catalog-driven rule for XMR20-launched tokens, exercised end to
+    end on FIVE selected existing mints (EXTREMIST acceptance journey: 10,000 legacy -> exactly 10,000 private, interrupted/
+    duplicate/cutoff/fresh-installation, private transfer, redemption to the same mint; XTAC, LUKE, XMR20~5NPSXG and COVERT by
+    the same path) plus USVEU added after startup (migration/legacy-migration.test.mjs). The 66 catalog entries are covered
+    for asset-id derivation/uniqueness and metadata only; real mint account bytes and decimals verified on chain for the six
+    instantiated. Later deposits and redemptions follow each mint's own transfer-fee setting exactly (0 or 150 bps); migration
+    itself credits the full entitlement with no fee.
   - Parameter authentication (holder loader: every tampered/foreign/swapped/truncated/interrupted/cached-corrupt case refused
     before use) and the engine suite (1/2/3-input sends, conflicting record refused by local admission, redemption, recovery,
     viewing-only engine), both ported from the stage-1 relay to holder-funded carriers without weakening any assertion.
+  - Record admission against tampering, separated from duplicate-spend prevention: a valid UNSPENT record is admitted by an
+    independent verifier state while substituted or corrupted proof / auth-signature / binding-signature fields and a truncated
+    record are rejected for that reason (engine messages "Combined proof rejected", "Invalid signature.", "Conservation
+    rejected", "invalid data", "Fixed experimental record required"), the verifier state is unchanged by rejections, the holder
+    refuses to pay a carrier for a tampered record, and the same wire is a duplicate spend only after it was mined
+    (interop.test.mjs step 7; RESULTS 5d — the earlier check had only shown the spent-input refusal).
+  - Integration-result reuse by CONTENT identity only (suite-provenance.mjs; runner self-test 4/4): sources, spawned scripts,
+    engine wasm, lab binaries, monerod, custody program, parameter manifests and proving-key bytes, built extension and toolchain
+    are hashed per suite; a previous pass is reused only on identical digests, keeps its origin, and partial runs never claim
+    completion (RESULTS 5e).
   - Scale: one million encrypted notes indexed in 29 s, wallet recovery 84 s (1,000 notes) / 506 s (899,000 notes) on an
     Apple M4 Pro, output-proof verification 1.84 ms each (privacy-scale-20261022; component timings, not full validation).
 
