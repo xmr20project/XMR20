@@ -1,0 +1,40 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✔ mainnet is refused before any process starts (1.061834ms)
+lab: {"event":"indexer-started","ready":{"domain":"93c114417b149524f41d35b679cac3b8a85d1826c63fe9b1d218c6468deb7b2d","mode":"indexer-service","network":"offline-fakechain","ready":true,"state":{"blocks":0,
+lab: {"event":"indexer-http","url":"http://127.0.0.1:8992"}
+lab: This token address is registered with another Solana account
++ actual - expected
+
++ 'AJ5D7GK9z75FUkMffHVPL4LziPPe6oSpEpVH55gor3ZP'
+- 'F8FNJistf3CAK4YBXG71npQASrNQYVnWff6vRqDLoFq'
+
+run folder kept for diagnosis: <workspace>/research/bridge-service-unshielded-20261026/runs/lab-1792978822656
+✖ bridge service: deposit, credit, send, burn, exactly-once payout, incidents, migration, recovery, disclosure audit (17722.583625ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 19164.821084
+
+✖ failing tests:
+
+test at test/bridge-service.test.mjs:39:1
+✖ bridge service: deposit, credit, send, burn, exactly-once payout, incidents, migration, recovery, disclosure audit (17722.583625ms)
+  AssertionError [ERR_ASSERTION]: liabilities: {"asset":"a341470ab3fcdc709de52c1e9253d80dda918d7d6a148b5f85914fd62630830a","reserve":"0","owed":"10000000000","ok":false,"shortfall":"10000000000","buckets":{"unclaimedLegacyRights":"10000000000","depositsAwaitingCredit":"0","claimsAwaitingCredit":"0","outstandingNotes":"0","publicSupply":"0","shieldedSupply":"0","confirmedBurnsAwaitingPayout":"0"},"minted":"0","burned":"0","incidents":0,"halted":false,"paused":false}
+  
+  false !== true
+  
+      at liabilities (file://<workspace>/research/bridge-service-unshielded-20261026/test/bridge-service.test.mjs:61:80)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async TestContext.<anonymous> (file://<workspace>/research/bridge-service-unshielded-20261026/test/bridge-service.test.mjs:63:3)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual'
+  }

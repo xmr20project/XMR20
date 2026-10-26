@@ -1,0 +1,77 @@
+RESULTS — indexer + bridge service for the unshielded format (research/bridge-service-unshielded-20261026)
+Date: 26 October 2026. Execution labels: SIMULATED = offline fakechain + in-process Solana VM (LiteSVM), synthetic keys and
+balances. STAGENET = public Monero stagenet, read-only, test coins only. Nothing on mainnet; no real funds; no deployment.
+Independent security review: NOT PERFORMED. Passing tests are not an audit.
+
+1. WHAT WAS BUILT (see README.txt)
+   indexer/ (Rust, persistent incremental follower), bridge/indexer-service.mjs, bridge/operator.mjs, bridge/custody-litesvm.mjs,
+   bridge/custody-rpc.mjs (NOT EXECUTED), bridge/bridge-service.mjs, ops/ (config example, run-indexer, health-probe), RUNBOOK.txt,
+   test/ (harness + integration test). The format candidate's core, proofs, wallet and test backend are unchanged.
+   Binaries: xmr20-indexer 8,689,072 B (release, shared Cargo target of the format candidate; no duplicate build directory).
+
+2. STAGENET FOLLOW (read-only) — PASSED — runs/stagenet-follow-results.json, runs/stagenet-follow-attempt1.log
+   The persistent indexer, started from an EMPTY state directory against the isolated stagenet node (RPC 127.0.0.1:38091) with
+   the stagenet-v1 manifest (start height 2,236,587), reconstructed the six records of the 25–26 Oct stagenet rehearsal:
+     first sync (empty state -> daemon tip 2,236,729):  4.05 s
+     records accepted: 6 (credit, public, shield, private part A + part B, unshield, burn: 7 txids, 6 record ids)  completed two-part
+     operations: 1   backing invariant ok
+     restart from disk (child killed, service restarted it): tip 2,236,729, same ledger root, no blocks refetched.
+
+3. INTEGRATION TEST (SIMULATED) — PASSED on attempt 7 — runs/bridge-service-attempt7.log, runs/bridge-service-results.json
+   node --test test/bridge-service.test.mjs: 2/2 tests, 27.1 s wall clock. Processes started by the harness: monerod (fakechain,
+   ports 30131/30130), xmr20-indexer (via the indexer service, port 8992), xmr20-unshielded-lab issuer (via the bridge service,
+   port 8991), two fake observer daemons (8993/8994). All stopped by the test; run folder deleted on success.
+   Scenarios, in order, all asserted:
+     - mainnet refused before any process starts (network=mainnet; unknown network)
+     - lab up: liabilities ok at start (reserve 10,000,000,000 = unclaimed legacy rights)
+     - register by unified token address; a second Solana account for the same token address is refused
+     - deposit 100 X -> PUBLIC credit 98,500,000 to the owner key (150 bps custody fee); duplicate receipt refused by the
+       operator AND never re-credited by the loop (1 credit journaled); liabilities: outstanding 98,500,000, awaiting 0
+     - indexer crash (child killed) -> restarted from disk by the service; same tip and ledger root
+     - PUBLIC send 40 X A->B: ONE Monero transaction, 214-byte record, 262-byte tx_extra
+     - exposure: redemption of 70 X refused before any burn (maxSinglePayout 60 X)
+     - burn 25 X by B: payout refused below 10 confirmations; WITHHELD while an observer does not know the burn; paid once an
+       agreeing observer is configured: net 24,625,000 to B's Solana account (balance 1,000,000,000 -> 1,024,625,000);
+       a repeated payout call returns the same paid record (repeated:true); liabilities ok
+     - operator restart (bridge service stopped and started on the same journal; indexer and chain untouched) with a pending
+       redemption: pending survives, paid after confirmations, paid count 2
+     - lost reply: process dies after custody accepted the redemption, before the journal said paid (status submitting); on
+       restart the payout is recovered from the custody receipt, no second payment; A's Solana balance exactly
+       1,000,000,000 - 100,000,000 + 2 x 19,700,000
+     - reorganisation: a burn with 3 confirmations popped (4 blocks) -> incident burnVanished, operator PAUSED, nothing paid
+       while paused; holder republishes the same carrier; after confirmations and an explicit resume: paid once (paid count 4)
+     - migration claim: exactly the legacy lot (10,000 X) credited to A's owner key; second submission refused; another
+       account cannot claim it; unclaimed legacy rights 0 afterwards; liabilities ok
+     - fresh-install recovery: a new wallet from A's root rebuilds the same public balances
+     - health 200; admin status: not halted, not paused, 4 paid payouts
+     - disclosure audit: all 15 files the services wrote (journal, holders, audit log, indexer state) contain none of the 5 holder
+       key images, neither holder root, nor either viewing key
+
+   Transaction counts (Monero transactions per operation, measured): credit 1 (issuer pays), public send 1, burn 1,
+   migration credit 1 (issuer pays). Record sizes: public 214 B / extra 262 B / native tx 1,726 B; burn 213 B / 261 B / 1,725 B.
+   Fees: the fakechain's fee estimate is synthetic (2.07 XMR per carrier here); the stagenet rehearsal of the format candidate
+   measured 35–50 million piconero (0.000035–0.00005 XMR) per carrier of the same sizes — use those figures for cost.
+
+   Failed attempts (kept as logs): 1 LiteSVM reserve read the program's reserve counter instead of the vault (legacy position
+   not migrated) -> custody adapter migrates the legacy position on start, reserve = vault; 2 token balance helper type;
+   3 test quoted a carrier without syncing the wallet; 4 admin tick returned while a tick was running (payout observed as
+   submitting) -> concurrent tick requests now wait for the running tick; the in-process VM did not survive a service restart
+   -> test harness keeps one VM across restarts (a real custody chain is durable by itself); 5 harness comment swallowed the
+   shutdown function (processes left behind, killed by hand); 6 test selected an already spent note (wallet not synced).
+   Attempts 3 and 4 also left an indexer child alive after shutdown -> the service now kills every child it ever spawned.
+
+4. WHAT WAS NOT RUN / REMAINING BLOCKERS
+   - custody-rpc.mjs (devnet/mainnet-beta Solana) has not been executed against any network; the deposit watcher on a real
+     Solana RPC and the operator keypair path are untested.
+   - The bridge service has not been run against stagenet end to end (only the indexer follow). Stagenet credits/burns through
+     this service would need the stagenet issuer wallet funded (faucet) and were not attempted tonight.
+   - No mainnet manifest, issuer key, custody policy or operator keypair exists; mainnet is refused by code.
+   - Settlement counterexamples remain (release candidate RESULTS): a deep reorganisation after a final payout is a loss the
+     operator can only detect and HALT on; honest observers follow the same reorganisation.
+   - Independent security review of the format candidate and of this service: not performed.
+   - Browser popup against this service: not run tonight (the popup speaks the same action names; the test exercised them via
+     HTTP with the real holder engine).
+
+5. STORAGE
+   runs/: logs + results JSON only (~80 KB); the run folder (chain data, journals, indexer state) is deleted on success.
+   Shared Cargo target with the format candidate (1.9 GB total, no second copy). Nothing downloaded.

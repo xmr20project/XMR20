@@ -1,0 +1,52 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✔ mainnet is refused before any process starts (1.084958ms)
+lab: {"event":"indexer-started","ready":{"domain":"93c114417b149524f41d35b679cac3b8a85d1826c63fe9b1d218c6468deb7b2d","mode":"indexer-service","network":"offline-fakechain","ready":true,"state":{"blocks":0,
+lab: {"event":"indexer-http","url":"http://127.0.0.1:8992"}
+lab: This token address is registered with another Solana account
++ actual - expected
+
++ 'FvstCm3Z7cTdRm2WeUu3EgpXyf1EuAWxTd57vaeFpYtG'
+- '4eUYyQrwadaBAguPNLkaZhzwM1HPPepvSeryRFJX9Q5B'
+
+{"step":"lab up","tip":324,"indexer":"http://127.0.0.1:8992","bridge":"http://127.0.0.1:8991","reserve":"10000000000"}
+{"step":"deposit credited publicly","credit":"4a1bec4106d41756d9102d684159f1db5d8dcbaf5fb791de4327dbf42e7fc99c","net":"98500000"}
+lab: {"event":"indexer-started","ready":{"domain":"93c114417b149524f41d35b679cac3b8a85d1826c63fe9b1d218c6468deb7b2d","mode":"indexer-service","network":"offline-fakechain","ready":true,"state":{"blocks":33
+{"step":"indexer crash/restart","restarts":2,"tip":334}
+lab: {"event":"indexer-started","ready":{"domain":"93c114417b149524f41d35b679cac3b8a85d1826c63fe9b1d218c6468deb7b2d","mode":"indexer-service","network":"offline-fakechain","ready":true,"state":{"blocks":33
+{"step":"public send","txid":"2f8317b461fd9a3cda89569bfa243c833a2065a8f49f61efdb9ffa4a2ad5e640","fee":"2071200000"}
+lab: Exposure: single payout above limit (max 60000000 atomic units); nothing was burned
+lab: Only 1 confirmations
+lab: Payout withheld: independent observation does not confirm the burn (http://127.0.0.1:8993: unknown)
+{"step":"payout withheld by observer disagreement","txid":"0b2ad01da94edb334b31fe2419b5fc3d73922040f1affbff8eb4f4e99b994cfb"}
+{"step":"burn paid exactly once","txid":"0b2ad01da94edb334b31fe2419b5fc3d73922040f1affbff8eb4f4e99b994cfb","net":"24625000"}
+run folder kept for diagnosis: <workspace>/research/bridge-service-unshielded-20261026/runs/lab-1792979088355
+✖ bridge service: deposit, credit, send, burn, exactly-once payout, incidents, migration, recovery, disclosure audit (18902.77925ms)
+✖ test/bridge-service.test.mjs (1418477.493458ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 1
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1418480.147084
+
+✖ failing tests:
+
+test at test/bridge-service.test.mjs:39:1
+✖ bridge service: deposit, credit, send, burn, exactly-once payout, incidents, migration, recovery, disclosure audit (18902.77925ms)
+  Error: Distribution must cover heights 0..=336 (got 348 entries)
+      at finish (file://<workspace>/research/token-format-unshielded-20261025/wallet-extension/src/holder-engine.js:15:86)
+      at file://<workspace>/research/token-format-unshielded-20261025/wallet-extension/src/holder-engine.js:18:90
+      at guard (file://<workspace>/research/token-format-unshielded-20261025/wallet-extension/src/holder-engine.js:16:30)
+      at Object.call (file://<workspace>/research/token-format-unshielded-20261025/wallet-extension/src/holder-engine.js:18:24)
+      at Object.quote (file://<workspace>/research/token-format-unshielded-20261025/wallet-extension/src/holder-carrier.js:31:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async carry (file://<workspace>/research/bridge-service-unshielded-20261026/test/bridge-service.test.mjs:59:137)
+      at async TestContext.<anonymous> (file://<workspace>/research/bridge-service-unshielded-20261026/test/bridge-service.test.mjs:106:117)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7)
+
+test at test/bridge-service.test.mjs:1:1
+✖ test/bridge-service.test.mjs (1418477.493458ms)
+  'Promise resolution is still pending but the event loop has already resolved'
