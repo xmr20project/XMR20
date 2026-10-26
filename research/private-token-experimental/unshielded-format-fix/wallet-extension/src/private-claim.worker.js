@@ -38,6 +38,10 @@ self.onmessage=async({data})=>{if(typeof data?.id!=='string')return;try{let resu
  else if(data.action==='sign-claim'){const r=data.review;if(!/^[0-9a-f]{64}$/.test(r?.messageHash)||!/^[0-9a-f]{64}$/.test(r?.P)||!/^[0-9a-f]{64}$/.test(r?.txPublicKey)||!Number.isInteger(r?.outputIndex))throw Error('Invalid claim review.');
   result=await withAccountKeys(data.seed,data.owner,({a,b})=>{const D=point(r.txPublicKey).multiply(8n).multiply(a).toRawBytes();const x=(Hs(cat(D,varint(r.outputIndex)))+b)%ORDER;
    if(bytesToHex(G.multiply(x).toRawBytes())!==r.P)throw Error('This legacy output does not belong to this wallet.');return {signature:generateSignature(r.messageHash,x),P:r.P};});}
+ // ADDRESS-BASED CLAIM (cutover snapshot v2): the entitlement is this account's Monero ADDRESS; sign under its public spend key B
+ // with the account's spend secret b. Nothing is derived per output, nothing is spent, no key image is produced.
+ else if(data.action==='sign-address-claim'){const r=data.review;if(!/^[0-9a-f]{64}$/.test(r?.messageHash)||!/^[0-9a-f]{64}$/.test(r?.legacyOwner))throw Error('Invalid claim review.');
+  result=await withAccountKeys(data.seed,data.owner,({b})=>{if(bytesToHex(G.multiply(b).toRawBytes())!==r.legacyOwner)throw Error('This legacy entitlement belongs to another Monero address.');return {signature:generateSignature(r.messageHash,b),P:r.legacyOwner};});}
  else throw Error('Unknown action');
  self.postMessage({id:data.id,result});
  }catch(e){self.postMessage({id:data.id,error:/BLOCKER|does not belong|does not match|Invalid/.test(e?.message||'')?e.message:'Monero claim signing failed. Reopen with the original saved wallet.'});}finally{if(data)data.seed='';self.close();}};

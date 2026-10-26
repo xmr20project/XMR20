@@ -18,7 +18,7 @@ export const BINS={monerod:ROOT+'/operations/native-market-20261016/local-chain/
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 // M5 (review): exclusive per-run loopback ports by default; the fakechain daemon must be OUR child (lsof-verified) and fresh (height 1)
 // before anything is mined; an occupied port fails the lab without touching whatever listens there.
-export async function startLab({rpcPort=null,p2pPort=null,indexerPort=null,bridgePort=null,confirmations=10,exposure,assets,registrySnapshot=null,observers=[],requireObservers=false,log=()=>{},name='lab'}={}){
+export async function startLab({rpcPort=null,p2pPort=null,indexerPort=null,bridgePort=null,confirmations=10,exposure,assets,registrySnapshot=null,registrySnapshots=null,observers=[],requireObservers=false,log=()=>{},name='lab'}={}){
  rpcPort??=await freeLoopbackPort();p2pPort??=await freeLoopbackPort();indexerPort??=await freeLoopbackPort();bridgePort??=await freeLoopbackPort();
  const run=path.join(here,'../runs',name+'-'+Date.now());await mkdir(run+'/chain',{recursive:true});await writeFile(run+'/chain/config','');
  const daemonRpc=`http://127.0.0.1:${rpcPort}`;
@@ -37,7 +37,7 @@ export async function startLab({rpcPort=null,p2pPort=null,indexerPort=null,bridg
   await copyFile(src+'/manifest.json',run+'/trusted/manifest.json');
   const indexer=await startIndexerService({bin:BINS.indexer,paramsDir:run+'/parameters',trustedManifest:run+'/trusted/manifest.json',rpcUrl:daemonRpc,stateDir:run+'/indexer',httpPort:indexerPort,pollMs:1500,maxBlocks:500,log});
   stopAll.push(()=>indexer.close());
-  const bridge=await startBridgeService({network:'offline-fakechain',daemonRpc,indexerUrl:indexer.url,httpPort:bridgePort,rolesBin:BINS.roles,paramsDir:run+'/parameters',trustedManifest:run+'/trusted/manifest.json',journalDir:run+'/bridge',confirmations,exposure,observers,requireObservers,assets,custody:{kind:'litesvm',instances:custodyInstances},registrySnapshot,testServices:true,pollMs:1500,origins:[],log});
+  const bridge=await startBridgeService({network:'offline-fakechain',daemonRpc,indexerUrl:indexer.url,httpPort:bridgePort,rolesBin:BINS.roles,paramsDir:run+'/parameters',trustedManifest:run+'/trusted/manifest.json',journalDir:run+'/bridge',confirmations,exposure,observers,requireObservers,assets,custody:{kind:'litesvm',instances:custodyInstances},registrySnapshot,registrySnapshots,testServices:true,pollMs:1500,origins:[],log});
   stopAll.push(()=>bridge.close());
   // issuer funding: 250 blocks (60 to mature) so credits have spendable XMR
   for(let left=250;left>0;left-=50)await rpc('generateblocks',{wallet_address:bridge.issuerNative,amount_of_blocks:Math.min(50,left)});
@@ -45,7 +45,7 @@ export async function startLab({rpcPort=null,p2pPort=null,indexerPort=null,bridg
   const BASE=bridge.url.replace(/\/$/,'');
   const post=async(action,body,admin=false)=>{const r=await fetch(`${BASE}/${admin?'admin':'action'}/${action}`,{method:'POST',headers:{'content-type':'application/json',connection:'close'},body:JSON.stringify(body)});const v=await r.json();if(!r.ok)throw Error(v.error);return v;};
   // Restart only the bridge service (operator restart): the chain and the indexer keep running.
-  const restartBridge=async(over={})=>{const i=stopAll.findIndex(f=>f===stopAll.at(-1));await stopAll.pop()();const b=await startBridgeService({network:'offline-fakechain',daemonRpc,indexerUrl:indexer.url,httpPort:bridgePort,rolesBin:BINS.roles,paramsDir:run+'/parameters',trustedManifest:run+'/trusted/manifest.json',journalDir:run+'/bridge',confirmations,exposure,observers,requireObservers,assets,custody:{kind:'litesvm',instances:custodyInstances},registrySnapshot,testServices:true,pollMs:1500,origins:[],log,...over});stopAll.push(()=>b.close());lab.bridge=b;return b;};
+  const restartBridge=async(over={})=>{const i=stopAll.findIndex(f=>f===stopAll.at(-1));await stopAll.pop()();const b=await startBridgeService({network:'offline-fakechain',daemonRpc,indexerUrl:indexer.url,httpPort:bridgePort,rolesBin:BINS.roles,paramsDir:run+'/parameters',trustedManifest:run+'/trusted/manifest.json',journalDir:run+'/bridge',confirmations,exposure,observers,requireObservers,assets,custody:{kind:'litesvm',instances:custodyInstances},registrySnapshot,registrySnapshots,testServices:true,pollMs:1500,origins:[],log,...over});stopAll.push(()=>b.close());lab.bridge=b;return b;};
   const lab={run,ports:{rpcPort,p2pPort,indexerPort,bridgePort},daemonRpc,rpc,indexer,indexerClient:createIndexerClient(indexer.url),bridge,BASE,post,restartBridge,started,stop,async cleanup(){await stop();await rm(run,{recursive:true,force:true});}};
   return lab;
  }catch(e){console.error('LAB START FAILURE: '+(e.stack||e.message));await stop();throw e;}

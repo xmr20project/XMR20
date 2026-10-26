@@ -90,3 +90,21 @@ Independent security review: NOT PERFORMED. These are regression results for the
    Devnet: the same script with --url/--payer; the throwaway payer has no SOL (airdrop rate-limited twice); owner can fund it
    from faucet.solana.com. Mainnet program deployment, policy initialisation, issuer XMR funding and the key backup remain owner
    actions. No independent review; the rollback-loss counterexample stands.
+
+7. STEP 3 — MIGRATION SNAPSHOT AND CUTOVER TOOLING (26 October 2026, evening)
+   Production fact established read-only: Monero-side balances are per MONERO ADDRESS (bridge holder index, public holders
+   documents), not per output. Design adapted (MIGRATION-CUTOVER-2.txt): entitlement = (mint, address, amount); claim signed under
+   the address's public spend key with the wallet's spend secret; same registry verification; nothing spent, no key image.
+   Tooling: backend/monero-address.mjs (codec, round-trip tested), migration/holders-snapshot.mjs (XMR20-CUTOVER-SNAPSHOT-2 +
+   per-asset registries, consistency checks, digest), bridge service per-asset registries + address matching + signWith,
+   wallet worker 'sign-address-claim' + popup migration screen for address rows.
+   LIVE DRY RUN (public data, ledger not frozen): 5 assets, 17 holders, 995,998,171,887 raw; holder sums == moneroRaw ==
+   xmrOutstanding for every token; digest 9f396d3e9a333a2574ac55a8846292429dd3d139c601bfd91493e857eca3e79f
+   (runs/cutover-snapshot-dryrun/cutover-snapshot.json; raw inputs saved beside it).
+   REHEARSAL (bridge-service test/migration-cutover.test.mjs, fakechain lab, real holder engine): PASSED attempt 3 (16 s;
+   attempts 1–2: engine needs the parameter server to open, holder needed carrier XMR). Production-shaped holders document for
+   two synthetic holders -> snapshot (digest stable across export times) -> registry -> state shows each holder only its own row
+   -> claims signed with b -> credits of exactly 10,000 and 2,500 X -> duplicate, foreign account, tampered amount and wrong key
+   refused -> liabilities: unclaimed rights 0, outstanding 12,500 X, reserve == owed -> migrated tokens spend as public notes.
+   The engine's native address equals the address computed from the key schedule (spend = root mod l, view = keccak(root) mod l).
+   bridge-service runs/migration-cutover-results.json. Owner decisions remain: freeze moment, reserve deposit, enabling claims.
