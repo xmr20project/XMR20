@@ -61,3 +61,32 @@ Independent security review: NOT PERFORMED. These are regression results for the
    - Finality: payout after a deep reorganisation is still a loss (detect-and-halt only, now reliably latched).
    - The ceremony: Penumbra's published keys are pinned by bytes/ids; the transcript is unverified.
    - Mainnet: no manifest, keys or policy exist; nothing here authorises a pilot.
+
+6. STEP 2 — MAINNET PILOT CONFIGURATION (26 October 2026, afternoon; owner deferred independent review)
+   Mainnet issuer key created OUTSIDE the repository (~/.xmr20/mainnet-issuer-v1, 0700/0600; never read or copied by tooling);
+   public parameters params/mainnet-v1 (parameters.json, Penumbra keys as symlinks) and trusted manifest
+   sha256 1b1a27dcb1c4b3d93e4b38963c0b32595e44362a86296aa9445f468a51f1841b, startHeight 3,792,000 (mainnet height 3,792,484 when
+   generated), ledger domain e7aaca529eabea9bd58845591a570ae4cccb4bc0b2259d9b3ae3b5f89f00c6af. Details and owner actions in
+   MAINNET-PILOT.txt.
+   Gates: core manifest accepts kind "mainnet"; roles binary accepts a mainnet daemon only with a mainnet trusted manifest AND
+   XMR20_MAINNET_PILOT=I-UNDERSTAND (synchronized daemon required); holder scanner accepts a mainnet daemon only under a mainnet
+   manifest; bridge service needs XMR20_BRIDGE_MAINNET=I-UNDERSTAND, RPC custody on mainnet-beta, no test services; make-manifest
+   needs --mainnet-acknowledged EXPERIMENTAL-PILOT + start height.
+     node --test tests/mainnet-gates.test.mjs   3/3 attempt 3 (1: a second refusal in core/manifest.rs; 2: fake daemon had to answer
+     the transport's batch probe)                                                     runs/mainnet-gates-attempt3.log
+   Rebuilds after the gate changes: core tests 11/11 (runs/core-test-attempt2.log), roles binary (build-format-attempt4), holder
+   wasm (build-holder-attempt3); supplied flow suite PASSED again on the rebuilt core/holder (runs/flow-attempt2.log); bridge-service
+   suite PASSED attempt 9 after its mainnet gating (its runs/bridge-service-attempt9.log).
+   CUSTODY REHEARSAL — the Solana RPC custody adapter (bridge-service bridge/custody-rpc.mjs), previously never executed, ran end
+   to end on a disposable LOCAL solana-test-validator started with mainnet's current SBPF deployment rule (SIMD-0500 inactive on
+   mainnet-beta and devnet, checked 26 Oct): program deployed from the tested v0 artefact, Token-2022 mint with 1.5% transfer fee
+   finished (mint authority revoked), operator-verified policy initialised, adapter read the policy, holder deposit through
+   depositPrepare/depositSubmit, finalized receipt observed by receipts() (gross 100,000,000 -> net 98,500,000), operator redemption
+   through redeem() (40,000,000), a second redemption with the same nonce refused by the program, redemptionReceipt() and reserve()
+   consistent (reserve 58,500,000; holder 939,400,000 after the transfer fee). PASSED attempt 7 (runs/custody-rehearsal-local.json).
+     attempts 1–6: validator refused SBPF v0 deployment (feature deactivated to match mainnet); program not yet executable at
+     finalized commitment (wait added); unfinished mint and missing vault account (program rules); finalized-preflight lag (wait
+     for finality); zero link binding in the adapter (nonzero default added — adapter fix).
+   Devnet: the same script with --url/--payer; the throwaway payer has no SOL (airdrop rate-limited twice); owner can fund it
+   from faucet.solana.com. Mainnet program deployment, policy initialisation, issuer XMR funding and the key backup remain owner
+   actions. No independent review; the rollback-loss counterexample stands.

@@ -1,0 +1,81 @@
+{
+ "execution": "LOCAL solana-test-validator (disposable ledger, offline)",
+ "steps": [
+  {
+   "at": "2026-10-26T11:36:24.821Z",
+   "name": "validator up",
+   "url": "http://127.0.0.1:8918"
+  },
+  {
+   "at": "2026-10-26T11:36:31.492Z",
+   "name": "program deployed",
+   "program": "D2uKpfBjK6we9rhafAhQaSWsAo4uw3w1PV5UiLMz6RQt"
+  },
+  {
+   "at": "2026-10-26T11:36:32.004Z",
+   "name": "mint created",
+   "mint": "CGBCEpQWya3y3Twns5GuiW7DKmDvqAoMBK5drLYKXkWU"
+  },
+  {
+   "at": "2026-10-26T11:36:32.119Z",
+   "name": "holder funded",
+   "holder": "6Fo6bvma6kKKbXkXXmt1avZa2SFtmCGNfkPZfps3QaQH",
+   "tokens": "1000.000000"
+  },
+  {
+   "at": "2026-10-26T11:36:32.629Z",
+   "name": "mint authority revoked (finished mint)"
+  },
+  {
+   "at": "2026-10-26T11:36:35.138Z",
+   "name": "mint and holder finalized"
+  },
+  {
+   "at": "2026-10-26T11:36:40.381Z",
+   "name": "policy initialized",
+   "policy": "7bfFFnQVrrc4bSeVjkHc75jhcj1kTXWcmmvT3Ask4QtG",
+   "pool": "FkoyunD1nwbSBH7xMEkvnJp4AX3TYuAiSusEEzzUaZek",
+   "vault": "4yBBBtjFTNusks752Ku98iq1LEp3cqbATLoxMf7Ximgh"
+  },
+  {
+   "at": "2026-10-26T11:36:40.383Z",
+   "name": "adapter read the policy",
+   "mint": true
+  },
+  {
+   "at": "2026-10-26T11:36:42.920Z",
+   "name": "deposit submitted",
+   "signature": "3pqiJyxqwxYVdTMdZUzvANcQq1dEGUPYGBJfe68EHCFYTdfcgJxMKU8nxspKoTxiFiZESr2q58uVwNGpme1GBgkJ"
+  },
+  {
+   "at": "2026-10-26T11:36:42.922Z",
+   "name": "receipt observed",
+   "net": "98500000",
+   "fee": "1500000"
+  },
+  {
+   "at": "2026-10-26T11:36:45.556Z",
+   "name": "redeemed",
+   "signature": "3qNSzWixbHcPxXfZdYNekLnK4bTynW5na6GDKEam25C5tebk7EmMb3tegh4ouGtw9RLJgNzwFgVSe1FGFFNnfUg1",
+   "amount": "40000000"
+  },
+  {
+   "at": "2026-10-26T11:36:45.564Z",
+   "name": "balances",
+   "reserve": "58500000",
+   "holder": "939400000"
+  }
+ ],
+ "ok": true,
+ "program": "D2uKpfBjK6we9rhafAhQaSWsAo4uw3w1PV5UiLMz6RQt",
+ "mint": "CGBCEpQWya3y3Twns5GuiW7DKmDvqAoMBK5drLYKXkWU",
+ "policy": "7bfFFnQVrrc4bSeVjkHc75jhcj1kTXWcmmvT3Ask4QtG",
+ "deposit": {
+  "gross": "100000000",
+  "net": "98500000"
+ },
+ "redeem": {
+  "amount": "40000000",
+  "reserveAfter": "58500000"
+ }
+}

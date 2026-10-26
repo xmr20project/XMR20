@@ -41,7 +41,11 @@ pub async fn rpc(network: &str) -> Result<Rpc> {
 // else are refused in this research harness.
 pub async fn guard(r: &Rpc, network: &str) -> Result<J> {
     let j: J = serde_json::from_str(&r.json_rpc_call("get_info", None, 8192).await?)?;
-    ensure!(j["mainnet"] != true && j["nettype"] != "mainnet", "Mainnet daemon refused by this research harness");
+    let is_mainnet = j["mainnet"] == true || j["nettype"] == "mainnet";
+    // MAINNET PILOT (owner decision, 26 Oct 2026): a mainnet daemon is accepted only when the TRUSTED manifest says mainnet AND
+    // the process was started with XMR20_MAINNET_PILOT=I-UNDERSTAND. Everything else keeps the research-harness refusal.
+    let pilot = std::env::var("XMR20_MAINNET_PILOT").map(|v| v == "I-UNDERSTAND").unwrap_or(false);
+    ensure!(!is_mainnet || (network == "mainnet" && pilot), "Mainnet daemon refused: the trusted manifest must say mainnet and XMR20_MAINNET_PILOT=I-UNDERSTAND must be set");
     match network {
         "offline-fakechain" => ensure!(
             j["nettype"] == "fakechain" && j["offline"] == true && j["incoming_connections_count"] == 0 && j["outgoing_connections_count"] == 0,
@@ -50,6 +54,7 @@ pub async fn guard(r: &Rpc, network: &str) -> Result<J> {
             j["offline"]
         ),
         "stagenet" => ensure!(j["nettype"] == "stagenet" && j["stagenet"] == true, "Stagenet daemon required by the trusted manifest (daemon reports nettype {})", j["nettype"]),
+        "mainnet" => ensure!(pilot && is_mainnet && j["synchronized"] == true, "Mainnet pilot: XMR20_MAINNET_PILOT=I-UNDERSTAND and a synchronized mainnet daemon are required (daemon reports nettype {})", j["nettype"]),
         other => anyhow::bail!("Unsupported network {other:?} in the trusted manifest"),
     }
     Ok(j)

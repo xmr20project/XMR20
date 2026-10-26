@@ -23,23 +23,24 @@ import {createIndexerClient} from './indexer-service.mjs';
 import {Operator,DEFAULT_CONFIRMATIONS,DEFAULT_EXPOSURE,redeemBindingFor,depositBindingFor} from './operator.mjs';
 import {createLiteSvmCustody} from './custody-litesvm.mjs';
 const here=path.dirname(fileURLToPath(import.meta.url));
-export const SUPPORTED_NETWORKS=['offline-fakechain','stagenet'];
+export const SUPPORTED_NETWORKS=['offline-fakechain','stagenet','mainnet'];// mainnet only with XMR20_BRIDGE_MAINNET=I-UNDERSTAND and a mainnet trusted manifest
 export async function startBridgeService(cfg){
  // ---- configuration and guards
  const {network,daemonRpc,indexerUrl,indexerToken=null,httpPort=8975,listen='127.0.0.1',adminToken=null,rolesBin,paramsDir,trustedManifest,journalDir,confirmations=DEFAULT_CONFIRMATIONS,exposure=DEFAULT_EXPOSURE,observers=[],requireObservers=false,assets,custody:custodyCfg,registrySnapshot=null,testServices=false,pollMs=10000,origins=null,log=()=>{}}=cfg;
- if(network==='mainnet'){assert.equal(process.env.XMR20_BRIDGE_MAINNET,'I-UNDERSTAND','REFUSED: mainnet requires XMR20_BRIDGE_MAINNET=I-UNDERSTAND and a mainnet manifest; neither exists in this candidate');throw Error('REFUSED: no mainnet manifest exists in this candidate');}
+ if(network==='mainnet'){assert.equal(process.env.XMR20_BRIDGE_MAINNET,'I-UNDERSTAND','REFUSED: mainnet requires XMR20_BRIDGE_MAINNET=I-UNDERSTAND and a mainnet trusted manifest');assert.ok(custodyCfg?.kind==='rpc'&&custodyCfg.network==='mainnet-beta','REFUSED: mainnet needs the RPC custody on mainnet-beta');assert.ok(!testServices,'REFUSED: test services on mainnet');}
  assert.ok(SUPPORTED_NETWORKS.includes(network),'network must be offline-fakechain or stagenet');
  if(listen!=='127.0.0.1')assert.ok(adminToken,'adminToken required beyond loopback');
  const manifest=JSON.parse(await readFile(trustedManifest,'utf8'));assert.equal(manifest.network.kind,network,'trusted manifest network differs from the configuration');
  const info=await (await fetch(daemonRpc+'/json_rpc',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:'b',method:'get_info'}),signal:AbortSignal.timeout(20000)})).json();
- assert.ok(info.result&&info.result.nettype!=='mainnet'&&info.result.mainnet!==true,'REFUSED: mainnet daemon');
- if(network==='offline-fakechain')assert.ok(info.result.nettype==='fakechain'&&info.result.offline===true,'offline fakechain required');else assert.ok(info.result.nettype==='stagenet','stagenet daemon required');
+ const isMainnet=info.result&&(info.result.nettype==='mainnet'||info.result.mainnet===true);
+ assert.ok(!isMainnet||network==='mainnet','REFUSED: mainnet daemon for a non-mainnet configuration');
+ if(network==='offline-fakechain')assert.ok(info.result.nettype==='fakechain'&&info.result.offline===true,'offline fakechain required');else if(network==='stagenet')assert.ok(info.result.nettype==='stagenet','stagenet daemon required');else assert.ok(isMainnet&&info.result.synchronized===true,'synchronized mainnet daemon required');
  await mkdir(journalDir,{recursive:true});const run=journalDir;const auditFile=path.join(run,'audit.log');
  const audit=line=>appendFile(auditFile,JSON.stringify({at:new Date().toISOString(),...line})+'\n').catch(()=>{});
  const rpc=async(method,params={})=>{const r=await fetch(daemonRpc+'/json_rpc',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:'b',method,params}),signal:AbortSignal.timeout(60000)});const v=await r.json();if(v.error)throw Error(JSON.stringify(v.error));return v.result;};
  // ---- indexer client, issuer role
  const indexer=createIndexerClient(indexerUrl,{token:indexerToken});const ih=await indexer.health();assert.equal(ih.domain,manifest.ledgerDomain,'indexer serves another ledger');
- const port=new URL(daemonRpc).port||'18081';const issuer=await service(rolesBin,['issuer',path.resolve(paramsDir),'--trusted-manifest',trustedManifest],{env:{XMR20_INTEGRATION_LAB:'offline-synthetic-only',XMR20_INTEGRATION_RPC_URL:daemonRpc,XMR20_INTEGRATION_RPC_PORT:String(port)}});
+ const port=new URL(daemonRpc).port||'18081';const issuer=await service(rolesBin,['issuer',path.resolve(paramsDir),'--trusted-manifest',trustedManifest],{env:{XMR20_INTEGRATION_LAB:'offline-synthetic-only',XMR20_INTEGRATION_RPC_URL:daemonRpc,XMR20_INTEGRATION_RPC_PORT:String(port),...(network==='mainnet'?{XMR20_MAINNET_PILOT:'I-UNDERSTAND'}:{})}});
  await issuer.call({op:'scan'});const issuerNative=issuer.ready.issuerNativeAddress;
  // ---- custody + operators per asset
  const custodies={},ops={},assetIds={};

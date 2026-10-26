@@ -1,0 +1,15 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+{"step":"validator up","url":"http://127.0.0.1:8918"}
+{"step":"program deployed","program":"D2uKpfBjK6we9rhafAhQaSWsAo4uw3w1PV5UiLMz6RQt"}
+{"step":"mint created","mint":"CGBCEpQWya3y3Twns5GuiW7DKmDvqAoMBK5drLYKXkWU"}
+{"step":"holder funded","holder":"6Fo6bvma6kKKbXkXXmt1avZa2SFtmCGNfkPZfps3QaQH","tokens":"1000.000000"}
+{"step":"mint authority revoked (finished mint)"}
+{"step":"mint and holder finalized"}
+{"step":"policy initialized","policy":"7bfFFnQVrrc4bSeVjkHc75jhcj1kTXWcmmvT3Ask4QtG","pool":"FkoyunD1nwbSBH7xMEkvnJp4AX3TYuAiSusEEzzUaZek","vault":"4yBBBtjFTNusks752Ku98iq1LEp3cqbATLoxMf7Ximgh"}
+{"step":"adapter read the policy","mint":true}
+{"step":"deposit submitted","signature":"3pqiJyxqwxYVdTMdZUzvANcQq1dEGUPYGBJfe68EHCFYTdfcgJxMKU8nxspKoTxiFiZESr2q58uVwNGpme1GBgkJ"}
+{"step":"receipt observed","net":"98500000","fee":"1500000"}
+{"step":"redeemed","signature":"3qNSzWixbHcPxXfZdYNekLnK4bTynW5na6GDKEam25C5tebk7EmMb3tegh4ouGtw9RLJgNzwFgVSe1FGFFNnfUg1","amount":"40000000"}
+{"step":"balances","reserve":"58500000","holder":"939400000"}
+{"ok":true,"execution":"LOCAL solana-test-validator (disposable ledger, offline)","steps":12}
+exit 0
