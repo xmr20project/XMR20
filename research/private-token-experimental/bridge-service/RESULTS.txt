@@ -89,3 +89,9 @@ Independent security review: NOT PERFORMED. Passing tests are not an audit.
    - node stagenet-follow.mjs (read-only, rebuilt indexer): 6 records from an empty state in 2.75 s, tip 2,237,001, restart same
      root                                                                                      runs/stagenet-follow-attempt3.log
    Run folders deleted; no processes left. The indexer binary now lives in the fix candidate's target (8.7 MB).
+
+7. STEP 3 — address-based migration registries (26 October 2026, evening)
+   assets[].registry (per-asset registry-<SYMBOL>.json from the fix candidate's migration/holders-snapshot.mjs) -> registrySnapshots;
+   legacy rows shown to the holder whose registered Monero address matches; claimPrepare returns legacyOwner/address/signWith.
+   test/migration-cutover.test.mjs PASSED attempt 3 (16 s): snapshot -> registry -> address-signed claims -> exact public credits,
+   refusals, liabilities, migrated tokens spendable.                              runs/migration-cutover-attempt3.log, runs/migration-cutover-results.json

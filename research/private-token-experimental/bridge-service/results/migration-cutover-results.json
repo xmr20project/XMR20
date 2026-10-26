@@ -1,0 +1,37 @@
+{
+ "ok": true,
+ "execution": "SIMULATED (fakechain lab, real holder engine, address-based snapshot)",
+ "snapshotDigest": "21dff89333cf8141ab55e941daddcde0dacfdd91d3473f918ac02922ab9691d3",
+ "registryId": "a60cbb40c66bfbd629ddebd4386bd78c063b94b8b841570da9c392b69678b528",
+ "claims": [
+  {
+   "txid": "0b8a9f2488cc3c5f6433d0f14a2294ad13138e1224097cebeccece15a8b129c2",
+   "amount": "10000000000"
+  },
+  {
+   "txid": "5fe93b27c4a6d3d6a74f983df0c421b7ab9be8f00f5f113907c3538f3943db26",
+   "amount": "2500000000"
+  }
+ ],
+ "liabilitiesAfter": {
+  "asset": "a341470ab3fcdc709de52c1e9253d80dda918d7d6a148b5f85914fd62630830a",
+  "reserve": "12500000000",
+  "owed": "12500000000",
+  "ok": true,
+  "shortfall": "0",
+  "buckets": {
+   "unclaimedLegacyRights": "0",
+   "depositsAwaitingCredit": "0",
+   "claimsAwaitingCredit": "0",
+   "outstandingNotes": "12500000000",
+   "publicSupply": "12500000000",
+   "shieldedSupply": "0",
+   "confirmedBurnsAwaitingPayout": "0"
+  },
+  "minted": "12500000000",
+  "burned": "0",
+  "incidents": 0,
+  "halted": false,
+  "paused": false
+ }
+}
