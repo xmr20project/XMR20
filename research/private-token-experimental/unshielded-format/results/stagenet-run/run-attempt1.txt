@@ -1,0 +1,6 @@
+backend: {"role":"issuer","ready":{"issuerNativeAddress":"57niMTvoAZ5GigRF1mQVXxVAmGwJihSSsDLjwPX9vH8hcxA3cyFUP3SjaJefz4ty19iSzfFmWTmoPC6Wg59i9ufTV8p4FQM","mode":"issuer","ready":true,"trustedManifest":{"label
+backend: {"role":"indexer","ready":{"domain":"cf7216d55fe449db7cce626a343cd073d5014aedc1c62945ea3624ce8492bf47","mode":"indexer","ready":true,"trustedManifest":{"label":"UNSHIELDED FORMAT TEST — STAGENET — PEN
+{"at":"2026-10-25T21:53:59.800Z","m":"holders","A":"xmr20t1hh77asz8x5857wlgq…","B":"xmr20t12nvqulahraj7t9fkt…","nativeA":"5A2ruiMKx185GKbGcmbuNwbN66fYg2AuZMtDgmxdWJ2C8habDbZ9woHSGf4eGeYZw3aCtgFuDkxQwAbBPd4d8TKnSNpXpCA","nativeB":"59zeZyafqUB8jKAmNJJtWJEV41TermsUu8wo35435aMQHpej4Gr4ckPLFsH4eAK1ebJpV7
+{"at":"2026-10-25T21:53:59.812Z","m":"issuer stagenet balance","unlocked":"0"}
+{"at":"2026-10-25T21:53:59.812Z","m":"issuer below 0.1 sXMR: asking the public faucet for the issuer address (one claim per hour)"}
+{"at":"2026-10-25T21:54:02.676Z","m":"waiting for confirmations","label":"faucet->issuer","txid":"cacfd8b177f4e508","have":0,"need":10,"known":false}

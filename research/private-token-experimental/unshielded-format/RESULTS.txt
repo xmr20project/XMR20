@@ -90,6 +90,26 @@ no deployment, no change to the installed wallet, the live website, the bridge o
      in a request), backend files free of the test secrets, no key image in backend requests.
    
 
+5b. PUBLIC MONERO STAGENET — EXECUTED 25–26 Oct 2026 (stagenet/run-unshielded.mjs; runs/stagenet-unshielded/results.json; attempts 1–5
+   retained: 1 faucet txid not recorded by the script, 2 faucet re-claimed and rate-limited, 3 every chain step passed but the final
+   audit compared a stale holder replica (script bug), 4 the resumed run re-asserted balances that later steps had changed (script bug),
+   5 audit passed). Isolated stagenet node (operations/stagenet-node-20261023, pruned, synced, 24 peers); worthless faucet coins;
+   synthetic token; Penumbra published keys; manifest params/stagenet-v1 (sha256 efadb5b3…, startHeight 2,236,587); NORMAL node
+   validation (sanity checks on). Explorer: https://stagenet.xmrchain.net/tx/<txid>.
+     funding      264d1ad5…  issuer pays A two + B one output of 0.002 sXMR in ONE tx (4 outputs, fee 43,720,000 piconero)
+     credit       6e7e48fc…  XC1 PUBLIC credit 10 X to A (issuer-paid fee 34,000,000; tx_extra 221 B)
+     public send  24bdd6ce…  XP1 3 X A->B: 214-byte record, tx_extra 262 B, carrier 1,748 B, fee 34,960,000 (~0.000035 sXMR)
+     shield       18ede2c6…  XS1 5 X: 645 B / 701 B / 2,182 B, fee 43,640,000; proved 3.0 s
+     private      4cd64aae… + 06598dad…  XMA 932 B / 992 B / 2,476 B, fee 49,520,000; XMB 900 B / 960 B / 2,443 B, fee 48,860,000;
+                  proved 33.9 s; applied only once both were canonical; B's shielded balance 2 X, A's 3 X
+     unshield     9351c5da…  XU1 1 X by B: 924 B / 984 B / 2,463 B, fee 49,260,000; proved 12.2 s
+     burn         73409210…  XR1 1 X by B: 213 B / 261 B / 1,743 B, fee 34,860,000 (no operator/payout on stagenet)
+   Every carrier was accepted by the stagenet node's normal validation and confirmed with ten real blocks (blocks 1.4–2.5 min apart;
+   wall clock 21:56–00:05Z for the chain steps). Audit: independent indexer == holder replica on root, nullifiers (4), public notes (3),
+   minted, burned, supplies and completed operations; invariant publicSupply 5,000,000 + shieldedSupply 4,000,000 == minted 10,000,000 −
+   burned 1,000,000; 9 native key images of the two wallets absent from the backend's request log. Final balances A public 2 / shielded 3,
+   B public 3 / shielded 1 (X, 6 decimals). Stagenet fees are ~60x lower than the fakechain's (rate ~20,000 piconero/byte).
+
 6. DISCLOSURE REQUIREMENT (R-F) — HOW IT IS MET AND WHAT REMAINS
    Met by construction: public ownership is a derived decaf377-rdsa key (keyed BLAKE2b from the root, domain "xmr20/public-token/owner-key"),
    algebraically unrelated to any Monero key; records carry note ids (hashes), asset ids, amounts, owner keys and Penumbra public data only;
@@ -106,8 +126,8 @@ no deployment, no change to the installed wallet, the live website, the bridge o
    - Production snapshot/cutover: documented (MIGRATION-CUTOVER.txt), not executed; no live cutoff chosen; real holdings untouched.
    - Bridge/marketplace settlement: the rollback-loss counterexample after an irreversible payout is unchanged by the format (the operator
      copy keeps detection/pause/halt); marketplace trading stays disabled; nothing here addresses them.
-   - Stagenet/devnet: not run for this format (offline fakechain only). The stagenet service copy (backend/stagenet-service.mjs) is
-     untouched and not adapted.
+   - Solana devnet: not run (LiteSVM only). Stagenet: EXECUTED for the chain path (5b); no bridge/payout and no browser run on stagenet yet
+     (the stagenet extension build for this format exists in build.mjs but was not exercised in a browser).
    - Unshield takes one note per transaction (measured blocker: 1,180 B > 1,011 B for two inputs with change).
    - Proving in the browser takes tens of seconds per private transfer (Penumbra keys, 29 MB download once).
    - Mainnet: refused by the engine and the worker as before.

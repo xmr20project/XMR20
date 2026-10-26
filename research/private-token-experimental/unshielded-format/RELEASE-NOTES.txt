@@ -15,7 +15,8 @@ READY FOR THE OWNER TO TEST EXPERIMENTALLY (offline test chain, synthetic balanc
 NOT READY FOR REAL FUNDS. Reasons, each a blocker on its own:
   1. No independent security review of the new format, the engine, the popup module or the indexer (owner deferred; nobody contacted).
   2. Penumbra's ceremony transcript was not verified by us; we pin their published key bytes and ids and inherit their trust statement.
-  3. Only the offline fakechain was exercised; no stagenet or devnet run of this format; mainnet is refused by the software.
+  3. Public stagenet EXECUTED for every record kind (RESULTS 5b: real node validation, ten real confirmations each) but only through the
+     Node library, not the browser, and without bridge/payout; no devnet run; mainnet is refused by the software.
   4. The production migration snapshot/cutover is documented, not executed; no live cutoff exists; the custody reserve was never
      reconciled against the deployed system.
   5. Bridge payout after an irreversible payout followed by a deep reorganisation remains a loss counterexample (unchanged by the format);
@@ -24,5 +25,4 @@ NOT READY FOR REAL FUNDS. Reasons, each a blocker on its own:
      transaction. Acceptable for a test wallet, to be judged for a product.
 
 OWNER DECISIONS NEEDED: commission the review; decide the confirmation depth for payouts (10 lab default, 20 tested in the earlier
-candidate); decide the cutover procedure and date for migration; decide whether a stagenet run of this format should precede any public
-test; decide the public message about unshielded-mode privacy (amounts and owner keys are public by default).
+candidate); decide the cutover procedure and date for migration; decide whether a browser-side stagenet session with the test extension should precede any public test; decide the public message about unshielded-mode privacy (amounts and owner keys are public by default).
