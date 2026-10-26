@@ -1,0 +1,205 @@
+{
+ "execution": "PUBLIC MONERO STAGENET (worthless test coins; synthetic tokens; Penumbra published keys)",
+ "explorer": "https://stagenet.xmrchain.net/tx/",
+ "steps": [
+  {
+   "step": "fund",
+   "txid": "264d1ad5521e3ba8e156b14c4ef81662d0d7dca6cdf1a722c64045e27fef71d5",
+   "explorer": "https://stagenet.xmrchain.net/tx/264d1ad5521e3ba8e156b14c4ef81662d0d7dca6cdf1a722c64045e27fef71d5",
+   "outputs": "A x2, B x1 (0.02 sXMR each)",
+   "issuerFee": "43720000"
+  },
+  {
+   "step": "credit",
+   "txid": "6e7e48fce93fbb779862afbe7639d4ec4344c873cde85685374fa009f0023851",
+   "amount": "10000000",
+   "fee": "34000000",
+   "recordId": "5342c911fb3134ec1517f18adb0a8afb64a12753a51b621acd702649afe2d4cc",
+   "extraBytes": 221,
+   "done": true,
+   "at": "2026-10-25T22:33:13.050Z",
+   "checked": true,
+   "explorer": "https://stagenet.xmrchain.net/tx/6e7e48fce93fbb779862afbe7639d4ec4344c873cde85685374fa009f0023851"
+  },
+  {
+   "step": "public send 3 X (1 tx)",
+   "txid": "24bdd6ce195733a6cfc5b0736b62ec21b2fba3787323774916c5e960e23c60cb",
+   "fee": "34960000",
+   "recordBytes": 214,
+   "extraBytes": 262,
+   "nativeBytes": 1748,
+   "explorer": "https://stagenet.xmrchain.net/tx/24bdd6ce195733a6cfc5b0736b62ec21b2fba3787323774916c5e960e23c60cb",
+   "recordId": "916298af7c391a3a527c53af1cbf9f8014348af8b732199de39263a1ec212961",
+   "change": "7000000",
+   "done": true,
+   "at": "2026-10-25T22:56:38.381Z",
+   "checked": true
+  },
+  {
+   "step": "shield 5 X (1 tx)",
+   "txid": "18ede2c6b6415629fecbf0a10cc9b3360658a3375afe235f5de61f434aa830e1",
+   "fee": "43640000",
+   "recordBytes": 645,
+   "extraBytes": 701,
+   "nativeBytes": 2182,
+   "explorer": "https://stagenet.xmrchain.net/tx/18ede2c6b6415629fecbf0a10cc9b3360658a3375afe235f5de61f434aa830e1",
+   "recordId": "124fc0c73cf5691d2ac877eac2ce3ef552cfffc17150f5724288493ab8d1285b",
+   "provingMs": 3012,
+   "done": true,
+   "at": "2026-10-25T23:13:42.120Z",
+   "checked": true
+  },
+  {
+   "step": "private send 2 X (2 txs)",
+   "a": {
+    "txid": "4cd64aaefeb24f816c166a897356638179a893376381b13e992ed1d75dfe8a74",
+    "fee": "49520000",
+    "recordBytes": 932,
+    "extraBytes": 992,
+    "nativeBytes": 2476,
+    "explorer": "https://stagenet.xmrchain.net/tx/4cd64aaefeb24f816c166a897356638179a893376381b13e992ed1d75dfe8a74"
+   },
+   "b": {
+    "txid": "06598dad083887099bf4c596dd75ac9a17fdae5d600155a0ceb2c587905fd029",
+    "fee": "48860000",
+    "recordBytes": 900,
+    "extraBytes": 960,
+    "nativeBytes": 2443,
+    "explorer": "https://stagenet.xmrchain.net/tx/06598dad083887099bf4c596dd75ac9a17fdae5d600155a0ceb2c587905fd029"
+   },
+   "op": "cf7112200daeb716c51fc8a5a55253817527d343ea966ec5f85e7e7cff6590d9",
+   "recordIds": [
+    "63b9cfe92af897dc906474bdd61369c0fb62b6a4d51385838ae537fa496e6652",
+    "3c06aee34fc25de2cf34eed57034505fbcda172cd91a5e64523a3ebad500d592"
+   ],
+   "provingMs": 33890,
+   "change": "3000000",
+   "done": true,
+   "at": "2026-10-25T23:33:37.230Z",
+   "checked": true
+  },
+  {
+   "step": "unshield 1 X (1 tx)",
+   "txid": "9351c5daba4a7b9323dc0d5872681f1ae6455c41c07373b35e5182c3c00470b6",
+   "fee": "49260000",
+   "recordBytes": 924,
+   "extraBytes": 984,
+   "nativeBytes": 2463,
+   "explorer": "https://stagenet.xmrchain.net/tx/9351c5daba4a7b9323dc0d5872681f1ae6455c41c07373b35e5182c3c00470b6",
+   "recordId": "7c578eb8776eea4edcaaecec16bbc1762010a4361be47b10c6729c5bc8bc55a9",
+   "provingMs": 12150,
+   "done": true,
+   "at": "2026-10-25T23:49:10.673Z",
+   "checked": true
+  },
+  {
+   "step": "public burn 1 X (1 tx)",
+   "txid": "73409210a5fb7b14e8b851ffb7f0eb42f8c95fd18ed25f7c0cf26cde6830af79",
+   "fee": "34860000",
+   "recordBytes": 213,
+   "extraBytes": 261,
+   "nativeBytes": 1743,
+   "explorer": "https://stagenet.xmrchain.net/tx/73409210a5fb7b14e8b851ffb7f0eb42f8c95fd18ed25f7c0cf26cde6830af79",
+   "recordId": "f1e20a137023062c64d631308f1215347ec107101222f6e3be24ac61b06dfcb1",
+   "done": true,
+   "at": "2026-10-26T00:05:11.680Z",
+   "checked": true
+  }
+ ],
+ "audit": {
+  "indexerEqualsHolder": {
+   "root": true,
+   "nullifiers": true,
+   "publicNotes": true,
+   "minted": true,
+   "burned": true,
+   "publicSupply": true,
+   "shieldedSupply": true,
+   "completedOperations": true
+  },
+  "invariant": {
+   "ok": true,
+   "rows": [
+    {
+     "asset": "0fda60fc23baddb053cbce7343dda3bdb156394b64d05df222de347c3dbd5903",
+     "ok": true,
+     "outstanding": "9000000",
+     "publicSupply": "5000000",
+     "shieldedSupply": "4000000"
+    }
+   ]
+  },
+  "nativeKeyImagesChecked": 9,
+  "backendLogLeak": false
+ },
+ "final": {
+  "A": {
+   "public": "2000000",
+   "shielded": "3000000"
+  },
+  "B": {
+   "public": "3000000",
+   "shielded": "1000000"
+  },
+  "pool": {
+   "accepted": 6,
+   "burned": {
+    "0fda60fc23baddb053cbce7343dda3bdb156394b64d05df222de347c3dbd5903": "1000000"
+   },
+   "completedOperations": 1,
+   "credits": [
+    {
+     "amount": "10000000",
+     "asset": "0fda60fc23baddb053cbce7343dda3bdb156394b64d05df222de347c3dbd5903",
+     "binding": "70b21ba942d998d98eee9e1d37fc11c1de69113e86a9f04eaaba1fae4963b7cd",
+     "height": 2236629,
+     "kind": 1,
+     "owner": "305bc4aa7c3be13a3627c1571ec84e0e199093957f2fb7d9f068faf2b5f34108",
+     "txid": "6e7e48fce93fbb779862afbe7639d4ec4344c873cde85685374fa009f0023851"
+    }
+   ],
+   "invariant": {
+    "ok": true,
+    "rows": [
+     {
+      "asset": "0fda60fc23baddb053cbce7343dda3bdb156394b64d05df222de347c3dbd5903",
+      "ok": true,
+      "outstanding": "9000000",
+      "publicSupply": "5000000",
+      "shieldedSupply": "4000000"
+     }
+    ]
+   },
+   "minted": {
+    "0fda60fc23baddb053cbce7343dda3bdb156394b64d05df222de347c3dbd5903": "10000000"
+   },
+   "nullifiers": 4,
+   "outstanding": {
+    "0fda60fc23baddb053cbce7343dda3bdb156394b64d05df222de347c3dbd5903": "9000000"
+   },
+   "pendingParts": 0,
+   "publicNotes": 3,
+   "publicSupply": {
+    "0fda60fc23baddb053cbce7343dda3bdb156394b64d05df222de347c3dbd5903": "5000000"
+   },
+   "redemptions": [
+    {
+     "amount": "1000000",
+     "asset": "0fda60fc23baddb053cbce7343dda3bdb156394b64d05df222de347c3dbd5903",
+     "binding": "1eadb94e62b834642a9a455b2a8f8954d38fdc399ed356d5951ddc373ff16a05",
+     "height": 2236682,
+     "owner": "2828fc46a716a4d9cff124bc1776c096078f51094ecc73e2f52332297012b401",
+     "txid": "73409210a5fb7b14e8b851ffb7f0eb42f8c95fd18ed25f7c0cf26cde6830af79"
+    }
+   ],
+   "rejected": 0,
+   "root": "b3d30692d08a922a3fa831d0b1bcc8c518c95b4fe7cbd285c3a7ec1354d11707",
+   "shieldedNotes": 4,
+   "shieldedSupply": {
+    "0fda60fc23baddb053cbce7343dda3bdb156394b64d05df222de347c3dbd5903": "4000000"
+   }
+  },
+  "manifestSha256": "efadb5b324ee9a43744020e93306d935cb1878eda203d16d0b737f0076b3cc92",
+  "startHeight": 2236587
+ }
+}

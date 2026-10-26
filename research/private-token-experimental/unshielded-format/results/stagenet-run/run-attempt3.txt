@@ -1,0 +1,94 @@
+backend: {"role":"issuer","ready":{"issuerNativeAddress":"57niMTvoAZ5GigRF1mQVXxVAmGwJihSSsDLjwPX9vH8hcxA3cyFUP3SjaJefz4ty19iSzfFmWTmoPC6Wg59i9ufTV8p4FQM","mode":"issuer","ready":true,"trustedManifest":{"label
+backend: {"role":"indexer","ready":{"domain":"cf7216d55fe449db7cce626a343cd073d5014aedc1c62945ea3624ce8492bf47","mode":"indexer","ready":true,"trustedManifest":{"label":"UNSHIELDED FORMAT TEST — STAGENET — PEN
+{"at":"2026-10-25T21:56:31.968Z","m":"holders","A":"xmr20t1hh77asz8x5857wlgq…","B":"xmr20t12nvqulahraj7t9fkt…","nativeA":"5A2ruiMKx185GKbGcmbuNwbN66fYg2AuZMtDgmxdWJ2C8habDbZ9woHSGf4eGeYZw3aCtgFuDkxQwAbBPd4d8TKnSNpXpCA","nativeB":"59zeZyafqUB8jKAmNJJtWJEV41TermsUu8wo35435aMQHpej4Gr4ckPLFsH4eAK1ebJpV7
+{"at":"2026-10-25T21:56:31.981Z","m":"issuer stagenet balance","unlocked":"0"}
+{"at":"2026-10-25T21:56:31.982Z","m":"waiting for confirmations","label":"faucet->issuer","txid":"cacfd8b177f4e508","have":0,"need":10,"known":true}
+{"at":"2026-10-25T21:58:31.998Z","m":"waiting for confirmations","label":"faucet->issuer","txid":"cacfd8b177f4e508","have":1,"need":10,"known":true}
+{"at":"2026-10-25T22:00:32.011Z","m":"waiting for confirmations","label":"faucet->issuer","txid":"cacfd8b177f4e508","have":1,"need":10,"known":true}
+{"at":"2026-10-25T22:02:32.024Z","m":"waiting for confirmations","label":"faucet->issuer","txid":"cacfd8b177f4e508","have":1,"need":10,"known":true}
+{"at":"2026-10-25T22:04:32.037Z","m":"waiting for confirmations","label":"faucet->issuer","txid":"cacfd8b177f4e508","have":6,"need":10,"known":true}
+{"at":"2026-10-25T22:06:32.050Z","m":"waiting for confirmations","label":"faucet->issuer","txid":"cacfd8b177f4e508","have":8,"need":10,"known":true}
+{"at":"2026-10-25T22:08:32.063Z","m":"waiting for confirmations","label":"faucet->issuer","txid":"cacfd8b177f4e508","have":8,"need":10,"known":true}
+{"at":"2026-10-25T22:10:32.075Z","m":"waiting for confirmations","label":"faucet->issuer","txid":"cacfd8b177f4e508","have":9,"need":10,"known":true}
+{"at":"2026-10-25T22:12:32.705Z","m":"issuer paid holders","fee":"43720000","nativeBytes":1726,"outputs":4,"txid":"264d1ad5521e3ba8e156b14c4ef81662d0d7dca6cdf1a722c64045e27fef71d5"}
+{"at":"2026-10-25T22:12:32.707Z","m":"waiting for confirmations","label":"funding","txid":"264d1ad5521e3ba8","have":0,"need":10,"known":true}
+{"at":"2026-10-25T22:14:32.722Z","m":"waiting for confirmations","label":"funding","txid":"264d1ad5521e3ba8","have":0,"need":10,"known":true}
+{"at":"2026-10-25T22:16:32.735Z","m":"waiting for confirmations","label":"funding","txid":"264d1ad5521e3ba8","have":1,"need":10,"known":true}
+{"at":"2026-10-25T22:18:32.746Z","m":"waiting for confirmations","label":"funding","txid":"264d1ad5521e3ba8","have":2,"need":10,"known":true}
+{"at":"2026-10-25T22:20:32.772Z","m":"waiting for confirmations","label":"funding","txid":"264d1ad5521e3ba8","have":4,"need":10,"known":true}
+{"at":"2026-10-25T22:22:32.783Z","m":"waiting for confirmations","label":"funding","txid":"264d1ad5521e3ba8","have":5,"need":10,"known":true}
+{"at":"2026-10-25T22:24:32.796Z","m":"waiting for confirmations","label":"funding","txid":"264d1ad5521e3ba8","have":6,"need":10,"known":true}
+{"at":"2026-10-25T22:26:32.809Z","m":"waiting for confirmations","label":"funding","txid":"264d1ad5521e3ba8","have":6,"need":10,"known":true}
+{"at":"2026-10-25T22:28:32.823Z","m":"waiting for confirmations","label":"funding","txid":"264d1ad5521e3ba8","have":6,"need":10,"known":true}
+{"at":"2026-10-25T22:30:32.835Z","m":"waiting for confirmations","label":"funding","txid":"264d1ad5521e3ba8","have":6,"need":10,"known":true}
+{"at":"2026-10-25T22:32:32.845Z","m":"waiting for confirmations","label":"funding","txid":"264d1ad5521e3ba8","have":9,"need":10,"known":true}
+{"at":"2026-10-25T22:33:12.938Z","m":"native after funding","A":"4000000000","Aoutputs":2,"B":"2000000000"}
+{"at":"2026-10-25T22:33:13.052Z","m":"waiting for confirmations","label":"credit","txid":"6e7e48fce93fbb77","have":0,"need":10,"known":true}
+{"at":"2026-10-25T22:35:13.066Z","m":"waiting for confirmations","label":"credit","txid":"6e7e48fce93fbb77","have":0,"need":10,"known":true}
+{"at":"2026-10-25T22:37:13.081Z","m":"waiting for confirmations","label":"credit","txid":"6e7e48fce93fbb77","have":1,"need":10,"known":true}
+{"at":"2026-10-25T22:39:13.098Z","m":"waiting for confirmations","label":"credit","txid":"6e7e48fce93fbb77","have":3,"need":10,"known":true}
+{"at":"2026-10-25T22:41:17.871Z","m":"waiting for confirmations","label":"credit","txid":"6e7e48fce93fbb77","have":4,"need":10,"known":true}
+{"at":"2026-10-25T22:43:17.890Z","m":"waiting for confirmations","label":"credit","txid":"6e7e48fce93fbb77","have":5,"need":10,"known":true}
+{"at":"2026-10-25T22:45:17.903Z","m":"waiting for confirmations","label":"credit","txid":"6e7e48fce93fbb77","have":5,"need":10,"known":true}
+{"at":"2026-10-25T22:47:17.915Z","m":"waiting for confirmations","label":"credit","txid":"6e7e48fce93fbb77","have":6,"need":10,"known":true}
+{"at":"2026-10-25T22:49:17.929Z","m":"waiting for confirmations","label":"credit","txid":"6e7e48fce93fbb77","have":6,"need":10,"known":true}
+{"at":"2026-10-25T22:51:17.941Z","m":"waiting for confirmations","label":"credit","txid":"6e7e48fce93fbb77","have":8,"need":10,"known":true}
+{"at":"2026-10-25T22:53:17.957Z","m":"waiting for confirmations","label":"credit","txid":"6e7e48fce93fbb77","have":9,"need":10,"known":true}
+{"at":"2026-10-25T22:55:17.971Z","m":"waiting for confirmations","label":"credit","txid":"6e7e48fce93fbb77","have":9,"need":10,"known":true}
+{"at":"2026-10-25T22:56:38.381Z","m":"carrier published","label":"public","part":0,"txid":"24bdd6ce195733a6cfc5b0736b62ec21b2fba3787323774916c5e960e23c60cb","fee":"34960000","recordBytes":214,"extraBytes":262,"nativeBytes":1748}
+{"at":"2026-10-25T22:56:38.383Z","m":"waiting for confirmations","label":"public send","txid":"24bdd6ce195733a6","have":0,"need":10,"known":true}
+{"at":"2026-10-25T22:58:38.399Z","m":"waiting for confirmations","label":"public send","txid":"24bdd6ce195733a6","have":0,"need":10,"known":true}
+{"at":"2026-10-25T23:00:38.414Z","m":"waiting for confirmations","label":"public send","txid":"24bdd6ce195733a6","have":1,"need":10,"known":true}
+{"at":"2026-10-25T23:02:38.426Z","m":"waiting for confirmations","label":"public send","txid":"24bdd6ce195733a6","have":4,"need":10,"known":true}
+{"at":"2026-10-25T23:04:38.440Z","m":"waiting for confirmations","label":"public send","txid":"24bdd6ce195733a6","have":6,"need":10,"known":true}
+{"at":"2026-10-25T23:06:38.455Z","m":"waiting for confirmations","label":"public send","txid":"24bdd6ce195733a6","have":6,"need":10,"known":true}
+{"at":"2026-10-25T23:08:38.465Z","m":"waiting for confirmations","label":"public send","txid":"24bdd6ce195733a6","have":6,"need":10,"known":true}
+{"at":"2026-10-25T23:10:38.476Z","m":"waiting for confirmations","label":"public send","txid":"24bdd6ce195733a6","have":7,"need":10,"known":true}
+{"at":"2026-10-25T23:12:38.490Z","m":"waiting for confirmations","label":"public send","txid":"24bdd6ce195733a6","have":9,"need":10,"known":true}
+{"at":"2026-10-25T23:13:42.119Z","m":"carrier published","label":"shield","part":0,"txid":"18ede2c6b6415629fecbf0a10cc9b3360658a3375afe235f5de61f434aa830e1","fee":"43640000","recordBytes":645,"extraBytes":701,"nativeBytes":2182}
+{"at":"2026-10-25T23:13:42.121Z","m":"waiting for confirmations","label":"shield","txid":"18ede2c6b6415629","have":0,"need":10,"known":true}
+{"at":"2026-10-25T23:15:42.135Z","m":"waiting for confirmations","label":"shield","txid":"18ede2c6b6415629","have":0,"need":10,"known":true}
+{"at":"2026-10-25T23:17:42.150Z","m":"waiting for confirmations","label":"shield","txid":"18ede2c6b6415629","have":1,"need":10,"known":true}
+{"at":"2026-10-25T23:19:42.163Z","m":"waiting for confirmations","label":"shield","txid":"18ede2c6b6415629","have":3,"need":10,"known":true}
+{"at":"2026-10-25T23:21:42.175Z","m":"waiting for confirmations","label":"shield","txid":"18ede2c6b6415629","have":5,"need":10,"known":true}
+{"at":"2026-10-25T23:23:42.188Z","m":"waiting for confirmations","label":"shield","txid":"18ede2c6b6415629","have":6,"need":10,"known":true}
+{"at":"2026-10-25T23:25:42.202Z","m":"waiting for confirmations","label":"shield","txid":"18ede2c6b6415629","have":6,"need":10,"known":true}
+{"at":"2026-10-25T23:27:42.215Z","m":"waiting for confirmations","label":"shield","txid":"18ede2c6b6415629","have":6,"need":10,"known":true}
+{"at":"2026-10-25T23:29:42.228Z","m":"waiting for confirmations","label":"shield","txid":"18ede2c6b6415629","have":8,"need":10,"known":true}
+{"at":"2026-10-25T23:31:42.239Z","m":"waiting for confirmations","label":"shield","txid":"18ede2c6b6415629","have":9,"need":10,"known":true}
+{"at":"2026-10-25T23:33:36.921Z","m":"carrier published","label":"private A","part":0,"txid":"4cd64aaefeb24f816c166a897356638179a893376381b13e992ed1d75dfe8a74","fee":"49520000","recordBytes":932,"extraBytes":992,"nativeBytes":2476}
+{"at":"2026-10-25T23:33:37.230Z","m":"carrier published","label":"private B","part":1,"txid":"06598dad083887099bf4c596dd75ac9a17fdae5d600155a0ceb2c587905fd029","fee":"48860000","recordBytes":900,"extraBytes":960,"nativeBytes":2443}
+{"at":"2026-10-25T23:33:37.231Z","m":"waiting for confirmations","label":"private part A","txid":"4cd64aaefeb24f81","have":0,"need":10,"known":true}
+{"at":"2026-10-25T23:35:37.245Z","m":"waiting for confirmations","label":"private part A","txid":"4cd64aaefeb24f81","have":2,"need":10,"known":true}
+{"at":"2026-10-25T23:37:37.262Z","m":"waiting for confirmations","label":"private part A","txid":"4cd64aaefeb24f81","have":2,"need":10,"known":true}
+{"at":"2026-10-25T23:39:37.285Z","m":"waiting for confirmations","label":"private part A","txid":"4cd64aaefeb24f81","have":4,"need":10,"known":true}
+{"at":"2026-10-25T23:41:37.311Z","m":"waiting for confirmations","label":"private part A","txid":"4cd64aaefeb24f81","have":6,"need":10,"known":true}
+{"at":"2026-10-25T23:43:37.335Z","m":"waiting for confirmations","label":"private part A","txid":"4cd64aaefeb24f81","have":6,"need":10,"known":true}
+{"at":"2026-10-25T23:45:37.355Z","m":"waiting for confirmations","label":"private part A","txid":"4cd64aaefeb24f81","have":8,"need":10,"known":true}
+{"at":"2026-10-25T23:47:37.374Z","m":"waiting for confirmations","label":"private part A","txid":"4cd64aaefeb24f81","have":9,"need":10,"known":true}
+{"at":"2026-10-25T23:49:10.673Z","m":"carrier published","label":"unshield","part":0,"txid":"9351c5daba4a7b9323dc0d5872681f1ae6455c41c07373b35e5182c3c00470b6","fee":"49260000","recordBytes":924,"extraBytes":984,"nativeBytes":2463}
+{"at":"2026-10-25T23:49:10.675Z","m":"waiting for confirmations","label":"unshield","txid":"9351c5daba4a7b93","have":0,"need":10,"known":true}
+{"at":"2026-10-25T23:51:10.803Z","m":"waiting for confirmations","label":"unshield","txid":"9351c5daba4a7b93","have":0,"need":10,"known":true}
+{"at":"2026-10-25T23:53:11.109Z","m":"waiting for confirmations","label":"unshield","txid":"9351c5daba4a7b93","have":2,"need":10,"known":true}
+{"at":"2026-10-25T23:55:11.132Z","m":"waiting for confirmations","label":"unshield","txid":"9351c5daba4a7b93","have":3,"need":10,"known":true}
+{"at":"2026-10-25T23:57:11.155Z","m":"waiting for confirmations","label":"unshield","txid":"9351c5daba4a7b93","have":4,"need":10,"known":true}
+{"at":"2026-10-25T23:59:11.172Z","m":"waiting for confirmations","label":"unshield","txid":"9351c5daba4a7b93","have":6,"need":10,"known":true}
+{"at":"2026-10-26T00:01:11.196Z","m":"waiting for confirmations","label":"unshield","txid":"9351c5daba4a7b93","have":6,"need":10,"known":true}
+{"at":"2026-10-26T00:03:11.220Z","m":"waiting for confirmations","label":"unshield","txid":"9351c5daba4a7b93","have":8,"need":10,"known":true}
+{"at":"2026-10-26T00:05:11.680Z","m":"carrier published","label":"burn","part":0,"txid":"73409210a5fb7b14e8b851ffb7f0eb42f8c95fd18ed25f7c0cf26cde6830af79","fee":"34860000","recordBytes":213,"extraBytes":261,"nativeBytes":1743}
+{"at":"2026-10-26T00:05:11.682Z","m":"waiting for confirmations","label":"burn","txid":"73409210a5fb7b14","have":0,"need":10,"known":true}
+{"at":"2026-10-26T00:07:11.714Z","m":"waiting for confirmations","label":"burn","txid":"73409210a5fb7b14","have":1,"need":10,"known":true}
+{"at":"2026-10-26T00:09:11.763Z","m":"waiting for confirmations","label":"burn","txid":"73409210a5fb7b14","have":1,"need":10,"known":true}
+{"at":"2026-10-26T00:11:11.788Z","m":"waiting for confirmations","label":"burn","txid":"73409210a5fb7b14","have":3,"need":10,"known":true}
+{"at":"2026-10-26T00:13:11.824Z","m":"waiting for confirmations","label":"burn","txid":"73409210a5fb7b14","have":4,"need":10,"known":true}
+{"at":"2026-10-26T00:15:11.843Z","m":"waiting for confirmations","label":"burn","txid":"73409210a5fb7b14","have":7,"need":10,"known":true}
+{"at":"2026-10-26T00:17:11.865Z","m":"waiting for confirmations","label":"burn","txid":"73409210a5fb7b14","have":9,"need":10,"known":true}
+file://<workspace>/research/token-format-unshielded-20261025/stagenet/run-unshielded.mjs:74
+ if(Object.values(cmp).some(v=>!v))throw Error('indexer vs holder mismatch '+JSON.stringify(cmp));if(!st.pool.invariant.ok)throw Error('invariant broken');
+                                         ^
+
+Error: indexer vs holder mismatch {"root":false,"nullifiers":false,"publicNotes":false,"minted":true,"burned":false,"publicSupply":true,"shieldedSupply":false,"completedOperations":true}
+    at file://<workspace>/research/token-format-unshielded-20261025/stagenet/run-unshielded.mjs:74:42
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+Node.js v24.1.0
