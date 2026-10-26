@@ -1,0 +1,29 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+{"step":"deposit credited publicly","net":"98500000","credit":"e4a86d27df1e4d799536e9ab6d432ff2144d98e6937000ecd9001a312d80fb98"}
+{"step":"public transfer 40 X (1 tx)","txid":"6e18ef623932681f31fd710be4cc3ce2eb7c1ea3a52c7b7819d1aa7067aed21a","fee":"2071200000","extraBytes":262}
+{"step":"shield 50 X (1 tx)","txid":"155d1110cdfb874f01b79515500928e20a72584daf461412d480112cfc6f2aec","fee":"2598000000","provingMs":3012}
+{"step":"private transfer 30 X (2 txs)","txids":["75b560841f80536b48f1fcd6f0ee9c5ef6fcf7315d88600ccf19e58f5cab0c91","32d77a1cf05c5c31758165db402cd1fde784f8e3cbe2ee99ba996529a675ba8c"],"fees":["2947200000","2908800000"],"provingMs":33390}
+{"step":"unshield 10 X (1 tx)","txid":"5476d1549b7137d3550078b29235df81ffbf5ef89387351085a13c36387fd813","fee":"2937600000","provingMs":12293}
+backend: Only 1 confirmations
+{"step":"burn 25 X -> payout 24.625 X once","txid":"7eb81652660c124db2fae0271a2d454a8e02deb53c516d6961488c22d4670213","fee":"2070000000"}
+backend: Private token address required
+✖ unshielded-by-default: public credit, public send, shield, 2-tx private send, unshield, burn+payout, migration, recovery, rollback, disclosure audit (68509.652458ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 70320.963416
+
+✖ failing tests:
+
+test at flow.test.mjs:35:1
+✖ unshielded-by-default: public credit, public send, shield, 2-tx private send, unshield, burn+payout, migration, recovery, rollback, disclosure audit (68509.652458ms)
+  Error: Private token address required
+      at post (file://<workspace>/research/token-format-unshielded-20261025/flow.test.mjs:22:210)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async TestContext.<anonymous> (file://<workspace>/research/token-format-unshielded-20261025/flow.test.mjs:118:12)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3)

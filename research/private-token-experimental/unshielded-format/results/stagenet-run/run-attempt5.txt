@@ -1,0 +1,5 @@
+backend: {"role":"issuer","ready":{"issuerNativeAddress":"57niMTvoAZ5GigRF1mQVXxVAmGwJihSSsDLjwPX9vH8hcxA3cyFUP3SjaJefz4ty19iSzfFmWTmoPC6Wg59i9ufTV8p4FQM","mode":"issuer","ready":true,"trustedManifest":{"label
+backend: {"role":"indexer","ready":{"domain":"cf7216d55fe449db7cce626a343cd073d5014aedc1c62945ea3624ce8492bf47","mode":"indexer","ready":true,"trustedManifest":{"label":"UNSHIELDED FORMAT TEST — STAGENET — PEN
+{"at":"2026-10-26T00:21:20.025Z","m":"holders","A":"xmr20t1hh77asz8x5857wlgq…","B":"xmr20t12nvqulahraj7t9fkt…","nativeA":"5A2ruiMKx185GKbGcmbuNwbN66fYg2AuZMtDgmxdWJ2C8habDbZ9woHSGf4eGeYZw3aCtgFuDkxQwAbBPd4d8TKnSNpXpCA","nativeB":"59zeZyafqUB8jKAmNJJtWJEV41TermsUu8wo35435aMQHpej4Gr4ckPLFsH4eAK1ebJpV7
+{"at":"2026-10-26T00:21:20.493Z","m":"native after funding","A":"3823020000","Aoutputs":6,"B":"1915880000"}
+{"at":"2026-10-26T00:21:20.624Z","m":"STAGENET RUN COMPLETE","results":"<workspace>/research/token-format-unshielded-20261025/runs/stagenet-unshielded/results.json"}
