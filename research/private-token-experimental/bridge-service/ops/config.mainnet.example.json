@@ -1,0 +1,32 @@
+{
+  "_comment": "MAINNET PILOT EXAMPLE (26 Oct 2026). Starting the service with network=mainnet additionally requires the environment variable XMR20_BRIDGE_MAINNET=I-UNDERSTAND; the indexer and issuer children then receive XMR20_MAINNET_PILOT=I-UNDERSTAND. paramsDir must contain the issuer secret (0600) — point it at the secure directory, never at a repository copy. All <...> values are owner-provided. Exposure limits are deliberately small; raise only after measured operation.",
+  "network": "mainnet",
+  "daemonRpc": "http://127.0.0.1:18081",
+  "indexerUrl": "http://127.0.0.1:8970",
+  "indexerToken": null,
+  "httpPort": 8975,
+  "listen": "127.0.0.1",
+  "adminToken": "<long random token>",
+  "rolesBin": "../../token-format-unshielded-fix-20261026/target/release/xmr20-unshielded-lab",
+  "paramsDir": "<home>/.xmr20/mainnet-issuer-v1",
+  "trustedManifest": "../../token-format-unshielded-fix-20261026/params/mainnet-v1/manifest.json",
+  "journalDir": "<home>/.xmr20/bridge-mainnet-journal",
+  "confirmations": 10,
+  "exposure": {"maxSinglePayout": "100000000", "maxPaidPerWindow": "300000000", "windowBlocks": 720},
+  "observers": ["<second trusted monerod RPC url>"],
+  "requireObservers": true,
+  "pollMs": 20000,
+  "testServices": false,
+  "origins": null,
+  "assets": [
+    {"symbol": "<TICKER>", "name": "<token name>", "mint": "<Token-2022 mint address>", "decimals": 6, "legacyGross": "0", "custody": {"program": "<deployed program id>", "policy": "<policy account>", "manifest": "<custody policy id hex>", "feeBps": 150}}
+  ],
+  "custody": {
+    "kind": "rpc",
+    "network": "mainnet-beta",
+    "rpcUrl": "<mainnet RPC url>",
+    "verifier": "<operator public key>",
+    "operatorKeypairPath": "<home>/.xmr20/operator-mainnet.json"
+  },
+  "registrySnapshot": null
+}

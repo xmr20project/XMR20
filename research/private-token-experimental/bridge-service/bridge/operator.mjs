@@ -1,4 +1,4 @@
-// OPERATOR CORE for the unshielded format (service version of the lab operator of research/token-format-unshielded-20261025).
+// OPERATOR CORE for the unshielded format (service version of the lab operator; H1/H2 fixes ported from research/token-format-unshielded-fix-20261026 on 26 Oct 2026).
 // Single-operator bridge controller: operator-verified, NOT trustless. The journal holds public records only (txids, blobs,
 // Solana addresses, amounts); key material lives in the issuer role process (params/<set>/issuer.secret.json) and the custody
 // adapter (operator keypair file). Exactly-once credits = one journal entry per receipt nonce / claim id, 'built' persisted
@@ -54,10 +54,18 @@ export class Operator{
  // Recovery: a credit journaled as built/published but not indexed is re-published (identical carrier; idempotent on the daemon).
  async retryCredit(binding,summary){const c=this.state.credits[binding];assert.ok(c,'Unknown credit');if(this.pool(summary).credits.some(x=>x.binding===binding)){c.status='indexed';await this.persist();return {...c,resubmitted:false};}
   try{await this.issuer.call({op:'publishBlob',blob:c.blob});}catch(e){if(!/already|duplicate|rejected/i.test(e.message))throw e;}c.status='published';c.retries=(c.retries||0)+1;await this.persist();await this.audit({event:'credit-republished',binding,txid:c.txid,retries:c.retries});return {...c,resubmitted:true};}
- paidInWindow(tip){return Object.values(this.state.payouts).filter(p=>p.status==='paid'&&p.paidAtTip!==undefined&&tip-p.paidAtTip<this.exposure.windowBlocks).reduce((n,p)=>n+BigInt(p.amount),0n);}
+ // H2: exposure in the window = PAID payouts inside the window PLUS every unresolved submission (reserved, whatever its age).
+ exposureInWindow(tip){return Object.values(this.state.payouts).filter(p=>p.status==='submitting'||(p.status==='paid'&&p.paidAtTip!==undefined&&tip-p.paidAtTip<this.exposure.windowBlocks)).reduce((n,p)=>n+BigInt(p.amount),0n);}
+ paidInWindow(tip){return this.exposureInWindow(tip);}
+ // One incident per (kind, txid).
+ incident(kind,txid,extra){if(this.state.incidents.some(i=>i.kind===kind&&i.txid===txid))return false;this.state.incidents.push({kind,txid,at:new Date().toISOString(),...extra});return true;}
+ // H2: resolve unresolved submissions against custody BEFORE admitting new exposure (receipt -> paid; none -> reservation kept).
+ async recoverSubmissions(){let changed=false;for(const [txid,p] of Object.entries(this.state.payouts)){if(p.status!=='submitting')continue;const existing=await this.custody.redemptionReceipt(txid);if(existing){p.status='paid';p.receipt=existing;p.recovered=true;p.paidAt=new Date().toISOString();changed=true;await this.audit({event:'payout-recovered',txid});}}if(changed)await this.persist();return changed;}
+ // Operator decision after custody confirmed no receipt exists: release the reservation so the burn is payable again.
+ async abandonSubmission(txid,note='operator confirmed no custody receipt'){const p=this.state.payouts[txid];assert.ok(p&&p.status==='submitting','Not an unresolved submission');assert.ok(!(await this.custody.redemptionReceipt(txid)),'Custody holds a receipt: recover it instead');p.status='pending';p.abandonedSubmissions=(p.abandonedSubmissions||0)+1;this.incident('submissionAbandoned',txid,{amount:p.amount,note});await this.persist();await this.audit({event:'submission-abandoned',txid,note});return p;}
  async registerRedemption(binding,destination,request){assert.equal(redeemBindingFor(destination,request),binding,'Redemption binding does not match destination/request');this.state.requests[binding]={destination,request,at:new Date().toISOString()};await this.persist();}
  // Reconcile the journal against the indexer summary. Never deletes history.
- async reconcile(summary){const pool=this.pool(summary),tip=pool.tip;this.last=summary;
+ async reconcile(summary){await this.recoverSubmissions();const pool=this.pool(summary),tip=pool.tip;this.last=summary;
   if(this.registry)for(const [binding,c]of Object.entries(this.state.credits))if(c.kind===2&&!this.registry.consumedIds().includes(binding))this.registry.consume(binding,{amount:c.amount,txid:c.txid,recovered:true});
   const credits=new Map(pool.credits.map(c=>[c.binding,c]));
   for(const [binding,c]of Object.entries(this.state.credits)){const seen=credits.get(binding);if(seen){c.height=seen.height;c.confirmations=tip-seen.height+1;c.status=c.confirmations>=this.confirmations?'confirmed':'indexed';}else if(c.status!=='built'&&c.status!=='published')c.status='orphaned';}
@@ -66,7 +74,7 @@ export class Operator{
    if(p.height!==undefined&&p.height!==r.height&&p.status!=='paid'){this.state.incidents.push({kind:'burnReorganised',txid:r.txid,previousHeight:p.height,newHeight:r.height,tip,at:new Date().toISOString(),note:'The burn moved to another height (reorganisation). Payout confirmations restart from the new height; payouts paused until resume.'});this.state.paused=true;await this.audit({event:'incident',kind:'burnReorganised',txid:r.txid});}
    p.height=r.height;p.confirmations=tip-r.height+1;if(p.status==='orphaned'||p.status==='conflicted')p.status='pending';}
   for(const [txid,p]of Object.entries(this.state.payouts)){if(redemptions.has(txid))continue;p.confirmations=0;
-   if(p.status==='paid'){if(!this.state.incidents.some(i=>i.txid===txid&&i.kind==='paidWithoutBurn')){this.state.incidents.push({kind:'paidWithoutBurn',txid,amount:p.amount,tip,at:new Date().toISOString(),note:'Solana payout is final; the Monero burn left canonical history. Cannot be revoked. Operator HALTED.'});this.state.halted=true;await this.audit({event:'incident',kind:'paidWithoutBurn',txid,amount:p.amount});}}
+   if(p.status==='paid'){this.state.halted=true;if(this.incident('paidWithoutBurn',txid,{amount:p.amount,tip,note:'Solana payout is final; the Monero burn left canonical history. Cannot be revoked. Operator HALTED (latched independently of earlier incidents).'}))await this.audit({event:'incident',kind:'paidWithoutBurn',txid,amount:p.amount});}
    else if(p.status!=='submitting'){if(p.height!==undefined&&p.status==='pending'){this.state.incidents.push({kind:'burnVanished',txid,previousHeight:p.height,tip,at:new Date().toISOString(),note:'A burn with recorded confirmations left canonical history before payout (reorganisation). Nothing was paid; payouts paused until resume.'});this.state.paused=true;await this.audit({event:'incident',kind:'burnVanished',txid});}p.status='orphaned';}}
   await this.persist();
   return {tip,eligible:Object.entries(this.state.payouts).filter(([,p])=>p.status==='pending'&&p.confirmations>=this.confirmations&&this.state.requests[p.binding]).map(([t])=>t),awaitingRequest:Object.entries(this.state.payouts).filter(([,p])=>p.status==='pending'&&!this.state.requests[p.binding]).map(([t])=>t),halted:this.state.halted,paused:this.state.paused,incidents:this.state.incidents.length};}
@@ -78,16 +86,22 @@ export class Operator{
   const agree=o=>o.known&&!o.inPool&&o.height===primary.height&&o.blockHash===primary.blockHash&&o.confirmations>=this.confirmations;
   const ok=primary.known&&!primary.inPool&&primary.confirmations>=this.confirmations&&(!this.requireObservers||this.observers.length>0)&&others.every(agree);
   return {ok,primary,observers:others,reason:ok?null:!primary.known?'primary node does not know the burn':this.requireObservers&&!this.observers.length?'no independent observer configured':others.filter(o=>!agree(o)).map(o=>o.url+': '+(o.error||(!o.known?'unknown':o.inPool?'in pool':'different block or depth'))).join('; ')||'primary below confirmations'};}
- async payout(txid){this.assertLive();const p=this.state.payouts[txid];assert.ok(p,'Unknown redemption');
+ // H2: admission, reservation and submission run under ONE gate per operator (the loop and the HTTP action cannot both pass the cap).
+ payout(txid){const run=()=>this.#payout(txid);const p=(this.gate??=Promise.resolve()).then(run,run);this.gate=p.catch(()=>{});return p;}
+ async #payout(txid){this.assertLive();const p=this.state.payouts[txid];assert.ok(p,'Unknown redemption');
   if(p.status==='paid')return {repeated:true,...p};
   this.assertPayoutsOpen();assert.ok(['pending','submitting'].includes(p.status),'Redemption not payable: '+p.status);
-  const existing=await this.custody.redemptionReceipt(txid);if(existing){p.status='paid';p.receipt=existing;p.recovered=true;await this.persist();await this.audit({event:'payout-recovered',txid});return {recovered:true,...p};}
+  await this.recoverSubmissions();if(p.status==='paid')return {recovered:true,...p};
+  if(p.status==='submitting')throw Error('Unresolved submission: custody holds no receipt yet; the reservation stays until a receipt appears or the operator abandons the submission after confirming with custody');
   assert.ok(p.confirmations>=this.confirmations,`Only ${p.confirmations} confirmations`);
   const req=this.state.requests[p.binding];assert.ok(req,'No destination registered for this redemption binding');assert.equal(redeemBindingFor(req.destination,req.request),p.binding);
   if(this.observers.length||this.requireObservers){const obs=await this.observe(txid);await this.audit({event:'observe',txid,ok:obs.ok,reason:obs.reason});assert.ok(obs.ok,'Payout withheld: independent observation does not confirm the burn ('+obs.reason+')');}
-  const tip=this.last?.tip??0;assert.ok(BigInt(p.amount)<=BigInt(this.exposure.maxSinglePayout),'Exposure: single payout above limit');assert.ok(this.paidInWindow(tip)+BigInt(p.amount)<=BigInt(this.exposure.maxPaidPerWindow),'Exposure: window payout limit reached; wait for more blocks');
+  const tip=this.last?.tip??0;assert.ok(BigInt(p.amount)<=BigInt(this.exposure.maxSinglePayout),'Exposure: single payout above limit');assert.ok(this.exposureInWindow(tip)+BigInt(p.amount)<=BigInt(this.exposure.maxPaidPerWindow),'Exposure: window payout limit reached (paid + unresolved submissions); wait for more blocks or resolve submissions');
   p.status='submitting';p.destination=req.destination;p.paidAtTip=tip;p.submittedAt=new Date().toISOString();await this.persist();this.inject('beforeSubmit',txid);await this.audit({event:'payout-submitting',txid,amount:p.amount,destination:req.destination});
-  const r=await this.custody.redeem(req.destination,BigInt(p.amount),txid);assert.ok(r.ok,(r.logs||[]).join('\n')||'custody refused');this.inject('afterSubmit',txid);
+  let r;try{r=await this.custody.redeem(req.destination,BigInt(p.amount),txid);}
+  catch(e){p.lastError='custody call failed: '+e.message;await this.persist();await this.audit({event:'payout-uncertain',txid,error:e.message.slice(0,200)});throw Error('Submission outcome uncertain ('+e.message+'); reservation kept until custody receipt recovery or an explicit operator decision');}
+  if(!r.ok){p.status='pending';p.lastError=(r.logs||[]).join('\n')||'custody refused';await this.persist();await this.audit({event:'payout-refused-by-custody',txid,error:p.lastError.slice(0,200)});throw Error('Custody refused the payout: '+p.lastError);}
+  this.inject('afterSubmit',txid);
   p.status='paid';p.receipt=r.receipt;p.signature=r.signature||null;p.paidAt=new Date().toISOString();await this.persist();await this.audit({event:'payout-paid',txid,amount:p.amount,signature:p.signature});return p;}
  // Backing buckets: every unit of reserve is owed to exactly one bucket.
  async liabilities(summary){const pool=this.pool(summary);const credited=new Set(pool.credits.map(c=>c.binding));

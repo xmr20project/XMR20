@@ -1,0 +1,6 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+{"event":"indexer-started","ready":{"domain":"cf7216d55fe449db7cce626a343cd073d5014aedc1c62945ea3624ce8492bf47","mode":"indexer-service","network":"stagenet","ready":true,"state":{"blocks":0,"dir":"/U
+{"event":"indexer-http","url":"http://127.0.0.1:56241"}
+{"event":"indexer-started","ready":{"domain":"cf7216d55fe449db7cce626a343cd073d5014aedc1c62945ea3624ce8492bf47","mode":"indexer-service","network":"stagenet","ready":true,"state":{"blocks":415,"dir":"
+{"ok":true,"firstSyncSeconds":2.752,"tip":2237001,"records":6,"completedOperations":1,"restart":{"restarts":1,"tip":2237001,"sameRoot":true}}
+exit 0

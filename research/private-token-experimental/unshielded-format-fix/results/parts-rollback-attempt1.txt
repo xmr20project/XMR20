@@ -1,0 +1,25 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+{"isolatedEndpoints":{"rpcPort":49914,"p2pPort":49917,"httpPort":49918}}
+{"step":"a: rollback of part B only; re-published identical B completes once","a":"5b5efe7187764a43e742f115ab436dd17d17a5504a91b8dac52d4d526b1f3d3b","b":"3188f8d753089a30eba8409a89a3aa7962c36e4ac5836c6007bad1437239354e"}
+backend: invalid node (response wasn't the expected json)
+✖ two-part private transfers: rollbacks of one or both parts, conflicting spend, reversed arrival, replay equality (97638.442708ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 102123.653542
+
+✖ failing tests:
+
+test at parts-rollback.test.mjs:24:1
+✖ two-part private transfers: rollbacks of one or both parts, conflicting spend, reversed arrival, replay equality (97638.442708ms)
+  Error: invalid node (response wasn't the expected json)
+      at post (file://<workspace>/research/token-format-unshielded-fix-20261026/parts-rollback.test.mjs:21:210)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async TestContext.<anonymous> (file://<workspace>/research/token-format-unshielded-fix-20261026/parts-rollback.test.mjs:56:15)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3)
+exit 1

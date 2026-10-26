@@ -1,0 +1,54 @@
+MAINNET PILOT CONFIGURATION — step 2 (26 October 2026). EXPERIMENTAL. Owner decision: independent human review deferred; the
+risks are disclosed publicly. Nothing in this file deploys, funds or enables anything by itself; every mainnet path still needs
+an explicit flag at start time.
+
+1. WHAT EXISTS NOW
+   Issuer key (REAL, mainnet)   ~/.xmr20/mainnet-issuer-v1/issuer.secret.json  (mode 0600, directory 0700, OUTSIDE the repository)
+                                Holds the issuer SIGNING key and the issuer's XMR spend/view keys (carrier-fee wallet). Created by
+                                `xmr20-unshielded-lab setup` through tools/mainnet-setup.mjs; never read, printed or copied by tooling.
+                                BACK IT UP OFFLINE before any credit is published. If it is lost, no further credits can be issued
+                                (existing notes stay spendable); if it leaks, an attacker can credit value at will.
+   Public parameters            params/mainnet-v1/parameters.json (+ Penumbra proving keys as symlinks), SETUP-SUMMARY.json
+   Trusted manifest             params/mainnet-v1/manifest.json  sha256 1b1a27dcb1c4b3d93e4b38963c0b32595e44362a86296aa9445f468a51f1841b
+     label        XMR20 UNSHIELDED FORMAT — MAINNET PILOT — EXPERIMENTAL — PENUMBRA KEYS
+     network      mainnet, genesis 418015bb9ae982a1975da7d79277c2705727a56894ba0fb246adaabb1f4632e3, startHeight 3,792,000
+                  (mainnet height was 3,792,484 when generated; every record must be published ABOVE the start height — it is)
+     ledgerDomain e7aaca529eabea9bd58845591a570ae4cccb4bc0b2259d9b3ae3b5f89f00c6af   (binds genesis, Penumbra verifying keys, issuer key)
+     issuerVk     e222e5e6896280cabefc461c749835a8f40adfdb622f9bff359f34c64758b901
+   Issuer XMR address (fund this, small amount, carrier fees only)
+                                48nFZyr6dtMXimAv2CVPUmZKuA4itFLbCb6ksF8qTJpWHxxCXfhZ5EdMCwd4CQeMwFD2JjDUDem1tYju8uMzMEzJSk4LBv5
+   Regenerating: `node tools/mainnet-setup.mjs --start-height <H>` reuses the key (new manifest hash only); `--force-new-key` is
+   refused while the secure directory exists (move it aside by hand; the ledger domain changes with the key).
+
+2. GATES (all must be opened explicitly; tests/mainnet-gates.test.mjs)
+   core manifest        accepts kind "mainnet" (the pilot manifest); still refuses unknown kinds.
+   roles binary         a mainnet daemon is accepted only when the TRUSTED manifest says mainnet AND XMR20_MAINNET_PILOT=I-UNDERSTAND
+                        is set, and the daemon reports synchronized; a mainnet daemon under any other manifest is refused.
+   holder scanner       accepts a mainnet daemon only when the manifest says mainnet.
+   bridge service       network "mainnet" only with XMR20_BRIDGE_MAINNET=I-UNDERSTAND, the RPC custody on mainnet-beta, no test
+                        services; the indexer and issuer children receive the pilot flag only when the operator set it.
+   make-manifest        mainnet only with --mainnet-acknowledged EXPERIMENTAL-PILOT and a start height.
+
+3. CUSTODY DECISION
+   The pilot uses the compiled xmr20_joint_escrow program in OPERATOR-VERIFIED mode (operator = policy owner = verifier; one
+   signer), exactly what bridge/custody-rpc.mjs implements: deposits by holders into the pool vault, redemptions signed by the
+   operator keypair, one receipt per nonce. The existing live bridge custody is NOT reused (different system; a new adapter and a
+   separate review would be needed). Legacy backing for migrated holdings is deposited by the operator into the same vault
+   (the operator journal accounts for it as unclaimed legacy rights). Mainnet deployment of the program (about 1.5 SOL rent)
+   and the policy initialisation are OWNER actions with a mainnet keypair; nothing here does them.
+   Rehearsal: rehearsal/custody-rehearsal.mjs runs the full adapter path (deploy, Token-2022 mint with a 1.5% transfer fee,
+   policy, holder deposit, receipt, operator redemption, exactly-once, reserve) on a disposable LOCAL solana-test-validator
+   started with mainnet's current SBPF deployment rule. Result: PASSED (attempt 7, 26 Oct 2026) — deposit receipt net 98,500,000 of 100,000,000; redemption 40,000,000; duplicate nonce
+   refused; reserve 58,500,000 (RESULTS-FIX.txt section 6, runs/custody-rehearsal-local.json).
+   Devnet: same script with --url https://api.devnet.solana.com --payer rehearsal/devnet/payer.json; the throwaway payer
+   9vDssanKFdMsv5ccejppDBuKkMcPSGEFnXbpAjxbwb23 has no SOL (airdrop rate-limited twice on 26 Oct); send devnet SOL to it from
+   faucet.solana.com to run it.
+   Program artefact: SBPF v0. SIMD-0500 (disable deployment of SBPF v0/v1) is INACTIVE on mainnet-beta and devnet as of 26 Oct
+   2026; if it activates before deployment, rebuild the program with `cargo build-sbf --arch v3` and re-run the LiteSVM suites.
+
+4. STILL OWNER ACTIONS BEFORE A PILOT
+   a) back up ~/.xmr20/mainnet-issuer-v1 offline; b) fund the issuer XMR address; c) run a synchronized mainnet monerod for the
+   service (or point it at a trusted one); d) deploy the program and initialise the policy on mainnet-beta with the operator
+   keypair (0600, outside the repo); e) choose the migration cutover height and the first two or three tokens; f) set exposure
+   limits (start small) and confirmations (10) in the service config; g) publish the risk statement with the manifest hash.
+   No independent review has happened; the rollback-loss counterexample stands.

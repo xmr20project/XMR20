@@ -1,0 +1,43 @@
+MIGRATION OF EXISTING MONERO-SIDE XMR20 HOLDINGS INTO THE PUBLIC FORMAT — PROCEDURE AND WHAT WAS TESTED
+research/token-format-unshielded-20261025 — 25 October 2026. Tested with SYNTHETIC snapshots only. No live cutoff was chosen,
+no real holding was migrated or frozen, no historical disclosure can be erased. Independent review: NOT performed.
+
+1. ENTITLEMENT AND TARGET
+  Every legacy lot (mint, legacy one-time output key P, amount at the cutoff) migrates ONCE into exactly `amount` of the same asset
+  (asset id derived from the Solana mint, identical to the shielded pool's) as ONE PUBLIC NOTE owned by the claimant's owner key.
+  No fee, no bridge tax, no Solana round trip; the credit carrier's XMR fee is paid by the issuer and disclosed. Shielding afterwards
+  is the holder's own explicit action (1 transaction, 1 fee). Tested: 492,500,000 synthetic X lot -> exactly 492,500,000 public X
+  (flow.test.mjs step 7); the release candidate's catalog suite (66 mints incl. EXTREMIST 10,000 at 6 decimals) is the model for the
+  per-mint catalog and is reused unchanged in migration/ (snapshot-reconcile.mjs, third-party-assets.json).
+2. CLAIM (unchanged from the rehearsed path; ONLY the credit target changed)
+  The holder signs {profile, manifest id, MIGRATE, claim id, amount, owner = unified token address xmr20t1…} with the plain Monero
+  signature under P (R = rG + cP; no key image, no ring position, no native spend, no unspentness proof). The registry verifies the
+  signature against the snapshot row and consumes the claim id; the issuer publishes XC1 kind 2 bound to the claim id. The indexer
+  refuses any second credit for that binding (duplicate claim, replayed claim, fresh installation of the same phrase: all refused —
+  tested in the release candidate's suites and in flow.test.mjs). Keys: only the holder's Monero keys sign; nothing leaves the worker.
+3. WHAT THE CLAIM PUBLISHES (disclosure, honest statement)
+  The claim links the legacy output key P to the claimant's unified address (owner key + shielded address). That link is public at
+  claim time (as in the earlier candidates: DISCLOSURES "migration disclosure"). It adds NO native key image or output/image relation.
+  Historical XN1 disclosures (P-to-image proofs already on chain) remain public forever; migration cannot undo them.
+4. STATES AND DOUBLE-CREDIT PREVENTION
+  legacy right (snapshot row) -> consumed by exactly one XC1 credit -> public note -> (XS1) shielded note -> (XU1) public note -> (XR1) burn.
+  Buckets reconciled by the operator: unclaimed legacy rights + credits awaiting indexing + public supply + shielded supply + pending
+  payouts == reserve (operator.liabilities; flow.test.mjs asserts ok after migration and after payout). The indexer's own invariant:
+  publicSupply + shieldedSupply == minted - burned per asset, checked after every block in the suites.
+5. PRODUCTION SNAPSHOT (to be executed by the owner's operation; not run here)
+  a. Choose the cutoff height H and its block hash on the LEGACY indexer (the production legacy indexer already parses every inscription
+     version; nothing in this candidate parses launch JSON). Publish H in advance; stop accepting legacy MOVE/BURN after H in every
+     client, relay and proof generator (containment list in research/privacy-successor-20261021/DESIGN.txt).
+  b. Export rows (mint, P, amount) for every unconsumed lot at H, including lots stranded by an ordinary XMR spend (rights policy of the
+     successor design: restore all unconsumed token-ledger rights; reviewed as a policy extension). Reconcile against public data with
+     migration/snapshot-reconcile.mjs (catalog + public API; reproducible digest). Publish the snapshot digest and the registry id.
+  c. Reconcile the custody reserve against the five buckets BEFORE enabling claims; a deposit awaiting credit must not be credited
+     twice (old ledger and new). Record the reconciliation; refuse to activate on a mismatch.
+  d. Enable claims in the wallet release (the Legacy rows). Keep claims open without an arbitrary expiry; late claims after the cutoff
+     are still valid for lots in the snapshot; lots created after H are not in the snapshot and cannot claim (tested: unknown lot refused).
+  e. Rollbacks around H: a reorganisation through H requires suspending claims and recomputing the snapshot against the new canonical
+     chain (the release candidate's cutover-rollback test shows the boundary behaviour on the isolated legacy indexer).
+6. NOT DONE HERE
+  No production snapshot, no cutoff, no containment activation, no reserve reconciliation against the deployed custody, no migration of
+  real EXTREMIST or any real holding. The real-mint decimals/catalog data are recorded (migration/third-party-assets.json) and compared,
+  never acted on.

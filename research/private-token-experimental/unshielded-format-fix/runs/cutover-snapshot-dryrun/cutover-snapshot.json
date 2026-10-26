@@ -1,0 +1,435 @@
+{
+ "format": "XMR20-CUTOVER-SNAPSHOT-2",
+ "takenAt": "2026-10-26T11:50:31.764Z",
+ "source": {
+  "api": "https://api.xmr20.org",
+  "tokensSha256": "8f4a24e08fd175357f769a320537927fa26cd58ceb6cd1dca85148918fe79374",
+  "holdersSha256": {
+   "Db6fwWFB6BAhkSiRW1txGzvEnCVWokRQ1Pn95UqV9XMR": "60785260fe47d5aae9c3077e4155568ffd1814bf22d9f45aa20e4ca6f9aec0e7",
+   "3FyCsVxQJwKhV6Gia9N9PpsrdPNALfhoetJSWxqNXXMR": "7d92ff4003ba7955828e1f69acc669ccb5d79daf80ead49008c03a134c28470b",
+   "8zWcEgUZvQKcHgtUoYTnaC6AHX7FmtWVV9WeM4kPuXMR": "4f1d058742cccf8153c67c0d37d7d7985d2ed81f269246c98d245709747c24a8",
+   "Cy5TzDyJ4mo6MBAbpwUcAgdfNiXYKrYUPrvhPGVU6XMR": "0e773ac883e5d551fbea809f95fbf76ed5b5b562b9f5610c7e8bd3d50a678a8b",
+   "HE5SZwRTb5Q4oWbuz8JVmxiEyAcKzJKXZuG83NxKpKTn": "abdf91cdbc21e44c58ed95751994ac7f3406e9e9fbe6d2f6761718c290f99f5f"
+  }
+ },
+ "summary": {
+  "assets": 5,
+  "holders": 17,
+  "totalRaw": "995998171887",
+  "problems": 0
+ },
+ "problems": [],
+ "assets": [
+  {
+   "profile": "XMR20-INDEPENDENT-OWNERSHIP-OFFLINE-LAB-1",
+   "format": "XMR20-CUTOVER-SNAPSHOT-2",
+   "kind": "address-based entitlements from the bridge holder ledger (xmr20-holders-v1)",
+   "asset": "LAUNCH",
+   "symbol": "LAUNCH",
+   "name": "LAUNCH",
+   "mint": "3FyCsVxQJwKhV6Gia9N9PpsrdPNALfhoetJSWxqNXXMR",
+   "assetId": "uxmr20private3fycsvxqjwkhv6gia9n9ppsrdpnalfhoetjswxqnxxmr",
+   "decimals": 6,
+   "network": "mainnet",
+   "source": {
+    "url": "https://api.xmr20.org/api/xmr20/tokens/5d2b9b2d-234c-4972-b1ae-00550e2c393a/holders",
+    "tokenId": "5d2b9b2d-234c-4972-b1ae-00550e2c393a",
+    "state": "verified",
+    "checkedAt": 1793014851171,
+    "moneroHeight": 3792490,
+    "moneroConfirmations": 10,
+    "moneroRaw": "6107000000",
+    "escrowAddress": "29cRWLwY1AZn2CUNrmTqJGnqqjwunAkBGbeu4wCrH5k3"
+   },
+   "checkpoint": {
+    "height": 3792490,
+    "ledgerCheckedAt": 1793014851171,
+    "note": "ledger reading at export; a real cutover requires the bridge to stop crediting this ledger before export"
+   },
+   "total": "6107000000",
+   "holders": 5,
+   "rows": [
+    {
+     "claim": "148b69f96e5bdbb0acc16ad06bc453790ea5ac56a450c53f24ffbbb298fb88a9",
+     "amount": "100000000",
+     "legacyOwner": "89da1d4dabd5a5cc2858b469f09a302d3426978803fa73370c452beda72ad78a",
+     "address": "46r6hR6WZNCb9auEV6Duks8ZXtqCy1hTGAD2xygEaHbCQFFyddaoPX1jHFkuvTrsYwgD8Q6F1JSFrHZpVe6JY3CiVDF9XLR",
+     "addressKind": "standard",
+     "mint": "3FyCsVxQJwKhV6Gia9N9PpsrdPNALfhoetJSWxqNXXMR",
+     "lastIncoming": {
+      "txid": "f7c0ebd0972ec2f0181e20b1dd949a1156759e868224239a046baa7431f7d1d0",
+      "operation": "transfer",
+      "amountRaw": "100000000",
+      "height": 3775821,
+      "confirmations": 16670
+     }
+    },
+    {
+     "claim": "3b16131d9a45387ae68000582c38bf41e36b49bf472496ef41994eb9f6aa312c",
+     "amount": "907000000",
+     "legacyOwner": "49720a22727016aa29468a5fdec4819987f40d777fab475e998d8677a38f38f5",
+     "address": "44QY7ntQEdsVTn5CHWda3zSgSjXoZxy3UGpjjJcnHR7Di7HHQER6teP6NqkjT6ppFAXdSCmZQ4Sr74VCGPC1WpJZ4FN9Bfh",
+     "addressKind": "standard",
+     "mint": "3FyCsVxQJwKhV6Gia9N9PpsrdPNALfhoetJSWxqNXXMR",
+     "lastIncoming": {
+      "txid": "49f749c45bde9dbac5bf975b5bae6d6cac4d79ccc8b6709243836946d68056f7",
+      "operation": "credit",
+      "amountRaw": "197000000",
+      "height": 3775663,
+      "confirmations": 16828
+     }
+    },
+    {
+     "claim": "6b08ddbb94fe3dc3c22ed8913b42356ef51446cfa9b6dfc3cbc73bbf326b2d9c",
+     "amount": "20000000",
+     "legacyOwner": "49b51eb85f02bd375561952c4e76b573ce8e98bbbded58548658f000503e5173",
+     "address": "44R7XEEVQfNAFofCnokYDiLNUMbe73CoHF8znr9qzKzxLGX4T1KYarvFuiBeTXpzaMT9H2N6PNuQ6FWNyegWRFHhQmb7aDH",
+     "addressKind": "standard",
+     "mint": "3FyCsVxQJwKhV6Gia9N9PpsrdPNALfhoetJSWxqNXXMR",
+     "lastIncoming": {
+      "txid": "e6b48da7ba78a7eb8bf5e682c003e8e5d3fd2415e20ff20edd8e0513278de02f",
+      "operation": "transfer",
+      "amountRaw": "100000000",
+      "height": 3775889,
+      "confirmations": 16602
+     }
+    },
+    {
+     "claim": "da63db1af9de393a30c5d70c04527aaee61f576f84699d2b7d0ad9106cc360e2",
+     "amount": "5000000000",
+     "legacyOwner": "f1fd63b7575b129153daa75a0b6dca57e418e53f2d8aae1929a03776a2d22a13",
+     "address": "4AnzEkq1VsoRJrqnWXEoTfFhesAhuXFaD5D7JqHsiMZK4BPP3Djr6CN3tuL8oGq24kPXnTBx45fiw2nfuT6VUdZdK3moroU",
+     "addressKind": "standard",
+     "mint": "3FyCsVxQJwKhV6Gia9N9PpsrdPNALfhoetJSWxqNXXMR",
+     "lastIncoming": {
+      "txid": "c54a4f0fdc94be6def9a29d552ef34ae6d8a2317bbec285f8055e3ba3f158a6c",
+      "operation": "transfer",
+      "amountRaw": "5000000000",
+      "height": 3775724,
+      "confirmations": 16767
+     }
+    },
+    {
+     "claim": "e162e47cb8429ab1fb3c1787ad124549032ae74039f4acf7e1f6fc9004f488b2",
+     "amount": "80000000",
+     "legacyOwner": "061f7cd9c8c58f5e62b7bda8bc28cc2af8052e016e1285991e870c8d1ee82395",
+     "address": "41rZpBz2NJAGnfCu2r7ykF8BrPLMHZR9NScT1o9GJXNJRwD4RLFB7vq1oZT9XSX4XPJutrURwfKFpL3Xa9V9R2mvLD3mxss",
+     "addressKind": "standard",
+     "mint": "3FyCsVxQJwKhV6Gia9N9PpsrdPNALfhoetJSWxqNXXMR",
+     "lastIncoming": {
+      "txid": "d1e0cbdb5ff05274ce933e424e3095b103da45fc9618bc8b94c277e74c9120f3",
+      "operation": "transfer",
+      "amountRaw": "30000000",
+      "height": 3776324,
+      "confirmations": 16167
+     }
+    }
+   ]
+  },
+  {
+   "profile": "XMR20-INDEPENDENT-OWNERSHIP-OFFLINE-LAB-1",
+   "format": "XMR20-CUTOVER-SNAPSHOT-2",
+   "kind": "address-based entitlements from the bridge holder ledger (xmr20-holders-v1)",
+   "asset": "COVERT",
+   "symbol": "COVERT",
+   "name": "Covert Chameleon",
+   "mint": "8zWcEgUZvQKcHgtUoYTnaC6AHX7FmtWVV9WeM4kPuXMR",
+   "assetId": "uxmr20private8zwceguzvqkchgtuoytnac6ahx7fmtwvv9wem4kpuxmr",
+   "decimals": 6,
+   "network": "mainnet",
+   "source": {
+    "url": "https://api.xmr20.org/api/xmr20/tokens/0ef77380-c7fd-4461-85bc-b4cae9182e5a/holders",
+    "tokenId": "0ef77380-c7fd-4461-85bc-b4cae9182e5a",
+    "state": "verified",
+    "checkedAt": 1793011885495,
+    "moneroHeight": 3792471,
+    "moneroConfirmations": 10,
+    "moneroRaw": "9948500000",
+    "escrowAddress": "XgMfGcCb77pmqenASXTYbqhqUDvENevsGrFpM7bTnSv"
+   },
+   "checkpoint": {
+    "height": 3792471,
+    "ledgerCheckedAt": 1793011885495,
+    "note": "ledger reading at export; a real cutover requires the bridge to stop crediting this ledger before export"
+   },
+   "total": "9948500000",
+   "holders": 3,
+   "rows": [
+    {
+     "claim": "76c19439e8bb0bf2a87e7ff611e1b5d910381ecba340af46d7a318cba84588c5",
+     "amount": "98500000",
+     "legacyOwner": "89da1d4dabd5a5cc2858b469f09a302d3426978803fa73370c452beda72ad78a",
+     "address": "46r6hR6WZNCb9auEV6Duks8ZXtqCy1hTGAD2xygEaHbCQFFyddaoPX1jHFkuvTrsYwgD8Q6F1JSFrHZpVe6JY3CiVDF9XLR",
+     "addressKind": "standard",
+     "mint": "8zWcEgUZvQKcHgtUoYTnaC6AHX7FmtWVV9WeM4kPuXMR",
+     "lastIncoming": {
+      "txid": "97c1a3c690b2499123ef3bb38a83d96c6f5a3740ff3f764998ac20c4a46becc9",
+      "operation": "credit",
+      "amountRaw": "98500000",
+      "height": 3775681,
+      "confirmations": 16791
+     }
+    },
+    {
+     "claim": "87e41dc2c2f06ade711af477d6aca7611d3b67c3a80901555dc5b3d164df8886",
+     "amount": "850000000",
+     "legacyOwner": "50966e57619d108c0d7b13e194dce2e4771f10ff40585abcd67135d04cee2954",
+     "address": "44gEbxDc4A3QRgoV6LrXayfDQBptQ6gJmYaxnpnPGGgYF5Ca77aVvnDGSJxLbKsC58axdF1WLxD6NaQ3KFyLH6N218m4dvG",
+     "addressKind": "standard",
+     "mint": "8zWcEgUZvQKcHgtUoYTnaC6AHX7FmtWVV9WeM4kPuXMR",
+     "lastIncoming": {
+      "txid": "705615256bcff6456e2a2fd91c77ee354fdcc3506e409144b84c00f3b68bac3c",
+      "operation": "credit",
+      "amountRaw": "9850000000",
+      "height": 3773390,
+      "confirmations": 19082
+     }
+    },
+    {
+     "claim": "b13322bad98ced7ad112cfd51fdc3ff84a5b4735ca4d134962e482d0df634eb4",
+     "amount": "9000000000",
+     "legacyOwner": "061f7cd9c8c58f5e62b7bda8bc28cc2af8052e016e1285991e870c8d1ee82395",
+     "address": "41rZpBz2NJAGnfCu2r7ykF8BrPLMHZR9NScT1o9GJXNJRwD4RLFB7vq1oZT9XSX4XPJutrURwfKFpL3Xa9V9R2mvLD3mxss",
+     "addressKind": "standard",
+     "mint": "8zWcEgUZvQKcHgtUoYTnaC6AHX7FmtWVV9WeM4kPuXMR",
+     "lastIncoming": {
+      "txid": "5794a111455031dc9c0d29f1070d5296b0bcf9d424a00c4ff42cb3e8f75e37eb",
+      "operation": "transfer",
+      "amountRaw": "9000000000",
+      "height": 3776921,
+      "confirmations": 15551
+     }
+    }
+   ]
+  },
+  {
+   "profile": "XMR20-INDEPENDENT-OWNERSHIP-OFFLINE-LAB-1",
+   "format": "XMR20-CUTOVER-SNAPSHOT-2",
+   "kind": "address-based entitlements from the bridge holder ledger (xmr20-holders-v1)",
+   "asset": "XMR20",
+   "symbol": "XMR20",
+   "name": "XMR20",
+   "mint": "Cy5TzDyJ4mo6MBAbpwUcAgdfNiXYKrYUPrvhPGVU6XMR",
+   "assetId": "uxmr20privatecy5tzdyj4mo6mbabpwucagdfnixykryuprvhpgvu6xmr",
+   "decimals": 6,
+   "network": "mainnet",
+   "source": {
+    "url": "https://api.xmr20.org/api/xmr20/tokens/52f787ff-fe1d-4067-a492-0586d0d44010/holders",
+    "tokenId": "52f787ff-fe1d-4067-a492-0586d0d44010",
+    "state": "verified",
+    "checkedAt": 1793011929638,
+    "moneroHeight": 3792471,
+    "moneroConfirmations": 10,
+    "moneroRaw": "4732821887",
+    "escrowAddress": "53WEYKN9uBaoT2n3XQjTowr6xqSMSkLx2b9utjRBuXP7"
+   },
+   "checkpoint": {
+    "height": 3792471,
+    "ledgerCheckedAt": 1793011929638,
+    "note": "ledger reading at export; a real cutover requires the bridge to stop crediting this ledger before export"
+   },
+   "total": "4732821887",
+   "holders": 4,
+   "rows": [
+    {
+     "claim": "3524bac81808fe151b9ab89d92635f137d29d0e326eb907a92421678c0f18c99",
+     "amount": "98500000",
+     "legacyOwner": "8336413feca8bf25a3fa77cdeef71b9917578500a8a527bb801d2d6fbe8720d9",
+     "address": "46bWDYwcDwU7JAJZptqM4EScBDmHkswqpYMzNe4tpFTVdPa9d2uASCgLsYNyY8Vyy4TEzDsSKDc8JeqTGRgsXe9xPbcEJfy",
+     "addressKind": "standard",
+     "mint": "Cy5TzDyJ4mo6MBAbpwUcAgdfNiXYKrYUPrvhPGVU6XMR",
+     "lastIncoming": {
+      "txid": "895354ddd5d4e780792c5797bdbb532769d201e737bbecd3f0abdf5208d397ce",
+      "operation": "credit",
+      "amountRaw": "98500000",
+      "height": 3774980,
+      "confirmations": 17492
+     }
+    },
+    {
+     "claim": "4cbecbf333c5effe4a62ef3540f18304355ec9c6cc5a246ef3b3306cfe54160b",
+     "amount": "2500000000",
+     "legacyOwner": "50966e57619d108c0d7b13e194dce2e4771f10ff40585abcd67135d04cee2954",
+     "address": "44gEbxDc4A3QRgoV6LrXayfDQBptQ6gJmYaxnpnPGGgYF5Ca77aVvnDGSJxLbKsC58axdF1WLxD6NaQ3KFyLH6N218m4dvG",
+     "addressKind": "standard",
+     "mint": "Cy5TzDyJ4mo6MBAbpwUcAgdfNiXYKrYUPrvhPGVU6XMR",
+     "lastIncoming": {
+      "txid": "363c354dbad60ecba3db1b767e9fd28bd7d631dfc01ee25fed277bd3e12297fb",
+      "operation": "credit",
+      "amountRaw": "492500000000",
+      "height": 3773189,
+      "confirmations": 19283
+     }
+    },
+    {
+     "claim": "63f98bb20f9df6ae29835fe230ba688249206d10b0fe9c1806385639fd69dfce",
+     "amount": "827273006",
+     "legacyOwner": "f215a2ecd31f8b535dd96c258631cf1b329d09804e8da4006cd9374a8d1cb8c8",
+     "address": "4AoCK4ceWf4Ewm77bxchCA5YrQbuYnjUf158F4hKnqvFaUb4cos1K6AR7YPTrHk77NK1BYz5LypUd6Wf9sx3SYXf6AqMh5P",
+     "addressKind": "standard",
+     "mint": "Cy5TzDyJ4mo6MBAbpwUcAgdfNiXYKrYUPrvhPGVU6XMR",
+     "lastIncoming": {
+      "txid": "65e77d594397d44ccdbdc4afa9cb2b751e77f66c54e3f13c4a10cda143f5cdb1",
+      "operation": "credit",
+      "amountRaw": "14763827273006",
+      "height": 3777088,
+      "confirmations": 15384
+     }
+    },
+    {
+     "claim": "dbe58c2b2048308cf72d2f7bc98f1628f70fe9019eb7ed12314128b4cb8fba2f",
+     "amount": "1307048881",
+     "legacyOwner": "e867ca1553c80b67332e2256939f0e1fabe23ee5024b9ec6809e6bea8bfd5e42",
+     "address": "4ARvR8JWmiSJGAmuzVvjeV6JFeGMFY7wKaCit9pAFMTBC8y2ABu5sHSeRDHDEVXMh21PTVJdjwZGjgLZhHLq7HFkUsKp85F",
+     "addressKind": "standard",
+     "mint": "Cy5TzDyJ4mo6MBAbpwUcAgdfNiXYKrYUPrvhPGVU6XMR",
+     "lastIncoming": {
+      "txid": "662f059d261989c2ba3d03e4057f9a611f8eef9c1c00359fa248018df95e4993",
+      "operation": "credit",
+      "amountRaw": "2241307048881",
+      "height": 3777027,
+      "confirmations": 15445
+     }
+    }
+   ]
+  },
+  {
+   "profile": "XMR20-INDEPENDENT-OWNERSHIP-OFFLINE-LAB-1",
+   "format": "XMR20-CUTOVER-SNAPSHOT-2",
+   "kind": "address-based entitlements from the bridge holder ledger (xmr20-holders-v1)",
+   "asset": "MONEROCHAN",
+   "symbol": "MONEROCHAN",
+   "name": "Monero Chan",
+   "mint": "Db6fwWFB6BAhkSiRW1txGzvEnCVWokRQ1Pn95UqV9XMR",
+   "assetId": "uxmr20privatedb6fwwfb6bahksirw1txgzvencvwokrq1pn95uqv9xmr",
+   "decimals": 6,
+   "network": "mainnet",
+   "source": {
+    "url": "https://api.xmr20.org/api/xmr20/tokens/99e1efc7-27c7-4f43-99b5-e49c8183acb6/holders",
+    "tokenId": "99e1efc7-27c7-4f43-99b5-e49c8183acb6",
+    "state": "verified",
+    "checkedAt": 1793014711620,
+    "moneroHeight": 3792488,
+    "moneroConfirmations": 10,
+    "moneroRaw": "9850000",
+    "escrowAddress": "B9gsasbwAzsfKPvCHUR3AML2CvgT3qXbYPNoKoajtj6K"
+   },
+   "checkpoint": {
+    "height": 3792488,
+    "ledgerCheckedAt": 1793014711620,
+    "note": "ledger reading at export; a real cutover requires the bridge to stop crediting this ledger before export"
+   },
+   "total": "9850000",
+   "holders": 1,
+   "rows": [
+    {
+     "claim": "83bf6bd80be0e9a9b63dfcb2a804f78b457017d460bc2352533bebcb8f42cd20",
+     "amount": "9850000",
+     "legacyOwner": "cb93636d52792192bab2b0ebf5f9458d5bc54f56564f94446bdbcf817fe8d710",
+     "address": "49LZC8Hfp7SRYTZPkRqargQeMYwnVyXfZCSmopeuvJza3o5rDsbndvc2fj78zGzCpHHdN5kwiC9r9K9Z4b2svXTi8vcRfk7",
+     "addressKind": "standard",
+     "mint": "Db6fwWFB6BAhkSiRW1txGzvEnCVWokRQ1Pn95UqV9XMR",
+     "lastIncoming": {
+      "txid": "a9561c22b5be1b16144a7683adc7e58777d0441330f3407d8f169af7deb62645",
+      "operation": "credit",
+      "amountRaw": "9850000",
+      "height": 3775110,
+      "confirmations": 17379
+     }
+    }
+   ]
+  },
+  {
+   "profile": "XMR20-INDEPENDENT-OWNERSHIP-OFFLINE-LAB-1",
+   "format": "XMR20-CUTOVER-SNAPSHOT-2",
+   "kind": "address-based entitlements from the bridge holder ledger (xmr20-holders-v1)",
+   "asset": "TEST",
+   "symbol": "TEST",
+   "name": "TEST",
+   "mint": "HE5SZwRTb5Q4oWbuz8JVmxiEyAcKzJKXZuG83NxKpKTn",
+   "assetId": "uxmr20privatehe5szwrtb5q4owbuz8jvmxieyackzjkxzug83nxkpktn",
+   "decimals": 6,
+   "network": "mainnet",
+   "source": {
+    "url": "https://api.xmr20.org/api/xmr20/tokens/ec18f59a-5944-477d-baaa-4c0b0980159b/holders",
+    "tokenId": "ec18f59a-5944-477d-baaa-4c0b0980159b",
+    "state": "verified",
+    "checkedAt": 1793014992019,
+    "moneroHeight": 3792492,
+    "moneroConfirmations": 10,
+    "moneroRaw": "975200000000",
+    "escrowAddress": "B41UQTgTpoQZT3zxoXKNkHM5kKA7N7kYZJormHHfo9iu"
+   },
+   "checkpoint": {
+    "height": 3792492,
+    "ledgerCheckedAt": 1793014992019,
+    "note": "ledger reading at export; a real cutover requires the bridge to stop crediting this ledger before export"
+   },
+   "total": "975200000000",
+   "holders": 4,
+   "rows": [
+    {
+     "claim": "756c52c394b011a6c3e104f6e5eb0c11d055a7828f2ba789faf6e57b382ae5c8",
+     "amount": "100000000",
+     "legacyOwner": "89da1d4dabd5a5cc2858b469f09a302d3426978803fa73370c452beda72ad78a",
+     "address": "46r6hR6WZNCb9auEV6Duks8ZXtqCy1hTGAD2xygEaHbCQFFyddaoPX1jHFkuvTrsYwgD8Q6F1JSFrHZpVe6JY3CiVDF9XLR",
+     "addressKind": "standard",
+     "mint": "HE5SZwRTb5Q4oWbuz8JVmxiEyAcKzJKXZuG83NxKpKTn",
+     "lastIncoming": {
+      "txid": "78847efb94ca7ff67deaf07e52613dcc6295b0f94ac831f83b47d3de2a717e5f",
+      "operation": "transfer",
+      "amountRaw": "100000000",
+      "height": 3775834,
+      "confirmations": 16659
+     }
+    },
+    {
+     "claim": "bdf62e147eba06fac6f916ec7c898323386328fd4b4bd2615c612e4b4a5927b3",
+     "amount": "1000000000",
+     "legacyOwner": "01a3b13ca67bcc243a224c2d18e4fedd1e6d32770fb6e2354bc17fc410599eaf",
+     "address": "41giFDKL8Ys74SzT8gZezHdz8XsNXKo5s9v3A8kyENTXWMA59wTKNqpJAsouEBxQudZh2EqDK2Bkp2uA8X7ui5uk8VDAYY2",
+     "addressKind": "standard",
+     "mint": "HE5SZwRTb5Q4oWbuz8JVmxiEyAcKzJKXZuG83NxKpKTn",
+     "lastIncoming": {
+      "txid": "cc26174dc6ab0fa0ba6de0e489906f44e9c96fb6bada1f756e7bcec13da9605a",
+      "operation": "transfer",
+      "amountRaw": "1000000000",
+      "height": 3775834,
+      "confirmations": 16659
+     }
+    },
+    {
+     "claim": "c9affafbbb7ad71a1d448ed1bb01449f38b8b3f07c38e12364c2c09d670cb56c",
+     "amount": "400000000",
+     "legacyOwner": "f1fd63b7575b129153daa75a0b6dca57e418e53f2d8aae1929a03776a2d22a13",
+     "address": "4AnzEkq1VsoRJrqnWXEoTfFhesAhuXFaD5D7JqHsiMZK4BPP3Djr6CN3tuL8oGq24kPXnTBx45fiw2nfuT6VUdZdK3moroU",
+     "addressKind": "standard",
+     "mint": "HE5SZwRTb5Q4oWbuz8JVmxiEyAcKzJKXZuG83NxKpKTn",
+     "lastIncoming": {
+      "txid": "d85140864568092fc15cb01ae2e74ccc4a2a1990d340df0844e9d88ed32fb9f0",
+      "operation": "transfer",
+      "amountRaw": "400000000",
+      "height": 3775727,
+      "confirmations": 16766
+     }
+    },
+    {
+     "claim": "d0d706c994a87cbbec71c689485bb2212a6809018de3357064c4a0aae3dc1c58",
+     "amount": "973700000000",
+     "legacyOwner": "49720a22727016aa29468a5fdec4819987f40d777fab475e998d8677a38f38f5",
+     "address": "44QY7ntQEdsVTn5CHWda3zSgSjXoZxy3UGpjjJcnHR7Di7HHQER6teP6NqkjT6ppFAXdSCmZQ4Sr74VCGPC1WpJZ4FN9Bfh",
+     "addressKind": "standard",
+     "mint": "HE5SZwRTb5Q4oWbuz8JVmxiEyAcKzJKXZuG83NxKpKTn",
+     "lastIncoming": {
+      "txid": "a27c35a7c0eb00d7bc8618f41615d7ddd0a47ae64d3ce2cc9d654205e87f4be8",
+      "operation": "credit",
+      "amountRaw": "200000000",
+      "height": 3775581,
+      "confirmations": 16912
+     }
+    }
+   ]
+  }
+ ],
+ "digest": "9f396d3e9a333a2574ac55a8846292429dd3d139c601bfd91493e857eca3e79f"
+}

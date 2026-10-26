@@ -1,0 +1,50 @@
+MIGRATION CUTOVER, PART 2 — ADDRESS-BASED ENTITLEMENTS (step 3, 26 October 2026)
+Supersedes the output-key assumption of MIGRATION-CUTOVER.txt §1–2 for the production ledger; everything else there stands.
+
+1. PRODUCTION FACT (verified read-only on 26 Oct 2026)
+   Monero-side XMR20 balances are kept PER MONERO ADDRESS by the bridge's holder index and published at
+   https://api.xmr20.org/api/xmr20/tokens/<id>/holders (schema xmr20-holders-v1; rows {address, amountRaw, network:'monero',
+   kind:'XMR20 address', lastIncoming}). They are not per-output XN1 lots. The entitlement to migrate is therefore
+   (mint, Monero address, amount) and a claim must prove control of the ADDRESS: it is signed under the address's public spend
+   key B (decoded from the address) with the holder's spend secret b, using the same plain Schnorr scheme the registry already
+   verifies. Nothing is spent on Monero, no key image or output is involved, no view key is shared.
+   Scope on 26 Oct 2026 (live dry run, migration/holders-snapshot.mjs): 5 tokens with Monero-side balances, 17 holder rows,
+   995,998,171,887 raw units in total (LAUNCH 5 holders / 6,107.000000; COVERT 3 / 9,948.500000; XMR20 4 / 4,732.821887;
+   MONEROCHAN 1 / 9.850000; TEST 4 / 975,200.000000); all standard mainnet addresses; holder sums equal moneroRaw and the tokens
+   API's xmrOutstanding for every token. Snapshot digest of that reading: 9f396d3e9a333a2574ac55a8846292429dd3d139c601bfd91493e857eca3e79f
+   (runs/cutover-snapshot-dryrun/). This is a READING, not a cutover: the ledger was not frozen.
+
+2. TOOLING
+   backend/monero-address.mjs          Monero base58 address codec (network byte, spend/view keys, checksum); round-trip tested.
+   migration/holders-snapshot.mjs      Builds XMR20-CUTOVER-SNAPSHOT-2 from the public tokens + holders documents (live or from
+                                       saved fixtures): one asset per mint with rows {claim, amount, legacyOwner = spend key, address,
+                                       mint}, per-asset checkpoint (ledger height and checkedAt at export), consistency checks
+                                       (holder sum == moneroRaw == xmrOutstanding, duplicates, non-mainnet), a digest over rows +
+                                       checkpoints, and one registry-<SYMBOL>.json per asset for the bridge service. Raw inputs saved.
+   bridge service                      assets[].registry = path to a registry file; legacy rows are shown to the holder whose
+                                       registered Monero address matches; claimPrepare returns legacyOwner/address/signWith.
+   wallet                              private-claim.worker.js 'sign-address-claim' (signs with b after checking B); the popup's
+                                       migration screen shows the legacy address and uses the address path when the row has one.
+   Rehearsal                           bridge-service test/migration-cutover.test.mjs: production-shaped holders document for two
+                                       synthetic holders (wallet-lib wallets; the engine's address encodes B = b·G with b = root
+                                       mod l, asserted) -> snapshot -> registry -> signed claims -> exact public credits; duplicate,
+                                       foreign account, tampered amount and wrong key refused; liabilities balance; migrated
+                                       tokens spend as ordinary public notes.
+
+3. PROCEDURE FOR THE REAL CUTOVER (owner decisions in CAPITALS)
+   a. CHOOSE the cutover moment; have the bridge stop crediting the Monero-side ledger (no new incoming transfers or bridge
+      credits honoured after it) and let the holder index settle (every token state 'verified', confirmations >= 10).
+   b. Export: node migration/holders-snapshot.mjs --out <dir>  (public reads only). Check summary.problems is empty and the
+      per-asset checkpoint heights are at or after the freeze. PUBLISH the digest and the registry ids.
+   c. Reserve: for each asset the legacy backing (the tokens the old bridge holds against Monero-side balances) must be deposited
+      into the new custody vault; the operator's liabilities then show unclaimedLegacyRights == registry total and reserve == owed
+      before claims are enabled. Refuse to enable claims on a mismatch.
+   d. Enable claims in the wallet release: holders see "Legacy <TICKER> (not migrated)" with their address and migrate with one
+      locally signed claim; the credit is a PUBLIC note of exactly the amount (issuer pays the carrier fee).
+   e. Late claims stay valid for snapshot rows; addresses credited after the freeze are not in the snapshot and cannot claim.
+      Subaddress holders (none today) would need the subaddress spend scalar; the worker supports standard addresses only.
+
+4. LIMITS
+   The snapshot trusts the bridge's own ledger (the same service that credits holders); the public holders document is its
+   published view. No independent recomputation from chain data exists for an address-based ledger. The claim links a Monero
+   address to the new unified token address at claim time (public). Independent review: not performed.

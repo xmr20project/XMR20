@@ -1,0 +1,39 @@
+✖ REPRO: prior burnReorganised incident suppresses later paidWithoutBurn halt (50.257083ms)
+✖ REPRO: post-submit interruption permits 300 payouts under a 200 window cap (39.445458ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 168.540875
+
+✖ failing tests:
+
+test at review-original/bridge-params/operator-security-repro.test.mjs:22:1
+✖ REPRO: prior burnReorganised incident suppresses later paidWithoutBurn halt (50.257083ms)
+  AssertionError [ERR_ASSERTION]: Observed defect: confirmed loss did not halt
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file://<workspace>/research/token-format-unshielded-fix-20261026/review-original/bridge-params/operator-security-repro.test.mjs:33:9)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual'
+  }
+
+test at review-original/bridge-params/operator-security-repro.test.mjs:38:1
+✖ REPRO: post-submit interruption permits 300 payouts under a 200 window cap (39.445458ms)
+  AssertionError [ERR_ASSERTION]: Exposure: window payout limit reached (paid + unresolved submissions); wait for more blocks or resolve submissions
+      at #payout (file://<workspace>/research/token-format-unshielded-fix-20261026/backend/operator.mjs:101:10) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '=='
+  }

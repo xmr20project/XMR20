@@ -4,11 +4,13 @@
 import {readFile,writeFile,mkdir,rm} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {startIndexerService,createIndexerClient} from './bridge/indexer-service.mjs';
-const here=fileURLToPath(new URL('./',import.meta.url));const fmt=here+'../token-format-unshielded-20261025/';
+import {freeLoopbackPort} from '../token-format-unshielded-fix-20261026/backend/service.mjs';
+const here=fileURLToPath(new URL('./',import.meta.url));const fmt=here+'../token-format-unshielded-fix-20261026/';
 const BIN=fmt+'target/release/xmr20-indexer';const RPC='http://127.0.0.1:38091';const STATE=here+'runs/stagenet-follow-state';
-const expected=JSON.parse(await readFile(fmt+'runs/stagenet-unshielded/results.json','utf8'));
+// the rehearsal evidence (txids) lives in the REVIEWED candidate (read-only); binaries and parameters come from the fix candidate
+const expected=JSON.parse(await readFile(here+'../token-format-unshielded-20261025/runs/stagenet-unshielded/results.json','utf8'));
 await rm(STATE,{recursive:true,force:true});await mkdir(here+'runs',{recursive:true});
-const t0=Date.now();const svc=await startIndexerService({bin:BIN,paramsDir:fmt+'params/stagenet-v1',trustedManifest:fmt+'params/stagenet-v1/manifest.json',rpcUrl:RPC,stateDir:STATE,httpPort:8972,pollMs:3600_000,maxBlocks:200,log:x=>console.error(JSON.stringify(x).slice(0,200))});
+const t0=Date.now();const svc=await startIndexerService({bin:BIN,paramsDir:fmt+'params/stagenet-v1',trustedManifest:fmt+'params/stagenet-v1/manifest.json',rpcUrl:RPC,stateDir:STATE,httpPort:await freeLoopbackPort(),pollMs:3600_000,maxBlocks:200,log:x=>console.error(JSON.stringify(x).slice(0,200))});
 const c=createIndexerClient(svc.url);
 let h;for(let i=0;i<200;i++){const r=await svc.sync();h=await c.health();if(r.behind===0)break;}
 const summary=await c.summary();const want=[];for(const s of expected.steps){if(s.txid&&s.step!=='fund')want.push(s.txid);if(s.a)want.push(s.a.txid,s.b.txid);}

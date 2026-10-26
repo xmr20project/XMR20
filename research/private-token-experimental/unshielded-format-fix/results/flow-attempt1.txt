@@ -1,0 +1,25 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+{"isolatedEndpoints":{"rpcPort":63846,"p2pPort":63847,"httpPort":63848}}
+{"step":"deposit credited publicly","net":"98500000","credit":"c55145aa2fcf5595974c80e75a53fff0864ea31cb2398420c2d76b028eecd995"}
+{"step":"public transfer 40 X (1 tx)","txid":"f4d2e73b01f7f7039ce0e0623fc31b17edd688697811d1b794dc334e67fccda4","fee":"2071200000","extraBytes":262}
+{"step":"shield 50 X (1 tx)","txid":"e08d56b9230f3c3a7f6ee0b29ac34589c33920b75edeb54d70122853cfab3537","fee":"2598000000","provingMs":2939}
+{"step":"private transfer 30 X (2 txs)","txids":["573aa4f2971927af3f7514c4154af8861c96c28b4607070bb2d15761b83ba1c1","6d691dc5d69fa5e7fb0f755c11948ff5410e83659d5ae1495a93dc49929cb646"],"fees":["2947200000","2908800000"],"provingMs":32880}
+{"step":"unshield 10 X (1 tx)","txid":"1d2edb2f41893e3dd4cf92425fa50738f6d2be2436b061b486057e49c8e61b4a","fee":"2937600000","provingMs":12135}
+backend: Only 1 confirmations
+{"step":"burn 25 X -> payout 24.625 X once","txid":"fcdd2b7671582f47b2be37dfc1679b9d55bc9d32e3012ac5dd0d152a7c63bf04","fee":"2070000000"}
+backend: Claim already consumed
+{"step":"legacy lot migrated to a PUBLIC note, exactly the lot","amount":"492500000","credit":"921775a7fb5d5587f0aba9e7c2109738b67c4c27423c79a669f6429d72ce4e32"}
+{"step":"recovery from root; wrong root empty; viewing key shielded-only"}
+{"step":"rollback of part A before part B; identical carriers re-published; completed once","popped":2,"txids":["26b35e840567aa9230f2d3403bc9a7799bd5da359ea6554c4e8ffe2847e0d969","16813f1cd753be7f879a240237cb0090177a9705dede9d150e5cd6fa33eed883"]}
+{"step":"indexer replay equals the holder replica","root":"001c22aa707f82dfd1eee24c128beb837d4644cd2316aee411b7587760c6700e"}
+{"step":"disclosure audit passed","needles":20,"records":8}
+✔ unshielded-by-default: public credit, public send, shield, 2-tx private send, unshield, burn+payout, migration, recovery, rollback, disclosure audit (102509.336875ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 107210.229167
+exit 0

@@ -1,0 +1,14 @@
+✔ L1: an oversized parameter stream is cancelled at the first excess byte; nothing beyond the pinned length is read (0.606334ms)
+✔ L1: a content-length that differs from the pin is rejected before any byte is read (0.083833ms)
+✔ L1: a truncated stream is rejected; an exact stream passes length and hash and is parsed (2.081208ms)
+✔ M1: a manifest object that differs from the authenticated bytes is refused before anything opens (0.593917ms)
+✔ M1: a pin without bytes is refused; bytes alone define the configuration; a later caller mutation has no effect (108.27225ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 146.057375
+exit 0

@@ -1,0 +1,26 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✖ cutover rehearsal: address-based snapshot -> registry -> signed claims -> exact public credits; refusals; liabilities (13951.622291ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 15074.762542
+
+✖ failing tests:
+
+test at test/migration-cutover.test.mjs:30:1
+✖ cutover rehearsal: address-based snapshot -> registry -> signed claims -> exact public credits; refusals; liabilities (13951.622291ms)
+  Error: No spendable XMR for the carrier fee: unlocked 0 piconero (of which 0 too small for any carrier at 1200000 piconero/byte), locked 0 (unlocks by block 0), reserved by pending carriers 0; chain tip 282
+      at finish (file://<workspace>/research/token-format-unshielded-fix-20261026/wallet-extension/src/holder-engine.js:15:86)
+      at file://<workspace>/research/token-format-unshielded-fix-20261026/wallet-extension/src/holder-engine.js:18:90
+      at guard (file://<workspace>/research/token-format-unshielded-fix-20261026/wallet-extension/src/holder-engine.js:16:30)
+      at Object.call (file://<workspace>/research/token-format-unshielded-fix-20261026/wallet-extension/src/holder-engine.js:18:24)
+      at Object.quote (file://<workspace>/research/token-format-unshielded-fix-20261026/wallet-extension/src/holder-carrier.js:31:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async TestContext.<anonymous> (file://<workspace>/research/bridge-service-unshielded-20261026/test/migration-cutover.test.mjs:83:11)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3)
+exit 1
