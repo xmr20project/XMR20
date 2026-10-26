@@ -1,0 +1,30 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✖ Q1: an A/B/A tip view during replay is accepted by the reviewed binary (defect) and refused by the fixed binary (1513.79025ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6561.956875
+
+✖ failing tests:
+
+test at tests/replay-snapshot.test.mjs:50:1
+✖ Q1: an A/B/A tip view during replay is accepted by the reviewed binary (defect) and refused by the fixed binary (1513.79025ms)
+  AssertionError [ERR_ASSERTION]: the scan read the tip three times (snapshot, replay, final check)
+  
+  2 !== 3
+  
+      at TestContext.<anonymous> (file://<workspace>/research/token-format-unshielded-fix-20261026/tests/replay-snapshot.test.mjs:58:61)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 2,
+    expected: 3,
+    operator: 'strictEqual'
+  }
+exit 1

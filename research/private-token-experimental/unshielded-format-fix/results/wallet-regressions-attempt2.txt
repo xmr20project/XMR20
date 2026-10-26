@@ -1,0 +1,14 @@
+✔ M2: two contexts cannot both reserve the same note; the second sees the first write and is refused; nothing is lost (120.11925ms)
+✔ M2: a crash inside the critical section releases the lock; the other context proceeds; a reopened context reads the final state (252.384583ms)
+✔ M2: without a lock implementation writes are refused; the lease fallback exists only by explicit opt-in (62.172083ms)
+✔ M3: refusal or conflict of the second carrier keeps the operation partial and reserved; it stays continuable, not abandonable (0.322292ms)
+✔ L2: approval amounts are exact piconero values; the compact display is marked approximate (0.151ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 535.252208
+exit 0

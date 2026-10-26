@@ -1,0 +1,11 @@
+✔ H1: paid burn leaving canonical history halts despite an earlier reorganisation incident; halt survives reload (86.576834ms)
+✔ H2: interrupted submission keeps its reservation; cap holds; receipt recovery; concurrent requests serialized (191.439416ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 378.703083
+exit 0

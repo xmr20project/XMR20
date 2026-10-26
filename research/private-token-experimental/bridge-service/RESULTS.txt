@@ -75,3 +75,17 @@ Independent security review: NOT PERFORMED. Passing tests are not an audit.
 5. STORAGE
    runs/: logs + results JSON only (~80 KB); the run folder (chain data, journals, indexer state) is deleted on success.
    Shared Cargo target with the format candidate (1.9 GB total, no second copy). Nothing downloaded.
+
+6. FOLLOW-UP 26 October 2026 (afternoon): review fixes ported, isolation, rebuilt against the fixed core
+   The candidate now builds on research/token-format-unshielded-fix-20261026 (Codex review fixes): the indexer links the fixed
+   core/format crates (M4 fragment accounting; Q1 replay check in the roles binary), custody/address/registry modules and the
+   roles binary come from the fix candidate, and the service operator carries the H1/H2 fixes (halt latched unconditionally;
+   exposure reserved durably before custody, unresolved submissions counted and recovered, admission serialized under one gate,
+   definite refusal releases, uncertain outcome keeps, abandonSubmission). The test lab allocates exclusive loopback ports and
+   verifies that the fakechain daemon it started owns the RPC listener before mining (M5).
+   - node --test --test-concurrency=1 test/operator-regressions.test.mjs  2/2 (H1 latch + reload; H2 interrupted, cap, recovery,
+     concurrent, definite/uncertain, abandon)                                                 runs/operator-regressions-attempt1.log
+   - node --test --test-concurrency=1 test/bridge-service.test.mjs       2/2, 26.7 s, attempt 8  runs/bridge-service-attempt8.log
+   - node stagenet-follow.mjs (read-only, rebuilt indexer): 6 records from an empty state in 2.75 s, tip 2,237,001, restart same
+     root                                                                                      runs/stagenet-follow-attempt3.log
+   Run folders deleted; no processes left. The indexer binary now lives in the fix candidate's target (8.7 MB).

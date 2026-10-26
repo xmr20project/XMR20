@@ -1,0 +1,28 @@
+✔ L1: an oversized parameter stream is cancelled at the first excess byte; nothing beyond the pinned length is read (0.623292ms)
+✔ L1: a content-length that differs from the pin is rejected before any byte is read (0.085333ms)
+✔ L1: a truncated stream is rejected; an exact stream passes length and hash and is parsed (1.996667ms)
+✔ M1: a manifest object that differs from the authenticated bytes is refused before anything opens (0.64125ms)
+✖ M1: a pin without bytes is refused; bytes alone define the configuration; a later caller mutation has no effect (65.221ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 4
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 103.693167
+
+✖ failing tests:
+
+test at tests/parameter-regressions.test.mjs:57:1
+✖ M1: a pin without bytes is refused; bytes alone define the configuration; a later caller mutation has no effect (65.221ms)
+  Error: Text field block
+      at finish (file://<workspace>/research/token-format-unshielded-fix-20261026/wallet-extension/src/holder-engine.js:15:86)
+      at file://<workspace>/research/token-format-unshielded-fix-20261026/wallet-extension/src/holder-engine.js:18:90
+      at guard (file://<workspace>/research/token-format-unshielded-fix-20261026/wallet-extension/src/holder-engine.js:16:30)
+      at Object.call (file://<workspace>/research/token-format-unshielded-fix-20261026/wallet-extension/src/holder-engine.js:18:24)
+      at Object.sync (file://<workspace>/research/token-format-unshielded-fix-20261026/wallet-extension/src/holder-engine.js:52:19)
+      at async TestContext.<anonymous> (file://<workspace>/research/token-format-unshielded-fix-20261026/tests/parameter-regressions.test.mjs:65:16)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7)
+exit 1

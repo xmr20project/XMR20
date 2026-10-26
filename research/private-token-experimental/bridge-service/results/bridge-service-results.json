@@ -2,66 +2,66 @@
  "execution": "SIMULATED (offline fakechain, separate indexer + bridge services, LiteSVM custody)",
  "steps": [
   {
-   "at": "2026-10-26T02:39:16.731Z",
+   "at": "2026-10-26T11:16:32.265Z",
    "name": "lab up",
    "tip": 324,
-   "indexer": "http://127.0.0.1:8992",
-   "bridge": "http://127.0.0.1:8991",
+   "indexer": "http://127.0.0.1:55404",
+   "bridge": "http://127.0.0.1:55405",
    "reserve": "10000000000"
   },
   {
-   "at": "2026-10-26T02:39:17.308Z",
+   "at": "2026-10-26T11:16:32.833Z",
    "name": "deposit credited publicly",
-   "credit": "caf2a92b6afdd38d2c9fde978fad9e4742b23902e609181cb832276f947b7052",
+   "credit": "51177fc0afe73c407518f4368f57f49cc70fe90c7b8a7edefe302c5e2cf3e880",
    "net": "98500000"
   },
   {
-   "at": "2026-10-26T02:39:17.419Z",
+   "at": "2026-10-26T11:16:32.959Z",
    "name": "indexer crash/restart",
-   "restarts": 2,
+   "restarts": 3,
    "tip": 334
   },
   {
-   "at": "2026-10-26T02:39:17.584Z",
+   "at": "2026-10-26T11:16:33.131Z",
    "name": "public send",
-   "txid": "83ff19882da4be11f2539b7f5ee3d055600722080355f9097ea22c65ee5f08cf",
+   "txid": "ea951065d282a84b93030653889f5a4d8fe0c5da0571d381d801953c0ac0d8c9",
    "fee": "2071200000"
   },
   {
-   "at": "2026-10-26T02:39:18.061Z",
+   "at": "2026-10-26T11:16:33.591Z",
    "name": "payout withheld by observer disagreement",
-   "txid": "ff272ffe1ec563155d5c001878b88ec36f738530d8a1637b652cd964bf440e48"
+   "txid": "eac2aa853d9031b4be4a726e6068b7397799baafe2f54cef48623cfef3d1416b"
   },
   {
-   "at": "2026-10-26T02:39:18.116Z",
+   "at": "2026-10-26T11:16:33.649Z",
    "name": "burn paid exactly once",
-   "txid": "ff272ffe1ec563155d5c001878b88ec36f738530d8a1637b652cd964bf440e48",
+   "txid": "eac2aa853d9031b4be4a726e6068b7397799baafe2f54cef48623cfef3d1416b",
    "net": "24625000"
   },
   {
-   "at": "2026-10-26T02:39:22.000Z",
+   "at": "2026-10-26T11:16:37.441Z",
    "name": "operator restart with pending redemption",
-   "txid": "e73354516e063ca5a8c84ad389eca2fb229bc98e79ba2dfdfb39d6963b7e66cb"
+   "txid": "8417c58b248b84f82e16ecbaf4058a75ad3cdefc872bd911fc3ab21f2dc0b334"
   },
   {
-   "at": "2026-10-26T02:39:25.664Z",
+   "at": "2026-10-26T11:16:41.206Z",
    "name": "lost reply recovered without double payment",
-   "txid": "b0d807a0494da9c1a22f6c9801a44396fe5a06e717326c3ef07c2e330c593606"
+   "txid": "39a5d86d37087b662efb2a769345881e9db45c5c1d9a462fcd044d0c2a010066"
   },
   {
-   "at": "2026-10-26T02:39:26.601Z",
+   "at": "2026-10-26T11:16:42.158Z",
    "name": "reorganised burn: incident, pause, republish, paid once",
-   "txid": "6c1b0e7c8828e77a3a7f5d2956eca2df9cc90d51210463e34f180026d77dca62",
+   "txid": "4efc6edad11c7de2537599abaf4dbab951d6a9ede9adc57f691f4709ca09da7c",
    "popped": 4
   },
   {
-   "at": "2026-10-26T02:39:27.294Z",
+   "at": "2026-10-26T11:16:42.873Z",
    "name": "migration claim credited once",
-   "txid": "60d0d97797eef88da03e374373851499522ee53e3891b1b0307066e48afebfd5",
+   "txid": "ffde47936799921b767b914e7301e1f74ab19c7049c06070fd0cf9d4b1d4dd11",
    "amount": "10000000000"
   },
   {
-   "at": "2026-10-26T02:39:27.734Z",
+   "at": "2026-10-26T11:16:43.300Z",
    "name": "disclosure audit clean",
    "filesScanned": 15,
    "keyImagesChecked": 5
@@ -107,38 +107,38 @@
  "transactions": [
   {
    "kind": "credit",
-   "txid": "caf2a92b6afdd38d2c9fde978fad9e4742b23902e609181cb832276f947b7052",
+   "txid": "51177fc0afe73c407518f4368f57f49cc70fe90c7b8a7edefe302c5e2cf3e880",
    "moneroTransactions": 1,
    "payer": "issuer"
   },
   {
    "kind": "public",
-   "txid": "83ff19882da4be11f2539b7f5ee3d055600722080355f9097ea22c65ee5f08cf",
+   "txid": "ea951065d282a84b93030653889f5a4d8fe0c5da0571d381d801953c0ac0d8c9",
    "moneroTransactions": 1
   },
   {
    "kind": "burn",
-   "txid": "ff272ffe1ec563155d5c001878b88ec36f738530d8a1637b652cd964bf440e48",
+   "txid": "eac2aa853d9031b4be4a726e6068b7397799baafe2f54cef48623cfef3d1416b",
    "moneroTransactions": 1
   },
   {
    "kind": "burn",
-   "txid": "e73354516e063ca5a8c84ad389eca2fb229bc98e79ba2dfdfb39d6963b7e66cb",
+   "txid": "8417c58b248b84f82e16ecbaf4058a75ad3cdefc872bd911fc3ab21f2dc0b334",
    "moneroTransactions": 1
   },
   {
    "kind": "burn",
-   "txid": "b0d807a0494da9c1a22f6c9801a44396fe5a06e717326c3ef07c2e330c593606",
+   "txid": "39a5d86d37087b662efb2a769345881e9db45c5c1d9a462fcd044d0c2a010066",
    "moneroTransactions": 1
   },
   {
    "kind": "burn",
-   "txid": "6c1b0e7c8828e77a3a7f5d2956eca2df9cc90d51210463e34f180026d77dca62",
+   "txid": "4efc6edad11c7de2537599abaf4dbab951d6a9ede9adc57f691f4709ca09da7c",
    "moneroTransactions": 1
   },
   {
    "kind": "migration-credit",
-   "txid": "60d0d97797eef88da03e374373851499522ee53e3891b1b0307066e48afebfd5",
+   "txid": "ffde47936799921b767b914e7301e1f74ab19c7049c06070fd0cf9d4b1d4dd11",
    "moneroTransactions": 1,
    "payer": "issuer"
   }
@@ -149,7 +149,7 @@
  "processes": [
   {
    "name": "monerod",
-   "pid": 29107
+   "pid": 90421
   }
  ]
 }

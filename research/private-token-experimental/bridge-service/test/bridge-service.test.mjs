@@ -13,10 +13,11 @@ import {Keypair,Transaction} from '@solana/web3.js';
 import {ed25519} from '@noble/curves/ed25519';
 import {keccak_256} from '@noble/hashes/sha3';
 import {startLab,fakeObserver,BINS,FMT,here} from './harness.mjs';
+import {freeLoopbackPort} from '../../token-format-unshielded-fix-20261026/backend/service.mjs';
 import {startBridgeService} from '../bridge/bridge-service.mjs';
-import {openTokenWallet,memoryCache} from '../../token-format-unshielded-20261025/wallet-lib/token-wallet.mjs';
-import {legacyGrossFor} from '../../token-format-unshielded-20261025/backend/service.mjs';
-import {PROFILE} from '../../token-format-unshielded-20261025/backend/migration-registry.mjs';
+import {openTokenWallet,memoryCache} from '../../token-format-unshielded-fix-20261026/wallet-lib/token-wallet.mjs';
+import {legacyGrossFor} from '../../token-format-unshielded-fix-20261026/backend/service.mjs';
+import {PROFILE} from '../../token-format-unshielded-fix-20261026/backend/migration-registry.mjs';
 import {ORDER} from '../../../website/services/native-market/xn1/proofs.mjs';
 import {le} from '../../../website/services/native-market/xn1/bytes.mjs';
 const hex=b=>Buffer.from(b).toString('hex');const G=ed25519.ExtendedPoint.BASE;const Hs=b=>le(keccak_256(b))%ORDER;
@@ -42,7 +43,7 @@ test('bridge service: deposit, credit, send, burn, exactly-once payout, incident
  const xLegacy=scalar();const PLegacy=hex(G.multiply(xLegacy).toRawBytes());
  const snapshot={profile:PROFILE,kind:'synthetic-bridge-service-test-snapshot',asset:'X',checkpoint:{height:'test'},rows:[{claim:createHash('sha256').update('synthetic legacy lot X test').digest('hex'),amount:LEGACY_LOT,legacyOwner:PLegacy}]};
  const assets=[{symbol:'X',name:'Test token X',mint:null,decimals:6,legacyGross:legacyGrossFor(LEGACY_LOT).toString(),testHolding:'1000000000'}];
- const obs=await fakeObserver({port:8993,mode:'unknown'});
+ const obs=await fakeObserver({port:await freeLoopbackPort(),mode:'unknown'});
  const lab=await startLab({confirmations:CONF,exposure:EXPOSURE,assets,registrySnapshot:snapshot,log:m=>console.error('lab:',typeof m==='string'?m:JSON.stringify(m).slice(0,200))});
  let failed=true;
  try{
@@ -94,7 +95,7 @@ test('bridge service: deposit, credit, send, burn, exactly-once payout, incident
   await post('mine',{blocks:CONF});
   lab.bridge.ops.X.observers=[obs.url];await post('tick',{},true);assert.equal(lab.bridge.ops.X.state.payouts[c2.txid].status,'pending');
   await assert.rejects(post('payout',{symbol:'X',txid:c2.txid}),/Payout withheld: independent observation/);step('payout withheld by observer disagreement',{txid:c2.txid});
-  obs.setMode('proxy');const obsProxy=await fakeObserver({port:8994,mode:'proxy',proxy:lab.daemonRpc});lab.bridge.ops.X.observers=[obsProxy.url];
+  obs.setMode('proxy');const obsProxy=await fakeObserver({port:await freeLoopbackPort(),mode:'proxy',proxy:lab.daemonRpc});lab.bridge.ops.X.observers=[obsProxy.url];
   const paid=await post('payout',{symbol:'X',txid:c2.txid});assert.equal(paid.status,'paid');assert.equal(paid.net,'24625000');
   const again=await post('payout',{symbol:'X',txid:c2.txid});assert.equal(again.status,'paid');assert.equal(again.repeated,true);await post('tick',{},true);
   const ataOf=async w=>Object.values(JSON.parse(await readFile(lab.run+'/bridge/holders.json','utf8')).holders).find(x=>x.ownerKey===w.ownerKey()).ata.X;

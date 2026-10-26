@@ -1,0 +1,67 @@
+FIX CANDIDATE — research/token-format-unshielded-fix-20261026 (26 October 2026)
+Isolated copy of research/token-format-unshielded-20261025 (the REVIEWED candidate; its source, reports and evidence are
+untouched, so the hashes in review/FINDINGS.md and review/REVIEWED-FILES.sha256 remain valid). This candidate implements the
+fixes for Codex's security review (review-original/FINDINGS.md = unchanged copy) and adds regression tests that assert the
+CORRECTED behaviour. The review's own tests are kept unchanged under review-original/ (several deliberately PASS on the
+defect; against this candidate they now fail or no longer apply — see FINDINGS-DISPOSITION.md).
+
+Layout: source copied (core, format, holder-wasm/src+vendor, backend, wallet-lib, wallet-extension/src+build, tests, docs);
+params/*.bin and params/penumbra-2.1.1 are SYMLINKS to the reviewed candidate's files (no duplicated parameter files);
+wallet-extension/extension (static base) and node_modules are symlinks; own Cargo targets (target/, holder-wasm/target/).
+No browser profile, chain database or extension build was copied.
+
+CHANGED FILES
+backend/service.mjs           M5: freeLoopbackPort(), listenerOwnedBy(), ports:'exclusive'; HTTP port bound before the daemon
+                              starts; readiness requires our child alive + fakechain/offline/height 1 + lsof-verified listener
+                              ownership; refusal kills only our own child; close() waits for the daemon; operatorInject (test).
+backend/operator.mjs          H1: halt latched unconditionally (incident() dedupes by kind+txid). H2: exposureInWindow() counts
+                              'submitting' + paid-in-window; recoverSubmissions() before admission; payout() serialized by a
+                              per-operator gate; reservation persisted before custody; definite refusal (ok:false) releases;
+                              exception keeps the reservation; abandonSubmission() = explicit operator decision after custody
+                              confirms no receipt. paidInWindow() kept as an alias of exposureInWindow().
+wallet-lib/token-wallet.mjs   M1: operational manifest only from authenticated bytes; object must equal bytes (canonical JSON);
+                              pin without bytes refused; owned deep-frozen snapshot; exposes manifest, manifestSha256,
+                              manifestAuthenticated, startHeight; canonicalJSON() exported.
+wallet-extension/src/private-journal.js
+                              M2: writes run inside navigator.locks (Web Locks, exclusive, one name for every extension
+                              context) or an injected `locks`; without either, writes are REFUSED unless allowLeaseFallback:true;
+                              exclusionMode reported.
+wallet-extension/src/token-format.js
+                              M3: carrierOutcomeTransition() (carrier status separate from operation status: 'partial' while
+                              another carrier is on chain), canAbandon(), needsCarrier(), abandonPending() + "Abandon" button,
+                              refused/conflicted carriers never re-sent blindly by reconcile; L2: approval uses the exact xmr().
+wallet-extension/src/holder-carrier.js
+                              L2: xmr() is exact (<=12 decimals, trailing zeros removed); xmrApprox() for compact display, prefixed
+                              with ≈ when inexact.
+wallet-extension/src/holder-params.js
+                              L1: download(path,{expectedBytes}) bounded by the manifest length; single allocation; cancel at the
+                              first excess byte; truncated and mismatching content-length rejected; sha256 before parse/use.
+core/src/pool.rs              M4: parts of completed operations ignored (not stored); byte-identical duplicates ignored; only
+                              pairs containing the new part are tried; finish() removes every part of the operation and
+                              subtracts exactly that count. core/src/tests.rs: new regression.
+format/src/chain.rs, format/src/native.rs
+                              Q1: the replayed chain's final hash must equal the snapshot tip hash (empty replay handled
+                              explicitly) before the final tip re-read.
+wallet-extension/build.mjs    M5: XMR20_PRIVATE_FORMAT_PORT / XMR20_PRIVATE_RPC_PORT override the compiled-in test endpoints.
+flow.test.mjs, parts-rollback.test.mjs, browser-flow.test.mjs, browser-harness.mjs
+                              M5: exclusive per-run endpoints; the browser suite builds its disposable extension per run
+                              (buildTestExtension) with those endpoints compiled in.
+
+NEW TESTS (tests/)
+isolation.test.mjs            M5: occupied RPC port (disposable fixture daemon; refused, fixture height unchanged, fixture still
+                              running, no orphan), occupied HTTP port (fails before any process), exclusive ports (owned daemon).
+operator-regressions.test.mjs H1 (latch + reload), H2 (interrupted submission, reload, definite refusal, uncertain exception,
+                              abandonSubmission, concurrent requests).
+parameter-regressions.test.mjs
+                              L1 (oversized cancelled at first chunk, content-length mismatch, truncated, exact, tampered), M1
+                              (mismatching object refused, pin without bytes refused, frozen configuration, bytes only, wrong pin).
+wallet-regressions.test.mjs   M2 (two contexts, crash releases, slow holder, refusal without locks), M3 (transition rules,
+                              reservations held, abandonment rules, continuation), L2 (exact formatting).
+replay-snapshot.test.mjs      Q1: RPC proxy stages an A/B/A tip view over a disposable fakechain; the reviewed binary (read-only
+                              use) accepts the mixed snapshot, the fixed binary refuses it; a quiet chain scans normally.
+bridge-integration.test.mjs   H2 on the real backend (fakechain, roles, LiteSVM custody) through the real holder engine.
+
+NOT CHANGED
+The record formats, proofs, keys, address codec, record sizes, one-transaction public sends, optional shielding, two-part private
+transfers, holder-controlled keys, exact accounting and the native-disclosure rule are unchanged. The rollback-loss counterexample
+and the unverified Penumbra ceremony transcript remain as documented in RELEASE-NOTES.txt / RESULTS.txt of the reviewed candidate.

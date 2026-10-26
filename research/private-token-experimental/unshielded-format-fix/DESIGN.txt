@@ -1,0 +1,152 @@
+XMR20 TOKEN FORMAT v0.2-experimental — UNSHIELDED BY DEFAULT, OPTIONAL SHIELDED TRANSFERS
+research/token-format-unshielded-20261025 — started 25 October 2026 (owner decision of 25 Oct: public tokens by default, private
+transfers optional, no need to force a private transfer into one Monero transaction). Isolated additive candidate; the live website,
+installed wallet, bridge, NFTs, balances, services and every earlier lab are untouched. Independent review: NOT performed.
+Production parameters for the shielded part: Penumbra's published ceremony keys (section 5) — this candidate runs NO XMR20 setup.
+
+0. REQUIREMENTS (from the owner's handoff) AND HOW THIS DESIGN MEETS THEM
+  R-A  Newly bridged tokens arrive on Monero as PUBLIC (unshielded) notes by default.        -> XC1 credit (section 2.3)
+  R-B  Ordinary public transfers are ONE Monero transaction.                                   -> XP1 (2.2), 431-byte tx_extra max
+  R-C  Holders can shield what they own; shielded recipients stay shielded; unshield is explicit. -> XS1 / XU1 (2.5, 2.6)
+  R-D  Private transfers between shielded balances are TWO Monero transactions.                -> XM4 parts A and B (2.7)
+  R-E  Existing Monero-side holdings migrate into the public format, exact entitlement.        -> claim -> XC1 kind 2 (2.3, 6)
+  R-F  NO native output / key-image disclosure in any path (the demonstrated XN1 leak).        -> section 3
+  R-G  Keys stay with the holder; no witness or native input-selection secret leaves the device. -> unchanged holder engine (4)
+  R-H  Exact atomic accounting; backing invariant across legacy / public / shielded / pending.  -> section 7
+  R-I  Two transactions do not "solve" the trusted setup by themselves; document the setup.      -> section 5
+
+1. IDENTITIES AND KEYS (scheme XMR20-TKD1 kept; one new derived key)
+  root        = the account's 32-byte Monero private spend key (unchanged; one recovery phrase restores everything)
+  tsk         = BLAKE2b-256(key=root, personal="XMR20-TKD1", msg="xmr20/private-token/spend-key"||LE32(account))   (unchanged)
+                -> Penumbra SpendKey -> fvk, ivk, nk, shielded address (index 0)                                 (unchanged)
+  osk         = BLAKE2b-256(key=root, personal="XMR20-TKD1", msg="xmr20/public-token/owner-key"||LE32(account))   (NEW)
+                -> decaf377-rdsa SigningKey<SpendAuth> (scalar mod r); owner key opk = VerificationKey (32 bytes)
+  Why a separate owner key: the shielded key schedule stays exactly Penumbra's (audited assumptions untouched); a viewing-key
+  recipient (fvk = ak||nk) must NOT be able to spend public notes; the public ledger needs a plain signature key, not ak.
+  UNIFIED TOKEN ADDRESS (what a recipient hands out for both modes), bech32m HRP "xmr20t":
+                payload = shielded address raw 80 bytes (diversifier16 || pk_d32 || clue32, as Penumbra's inner bytes) || opk 32
+                = 112 bytes. The wallet derives both from one root; a sender uses opk for public sends and the shielded address
+                for private sends. The old "penumbra1…" string stays accepted as a PRIVATE-ONLY recipient (no public sends to it).
+  Monero keys for carrier fees: unchanged (spend = root mod l; view = Hs(root)); a separate, public, unrelated-looking value.
+
+2. RECORDS (all little-endian; concatenated fields, no tags; every record is framed as today: tx_extra 0x02 nonce chunks of
+   <=254 bytes each prefixed 0x7F, one tx pubkey field, optional encrypted payment id, total <= 1,060 bytes)
+  2.1 Public note (ledger state, not a wire record): id 32 = H("XMR20-PUBLIC-NOTE-v1\0" || recordId || LE16(outputIndex));
+      asset 32 (Penumbra asset::Id of "uxmr20private"+lowercase(mint) — SAME ids as the shielded pool, so shielding/unshielding
+      moves value within one asset); amount u64; owner opk 32. Spent when consumed by XP1, XR1 or XS1.
+  2.2 XP1 PUBLIC TRANSFER, magic 58 50 31 FE ("XP1\xfe"), variable 4..=4 inputs / 1..=4 outputs:
+      magic4 asset32 nIn1 nOut1 inputs(nIn x noteId32) outputs(nOut x (opk32 amount8)) sig64
+      sig = SpendAuth signature by the owner of ALL inputs (one owner per record) over m = H("XMR20-UNSHIELDED-AUTH-v1\0" || domain32
+      || body) where body = everything before sig. Rules: nIn in 1..=4, nOut in 1..=4, all inputs exist, unspent, same asset,
+      same owner; outputs positive; sum(in) == sum(out) (public, exact); outputs with the same opk allowed (change = output to self).
+      Max 390 record bytes -> 442-byte tx_extra. No token fee.
+  2.3 XC1 PUBLIC CREDIT, magic "XC1\xfe": magic4 kind1 asset32 amount8 owner32 binding32 issuerSig64 = 173 bytes (210 extra).
+      kind 1 = deposit credit (binding = deposit receipt nonce), kind 2 = migration credit (binding = legacy claim id).
+      issuerSig = SpendAuth signature by the single lab issuer key over H("XMR20-UNSHIELDED-ISSUER-v1\0" || domain || body).
+      Rules: amount > 0, binding != 0, binding never credited before (any kind, any format) -> creates ONE public note for owner.
+  2.4 XR1 PUBLIC BURN (redemption), magic "XR1\xfe": magic4 asset32 nIn1 inputs(nIn x 32) amount8 change(opk32 amount8) binding32 sig64
+      Rules as XP1 for inputs; amount > 0 is BURNED (bridge payout after D confirmations keyed by the carrier txid, exactly as today's
+      operator); sum(in) == amount + change.amount; change.amount may be 0 (then change.opk must be the owner and the note is not
+      created); binding != 0 (payout binding = H(destination, request) as today). Max 309 bytes -> 349 extra.
+  2.5 XS1 SHIELD (public -> shielded, one transaction), magic "XS1\xfe":
+      magic4 asset32 nIn1 inputs(nIn x 32) change(opk32 amount8) shieldedAmount8 out(cv32 payload176 proof192) ownerSig64 conservation64
+      The output is ONE Penumbra note for the holder's own shielded address (or any shielded address: shielding to someone else is a
+      public send; allowed but the UI only shields to self). proof = Penumbra OutputProof (Penumbra's output circuit and keys).
+      Conservation: sum(in) == change.amount + shieldedAmount (public arithmetic) AND the value commitment must commit to exactly
+      shieldedAmount: VerificationKey<Binding>(cv + commit(-shieldedAmount, blind 0)) verifies `conservation` over m (as XB3 does).
+      ownerSig by the public owner over m. 733 bytes max (4 inputs) -> 778 extra.
+  2.6 XU1 UNSHIELD (shielded -> public, one transaction), magic "XU1\xfe", exactly ONE shielded input:
+      magic4 asset32 anchor32 in(cv32 nf32 proof192) rk32 auth64 publicOut(opk32 amount8) change(cv32 payload176 proof192) conservation64
+      proof = Penumbra SpendProof; change = Penumbra OutputProof for the holder's own shielded address (zero-value change note allowed
+      and ignored by wallets as today). Conservation: cv_in + cv_change + commit(-publicAmount, 0) is the Binding verification key.
+      892 bytes -> 941 extra (952 with payment id). Two inputs with change would be 1,148 bytes: DOES NOT FIT; measured blocker,
+      hence one input per unshield (the wallet unshields note by note, or consolidates privately first). Recorded in RESULTS.
+  2.7 XM4 PRIVATE TRANSFER — TWO carriers, one operation. Three Penumbra SpendProofs + two OutputProofs, Penumbra keys.
+      opId 32 = H("XMR20-XM4-OP-v1\0" || domain || asset32 || anchor32 || nf1||nf2||nf3 || cm1||cm2) — every value the sender knows
+      before publishing anything; it binds both parts to one operation, asset, ledger, inputs and outputs.
+      Part A, magic "XMA\xfe": magic4 opId32 anchor32 3 x (cv32 nf32 proof192) rk32 auth64                      = 932 bytes (981 extra)
+        auth = SpendAuth signature by the SHARED randomized key rk (one randomizer for the three spends, as XM3) over
+        mA = H("XMR20-XM4-A-v1\0" || domain || opId || bodyA).
+      Part B, magic "XMB\xfe": magic4 opId32 2 x (cv32 payload176 proof192) binding64                           = 900 bytes (949 extra)
+        binding = Binding signature by the sum of all value blindings over mB = H("XMR20-XM4-B-v1\0" || domain || opId || bodyA || bodyB):
+        the Binding verification key is sum(cv_in) + sum(cv_out) (balance zero), so B is bound to A's exact public bytes and A to B's
+        output commitments through opId. Neither part means anything alone.
+      Indexer rule (section 7.2): the operation is applied at most ONCE, at the block where its last missing part becomes canonical,
+      iff at that moment: anchor is a known root, nullifiers unspent and distinct, output commitments fresh, both opIds equal the
+      recomputed opId, five proofs verify under Penumbra's keys, both signatures verify. Nothing is reserved on chain by part A alone.
+      Why two parts fit and one cannot: five 192-byte Penumbra proofs = 960 bytes; one record would be 1,764 bytes (previous study).
+  2.8 Amount of a credited/burned/shielded/unshielded value is PUBLIC by design (unshielded mode). Only XM4 hides amounts and
+      recipients (within the shielded pool).
+
+3. THE DISCLOSURE REQUIREMENT (R-F): what every record may contain
+  Allowed in a record: note ids (hashes of records), asset ids, amounts, owner public keys (opk), Penumbra public data (anchor,
+  nullifier, value commitment, randomized key, note commitment, encrypted payload), signatures over those, Groth16 proofs.
+  Forbidden anywhere (record bytes, RPC payloads, logs): a native output public key, a native key image, a ring index/position, a
+  proof linking a key image to an output (the XN1 DLEQ), native amounts/masks. The owner key opk is derived by a keyed PRF from the
+  root and has NO algebraic relation to any Monero key: verifying a record requires only opk; the Monero carrier's key image is the
+  ordinary one of whichever XMR output pays the fee. Migration claims use the plain Monero signature under the OLD output key
+  (R = rG + cP; no I = xHp(P)), unchanged from the rehearsed path. Test: records are grepped for every native output key and key
+  image the test wallets know; RPC request logs are grepped likewise (holder-leak-regression pattern).
+  Residual metadata (honest statement): carrier fee payer, timing, record sizes and the public amounts/owners in unshielded mode are
+  visible; two XM4 carriers share an opId and are therefore linkable to each other (not to the holder); decoy selection and native
+  input policy are monero-oxide's defaults, unchanged. "No known output/key-image disclosure" is not zero privacy impact.
+
+4. HOLDER ENGINE (wasm, copied from privacy-stagenet-roles-20261023/holder-wasm and extended)
+  New ops: derive -> also opk and the unified address; status -> {public:{balances,notes}, shielded:{balances,notes}, pending ops};
+  selectPublic; buildPublic (XP1), buildBurn (XR1), buildShield (XS1), buildUnshield (XU1), buildPrivate (XM4 -> two wires + opId);
+  verify (any record kind; XM4 part verification = both parts); carrierQuote per kind (wire length per kind). Proving keys: slot 0
+  = Penumbra spend_pk.bin (21,673,392 bytes), slot 1 = output_pk.bin (7,257,360 bytes), authenticated against the shipped manifest
+  (sha256 = Penumbra's git-lfs object ids) and against Penumbra's PROVING_KEY_ID / VERIFICATION_KEY_ID (debug_id) constants.
+  Carrier: holder-funded as today. A private transfer needs TWO spendable XMR outputs (Monero's 10-block output lock forbids
+  spending part A's change in part B); the wallet checks this before quoting and says so.
+
+5. PROOF SYSTEM AND SETUP ASSUMPTIONS (R-I)
+  Circuits: Penumbra SpendCircuit and OutputCircuit from penumbra-sdk-shielded-pool 2.1.1 (vendored copy unchanged in cryptography).
+  Keys: penumbra-sdk-proof-params 2.1.1 spend_pk.bin / output_pk.bin (git-lfs objects 87eca85b… and c9e97866…, downloaded 25 Oct and
+  verified against the crate's pointer hashes) and spend_vk.param / output_vk.param from the crate. These came from Penumbra's
+  summoning ceremony (phase 1 2023, >15,000 contributors; phase 2 2024). XMR20 does not run any setup; the trust statement becomes
+  "at least one Penumbra ceremony participant per phase destroyed their secret". What this candidate has NOT done: verify Penumbra's
+  ceremony transcript (not located in their spec; their crate pins key ids only). Two carriers do not change any of this: they only
+  make room for five standard proofs instead of one composed proof. If Penumbra ever rotates keys, our manifest pins ours.
+  Public records (XP1/XC1/XR1) use no proofs at all.
+
+6. MIGRATION (R-E) — unchanged claim path, public target
+  Snapshot/reconciliation tooling and the cutover rules from the release candidate (migration/) are reused: per mint, rows
+  (claim id, legacy owner output key P, amount). The holder signs the claim body {MIGRATE, claim, amount, owner = unified address}
+  with the plain Monero signature under P (no key image), the issuer publishes XC1 kind 2 for `amount` to the claimant's opk.
+  Exactly once per claim (indexer refuses a second credit for the binding); 10,000 EXTREMIST -> 10,000 public EXTREMIST, no fee, no
+  bridge tax; the credit carrier's XMR fee is paid by the issuer and disclosed. Shielding afterwards is the holder's explicit choice.
+  Production snapshot/cutover: to be documented, never chosen here; real holdings untouched.
+
+7. ACCOUNTING AND INDEXER STATE (R-H)
+  7.1 Per asset: minted (XC1 sum), burned (XR1 sum), publicSupply (sum of unspent public notes), shieldedSupply (XS1 amounts in minus
+      XU1 amounts out; the shielded pool's own conservation keeps it exact), pendingParts (XM4 halves awaiting their counterpart).
+      INVARIANT: publicSupply + shieldedSupply == minted - burned, checked after every block in tests and exposed in `summary`.
+  7.2 Multi-part operations: parts are stored by (opId, kind, recordHash) when they decode; on every part arrival the indexer tries
+      every stored counterpart; the first (canonical order) pair that validates is applied and both parts are consumed; invalid pairs
+      are left in place (so an attacker's bogus look-alike part cannot block the real one). Parts never expire on chain. Rollback:
+      the indexer replays the whole chain from genesis (as today), so a popped part simply disappears with its block.
+  7.3 Wallet reservations: notes selected for an operation are reserved in the encrypted journal until the op is confirmed or
+      REJECTED; an op with one part published and the other missing is resumed (re-quote and publish the missing part). Releasing
+      a reservation after abandoning an op is safe because the ledger applies a late completion only if the nullifiers are still
+      unspent; a later spend of the same notes makes the old half permanently inert. The journal keeps both wires and both carriers.
+  7.4 Bridge/operator: credits are XC1; payouts are keyed by the XR1 carrier txid after D confirmations (D provisional, 10 default,
+      20 tested) with the same reorganisation detection/pause/halt as the release candidate; the rollback-loss counterexample after
+      an irreversible payout REMAINS (unchanged by the format). Marketplace: settlement requirements unchanged; trading disabled.
+
+8. WALLET BEHAVIOUR (popup; R-B..R-D)
+  Rows: one per asset with "Public" and "Shielded" balances (and pending). Detail: Send (choice: Public transfer — 1 transaction;
+  Private transfer — 2 transactions, requires a shielded balance), Shield (1 tx), Unshield (1 tx per note), Bridge (public balance
+  only; a shielded balance shows "Unshield first" and never unshields silently), Migrate (legacy -> public). Before approval the
+  review shows the exact transaction count and the sum of the quoted XMR fees for every carrier of the operation; if the user chose
+  Private transfer with only a public balance, the wallet offers Shield first and shows 1 + 2 = 3 transactions with three fees.
+  Boundaries are explained: shielding/unshielding publishes the amount and links the public owner to a shielded output event.
+  Existing layout rules (Send above Bridge, Max, empty amount with grey 0, actions visible at short heights) are kept.
+
+9. WHAT IS COPIED, WHAT IS NEW
+  Copied unchanged (path dependencies or verbatim copies, pinned): monero-wallet vendor, vendored penumbra-sdk-shielded-pool,
+  xmr20-multi-input-lab (compact Payload codec, Ledger/TCT), lab chain/native/transport/legacy_sign/vault modules, holder-wasm
+  native/transport, backend solana.mjs/operator.mjs, wallet extension sources (own copy, test build flag), migration tooling.
+  New: format/src/{public.rs, shield.rs, private2.rs, pool.rs, keys.rs} (records, proofs with Penumbra keys, indexer state),
+  roles main.rs adaptations, holder-wasm ops, backend actions (public credits, burns, shield/unshield awareness), popup module,
+  tests (Rust unit + Node integration + browser), parameter manifest format XMR20-PARAMS-2 with a provenance section.

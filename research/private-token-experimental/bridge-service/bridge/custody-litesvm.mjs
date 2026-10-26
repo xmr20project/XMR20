@@ -12,7 +12,7 @@
 // Synthetic keys only. VM finality is synthetic.
 import {Transaction,PublicKey} from '@solana/web3.js';
 import {TOKEN_2022_PROGRAM_ID as TOKEN,getAssociatedTokenAddressSync,createAssociatedTokenAccountIdempotentInstruction} from '@solana/spl-token';
-import {createBridge} from '../../token-format-unshielded-20261025/backend/solana.mjs';
+import {createBridge} from '../../token-format-unshielded-fix-20261026/backend/solana.mjs';
 import {execute,signed} from '../../../proof-of-concepts/joint-escrow-wallet/core-next/test-fixture.mjs';
 import {bridgeInstruction,decodeBridgeReceipt} from '../../../proof-of-concepts/joint-escrow-wallet/core-monero-send/bridge-sdk.mjs';
 export function createLiteSvmCustody({legacyGross=0n,layout='synthetic',mintAddress=null,decimals=6,mintData=null}={}){
