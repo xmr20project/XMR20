@@ -467,9 +467,12 @@ test-v1 manifest, compiled Solana custody in LiteSVM. EXECUTED ON STAGENET = ret
    boundary.public-pk 64,409,328 B sha256 33745cd2…); FULL verify (circuits recompiled, both logs replayed with every contribution
    validated and linked, transition recomputed, keys recombined and compared byte-for-byte with the files and the manifest) ok=true in
    3764 s (20:09–21:12Z), vkMatches true for both circuits. Build attempts 1–4 retained (runs/ceremony-build-attempt*.log).
-   ceremony/ceremony-rehearsal.test.mjs (verify --quick, tamper cases, manifest binding, end-to-end prove/verify with the rehearsed keys on
-   the backend) was STARTED at 21:17Z and was still running at publication time (its quick verify alone exceeds 40 CPU-minutes); its
-   result and params/ceremony-rehearsal-v1/manifest.json follow in a later commit. Participant guide and announcement DRAFTS written
+   ceremony/ceremony-rehearsal.test.mjs — PASSED 3/3 (runs/ceremony-rehearsal-test-attempt1.log; 21:17Z–23:36Z, 8,354 s; the first
+   commit of this follow-up went out while it was still running): (1) the rehearsal verifies from files with `verify --quick` (R1CS
+   recomputed, both logs replayed, keys recombined byte-for-byte; 3,116 s); (2) tampering is refused — a flipped byte in a contribution,
+   a substituted proving key, a foreign chain (5,121 s, each refusal exercised by a full verifier pass); (3) the XMR20-PARAMS-1 manifest
+   is bound to the attestation (params/ceremony-rehearsal-v1/manifest.json), the roles refuse a foreign manifest, and a holder proves a
+   transfer and a redemption with the REHEARSED keys that the indexer verifies on the backend (115 s). Participant guide and announcement DRAFTS written
    (ceremony/PARTICIPANT-GUIDE.txt, ANNOUNCEMENT-DRAFT.txt); nobody contacted. Phase-1 reuse of Penumbra's ceremony: degree UNVERIFIED
    (ceremony/README.txt 3). Superseded in direction by the unshielded-format candidate (research/token-format-unshielded-20261025), which
    needs no XMR20 setup at all; this tooling remains the path if a composed XMR20 circuit is ever adopted.
