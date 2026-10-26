@@ -1,0 +1,25 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✖ payout depth policy D=20: rollbacks below/at/beyond the depth before payout are detected, pause payouts and re-validate; the post-payout loss is preserved (57229.122125ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 59029.39525
+
+✖ failing tests:
+
+test at settlement/payout-depth-policy.test.mjs:29:1
+✖ payout depth policy D=20: rollbacks below/at/beyond the depth before payout are detected, pause payouts and re-validate; the post-payout loss is preserved (57229.122125ms)
+  Error: Unknown engine op open
+      at finish (file://<workspace>/research/privacy-release-candidate-20261025/wallet-extension/src/holder-engine.js:15:86)
+      at file://<workspace>/research/privacy-release-candidate-20261025/wallet-extension/src/holder-engine.js:18:90
+      at guard (file://<workspace>/research/privacy-release-candidate-20261025/wallet-extension/src/holder-engine.js:16:30)
+      at Object.call (file://<workspace>/research/privacy-release-candidate-20261025/wallet-extension/src/holder-engine.js:18:24)
+      at open (file://<workspace>/research/privacy-release-candidate-20261025/settlement/payout-depth-policy.test.mjs:36:291)
+      at async TestContext.<anonymous> (file://<workspace>/research/privacy-release-candidate-20261025/settlement/payout-depth-policy.test.mjs:47:11)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3)
+exit 1

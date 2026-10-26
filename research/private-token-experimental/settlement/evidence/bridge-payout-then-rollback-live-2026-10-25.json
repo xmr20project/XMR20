@@ -1,0 +1,108 @@
+{
+ "execution": "SIMULATED (offline zero-peer fakechain; controlled /pop_blocks rollback; LiteSVM Solana custody)",
+ "confirmations": 10,
+ "steps": [
+  {
+   "at": "2026-10-25T16:48:18.248Z",
+   "name": "deposited and credited",
+   "credit": "912ae69a2d2c03c198f2bfc6ec0b3abbba5b5915ca29212351e8a217cc5f1640",
+   "balanceA": "98500000"
+  },
+  {
+   "at": "2026-10-25T16:48:49.929Z",
+   "name": "backing before the burn",
+   "asset": "3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f",
+   "reserve": "1083500000",
+   "owed": "1083500000",
+   "ok": true,
+   "shortfall": "0",
+   "lossBearer": "operator backing shared by all holders (no per-holder insurance)",
+   "buckets": {
+    "unclaimedLegacyRights": "985000000",
+    "depositsAwaitingCredit": "0",
+    "claimsAwaitingCredit": "0",
+    "outstandingPrivateNotes": "98500000",
+    "confirmedBurnsAwaitingPayout": "0"
+   },
+   "minted": "98500000",
+   "burned": "0",
+   "incidents": 0,
+   "halted": false
+  },
+  {
+   "at": "2026-10-25T16:49:13.794Z",
+   "name": "burn paid out on Solana (irreversible program execution)",
+   "burnTxid": "fc1b04e7edb5c4a232dec5d104d4463e65e674d665e8231174eb510a0248fd15",
+   "burnHeight": 334,
+   "payoutNet": "39400000",
+   "liabilities": {
+    "asset": "3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f",
+    "reserve": "1043500000",
+    "owed": "1043500000",
+    "ok": true,
+    "shortfall": "0",
+    "lossBearer": "operator backing shared by all holders (no per-holder insurance)",
+    "buckets": {
+     "unclaimedLegacyRights": "985000000",
+     "depositsAwaitingCredit": "0",
+     "claimsAwaitingCredit": "0",
+     "outstandingPrivateNotes": "58500000",
+     "confirmedBurnsAwaitingPayout": "0"
+    },
+    "minted": "98500000",
+    "burned": "40000000",
+    "incidents": 0,
+    "halted": false
+   }
+  },
+  {
+   "at": "2026-10-25T16:49:14.413Z",
+   "name": "rollback removed the burn",
+   "popped": 11,
+   "from": 343,
+   "to": 332
+  },
+  {
+   "at": "2026-10-25T16:49:44.854Z",
+   "name": "COUNTEREXAMPLE REPRODUCED: payout final, burn gone, note re-spent, backing short",
+   "liabilities": {
+    "asset": "3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f",
+    "reserve": "1043500000",
+    "owed": "1083500000",
+    "ok": false,
+    "shortfall": "40000000",
+    "lossBearer": "operator backing shared by all holders (no per-holder insurance)",
+    "buckets": {
+     "unclaimedLegacyRights": "985000000",
+     "depositsAwaitingCredit": "0",
+     "claimsAwaitingCredit": "0",
+     "outstandingPrivateNotes": "98500000",
+     "confirmedBurnsAwaitingPayout": "0"
+    },
+    "minted": "98500000",
+    "burned": "0",
+    "incidents": 1,
+    "halted": true
+   },
+   "incident": {
+    "kind": "paidWithoutBurn",
+    "txid": "fc1b04e7edb5c4a232dec5d104d4463e65e674d665e8231174eb510a0248fd15",
+    "amount": "40000000",
+    "tip": 342,
+    "note": "Solana payout is final; the Monero burn left canonical history. Cannot be revoked."
+   },
+   "respendTxid": "1006b94be7282c1d4671eb454576e98dffb6fb6807f331d15cdee286efd41548",
+   "burnVerifyAfter": "rejected"
+  }
+ ],
+ "reproduced": true,
+ "summary": {
+  "paidAmount": "40000000",
+  "shortfall": "40000000",
+  "lossBearer": "operator backing shared by all holders (no per-holder insurance)",
+  "burnTxid": "fc1b04e7edb5c4a232dec5d104d4463e65e674d665e8231174eb510a0248fd15",
+  "respendTxid": "1006b94be7282c1d4671eb454576e98dffb6fb6807f331d15cdee286efd41548",
+  "incident": "paidWithoutBurn",
+  "failingAssumption": "a burn with CONFIRMATIONS Monero confirmations is treated as final when releasing an IRREVERSIBLE Solana payout; Monero offers no finality and no maximum reorganisation depth, so the burn can leave canonical history after the payout and any instance without the local reservation can re-spend the notes"
+ }
+}

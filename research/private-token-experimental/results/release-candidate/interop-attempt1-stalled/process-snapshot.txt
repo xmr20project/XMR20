@@ -1,0 +1,19 @@
+Sun Oct 25 00:27:05 UTC 2026
+integration-suite.log tail:
+[suite] observer-gated payout (conformance/observer-gated-payout.test.mjs)…
+[suite] PASS observer-gated payout: 1/1 in 240s
+[suite] interop vectors + independent checker (interop.test.mjs)…
+
+processes positively identified as the stalled attempt (suite runner -> node --test interop.test.mjs -> test child -> Chromium):
+  PID  PPID  ELAPSED COMMAND
+ 4756 89967 01:20:32 node --test interop.test.mjs
+ 4757  4756 01:20:32 /opt/homebrew/Cellar/node/24.1.0/bin/node interop.test.mjs
+ 5608  4757 01:19:39 <home>/Library/Caches/ms-playwright/chromium-1194/chrome-mac/Chromium.app/Contents/MacOS/Chromium --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-s
+89967 89966 01:36:07 node integration-suite.mjs
+
+children of 4757 (no fakechain: backend.close() already ran in finally):
+5608
+listening TCP ports held by 4757/5608/89967: none (lsof)
+evidence written at 23:07 UTC: steps.json=[] network-audit totalRequests=0
+wallet-extension/extension-private-holder-test exists: NO
+attempt-2 runner start: Sat Oct 24 23:50:58 2026    

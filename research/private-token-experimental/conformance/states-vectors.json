@@ -1,0 +1,38 @@
+{
+ "format": "XMR20-STATES-1",
+ "protocol": "XMR20-PRIVATE-v0.1-experimental",
+ "confirmations": 10,
+ "note": "Operation-state vocabulary and transitions every component must implement identically (CONFORMANCE.txt 5). 'display' is the minimum meaning a user must see; 'exit' is the reference process exit code; 'sendAllowed' says whether a (re)send of the SAME blob may follow; 'showSuccess' is always false except confirmed.",
+ "states": {
+  "selected":    {"display": "Preparing (nothing sent, no fee)", "exit": 2, "sendAllowed": false, "showSuccess": false, "reserves": ["notes"]},
+  "quoted":      {"display": "Fee quoted (nothing sent, no fee)", "exit": 2, "sendAllowed": false, "showSuccess": false, "reserves": ["notes", "nativeInput"]},
+  "built":       {"display": "Proved; awaiting carrier fee approval (nothing sent, no fee)", "exit": 2, "sendAllowed": false, "showSuccess": false, "reserves": ["notes"]},
+  "signed":      {"display": "Signed; not yet broadcast", "exit": 2, "sendAllowed": true, "showSuccess": false, "reserves": ["notes", "nativeInput"], "rule": "lookup before send"},
+  "broadcasting":{"display": "Broadcast outcome UNKNOWN", "exit": 2, "sendAllowed": true, "showSuccess": false, "reserves": ["notes", "nativeInput"], "rule": "journaled BEFORE the network call; resume = lookup first"},
+  "uncertain":   {"display": "Broadcast outcome UNKNOWN", "exit": 2, "sendAllowed": true, "showSuccess": false, "reserves": ["notes", "nativeInput"], "rule": "never shown as sent or failed; lookup on next reconcile; same blob only"},
+  "published":   {"display": "Published; waiting for a block", "exit": 2, "sendAllowed": true, "showSuccess": false, "reserves": ["notes", "nativeInput"], "rule": "after 2 blocks without inclusion: lookup, then same blob"},
+  "mined":       {"display": "Mined; n of 10 confirmations", "exit": 2, "sendAllowed": false, "showSuccess": false, "reserves": ["notes", "nativeInput"]},
+  "confirmed":   {"display": "Confirmed (10 confirmations)", "exit": 0, "sendAllowed": false, "showSuccess": true, "reserves": []},
+  "released":    {"display": "Cancelled before proving; nothing sent, no fee", "exit": 0, "sendAllowed": false, "showSuccess": false, "reserves": []},
+  "rejected":    {"display": "Rejected: notes spent elsewhere; nothing sent, no fee", "exit": 1, "sendAllowed": false, "showSuccess": false, "reserves": []},
+  "conflicted":  {"display": "Carrier conflicted (XMR input spent elsewhere); record kept; approve a new carrier", "exit": 1, "sendAllowed": false, "showSuccess": false, "reserves": ["notes"]},
+  "refused":     {"display": "Node refused the carrier; record kept; approve a new carrier", "exit": 1, "sendAllowed": false, "showSuccess": false, "reserves": ["notes"]}
+ },
+ "transitions": [
+  ["selected", "quoted", "fee quote"], ["quoted", "built", "approve + prove"], ["quoted", "released", "cancel/stale"],
+  ["built", "signed", "sign with approved quote"], ["built", "rejected", "local admission fails (notes spent elsewhere)"],
+  ["signed", "broadcasting", "journal before send"], ["signed", "published", "lookup: node already has it (recovered)"],
+  ["broadcasting", "published", "accepted or recovered by lookup"], ["broadcasting", "uncertain", "no reply, unknown to node after bounded attempts"],
+  ["broadcasting", "refused", "node refusal (final)"], ["broadcasting", "conflicted", "double spend of the XMR input"],
+  ["uncertain", "published", "lookup known / same blob accepted"], ["uncertain", "rejected", "unknown AND record fails local admission"],
+  ["published", "mined", "included in a block"], ["mined", "confirmed", ">= 10 confirmations"],
+  ["mined", "published", "block rolled back; same carrier re-sent for no new fee"], ["confirmed", "signed", "rollback below the record: same carrier re-sent (no new fee) unless notes spent elsewhere -> rejected"]
+ ],
+ "invariants": [
+  "exactly one carrier fee per completed operation",
+  "the only bytes ever sent for an operation are its signed carrier blob",
+  "a refusal or a conflict never auto-builds a new carrier",
+  "no state other than confirmed is displayed as success",
+  "a fresh installation from the phrase sees chain state only (no pending journal)"
+ ]
+}

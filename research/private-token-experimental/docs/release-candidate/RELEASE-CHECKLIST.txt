@@ -1,0 +1,154 @@
+RELEASE CHECKLIST — XMR20 PRIVATE TOKENS, ONE INTEGRATION CANDIDATE
+research/privacy-release-candidate-20261025 (additive; built from the newest verified candidates), 25 October 2026.
+Intended experience: Solana tokens -> bridge to Monero -> automatically private balances -> private transfers between
+compatible wallets -> bridge back to Solana OR buy/sell on the native XMR marketplace.
+This checklist is built from current code and evidence only. A blocker closed by a newer test is not carried forward.
+"Verified" means a reproducible test or an executed run with retained evidence; it never means audited or ready for funds.
+
+0. EXACT VERSIONS UNDER TEST (pinned; hashes are sha256)
+  protocol            XMR20-PRIVATE-v0.1-experimental; key scheme XMR20-TKD1; manifest format XMR20-PARAMS-1
+  records             XM3 transfer 996 B (3 in / 2 out), XB3 boundary 925 B (3 in / 1 out); carrier tx_extra 1,056 / 985 B
+  circuits            3x penumbra-sdk-shielded-pool 2.1.1 SpendCircuit + 2x (XM3) / 1x (XB3) OutputCircuit, one shared
+                      randomizer; ark-groth16 0.4.0 on BLS12-377; decaf377 0.10.1; decaf377-rdsa 0.11.0 (issuer key)
+  engine (wasm)       holder-wasm (source: privacy-stagenet-roles-20261023/holder-wasm, Cargo.lock 3,626 lines)
+                      xmr20_holder_wasm.wasm 2c866f39e64f40a209842fb5c4d59d6fe2bbf9ad910dd9aed65bc06fb396a86f (5,035,317 B)
+  lab roles binary    privacy-stagenet-roles-20261023-lab xmr20-integration-lab 375a49e2d0208acd35d25d41ad158cd16dbcc28d50ffca360417cef9905a160e
+  parameter sets      test-v1 manifest ae7ba302194ca3e6… (offline fakechain; normal pk 82,675,440 B, boundary pk 64,409,328 B);
+                      stagenet-v0 manifest 066d839bcd6b0f01…; TRUSTED stagenet manifest ed12e12441ab4f6d… (startHeight 2,235,745)
+                      ALL DISPOSABLE SINGLE-PARTY SETUPS (review/08); verifying keys pinned in each manifest
+  extension           XMR20 Stagenet — Test funds only 0.1.94: app.js df30a0a624967c83…, private-holder.worker.js 0cf9670e9dea772f…
+                      (built from wallet-extension/src in this candidate; rebuild: XMR20_PRIVATE_HOLDER_TEST=stagenet node build.mjs)
+                      XMR20 Wallet — Private holder test 0.1.93 (offline fakechain build used by the popup suites and the interop
+                      test; REBUILT 25 Oct 16:35 UTC in this candidate with XMR20_PRIVATE_HOLDER_TEST=local after the catalog fixes): app.js bdbad7fe380f5482…
+                      (was 82c3b69e… in run 5),
+                      background.js 5e87784b2093abfd…, private-holder.worker.js 6333f2feb1ce3922…, vendor/holder.wasm = the engine
+                      above (2c866f39…). app.js/background.js/approval.js/manifest reproduce byte-for-byte the 24 Oct build of
+                      the previous candidate; the worker differs because that earlier local build predates the 18:16 source edit
+                      (stagenet-aware native-address check), which the current source and the stagenet build contain.
+  toolchain           rustc/cargo 1.99.0; Node v24.1.0; Monero v0.18.5.3 (node + fakechain); Playwright 1.56.1 (Chromium 1194);
+                      Solana custody: compiled program in LiteSVM (proof-of-concepts/joint-escrow-wallet, pinned by that lab)
+  build reproduction  25 Oct: all four pinned binaries REBUILT BYTE-FOR-BYTE from their recorded sources on this machine
+                      (reproduce-builds.mjs -> runs/repro-builds/BUILD-RECIPE.txt + report.json with per-file source hashes):
+                      engine wasm 2c866f39… and lab roles 375a49e2… / lab backend 3fb8842c… (rustc 1.99.0, --offline --locked, in the
+                      recorded target directories), custody program a8b7c791… (platform-tools v1.57 = rustc 1.95.0-dev + LLD 22.1.2,
+                      registry path remapped). Measured path dependence: the wasm and lab binaries embed the absolute path of the
+                      monero-bulletproofs build-script output directory, and any RUSTFLAGS changes that directory's hash, so the
+                      recorded digests reproduce only in the recorded absolute locations; a path-independent (remapped) build is a
+                      NEW digest and would re-run the suite. Published digests and an independent rebuild do not exist (section 3).
+  spec                SPEC-XMR20-PRIVATE-TOKENS-v0.1-experimental.txt (this folder) + CONFORMANCE.txt (this candidate);
+                      interop vectors vectors/vectors.json; independent checker independent/check.mjs
+
+1. IMPLEMENTED AND VERIFIED (reproducible here; evidence retained)
+  - Private-by-default holder wallet: keys derived in the extension/library from the phrase (XMR20-TKD1), local scanning of
+    the public chain, proofs in the holder, exact change, holder-paid carriers with the fee shown before proving.
+    Evidence: browser suites (carrier/recovery/journal/interruptions 4/4 offline), stagenet real-popup run PASSED
+    (privacy-stagenet-wallet-20261024/RESULTS.txt), stagenet rehearsal and recovery cases (privacy-stagenet-roles-20261023).
+  - Lookup-before-retry and pending-input handling in the popup, library and reference process: lost reply, lost request,
+    crash at every journal boundary, stale backups, two installations, rollback re-send with the same txid and no second fee.
+  - Parameter authentication against the shipped manifest at every layer (holder, issuer, indexer); tampered, truncated,
+    foreign and swapped files refused before use; network/domain separation (mainnet refused everywhere; stagenet vs
+    fakechain refused at both layers; genesis and ledger domain checked).
+  - Lab issuer/indexer canonical replay; invalid-record rejection; rollback handling (pool rebuilt from the canonical chain);
+    REPLAY EQUIVALENCE clean-vs-incremental (conformance/indexer-replay-equivalence.test.mjs, this candidate).
+  - Bridge in simulation: deposits signed in the popup, private credits, redemption burns, exactly-once payout, backing
+    invariants and exposure RATE controls, legacy claims with duplicate refusal (stage 3 and integration labs).
+  - Catalog tokens through the REAL popup (browser-catalog-migration-bridge.test.mjs, RESULTS 4b): EXTREMIST (0 bps) and LUKE
+    (150 bps, real mint bytes) migrated in the UI (one of them interrupted after signing and completed automatically), transferred
+    with exact change, bridged back with payout refused below the depth and paid exactly at depth 10, never twice, deposited at each
+    mint's own fee, restored into a fresh profile. Two wallet defects found and fixed by it: claims never named their token (every
+    catalog claim failed), and a redemption above the operator's single-payout limit burned tokens before the refusal (now refused
+    before proving). Synthetic lots and holdings; lab exposure limits (100 units per payout) remain lab policy, not a product rule.
+  - Both settlement counterexamples reproduced and preserved (SETTLEMENT-DESIGN.txt; settlement/).
+  - PROVISIONAL 20-confirmation withdrawal policy (RESULTS 12; CONFORMANCE 7): reorganisation detection, pause, explicit resume,
+    depth re-validated against the burn's current height; rollbacks below/at/beyond the depth before and after payout; the
+    post-payout loss reproduced again at 20 (no reserve, insurance or depth assumption introduced). SIMULATED.
+  - Marketplace construction "listing reservation + bundled trade" modelled (RESULTS 10): fair under reordering, conflicting spends
+    and rebroadcast; counterexample B' (listing reorganised) RETAINED; trading stays disabled.
+  - Migration preparation (RESULTS 9): public-data snapshot/reconciliation over all 66 mints with reproducible digest and per-mint
+    envelopes where derivable (57/66), cutoff-boundary and rollback rules on the isolated legacy indexer, changeover steps written;
+    no cutoff chosen, no holder frozen.
+  - Third-party legacy migration (SYNTHETIC holdings): one catalog-driven rule for XMR20-launched tokens, exercised end to
+    end on FIVE selected existing mints (EXTREMIST acceptance journey: 10,000 legacy -> exactly 10,000 private, interrupted/
+    duplicate/cutoff/fresh-installation, private transfer, redemption to the same mint; XTAC, LUKE, XMR20~5NPSXG and COVERT by
+    the same path) plus USVEU added after startup (migration/legacy-migration.test.mjs). The 66 catalog entries are covered
+    for asset-id derivation/uniqueness and metadata only; real mint account bytes and decimals verified on chain for the six
+    instantiated. Later deposits and redemptions follow each mint's own transfer-fee setting exactly (0 or 150 bps); migration
+    itself credits the full entitlement with no fee.
+  - Parameter authentication (holder loader: every tampered/foreign/swapped/truncated/interrupted/cached-corrupt case refused
+    before use) and the engine suite (1/2/3-input sends, conflicting record refused by local admission, redemption, recovery,
+    viewing-only engine), both ported from the stage-1 relay to holder-funded carriers without weakening any assertion.
+  - Record admission against tampering, separated from duplicate-spend prevention: a valid UNSPENT record is admitted by an
+    independent verifier state while substituted or corrupted proof / auth-signature / binding-signature fields and a truncated
+    record are rejected for that reason (engine messages "Combined proof rejected", "Invalid signature.", "Conservation
+    rejected", "invalid data", "Fixed experimental record required"), the verifier state is unchanged by rejections, the holder
+    refuses to pay a carrier for a tampered record, and the same wire is a duplicate spend only after it was mined
+    (interop.test.mjs step 7; RESULTS 5d — the earlier check had only shown the spent-input refusal).
+  - Integration-result reuse by CONTENT identity only (suite-provenance.mjs; runner self-test 4/4): sources, spawned scripts,
+    engine wasm, lab binaries, monerod, custody program, parameter manifests and proving-key bytes, built extension and toolchain
+    are hashed per suite; a previous pass is reused only on identical digests, keeps its origin, and partial runs never claim
+    completion (RESULTS 5e).
+  - Scale: one million encrypted notes indexed in 29 s, wallet recovery 84 s (1,000 notes) / 506 s (899,000 notes) on an
+    Apple M4 Pro, output-proof verification 1.84 ms each (privacy-scale-20261022; component timings, not full validation).
+
+2. IMPLEMENTED BUT INADEQUATELY TESTED
+  - Marketplace (native XMR trading) wallet/controller: tested only in its own lab with lab limits; not integrated with the
+    current engine, and GATED by design (counterexample B). No integration test in this candidate exercises trading.
+  - Bridge adapters against the LIVE Solana program/liquidity: only the compiled custody in LiteSVM; no devnet/mainnet-fork run.
+  - Operator persistence: journal file corruption and restart covered only by the small test in this candidate
+    (conformance/operator-journal-corruption.test.mjs); no long-running storage, compaction or multi-process operator.
+  - Independent chain observation: implemented as a payout GATE in this candidate (backend/service.mjs observers) and tested
+    with a disagreeing second daemon; not yet applied to credits, trading or the roles' own admission.
+  - Two installations spending concurrently on the real network (offline only; stagenet by design excludes it).
+  - Proving cost on representative devices: 31-35 s single-threaded, ~400 MB (one laptop class measured); no phone/low-end data.
+  - Popup trusts one node (no second observation in the wallet); viewing-key sharing exercised only with the lab indexer.
+
+3. MISSING ENGINEERING
+  - Production bridge adapter path (authentication, operator key custody, live program compatibility rehearsal on devnet/fork).
+  - Reversible payout escrow on Solana (SETTLEMENT-DESIGN 4.7) if the product adopts it; nothing exists today.
+  - Bundled trade transaction primitive (SETTLEMENT-DESIGN 4.1) and any operator-arbiter escrow (4.4) — not built.
+  - Ceremony tooling: constraint-system digest tool, transcript verifier, deterministic finalisation (review/08 R1.b, R2.c).
+  - Live program rehearsal on Solana DEVNET: prepared (fresh test keys, plan, real-vs-mock table in runs/devnet/README.txt) but
+    BLOCKED: the devnet faucet refused every request from this machine; the web faucet needs an owner login (RESULTS 11).
+  - Reproducible builds beyond this machine: the locked recipe (section 0) reproduces every pinned binary here, but the wasm and
+    lab binaries are path-dependent (embedded build-script output path), no digest is published, and nobody independent has
+    rebuilt them. Needed: a remapped, path-independent engine build adopted as the next pinned digest (full suite re-run), the
+    digest published with the recipe, and at least one rebuild by someone else.
+  - Monitoring/reconciliation service, incident stops and runbooks as deployable components (only lab latches exist).
+  - Legacy cutover enforcement in the shipping indexer (the lab registry refuses duplicate claims; the production path
+    that must stop old-style issuance is not integrated here). REAL cutover snapshots per token (legacy lots from the actual
+    Monero inscription records at the cutoff height) are not taken: the migration test uses synthetic lots.
+  - Upgrade/compatibility path between protocol versions (a new ledger domain = migration event; no tooling).
+
+4. UNRESOLVED PROTOCOL / DESIGN QUESTIONS
+  - Settlement across chains without finality: A (bridge payout vs vanished burn) and B (buyer pays, no tokens). No
+    protocol construction eliminates them (SETTLEMENT-DESIGN 3-5); choices are trust/custody/policy decisions.
+  - Change-chain linkage and carrier fingerprint (unusual tx_extra size marks carriers publicly) — accept/document.
+  - Confirmation depth: 10 is a lab setting; no reviewed depth for any claim.
+  - Memory-erasure limits in JavaScript (phrase/key material in the worker) — accept/document.
+  - Whether the marketplace stays off the private format (product decision).
+
+5. INDEPENDENT REVIEW AND PRODUCTION-PARAMETER REQUIREMENTS (none satisfied; nothing commissioned; nothing paid)
+  - Independent security review: NOT performed; deliberately deferred by the owner on 25 Oct (nobody contacted). Nothing in this
+    candidate — including AI-assisted review — counts as it.
+  - Parameter setup TOOLING: built and rehearsed in ceremony/ (RESULTS 8; ceremony/README.txt explains the existing setup, its risk,
+    the correct procedure for our composed circuits and exact instructions for independent participants). The rehearsal's
+    participants were processes on one laptop: ZERO independent participants; its output is disposable and labelled so.
+  - Alternatives to an XMR20-specific setup were studied on 25 Oct (PROOF-SYSTEM-ALTERNATIVES.txt): a zkVM Groth16 wrapper (RISC
+    Zero / SP1, vendor ceremonies) would FIT the 1,060-byte tx_extra (932-byte record with a 128-byte compressed BN254 proof) but its
+    final proving step is documented as x86-64 + Docker only, 14-16 GB RAM, multi-GB artifacts — unusable from the browser wallet and
+    forbidden to outsource. PLONK/transparent systems do not fit the budget. Recommendation: keep XM3/XB3 + combined Groth16 and run
+    the small XMR20 phase-2 ceremony. Measured vs estimated figures are separated in that file; no prototype measurement was taken.
+  - Independent security review per review/00-REVIEW-BRIEF.txt: XM3/XB3 composition soundness/malleability, compact codec,
+    XMR20-TKD1 coupling, carrier construction, journal/recovery semantics, constant-time behaviour, Solana adapter.
+  - Production parameters per review/08: frozen circuits with published digests, multi-party phase 1/2 with transcripts and
+    a public beacon, reproducible finalisation, threshold-signed manifest, independent verification BEFORE any mainnet kind.
+    Penumbra's local generator (https://guide.penumbra.zone/dev/parameter_setup) is a development tool; every existing set
+    here is disposable.
+  - AI-assisted adversarial self-review exists (review/06) and is NOT independent review.
+
+6. VERDICTS (unchanged by this candidate)
+  private transfers: implemented and verified on stagenet; NO-GO for real funds until 5 is closed.
+  migration (legacy -> private): simulated only; NO-GO.
+  bridging: deposits/credits/burns verified in simulation; payouts GATED (A); NO-GO.
+  native XMR trading: GATED (B); NO-GO.
+  The complete product is not ready because transfers work.

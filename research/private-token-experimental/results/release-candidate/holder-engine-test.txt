@@ -1,0 +1,13 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+backend: Only 9 confirmations
+{"initialTip":318,"depositCredit":{"txid":"2a9bdd498a6b7d9477c38014e146a2b83eba546da9135f4eaf3da904e34744c2","status":"published","binding":"6c02c23ca4a612d8bf040fcba93aa289890a94ac9d63a1faffa0a491c1756785"},"normalPk":{"authenticated":true,"bytes":82675440,"label":"DISPOSABLE TEST SETUP — NOT PRODUCTION","manifest":"XMR20-PARAMS-1","sha256":"8152016c33b1f4bb10da5c2de242b38763bb7461fac3d611dcbee0306326aced","slot":0,"source":"download","path":"normal.public-pk"},"sendProvingMs":31091,"sendCarrier":{"nativeBytes":2520,"extraBytes":1056,"fee":"3024000000"},"threeInputProvingMs":31317,"threeInputCarrier":{"nativeBytes":2520,"extraBytes":1056,"fee":"3024000000"},"boundaryPk":{"authenticated":true,"bytes":64409328,"label":"DISPOSABLE TEST SETUP — NOT PRODUCTION","manifest":"XMR20-PARAMS-1","sha256":"b9b5c8269adf6377480b4713c8449bc28170eb4b3ad5ed00c08b981886bc6120","slot":1,"source":"download","path":"boundary.public-pk"},"redeemProvingMs":23913,"redeemCarrier":{"nativeBytes":2449,"extraBytes":985,"fee":"2938800000"},"recovery":{"tip":378,"applied":6,"notes":2,"spent":4},"engineMemoryBytes":406913024,"wasmBytes":5035317}
+✔ holder engine: keys, replay, spend, redeem, recovery (wasm in Node) (282922.168958ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 284769.990083
+exit 0

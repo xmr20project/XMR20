@@ -1,0 +1,369 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.27
+   Compiling version_check v0.9.5
+   Compiling libc v0.2.191
+   Compiling cfg-if v1.0.5
+   Compiling typenum v1.20.1
+   Compiling subtle v2.6.1
+   Compiling const-oid v0.9.6
+   Compiling autocfg v1.5.1
+   Compiling serde_core v1.0.229
+   Compiling serde v1.0.229
+   Compiling once_cell v1.21.4
+   Compiling zerocopy v0.8.63
+   Compiling libm v0.2.16
+   Compiling pin-project-lite v0.2.17
+   Compiling paste v1.0.15
+   Compiling anyhow v1.0.104
+   Compiling hex v0.4.3
+   Compiling tracing-core v0.1.36
+   Compiling generic-array v0.14.7
+   Compiling num-traits v0.2.19
+   Compiling crossbeam-utils v0.8.23
+   Compiling either v1.19.0
+   Compiling crossbeam-epoch v0.9.21
+   Compiling log v0.4.34
+   Compiling syn v1.0.109
+   Compiling getrandom v0.2.17
+   Compiling rand_core v0.6.4
+   Compiling cpufeatures v0.2.17
+   Compiling keccak v0.1.6
+   Compiling itertools v0.14.0
+   Compiling crossbeam-deque v0.8.8
+   Compiling shlex v2.0.1
+   Compiling rayon-core v1.13.0
+   Compiling find-msvc-tools v0.1.15
+   Compiling cc v1.9.0
+   Compiling memchr v2.8.3
+   Compiling futures-core v0.3.34
+   Compiling itoa v1.0.18
+   Compiling ahash v0.8.12
+   Compiling syn v2.0.119
+   Compiling syn v3.0.9
+   Compiling rustversion v1.0.23
+   Compiling serde_derive v1.0.229
+   Compiling zeroize_derive v1.5.0
+   Compiling tracing-attributes v0.1.31
+   Compiling zeroize v1.8.2
+   Compiling tracing v0.1.44
+   Compiling ppv-lite86 v0.2.21
+   Compiling rand_chacha v0.3.1
+   Compiling rand v0.8.8
+   Compiling prost-derive v0.13.5
+   Compiling num-integer v0.1.47
+   Compiling num-bigint v0.4.8
+   Compiling itertools v0.10.5
+   Compiling futures-sink v0.3.34
+   Compiling futures-channel v0.3.34
+   Compiling futures-macro v0.3.34
+   Compiling futures-task v0.3.34
+   Compiling slab v0.4.12
+   Compiling futures-io v0.3.34
+   Compiling byteorder v1.5.0
+   Compiling futures-util v0.3.34
+   Compiling time-core v0.1.9
+   Compiling num-conv v0.2.2
+   Compiling zmij v1.0.23
+   Compiling time-macros v0.2.32
+   Compiling deranged v0.5.9
+   Compiling semver v1.0.28
+   Compiling opaque-debug v0.3.1
+   Compiling powerfmt v0.2.1
+   Compiling serde_json v1.0.154
+   Compiling rustc_version v0.4.1
+   Compiling time v0.3.55
+   Compiling serde_bytes v0.11.19
+   Compiling flex-error v0.4.4
+   Compiling tracing-subscriber v0.2.25
+   Compiling ark-serialize-derive v0.4.2
+   Compiling rayon v1.12.0
+   Compiling derivative v2.2.0
+   Compiling ark-ff-asm v0.4.2
+   Compiling arrayvec v0.7.8
+   Compiling constant_time_eq v0.4.2
+   Compiling base64 v0.21.7
+   Compiling subtle-ng v2.5.0
+   Compiling ark-std v0.4.0
+   Compiling ark-ff-macros v0.4.2
+   Compiling safe-proc-macro2 v1.0.95
+   Compiling blake3 v1.8.7
+   Compiling unicode-xid v0.2.6
+   Compiling serde_repr v0.1.21
+   Compiling displaydoc v0.2.7
+   Compiling static_assertions v1.1.0
+   Compiling crunchy v0.2.4
+   Compiling allocator-api2 v0.2.21
+   Compiling derive_more v0.99.20
+   Compiling base64 v0.22.1
+   Compiling rustc-hex v2.1.0
+   Compiling hashbrown v0.13.2
+   Compiling hashbrown v0.14.5
+   Compiling fixed-hash v0.8.0
+   Compiling rustix v1.1.5
+   Compiling bytes v1.12.1
+   Compiling getrandom v0.4.3
+   Compiling foldhash v0.2.0
+   Compiling subtle-encoding v0.5.1
+   Compiling hashbrown v0.16.1
+   Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
+   Compiling digest v0.10.7
+   Compiling digest v0.9.0
+   Compiling block-buffer v0.9.0
+   Compiling sha2 v0.10.9
+   Compiling sha3 v0.10.9
+   Compiling blake2 v0.10.6
+   Compiling ark-serialize v0.4.2
+   Compiling signature v2.2.0
+   Compiling sha2 v0.9.9
+   Compiling curve25519-dalek-ng v4.1.1
+   Compiling prost v0.13.5
+   Compiling crypto-bigint v0.5.5
+   Compiling ed25519-consensus v2.1.0
+   Compiling informalsystems-pbjson v0.7.0
+   Compiling ed25519 v2.2.3
+   Compiling ripemd v0.1.3
+   Compiling impl-serde v0.4.0
+   Compiling ibc-types-identifier v0.15.1
+   Compiling erased-serde v0.3.31
+   Compiling futures-executor v0.3.34
+   Compiling futures v0.3.34
+   Compiling errno v0.3.14
+   Compiling bitflags v2.13.2
+   Compiling hashbrown v0.17.1
+   Compiling dyn-clone v1.0.20
+   Compiling prettyplease v0.2.37
+   Compiling equivalent v1.0.3
+   Compiling regex-syntax v0.8.11
+   Compiling spin v0.10.1
+   Compiling std-shims v0.1.5
+   Compiling regex-automata v0.4.18
+   Compiling indexmap v2.14.2
+   Compiling safe-quote v1.0.40
+   Compiling curve25519-dalek v4.1.3
+   Compiling safe-regex-compiler v0.2.6
+   Compiling fastrand v2.5.0
+   Compiling heck v0.5.0
+   Compiling thiserror v1.0.69
+   Compiling fixedbitset v0.5.7
+   Compiling safe-regex-macro v0.2.6
+   Compiling petgraph v0.7.1
+   Compiling safe-regex v0.2.6
+   Compiling regex v1.13.1
+   Compiling uint v0.9.5
+   Compiling primitive-types v0.12.2
+   Compiling thiserror-impl v1.0.69
+   Compiling itertools v0.13.0
+   Compiling unicode-xid v0.1.0
+   Compiling radium v0.7.0
+   Compiling multimap v0.10.1
+   Compiling smallvec v1.16.3
+   Compiling proc-macro2 v0.1.10
+   Compiling ark-ff v0.4.2
+   Compiling tap v1.0.1
+   Compiling wyz v0.5.1
+   Compiling blake2b_simd v1.0.5
+   Compiling tendermint-proto v0.40.4
+   Compiling ics23 v0.12.0
+   Compiling ibc-types-domain-type v0.15.1
+   Compiling prost-types v0.13.5
+   Compiling pbjson-build v0.7.0
+   Compiling arrayvec v0.5.2
+   Compiling thiserror v2.0.21
+   Compiling constant_time_eq v0.1.5
+   Compiling funty v2.0.0
+   Compiling arrayref v0.3.9
+   Compiling blake2b_simd v0.5.11
+   Compiling ibc-types-transfer v0.15.1
+   Compiling tempfile v3.27.0
+   Compiling chrono v0.4.45
+   Compiling pbjson v0.7.0
+   Compiling pin-project-internal v1.1.13
+   Compiling thiserror-impl v2.0.21
+   Compiling monero-io v0.1.0
+   Compiling penumbra-sdk-proto v2.1.1
+   Compiling bech32 v0.8.1
+   Compiling strsim v0.11.1
+   Compiling ident_case v1.0.1
+   Compiling pin-project v1.1.13
+   Compiling darling_core v0.24.1
+   Compiling monero-primitives v0.1.0
+   Compiling hmac v0.12.1
+   Compiling der v0.7.10
+   Compiling async-trait v0.1.92
+   Compiling ring v0.17.14
+   Compiling ff v0.13.1
+   Compiling parking_lot_core v0.9.12
+   Compiling base16ct v0.2.0
+   Compiling sec1 v0.7.3
+   Compiling prost-build v0.13.5
+   Compiling darling_macro v0.24.1
+   Compiling group v0.13.0
+   Compiling aho-corasick v1.1.5
+   Compiling bitmaps v2.1.0
+   Compiling pbjson-types v0.7.0
+   Compiling im v15.1.0
+   Compiling scopeguard v1.2.0
+   Compiling tendermint v0.40.4
+   Compiling cosmos-sdk-proto v0.26.1
+   Compiling monero-ed25519 v0.1.0
+   Compiling bitvec v1.1.1
+   Compiling monero-bulletproofs-generators v0.1.0
+   Compiling monero-bulletproofs v0.1.0
+   Compiling lock_api v0.4.14
+   Compiling sized-chunks v0.6.5
+   Compiling darling v0.24.1
+   Compiling elliptic-curve v0.13.8
+   Compiling rfc6979 v0.4.0
+   Compiling ibc-types-timestamp v0.15.1
+   Compiling tendermint-light-client-verifier v0.40.4
+   Compiling http v1.5.0
+   Compiling rustls-pki-types v1.15.1
+   Compiling tokio-macros v2.7.2
+   Compiling rand_xoshiro v0.6.0
+   Compiling socket2 v0.6.5
+   Compiling mio v1.2.4
+   Compiling httparse v1.10.1
+   Compiling untrusted v0.9.0
+   Compiling core-foundation-sys v0.8.7
+   Compiling tower-service v0.3.3
+   Compiling tokio v1.53.3
+   Compiling parking_lot v0.12.5
+   Compiling http-body v1.1.0
+   Compiling ecdsa v0.16.9
+   Compiling cipher v0.3.0
+   Compiling inout v0.1.4
+   Compiling universal-hash v0.4.0
+   Compiling ibig v0.3.6
+   Compiling ethnum v1.5.3
+   Compiling rustls v0.23.46
+   Compiling try-lock v0.2.5
+   Compiling hash_hasher v2.0.4
+   Compiling want v0.3.2
+   Compiling monero-clsag v0.1.0
+   Compiling monero-mlsag v0.1.0
+   Compiling ibc-proto v0.51.1
+   Compiling rustls-webpki v0.103.15
+   Compiling serde_with_macros v3.24.0
+   Compiling poly1305 v0.7.2
+   Compiling serde_with v3.24.0
+   Compiling cipher v0.4.4
+   Compiling chacha20 v0.8.2
+   Compiling k256 v0.13.4
+   Compiling core-foundation v0.10.1
+   Compiling security-framework-sys v2.17.0
+   Compiling monero-borromean v0.1.0
+   Compiling pbkdf2 v0.12.2
+   Compiling bs58 v0.5.1
+   Compiling aead v0.4.3
+   Compiling hex-literal v1.1.0
+   Compiling atomic-waker v1.1.2
+   Compiling lazy_static v1.5.1
+   Compiling bip32 v0.5.3
+   Compiling chacha20poly1305 v0.9.1
+   Compiling aes v0.8.4
+   Compiling monero-base58 v0.1.0
+   Compiling security-framework v3.7.0
+   Compiling f4jumble v0.1.2
+   Compiling rapidhash v4.5.1
+   Compiling monero-address v0.1.0
+   Compiling bincode v1.3.3
+   Compiling metrics v0.24.6
+   Compiling penumbra-sdk-proof-params v2.1.1
+   Compiling tower-layer v0.3.3
+   Compiling tower v0.4.13
+   Compiling http-body-util v0.1.5
+   Compiling md-5 v0.10.6
+   Compiling async-stream-impl v0.3.6
+   Compiling monero-epee v0.2.1
+   Compiling digest_auth v0.3.1
+   Compiling rand_distr v0.4.3
+   Compiling async-stream v0.3.6
+   Compiling rustls-native-certs v0.8.5
+   Compiling hyper v1.12.0
+   Compiling hyper-util v0.1.21
+   Compiling ark-poly v0.4.2
+   Compiling ark-relations v0.4.0
+   Compiling tokio-rustls v0.26.6
+   Compiling hyper-rustls v0.27.10
+   Compiling monero-oxide v0.1.0
+   Compiling simple-request v0.3.2
+   Compiling ark-snark v0.4.0
+   Compiling monero-interface v0.2.0
+   Compiling monero-daemon-rpc v0.2.0
+   Compiling monero-wallet v0.2.0 (<workspace>/proof-of-concepts/native-market-local/vendor/monero-wallet)
+   Compiling ark-ec v0.4.2
+   Compiling ibc-types-core-client v0.15.1
+   Compiling ibc-types-core-commitment v0.15.1
+   Compiling ibc-types-core-connection v0.15.1
+   Compiling monero-simple-request-rpc v0.1.0
+   Compiling ibc-types-core-channel v0.15.1
+   Compiling ibc-types-lightclients-tendermint v0.15.1
+   Compiling ibc-types-path v0.15.1
+   Compiling ark-crypto-primitives v0.4.0
+   Compiling ark-bls12-377 v0.4.0
+   Compiling ark-r1cs-std v0.4.0
+   Compiling ark-groth16 v0.4.0
+   Compiling ibc-types v0.15.1
+   Compiling ark-ed-on-bls12-377 v0.4.0
+   Compiling decaf377 v0.10.1
+   Compiling decaf377-rdsa v0.11.0
+   Compiling poseidon-parameters v1.1.0
+   Compiling decaf377-fmd v2.1.1
+   Compiling decaf377-ka v2.1.1
+   Compiling poseidon-permutation v1.1.0
+   Compiling poseidon377 v1.2.0
+   Compiling penumbra-sdk-tct v2.1.1
+   Compiling penumbra-sdk-num v2.1.1
+   Compiling penumbra-sdk-asset v2.1.1
+   Compiling penumbra-sdk-txhash v2.1.1
+   Compiling penumbra-sdk-keys v2.1.1
+   Compiling penumbra-sdk-sct v2.1.1
+   Compiling penumbra-sdk-ibc v2.1.1
+   Compiling penumbra-sdk-shielded-pool v2.1.1 (<workspace>/research/privacy-single-tx-20261022/vendor/penumbra-sdk-shielded-pool)
+warning: unused import: `channel::PortId`
+ --> <workspace>/research/privacy-single-tx-20261022/vendor/penumbra-sdk-shielded-pool/src/ics20_withdrawal.rs:1:43
+  |
+1 | use ibc_types::core::{channel::ChannelId, channel::PortId, client::Height as IbcHeight};
+  |                                           ^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `algorithm_state` is never used
+  --> <workspace>/research/privacy-single-tx-20261022/vendor/penumbra-sdk-shielded-pool/src/fmd/state_key.rs:12:12
+   |
+12 |     pub fn algorithm_state() -> &'static str {
+   |            ^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `current` is never used
+  --> <workspace>/research/privacy-single-tx-20261022/vendor/penumbra-sdk-shielded-pool/src/fmd/state_key.rs:18:12
+   |
+18 |     pub fn current() -> &'static str {
+   |            ^^^^^^^
+
+warning: function `previous` is never used
+  --> <workspace>/research/privacy-single-tx-20261022/vendor/penumbra-sdk-shielded-pool/src/fmd/state_key.rs:22:12
+   |
+22 |     pub fn previous() -> &'static str {
+   |            ^^^^^^^^
+
+   Compiling xmr20-multi-input-lab v0.0.0 (<workspace>/research/privacy-multi-input-20261022)
+   Compiling xmr20-integration-lab v0.0.0 (<workspace>/research/privacy-stagenet-roles-20261023-lab)
+warning: unused import: `io`
+  --> src/chain.rs:13:38
+   |
+13 | use std::{collections::BTreeMap, fs, io, path::Path};
+   |                                      ^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `penumbra-sdk-shielded-pool` (lib) generated 4 warnings (run `cargo fix --lib -p penumbra-sdk-shielded-pool` to apply 1 suggestion)
+warning: `xmr20-integration-lab` (lib) generated 1 warning (run `cargo fix --lib -p xmr20-integration-lab` to apply 1 suggestion)
+    Finished `release` profile [optimized] target(s) in 1m 23s
+exit 0

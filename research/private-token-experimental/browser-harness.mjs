@@ -10,7 +10,7 @@
 //
 // Exports the shared harness for the recovery and interruption tests.
 import {createRequire} from 'node:module';
-import {mkdtemp,mkdir,writeFile} from 'node:fs/promises';
+import {mkdtemp,mkdir,writeFile,access} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {Keypair} from '@solana/web3.js';
 import bs58 from 'bs58';
@@ -57,7 +57,15 @@ export function harness(name,{extensionDir=ext,backendUrl='http://127.0.0.1:8940
  h.balanceText=async()=>page.textContent('#asset-private-0 .asset-amount strong');
  h.tokenAddress=async()=>{await h.openDetail();const t=await page.textContent('.monero-token-detail .address');await h.closeModal();return t.trim();};
  h.newWallet=async(label)=>{const k=await page.evaluate(()=>new Promise((res,rej)=>{const w=new Worker('vendor/keys.worker.js');w.onmessage=({data})=>{w.terminate();data.error?rej(Error(data.error)):res(data.result);};w.postMessage({id:'seed',action:'create'});}));const sol=Keypair.generate();const w={name:label,seed:k.seed,xmr:k.address,sol:sol.publicKey.toBase58(),solSecret:bs58.encode(sol.secretKey)};secrets.push(k.seed,bs58.encode(sol.secretKey));return w;};
- h.launch=async(profileLabel,fixedDir=null)=>{const profile=fixedDir||await mkdtemp(dir+'runs/profile-'+profileLabel+'-');if(fixedDir)await mkdir(fixedDir,{recursive:true});const context=await chromium.launchPersistentContext(profile,{channel:'chromium',headless:true,viewport:{width:380,height:600},args:[`--disable-extensions-except=${extensionDir}`,`--load-extension=${extensionDir}`]});let sw=context.serviceWorkers()[0];if(!sw)sw=await context.waitForEvent('serviceworker',{timeout:30000});const id=new URL(sw.url()).host;h.log('extension loaded',{id,profile:profileLabel});return {context,id,profile};};
+ // Launch owns the browser context until it is handed back: if the extension's service worker never appears, the context is
+ // closed HERE and the error names the build. (24 Oct stall: the candidate had no extension-private-holder-test build, Chromium
+ // started with a non-existent --load-extension path, the 30 s wait threw before `context` reached the test's finally, and the
+ // open browser kept the test process alive for over an hour.) The build is checked before anything is launched.
+ h.launch=async(profileLabel,fixedDir=null)=>{await access(extensionDir+'/manifest.json').catch(()=>{throw Error('Test extension build missing: '+extensionDir+' (wallet-extension: XMR20_PRIVATE_HOLDER_TEST=local|stagenet node build.mjs)');});
+  const profile=fixedDir||await mkdtemp(dir+'runs/profile-'+profileLabel+'-');if(fixedDir)await mkdir(fixedDir,{recursive:true});const context=await chromium.launchPersistentContext(profile,{channel:'chromium',headless:true,viewport:{width:380,height:600},args:[`--disable-extensions-except=${extensionDir}`,`--load-extension=${extensionDir}`]});
+  let id;try{let sw=context.serviceWorkers()[0];if(!sw)sw=await context.waitForEvent('serviceworker',{timeout:30000});id=new URL(sw.url()).host;}
+  catch(e){await context.close().catch(()=>{});h.log('extension failed to load; browser closed',{profile:profileLabel,error:String(e?.message||e).slice(0,300)});throw Error('Extension service worker did not start from '+extensionDir+': '+(e?.message||e));}
+  h.log('extension loaded',{id,profile:profileLabel});return {context,id,profile};};
  h.start=async()=>{evidence=dir+'evidence/'+name+'-'+new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);await mkdir(evidence,{recursive:true});};
  h.finish=async(backend,extra={})=>{const external=requests.filter(r=>r.url&&!r.url.startsWith('chrome-extension://')&&!r.url.startsWith(backendUrl)&&!r.url.startsWith(rpcUrl));const leaks=requests.filter(r=>r.LEAK);
   await writeFile(evidence+'/steps.json',JSON.stringify(steps,null,1));await writeFile(evidence+'/network-audit.json',JSON.stringify({totalRequests:requests.length,backendRequests:requests.filter(r=>r.url?.startsWith(backendUrl)).length,daemonRequests:requests.filter(r=>r.url?.startsWith(rpcUrl)).length,externalRequests:external,secretLeaks:leaks,consoleSample:consoleLines.slice(0,80),screenshots:shots,backendRun:backend?.run,...extra},null,1));

@@ -1,0 +1,12 @@
+CORRECTION to the run-3 interop evidence (runs/interop-results-run3-20261025.json, evidence/verified-interop-2026-10-25T00-41-08,
+published in PR #11 as results/release-candidate/interop-results.json), 25 Oct 2026.
+Its "negative" block read  malformed: "Spent or duplicate token input", duplicate: "Spent or duplicate token input".
+The "malformed" variant did NOT demonstrate rejection because of tampering: the test mutated a record that had ALREADY been
+published and mined, so admission stopped at the spent-input check before any proof, signature or encoding check ran — the
+same reason the untampered duplicate failed. What that run established: duplicate-spend prevention (a published record is not
+admitted twice) and that a mutated spent record is not admitted either. What it did NOT establish: that a tampered but otherwise
+unspent record is rejected for the tampering itself. The corrected test (interop.test.mjs step 7) builds a valid UNSPENT record,
+has two independent identical verifier states judge it (original admitted; proof / auth-signature / binding-signature / truncation
+mutations rejected for that reason, verifier state unchanged, holder refuses a carrier for the tampered record), publishes the
+original afterwards and then shows the duplicate-spend rejection separately. Everything else in the run-3 interop results
+(transfers, recovery, viewing-only, wrong root, mismatched parameters, one pool, audit) stands.

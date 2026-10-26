@@ -1,0 +1,18 @@
+TAP version 13
+# bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+# Subtest: independent observation gates payout admission
+ok 1 - independent observation gates payout admission
+  ---
+  duration_ms: 250539.364958
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 252273.567917
+exit 0

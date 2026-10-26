@@ -1,0 +1,72 @@
+RELEASE GATES AND OPERATIONAL RECOVERY — component-specific, measurable, with the evidence that exists today
+research/privacy-release-candidate-20261025, 25 October 2026. A gate is MET only with retained, reproducible evidence.
+Nothing below is met for real funds: gate R (independent review) and gate P (production parameters) are open for every
+component, so every component is NO-GO regardless of the engineering gates.
+
+MEASUREMENTS ON RECORD (hardware, workload, baseline, target)
+  indexing          Apple M4 Pro, 1,000,000 encrypted notes: build 29.2 s (3 runs, median), reload 0.2 s, +10,000 notes 0.35 s;
+                    peak RSS 78.6 MiB. Target for release: <= 60 s full build and <= 1 s per 10,000 notes on the production
+                    host class; MET on this workload (component timing; full proof validation excluded).
+  wallet recovery   same machine: 1,000-note holder 84 s (median of 3), 899,000-note holder 506 s (1 run), peak 682 MiB for
+                    the large holder. Target: <= 120 s for a typical holder (< 5,000 notes) on a laptop; MET for the small
+                    holder; large holders exceed any phone budget — product must accept or shard (open).
+  proof time        31-35 s per transfer, single-threaded, in Chromium on the same laptop class (browser suites, stagenet
+                    run); ~400 MB. Target: <= 60 s laptop, <= 120 s phone. Laptop MET; NO phone measurement exists (open).
+  fee estimation    stagenet: 50,660,000-50,780,000 piconero per 2.5 kB carrier at 20,000 piconero/byte; exact match
+                    between quote and paid fee in every run. Target: quote == paid (MET); mainnet rate unmeasured (open).
+  verification      output-proof verification 1.84 ms each (128 proofs, 3 passes). Target <= 10 ms: MET.
+  confirmation      stagenet 10 blocks took 37-58 min per wait. Target: product decision on depth (open).
+  Do not read the test counts (76, 57, 124 groups…) as a score; they count checks, not independent properties.
+
+GATES PER COMPONENT (E = engineering evidence, R = independent review, P = production parameters, O = operations, D = product decision)
+  PRIVATE TRANSFERS
+    E1 clean replay == incremental indexing at the same height ............ MET (conformance/indexer-replay-equivalence)
+    E2 recovery after crash at every boundary, lost reply/request, stale backup, fresh installation ... MET (offline 76/76; stagenet 57/57; popup suites)
+    E3 exact change, exact fee, one fee per operation, no duplicate credit .. MET (every suite asserts)
+    E4 popup trusts one node -> second observation in the wallet ............. OPEN (gate exists only in the backend)
+    E5 proving cost on phones ................................................ OPEN (no measurement)
+    R  review brief items 1-6 (composition, codec, key scheme, carrier, journal, constant-time) ... OPEN
+    P  reviewed multi-party parameters ....................................... OPEN
+    D  accept carrier fingerprint, change-chain linkage, memory-erasure limits, confirmation latency ... OPEN
+  MIGRATION (legacy -> private)
+    E6 duplicate claim refused; built claim re-consumed after restart ....... MET (lab registry; stage 3)
+    E7 old-path issuance stopped at cutover in the SHIPPING indexer .......... OPEN (not integrated)
+    E8 no double entitlement across snapshot versions ........................ OPEN (single snapshot tested)
+    D  cutover date, historical disclosure statement (public records cannot be erased) ... OPEN
+  BRIDGING
+    E9 deposit -> credit -> burn -> payout exactly once ...................... MET (simulation)
+    E10 independent observation gates payout admission ....................... MET in this candidate (backend observers; offline agreement only with the primary; stagenet third-party views recorded)
+    E11 live program / liquidity rehearsal on devnet or a mainnet fork ....... OPEN
+    E12 reversible payout escrow (SETTLEMENT-DESIGN 4.7) if adopted .......... OPEN (not built)
+    E13 reorganisation detection + pause + explicit resume before payout; depth re-validated against the burn's current height ... MET (simulation, D = 20; RESULTS 12)
+    E14 live program / test-mint rehearsal on DEVNET .......................... BLOCKED (faucet refused; plan + fresh keys in runs/devnet; RESULTS 11)
+    D  finality policy with numbers (depth D, window T), funded loss reserve, incident stop ... OPEN — counterexample A stands;
+       owner decision 25 Oct: D = 10 for this candidate, reorg hardening deferred (SETTLEMENT-DESIGN 9); window/reserve/stop not chosen;
+       evening handoff: PROVISIONAL D = 20 implemented and tested with detection/pause/resume (CONFORMANCE 7; RESULTS 12) — a policy, not finality;
+       counterexample A reproduced again at D = 20; the production depth is still an owner decision
+    R/P as above ............................................................. OPEN
+  NATIVE XMR TRADING
+    counterexample B stands; no construction demonstrated; GATED. D: keep off the private format or fund 4.1 + 4.4 research.
+
+OPERATIONS (what must exist before any real-funds pilot; none exists as a deployable component today)
+  monitoring        supply vs backing invariant per asset every block; nullifier double-admission alarm; parameter manifest
+                    hash check at every role start; node agreement monitor (primary vs observers) with alert on divergence.
+  reconciliation    daily: operator journal vs indexer replay vs Solana receipts; every burn either pending, paid once or
+                    orphaned with an incident; every credit either indexed or orphaned.
+  key custody       issuer key: HSM/threshold with audit log (review/08 R5); operator payout key: separate, limited balance;
+                    release manifest signing: threshold of release keys. Nothing here uses a production key today.
+  incident stops    (already in the lab) operator halt on paidWithoutBurn / accepted-prefix change; wallet refuses new signing
+                    after an incident; manual restart only; no automatic re-enable.
+  recovery          wallet: phrase restores notes and balances (verified); pending journal is per installation (documented).
+                    operator: journal restore from backup + replay; corrupted journal refuses to open (test in this candidate).
+                    indexer: stateless replay from the pool start height.
+  upgrades          reverting SOFTWARE is always possible; reverting on-chain actions is not: a published record, a paid
+                    payout, a broadcast carrier are irreversible. A new circuit/parameter set is a NEW LEDGER DOMAIN and
+                    therefore a migration event (claim/boundary), never an in-place patch.
+
+STAGED ROLLOUT (recommendation; only after the gates above)
+  1. Private transfers on mainnet with a REVIEWED multi-party parameter set, real but small balances, no bridge, no trading:
+     requires R + P + D for transfers and E4/E5. 2. Bridge deposits/credits (one-way in) with payouts still gated. 3. Payouts
+     under the adopted finality policy with reserve and clawback escrow (E11, E12, D). 4. Trading: only if a product decision
+     funds a settlement construction and it passes review; otherwise stays off the private format.
+  Plainly: today transfers work on stagenet; bridging payouts and trading are blocked; the complete product is not ready.

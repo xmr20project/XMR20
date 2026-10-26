@@ -1,0 +1,30 @@
+TAP version 13
+# bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+# Subtest: extension A and CLI wallet B interoperate on one pool
+not ok 1 - extension A and CLI wallet B interoperate on one pool
+  ---
+  duration_ms: 323453.617792
+  type: 'test'
+  location: '<workspace>/research/privacy-release-candidate-20261025/interop.test.mjs:19:1'
+  failureType: 'testCodeFailure'
+  error: 'fetch failed'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    node:internal/deps/undici/undici:15363:13
+    async download (file://<workspace>/research/privacy-release-candidate-20261025/wallet-extension/src/holder-params.js:39:11)
+    async Object.loadServedConfig (file://<workspace>/research/privacy-release-candidate-20261025/wallet-extension/src/holder-params.js:49:15)
+    async openPrivateWallet (file://<workspace>/research/privacy-release-candidate-20261025/wallet-lib/private-wallet.mjs:59:15)
+    async TestContext.<anonymous> (file://<workspace>/research/privacy-release-candidate-20261025/interop.test.mjs:74:12)
+    async Test.run (node:internal/test_runner/test:1069:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 325399.118458

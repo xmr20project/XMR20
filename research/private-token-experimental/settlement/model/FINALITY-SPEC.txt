@@ -1,0 +1,145 @@
+PRIVATE XMR20 SETTLEMENT: CONDITIONAL SECURITY AND REPAIR DECISION
+22 October 2026. Internal analysis of the isolated XL3 laboratory, not an audit.
+No production wallet, bridge, native consensus or real funds are changed.
+
+Decision
+--------
+Do not describe XL3 as unconditionally atomic across chain reorganizations.
+The existing ten-block rollback test is a real asymmetric-loss counterexample,
+but it removes the very reservation on which payment authorization depends. It
+does not establish a settlement break while that reservation's canonical prefix
+is retained. The actionable near-term path is to implement and test an explicit
+conditional-finality policy and stop new payment exports when its prefix fails.
+That reduces further exposure; it does not revoke a previously exported payment.
+Keep real-fund readiness false while the policy, cryptographic composition,
+native wallet, bridge/backing and operational recovery remain unreviewed.
+
+Actors and assumptions
+----------------------
+- Either trading counterparty may be malicious, disappear, replay messages,
+  supply invalid records, or submit genuine conflicting transactions.
+- Native transactions are checked by a correctly operating Monero node and the
+  application replays the actual canonical transactions in order. A malicious or
+  eclipsed sole RPC can invalidate this observation assumption; signatures on
+  local checkpoints are not evidence of proof of work or independent consensus.
+- Token proofs, signatures, commitment bindings, encryption, setup and their
+  composition must satisfy their intended security properties. Current tests
+  provide evidence about this implementation, not proofs of those assumptions.
+- The buyer authorizes exact asset, quantity, recipient, price and maximum fee.
+  Its honest signing controller releases a usable payment only after it sees the
+  exact valid reservation at the configured confirmation depth.
+- CONDITIONAL FINALITY: the canonical prefix through that reservation remains
+  unchanged for the lifetime of the exported payment and resulting settlement.
+  A native guard spend eventually receiving the same finality treatment is also
+  assumed when presenting a completed trade as durable. Liveness additionally
+  requires an includable transaction/fee and eventual inclusion; this is not a
+  guarantee against indefinite censorship or an unavailable signing controller.
+
+Property under these assumptions
+-------------------------------
+The reservation consumes the private token input and reserves both alternative
+encrypted outputs. Every later ordinary token spend of that input is rejected.
+Native consensus accepts at most one spend of the buyer's guard key image. The
+bound payment activates the exact buyer receipt; another guard spend activates
+the seller's refund. The payment body binds native price destinations and native
+fields, while the final native signature binds the actual attached XL3 record.
+Thus, within a retained reservation prefix, a canonical accepted purchase gives
+the buyer its receipt and the seller its payment; a competing cancellation can
+prevent that purchase and recover the token lot. Authorized network fees remain
+costs in failure/cancellation paths. This is conditional safety, not unconditional
+fairness, guaranteed completion, a proof of privacy, or an external sign-off.
+
+Review of current code found no unchanged-prefix version of the reported loss.
+This is a bounded internal finding. The existing ordering explorer covers 1,440
+small event permutations and separate daemon tests validate concrete native
+transactions; neither is exhaustive verification of every adversarial execution.
+
+What happens when the prefix assumption fails
+--------------------------------------------
+The preserved test removes a ten-confirmed reservation, admits a genuine
+same-nullifier token transfer, then replays the captured purchase. Native XMR
+pays the seller; the token verifier rejects the already-consumed input. The buyer
+has no guaranteed refund claim in this construction. Full XL3 authority repairs
+missing/invalid reservations only while the proof root survives and input is free.
+The test controls rollback directly; it does not mine a heavier competing fork,
+estimate attack probability/cost, or establish a safe monetary operating limit.
+
+Ten confirmations are a laboratory setting, not a security theorem or a current
+network risk estimate. No numerical reorganization probability is claimed.
+More confirmations change the assumed prefix stability; they do not make the
+native signature depend on token state. Native-output ancestry can be recreated
+with changed token metadata. Watchers and cancellation help only when their
+native spend wins. Stopping an indexer cannot stop a captured native transaction.
+Witness signatures establish retained local freshness, not Monero finality.
+
+Concrete operational improvement to implement and test
+----------------------------------------------------
+1. Make confirmation depth an explicit validated protocol/wallet policy. Preserve
+   the release anchor's exact block hash and height, plus offer and payment IDs.
+2. Persist a monotonic accepted-prefix checkpoint. If that prefix changes, latch
+   signing/export off, including cached/retried exports; do not silently reset
+   the checkpoint to replacement history. Ordinary shallow tail reorganizations
+   above that checkpoint should still replay and recover normally.
+3. Retain and label every exported payment as outstanding until its native guard
+   is canonically spent. Expiry of an off-chain quote does NOT expire a native
+   signature. Native cancellation can settle outstanding exposure, subject to
+   inclusion, fee and the spend race. Recovery must retain the exact frozen ring.
+4. Test a shallow fork above the accepted anchor, a replacement below it, outage,
+   restart, stale local state, duplicate export and confirmation boundary cases.
+   Preserve the old captured-payment counterexample as an expected limitation.
+5. Before a real-fund pilot, define externally reviewed finality/exposure limits,
+   independent chain observation and incident/recovery behavior. A configurable
+   cap on outstanding authorized prices can bound simultaneous exposure but is
+   not repayment insurance and cannot restore a lost trade.
+
+This does not shorten the existing reservation confirmation wait. A safe wait
+reduction has not been demonstrated. Preparing lots/quotes earlier can reduce
+user-visible work, but an unbound prelisting is not equivalent to a finalized
+buyer-bound reservation. Assigning a buyer to an old listing without confirming
+that assignment reintroduces conflicting-order risk. Do not call that instant
+settlement merely because the listing itself is old.
+
+Alternative: hidden native guard per token note
+----------------------------------------------
+An unimplemented construction could commit each token note to a hidden native
+one-time public key P and prove in zero knowledge that its owner knows x with
+P=xG and native key image I=x*Hp(P). Every token consumption would have to consume
+I in the carrying native transaction. Then two consumptions of that same note
+would also conflict at native consensus. All transfer, refund, migration and
+bridge paths would have to enforce it; protecting market spends alone is not
+sufficient. This is a new cryptographic/protocol construction, not a small patch.
+
+If P must come from a publicly recognizable token-creation carrier, the proof
+reveals that the real native source is in that source class. An ordinary ring
+with one eligible token-linked output and fifteen ineligible outputs could then
+identify the real output despite the zero-knowledge proof hiding P directly.
+That would recreate the harmful source/key-image association. A native ring also
+limits the possible native-source set; a large token pool alone does not remove
+this constraint. Never claim that zero knowledge by itself solves these leaks.
+
+One possible avoidance is an interactive receiver precommitment to an arbitrary,
+independently acquired, existing native output, with the choice and ownership
+relation kept private. That removes the obvious public token-carrier source
+classifier only if implemented correctly. It does not yet establish privacy:
+sender/receiver knowledge, duplicated bindings, note validity, public timing,
+ring intersections and selective disclosure all need explicit analysis. It also
+requires receiver cooperation, native funding for token ownership, proof support
+for the exact native key-image relation, and joint native spending for a trade.
+The earlier joint-builder amount/mask leak must not be reintroduced.
+
+Even a correct hidden guard does not by itself bind token origin to native
+consensus. A replacement parent can preserve native P and commitment while
+omitting/changing token records; a child may remain native-valid while its token
+membership/anchor disappears. A stable token-origin prefix or an additional
+enforcement mechanism is still necessary. This candidate can align conflicts
+under suitable provenance assumptions; it is not a demonstrated reorg-proof fix.
+
+Primary context checked 22 October 2026
+--------------------------------------
+https://docs.getmonero.org/interacting/monerod-reference/
+Official daemon documentation explains reorganizations and confirmation-based
+acceptance. This supports stating the assumption, not certifying this protocol.
+https://arxiv.org/html/2101.12332v2
+Hoenisch/Soriano del Pino, Atomic Swaps between Bitcoin and Monero. Their different
+construction uses Bitcoin-side adaptor signatures; it does not audit XL3 or
+provide missing enforcement simply by importing the term atomic swap.

@@ -1,0 +1,236 @@
+{
+  "ceremony": {
+    "ceremonyJsonSha256": "ad353e915d7c9d9da625293f6b755110f0be8d909fd983f6b055e6533de20963",
+    "chain": "418015bb9ae982a1975da7d79277c2705727a56894ba0fb246adaabb1f4632e3",
+    "dir": "runs/ceremony-rehearsal",
+    "label": "REHEARSAL — DISPOSABLE PARAMETERS — NOT A PRODUCTION CEREMONY",
+    "protocol": {
+      "domainLabel": "XMR20-MIGRATION-REHEARSAL-DOMAIN-v1",
+      "records": {
+        "boundary": {
+          "bytes": 925,
+          "inputs": 3,
+          "magic": "XB3",
+          "outputs": 1
+        },
+        "transfer": {
+          "bytes": 996,
+          "inputs": 3,
+          "magic": "XM3",
+          "outputs": 2
+        }
+      },
+      "scheme": "XMR20-TKD1"
+    },
+    "setupCrate": "penumbra-sdk-proof-setup 2.1.1 (vendored single-circuit subset: `all` module removed, storage derives added; no cryptographic change)",
+    "tool": "xmr20-params-ceremony 0.0.0"
+  },
+  "circuits": [
+    {
+      "constraints": 135684,
+      "degree": 262144,
+      "description": "XM3 private transfer: 3 Penumbra spends, 2 outputs (Groth16, BLS12-377)",
+      "instanceVariables": 17,
+      "name": "normal",
+      "output": {
+        "at": "2026-10-25T19:51:45Z",
+        "phase2_last": "ba8e636aaa1340a9d89bada00864b16e467cb351558f5fedd8b2170e57d6568a",
+        "pk_bytes": 82675440,
+        "pk_file": "normal.public-pk",
+        "pk_sha256": "da71279886cf4d060388c7d6ab23722898174669c3f02bae5570908116c462e7",
+        "seconds": 2035.614509542,
+        "vk_hex": "2718415f19925554a53afa971c270b3032e02089cc58f9b71ee7ef91aa695b891a2467bcb9666cd5839ad663640c5180fbef27fb532c77942b152e9699d697a5f28a47812ced4821ba963bf65d8458e34511fb834bf0f35d09df13decab82101ad772739e960b58d2f2189fafe212c1e9b671b23111191e218ddb2d19d9d421e737f93f506662acc8cfa619a5fe6a4009651007c8fe4e374025453bb529f88719b6bdb57f501a57e31503e2071f065c5011d84a3a23096c8fe85c771be808401fe6aa16efafe6bb2e66ff7bf8499f85cdec99907ce3e22e7cbce5166ee772753d540b1b1515adc70314000e74060ea805dee33c8dd335416fc72b1ee7a1f77c02d313ec78ac952b3b33511d0d204ac3579fc1d507499b35e16a96f7418323600b88556d449a964f5f4488fd94072c3c3049361ca282bc44b26febcb42f6b91acd6f1f5a9c4514a5553d6eba02005f7001100000000000000c99599ece64b2db5926aed3d73ceca7b8fc15df252007f4b83d74f1625e4c9383d95e3c25b9671fd36562236c09c6f01382cac7ab4916d823fe708ee74cc3b6cad79ca662b6c362d611c90ffb7167958dadbbf0f9297bde6848762ae1e7bf4808c3bec0e7633e8f7b4acdf8f42fe381fb7da849b881158815464b0d4ed3c6350434c47ca22e4e3b3d6466e541101a880e29ce4dc239ac576779fcde5c49165f5a10e6db978f1753e0eee410adc54fdf6bdf2fbfb94718234634b0fd1946da70181f0c10c09f6dff71a5d4cf777e5421136f1ad476fd78387176f3b40b1a10f294984d718a7037a8b601072eafa363c81e4dd35f527b2079a3b1c6b2f03866497a43dfde3fad7157abcf31010f80bcca3cdebc887474bf0fcfcd6d97fe9777c80623f7ba72fdd4df9d2e7ed9af6b7783fc0742bdfc247f455cc96b43042201489dd2fec67dbffcc47e0e0f27dc5e21b0104a39d2383dca3a73a7fc4895d40fa2047c1e0ffdf0b0bfd92366f59b6f86f80d3d059e686489b07b46c51cdf837138146cfe932956e63eeffb8b99ad178438a41bfc3307e723b17aea143b40ef0afb0d78b409434235c624eded1551726000047250717cca9f90029c88acc20836134afcf8f7a11c08050e4dea8694a774ea0e0fe1170eb5190d8988b60f9ec011c015847e1a8b1692edcb0cdb6e5365d77f7d2e9335d6fcc5c758c554859ba058c165518921c6d089d7e6f91a8e40d840e80919c7711f7f72325779f742a6dc86900dc718a68f1a4feb94f00d8752a13ee147f2642c109bb44ed208418631cc49b80c1b70b83c99862125867d00dd426f8b8a09af0158b8d017b12f04c38786e051b264cb8d804821caa9b6084dca05d2a8185cf9edc5c51c332976272f21d85b679af11b0d85c9b8ceea2367357784b2f4a8f6a26ab9c88ec6e6f5423d36969c000b3014b02de488ddcfae2e43d2e3968547a4372422de5380c856c723a6c8c7b459b60bc0a4afc810f0d055ff4c8508600080f9a90276f725c6fb028ef88c08b60bb3e9bf1fbcd9a89d3b29b97cfd89cae43e1193a3362468f7bd2b719fc04bc80ccd2529f5a6dcad3fce23567081b8d8682720f4e0c7c2203ba940865d01d68ff9d9d0fb34521dd8198535fc1bf656980"
+      },
+      "phase1": {
+        "contributions": [
+          {
+            "at": "2026-10-25T17:10:35Z",
+            "file": "normal/phase1/001-rehearsal-1.bin",
+            "hash": "22a725d07458ae6f049a02b839fd0e3039bb412d961da19516711318d96a9747",
+            "independence": "process on the same machine as the coordinator; NOT an independent participant",
+            "index": 1,
+            "parent": "e12956600634bc760fbbc1e59c0aa869e3434a075502df9fa969f6c247e25cd2",
+            "participant": "rehearsal-1",
+            "sha256": "0a6614e7a4062fa530fac6f0d25cfb3d890a9f9da97891b1904b73616ca93f0d"
+          },
+          {
+            "at": "2026-10-25T17:14:42Z",
+            "file": "normal/phase1/002-rehearsal-2.bin",
+            "hash": "2771d5fd9244b3ffcaa21ff2c4385a1f638dfa7d93a299341c28b887201380bb",
+            "independence": "process on the same machine as the coordinator; NOT an independent participant",
+            "index": 2,
+            "parent": "22a725d07458ae6f049a02b839fd0e3039bb412d961da19516711318d96a9747",
+            "participant": "rehearsal-2",
+            "sha256": "4e12e43af1d83d01d1b654befb93f9e252aa4f3861c71691efd28d18a2537789"
+          },
+          {
+            "at": "2026-10-25T17:22:10Z",
+            "file": "normal/phase1/003-rehearsal-3.bin",
+            "hash": "d15541455dbe8085a26b22d2bbe2e34fad395af7873bd477dce13ecc9dc159d5",
+            "independence": "process on the same machine as the coordinator; NOT an independent participant",
+            "index": 3,
+            "parent": "2771d5fd9244b3ffcaa21ff2c4385a1f638dfa7d93a299341c28b887201380bb",
+            "participant": "rehearsal-3",
+            "sha256": "dcbdb0b932c951d86b6ccd97736c935a971ee2b403c015d3b00d22c2dc400d7f"
+          }
+        ],
+        "root": "e12956600634bc760fbbc1e59c0aa869e3434a075502df9fa969f6c247e25cd2"
+      },
+      "phase2": {
+        "contributions": [
+          {
+            "at": "2026-10-25T18:06:38Z",
+            "file": "normal/phase2/001-rehearsal-1.bin",
+            "hash": "0fce8b60cd70fb46e97b9e36a47c45e715fcddbe0de71079f99a972ef49962b5",
+            "independence": "process on the same machine as the coordinator; NOT an independent participant",
+            "index": 1,
+            "parent": "b500c0ca80908977a439bba80b457ef6ad8aa363509cf8e434c2171781e85a2e",
+            "participant": "rehearsal-1",
+            "sha256": "ea92b1bf7a4299f121938811cdadcb5ef7d0819d915bc0367e00dfab412665ca"
+          },
+          {
+            "at": "2026-10-25T18:24:47Z",
+            "file": "normal/phase2/002-rehearsal-2.bin",
+            "hash": "550d55dcd2fe78244a1432111625f84ba978552d52765ba2ade8f989ca073c73",
+            "independence": "process on the same machine as the coordinator; NOT an independent participant",
+            "index": 2,
+            "parent": "0fce8b60cd70fb46e97b9e36a47c45e715fcddbe0de71079f99a972ef49962b5",
+            "participant": "rehearsal-2",
+            "sha256": "bfd24e86854c429aefeb38d2f1f0a8b278b033c08110260cdb82464320ca8010"
+          },
+          {
+            "at": "2026-10-25T18:37:46Z",
+            "file": "normal/phase2/003-rehearsal-3.bin",
+            "hash": "ba8e636aaa1340a9d89bada00864b16e467cb351558f5fedd8b2170e57d6568a",
+            "independence": "process on the same machine as the coordinator; NOT an independent participant",
+            "index": 3,
+            "parent": "550d55dcd2fe78244a1432111625f84ba978552d52765ba2ade8f989ca073c73",
+            "participant": "rehearsal-3",
+            "sha256": "ee28e6a90eeb0f96d0a7fe0d017379414df6eb85c5f93af0802b4d9f0556d16c"
+          }
+        ],
+        "root": "b500c0ca80908977a439bba80b457ef6ad8aa363509cf8e434c2171781e85a2e"
+      },
+      "r1csDigest": "dae1a919aed268000fb0fb23891a477641298e961da761cc04281658d581907e",
+      "transition": {
+        "at": "2026-10-25T17:48:13Z",
+        "extra_bytes": 57508832,
+        "extra_file": "normal/extra.bin",
+        "extra_sha256": "92f62d8b18f58f2bf9c9174c68473cf685fd8d105e590cdbbe186f1f5d8504df",
+        "phase1_last": "d15541455dbe8085a26b22d2bbe2e34fad395af7873bd477dce13ecc9dc159d5",
+        "phase2_root": "b500c0ca80908977a439bba80b457ef6ad8aa363509cf8e434c2171781e85a2e",
+        "seconds": 1564.828792958
+      },
+      "witnessVariables": 119793
+    },
+    {
+      "constraints": 121809,
+      "degree": 131072,
+      "description": "XB3 boundary record: 3 spends, 1 output, public amount+asset (Groth16, BLS12-377)",
+      "instanceVariables": 15,
+      "name": "boundary",
+      "output": {
+        "at": "2026-10-25T20:09:43Z",
+        "phase2_last": "38967510667c199a4b14a333138b9e2b850566f9834b9f3aaa56f99460169bed",
+        "pk_bytes": 64409328,
+        "pk_file": "boundary.public-pk",
+        "pk_sha256": "33745cd2cc5e4e9969e67d7f0656b48b26e51580118041dfedc041688896f756",
+        "seconds": 1077.9394195,
+        "vk_hex": "f5f3bec28643f6072b99b36c4d4e1aa2597a950be932e075138cb82517611750bb1d5e78e66b05c66fe21a6239c50e80ae3ab059c26226ccda1ab48a8d984e22ec8833616ae75df55aafbba38f7a8e07636a96a9fa9a7b753d01d77a47481a0111c50b2ed41e34e3cc85e89e3f5810b373e435feeb8ddcf456aaf7a915e33191e68557e9e7c1808a43c2df2b6108da009651007c8fe4e374025453bb529f88719b6bdb57f501a57e31503e2071f065c5011d84a3a23096c8fe85c771be808401fe6aa16efafe6bb2e66ff7bf8499f85cdec99907ce3e22e7cbce5166ee772753d540b1b1515adc70314000e74060ea8041a2bdc893d35ea39f0c09118e45ebbd3fdff76ccac324e58dee7e9b28d9c8e1750de036a842e0f3eccea7a876b490009a564cd5811228123267878a6b2502e1de82984b449f16f4b49192245910113f9d311a84e80dd11ad71b8d03122c3b800f00000000000000244590c53f43489f880be785f0248ac79f4978b6388a73a17f71146b631223a7d0b83edf5535b7a2a710be8dc8e66d005248680b1789b18a25784a758e56e153caa09855f4c3cafc99ba2ec1169f79146c8a3a49f0dfe5a58891d6755d39a901107046c06cc631b185c2efea5e9655c0dc979b53421ab9bf0418db2e6cc9cde73c78fa308eb16c903dd71b4737cf980099eacaf98bf3373baf1f7f9c6b54a2a11c402c47290aa517aacce5585751587569e40c20ed7d28e007b21f7ca96318807e0f9c5e928d20db5f302a4f4f7e3d916c3c98a8a874e6ec977be4d49f5b4fed3ff43e0ad1cb838f567b29090cd2dd00eec4878758118f6a3004cddc23499b5e73e41de8eeb3add27c5c8c7dbc2f30d9d696e8bf5ecbc67b9d75728a2f9f028017239bdc943a6b151ef4761a72de980f7ceaa80f345dcc26a7c7e29fba3c93d2c62f55afa80e32b0693555b11ddd5401051e63bb0613a87f77866be37e33837b03b95f5114ee38b5bba49d56ab8fc51e36637e6e3a8208bd345b8dea0db28f814348a8e22ec5d7ac9f593417af3f022356b0ff9d1ec674cc378cdbabaec839804349b09d7f4afcd7f784db3b62336e8134361c17d50bf7060b80edf6ecc1cd1cabdce2a95c7315f14d7fddaf980cd883bd5f001fd0948726d9ac292cec5b0c01b563762fdf2b8588aafb1d531e45868dd2b7c1fd28c82ea69628cc78b373ed9fc6155a4a8b1ff4cea94e6924dae22901768bacfe56fa98869f9fd1473d68ba7c47270c9af2b90c55cb4093792da16186c656edeff2611f82e8cb122294362781df2c585f1e1dd2327ab3202978cebdfc0d2498ffbe98f06345cb1634cc1fea543d16a7f0d63bb7c78c22be91d11b7580195704e4a83b03a3d7e70204ee20395a57f2386de22a5dd0167752c5a8db0772bc10ea24d2b729e488d6cf24e4ae0a00360f9e4c823cc9b124a70037b5289c980e5d3ae013c3bd493ea4fed1fb8df8565cb8920a53038bad1cb04549a8a61201"
+      },
+      "phase1": {
+        "contributions": [
+          {
+            "at": "2026-10-25T18:38:07Z",
+            "file": "boundary/phase1/001-rehearsal-1.bin",
+            "hash": "3791c446b6798ba561d7049415b20f6647681866f27c2b7338548bedb798d9dc",
+            "independence": "process on the same machine as the coordinator; NOT an independent participant",
+            "index": 1,
+            "parent": "ac1c189255fd2b7c1f2a06ceb1aee49fe2a79b2a63db0782a7bb18938120a21b",
+            "participant": "rehearsal-1",
+            "sha256": "37a016428f5a445232c2aebb205f9f73c2111599b9a99c792d423c11d1598afe"
+          },
+          {
+            "at": "2026-10-25T18:40:04Z",
+            "file": "boundary/phase1/002-rehearsal-2.bin",
+            "hash": "c37ad2e6d76805482a431e458ad7423431d17a2234aa494ec208ed50a2b40bf5",
+            "independence": "process on the same machine as the coordinator; NOT an independent participant",
+            "index": 2,
+            "parent": "3791c446b6798ba561d7049415b20f6647681866f27c2b7338548bedb798d9dc",
+            "participant": "rehearsal-2",
+            "sha256": "876aa8b98add6d7a8472a0ccbd7145eb2108c05b82db982c3a405238599220bc"
+          },
+          {
+            "at": "2026-10-25T18:43:37Z",
+            "file": "boundary/phase1/003-rehearsal-3.bin",
+            "hash": "d085092acab8f8f164a03d295a83fa20db5cd801f99f2439d54fac3be41f35ef",
+            "independence": "process on the same machine as the coordinator; NOT an independent participant",
+            "index": 3,
+            "parent": "c37ad2e6d76805482a431e458ad7423431d17a2234aa494ec208ed50a2b40bf5",
+            "participant": "rehearsal-3",
+            "sha256": "3fa3f1d9d198ed2484b4f242f4df636347480dae9c68f4b25377f754a173592b"
+          }
+        ],
+        "root": "ac1c189255fd2b7c1f2a06ceb1aee49fe2a79b2a63db0782a7bb18938120a21b"
+      },
+      "phase2": {
+        "contributions": [
+          {
+            "at": "2026-10-25T19:03:53Z",
+            "file": "boundary/phase2/001-rehearsal-1.bin",
+            "hash": "428ad0fb420087f76b0f223a3f4f4f26211d842e8708fb35631e54c66a6f5644",
+            "independence": "process on the same machine as the coordinator; NOT an independent participant",
+            "index": 1,
+            "parent": "161f1540b0614c3cb1e5d530fb41158b86cb324a0a840e28376f035ebdc934fc",
+            "participant": "rehearsal-1",
+            "sha256": "0096397da3c7fe012ea4eb23819ffbd9d84889b76ce48c79b9014a95db734ad0"
+          },
+          {
+            "at": "2026-10-25T19:10:40Z",
+            "file": "boundary/phase2/002-rehearsal-2.bin",
+            "hash": "a6198bebc78c5605cbf5451b6563eab5f9d0d1435d188c32c026c1fc55e8322f",
+            "independence": "process on the same machine as the coordinator; NOT an independent participant",
+            "index": 2,
+            "parent": "428ad0fb420087f76b0f223a3f4f4f26211d842e8708fb35631e54c66a6f5644",
+            "participant": "rehearsal-2",
+            "sha256": "f475499e2cc3cca039ec0e870c2fe6ca6ae0d9b0c9825224f1810a988461e0f7"
+          },
+          {
+            "at": "2026-10-25T19:17:49Z",
+            "file": "boundary/phase2/003-rehearsal-3.bin",
+            "hash": "38967510667c199a4b14a333138b9e2b850566f9834b9f3aaa56f99460169bed",
+            "independence": "process on the same machine as the coordinator; NOT an independent participant",
+            "index": 3,
+            "parent": "a6198bebc78c5605cbf5451b6563eab5f9d0d1435d188c32c026c1fc55e8322f",
+            "participant": "rehearsal-3",
+            "sha256": "6fde59fdea05572a55c6d5be5df5ad4e3a49cdae79fa791ff10068e8af64c85e"
+          }
+        ],
+        "root": "161f1540b0614c3cb1e5d530fb41158b86cb324a0a840e28376f035ebdc934fc"
+      },
+      "r1csDigest": "fe8033a31b63b84e321c034d714de193bc45d55fb9964279ec136d7686717104",
+      "transition": {
+        "at": "2026-10-25T18:57:25Z",
+        "extra_bytes": 51825632,
+        "extra_file": "boundary/extra.bin",
+        "extra_sha256": "ef2dc943b3fdd399ce49deba108f21953c254932ea00a0ff1a693d3156f30404",
+        "phase1_last": "d085092acab8f8f164a03d295a83fa20db5cd801f99f2439d54fac3be41f35ef",
+        "phase2_root": "161f1540b0614c3cb1e5d530fb41158b86cb324a0a840e28376f035ebdc934fc",
+        "seconds": 829.430223959
+      },
+      "witnessVariables": 107955
+    }
+  ],
+  "format": "XMR20-CEREMONY-ATTESTATION-1",
+  "generatedAt": "2026-10-25T20:09:43Z",
+  "independentParticipants": 0,
+  "parametersJson": {
+    "bytes": 4732,
+    "domain": "db96740193a777c4729ad7302d4d99c98ab4d02b3bf621df953672720cc22bf1",
+    "issuerSecretNote": "issuer.secret.json generated fresh here (0600); it is the lab issuer's key, not part of the ceremony",
+    "issuerVk": "7ee83745eb49d8c50986e227b792872d8f5f4134d492fdf4586435fda3ae980d",
+    "sha256": "5c1c9aede7069fbb23bfd1973374b773d70efe7cb3dfb319d4f1762b56f4bd7b"
+  },
+  "status": "REHEARSAL — DISPOSABLE PARAMETERS — NOT A PRODUCTION CEREMONY",
+  "warning": "Contributions were made by processes on one machine. They are not independent participants. The output is a disposable test parameter set with the same trust status as a single-party setup. Never for real funds."
+}

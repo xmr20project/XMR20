@@ -1,0 +1,288 @@
+{
+ "execution": "SIMULATED (offline fakechain, LiteSVM custody, synthetic EXTREMIST mint stand-in)",
+ "steps": [
+  {
+   "at": "2026-10-25T16:54:36.560Z",
+   "name": "catalog: every launched token has a unique derived asset id",
+   "tokens": 66,
+   "instantiatedNow": [
+    "EXTREMIST",
+    "XTAC",
+    "LUKE",
+    "XMR20~5NPSXG",
+    "COVERT"
+   ],
+   "future": "USVEU"
+  },
+  {
+   "at": "2026-10-25T16:54:39.068Z",
+   "name": "legacy position visible",
+   "asset": "eea2bc81c55c6dda47c68bd82eba01f4da645e95f3bc1dbdbe1050b6aee46a12",
+   "mintStandIn": "9MwJfFGc3jNkAKLwma4kkUYivs19yJsWXuPD15RegXMR",
+   "realMint": "9MwJfFGc3jNkAKLwma4kkUYivs19yJsWXuPD15RegXMR",
+   "decimals": 6,
+   "lot": "10000000000"
+  },
+  {
+   "at": "2026-10-25T16:54:41.506Z",
+   "name": "migrated",
+   "credit": "8cd07d5fc969158739d138887c95d19ee34c0993d984c45c53cc4eb5489de5f6",
+   "balance": "10000000000",
+   "backing": {
+    "asset": "eea2bc81c55c6dda47c68bd82eba01f4da645e95f3bc1dbdbe1050b6aee46a12",
+    "reserve": "20000000000",
+    "owed": "20000000000",
+    "ok": true,
+    "shortfall": "0",
+    "lossBearer": "operator backing shared by all holders (no per-holder insurance)",
+    "buckets": {
+     "unclaimedLegacyRights": "10000000000",
+     "depositsAwaitingCredit": "0",
+     "claimsAwaitingCredit": "0",
+     "outstandingPrivateNotes": "10000000000",
+     "confirmedBurnsAwaitingPayout": "0"
+    },
+    "minted": "10000000000",
+    "burned": "0",
+    "incidents": 0,
+    "halted": false
+   },
+   "issuerPaidCarrierFeePiconero": 2938800000,
+   "holderPaidXmr": "0",
+   "interruptedThenRecovered": true
+  },
+  {
+   "at": "2026-10-25T16:54:41.958Z",
+   "name": "duplicates, cutoff ownership, late registration, old path closed",
+   "lateRegistrant": {
+    "X": "0",
+    "LUKE": "0",
+    "XTAC": "0",
+    "COVERT": "0",
+    "XMR20~5NPSXG": "0",
+    "EXTREMIST": "0"
+   },
+   "cutover": {
+    "migratedToReserveAtTip": 322,
+    "legacyPositionAfter": "0"
+   }
+  },
+  {
+   "at": "2026-10-25T16:55:15.071Z",
+   "name": "private transfer of migrated tokens",
+   "txid": "f6de4d04dc58dfa1dc5fb0df3658d53f85645c841a047c23bcc4ee61bb8c8dad",
+   "feePiconero": "3024000000",
+   "change": "7500000000"
+  },
+  {
+   "at": "2026-10-25T16:55:39.933Z",
+   "name": "redeemed to the same Solana asset",
+   "burn": "2e9bd5dafd59dfccb271ffe9569156d633dfc9ed79dc556aa7dc9dd9688695d6",
+   "net": "100000000",
+   "feeBps": 0,
+   "mint": "9MwJfFGc3jNkAKLwma4kkUYivs19yJsWXuPD15RegXMR",
+   "backing": {
+    "asset": "eea2bc81c55c6dda47c68bd82eba01f4da645e95f3bc1dbdbe1050b6aee46a12",
+    "reserve": "19900000000",
+    "owed": "19900000000",
+    "ok": true,
+    "shortfall": "0",
+    "lossBearer": "operator backing shared by all holders (no per-holder insurance)",
+    "buckets": {
+     "unclaimedLegacyRights": "10000000000",
+     "depositsAwaitingCredit": "0",
+     "claimsAwaitingCredit": "0",
+     "outstandingPrivateNotes": "9900000000",
+     "confirmedBurnsAwaitingPayout": "0"
+    },
+    "minted": "10000000000",
+    "burned": "100000000",
+    "incidents": 0,
+    "halted": false
+   }
+  },
+  {
+   "at": "2026-10-25T16:55:41.988Z",
+   "name": "deposit per EXTREMIST fee policy",
+   "gross": "50000000",
+   "net": "50000000",
+   "feeBps": 0,
+   "backing": true
+  },
+  {
+   "at": "2026-10-25T16:57:43.620Z",
+   "name": "other catalog tokens migrated by the same path",
+   "others": [
+    {
+     "symbol": "XTAC",
+     "asset": "9fdadb5d7dd447a58c1c058804f0f847b230c68a514568bcbb44737174f5320a",
+     "mint": "HitiJphamArNBrDotTiJZEfsyWApZ7YTZfY34jJkgXMR",
+     "decimals": 6,
+     "feeBps": 150,
+     "credit": "be46e64015b12b74d95fe7f5df3e5d68e386b18b2d626c49ff335bca5d9ecb0b",
+     "amount": "10000000000",
+     "depositNet": "49250000",
+     "redeemed": "20000000",
+     "payoutNet": "19700000",
+     "backing": true
+    },
+    {
+     "symbol": "LUKE",
+     "asset": "53d7e49d3a62c364059b193fb80317e17f742111293c59257a1ce2a795dd0807",
+     "mint": "KzTQBqjkz1fCybZW1Wm44UDvYNr1VAbzupCaLvDfXMR",
+     "decimals": 6,
+     "feeBps": 150,
+     "credit": "86c3dc7a24392dc3b08455083438d2a7e3d0d5a7e086790ef94dd9ec4b5be842",
+     "amount": "10000000000",
+     "depositNet": "49250000",
+     "redeemed": "20000000",
+     "payoutNet": "19700000",
+     "backing": true
+    },
+    {
+     "symbol": "XMR20~5NPSXG",
+     "asset": "5fe99ca34258f28c3f3f128f636f9b11b1cf10d91e8c9a0046672a69e8e35d06",
+     "mint": "5NPSXGtRcdZQx5kqy8SW1e7eSrwsfPHGnoXqf6TCx9Kp",
+     "decimals": 6,
+     "feeBps": 0,
+     "credit": "78cb9cd027f8c9fbd4cdaeffd4dd4a9a7c9d82ccbe930c20f492fa36b1a7f98f",
+     "amount": "10000000000",
+     "depositNet": "50000000",
+     "redeemed": "20000000",
+     "payoutNet": "20000000",
+     "backing": true
+    },
+    {
+     "symbol": "COVERT",
+     "asset": "07a92564beef36eb93b8dbcdac04548afd75ab360062b9ed85a8294cc2545112",
+     "mint": "8zWcEgUZvQKcHgtUoYTnaC6AHX7FmtWVV9WeM4kPuXMR",
+     "decimals": 6,
+     "feeBps": 150,
+     "credit": "dbdfa5291581c5026fb5f4fc2065d6d573295b5b3f764524e1c0437f9ca3111c",
+     "amount": "10000000000",
+     "depositNet": "49250000",
+     "redeemed": "20000000",
+     "payoutNet": "19700000",
+     "backing": true
+    }
+   ]
+  },
+  {
+   "at": "2026-10-25T16:58:14.924Z",
+   "name": "FUTURE token added after startup migrated by the same path",
+   "added": {
+    "symbol": "USVEU",
+    "asset": "6b7bd43ec370a2abbf43fbd928b215555cee16788070ced89ea5edc0013ace02",
+    "mint": "3ds5DRShF7LdWUrSjsNRgvSkgk8Gyyr9GzwUTA7KKXMR",
+    "decimals": 6,
+    "legacyLot": "10000000000",
+    "holdersWithLots": 2
+   },
+   "future": {
+    "symbol": "USVEU",
+    "asset": "6b7bd43ec370a2abbf43fbd928b215555cee16788070ced89ea5edc0013ace02",
+    "mint": "3ds5DRShF7LdWUrSjsNRgvSkgk8Gyyr9GzwUTA7KKXMR",
+    "decimals": 6,
+    "feeBps": 150,
+    "credit": "ef5ca3e91ba7de1508fb9e64e390c78d73a37f8031ab0fa8c217c085492d60eb",
+    "amount": "10000000000",
+    "depositNet": "49250000",
+    "redeemed": "20000000",
+    "payoutNet": "19700000",
+    "backing": true
+   }
+  }
+ ],
+ "secondMigrationAttempt": {
+  "ok": false,
+  "error": null,
+  "reserveBefore": "20000000000",
+  "reserveAfter": "20000000000"
+ },
+ "result": "PASSED",
+ "summary": {
+  "catalogTokens": 66,
+  "instantiated": [
+   "EXTREMIST",
+   "XTAC",
+   "LUKE",
+   "XMR20~5NPSXG",
+   "COVERT"
+  ],
+  "others": [
+   {
+    "symbol": "XTAC",
+    "asset": "9fdadb5d7dd447a58c1c058804f0f847b230c68a514568bcbb44737174f5320a",
+    "mint": "HitiJphamArNBrDotTiJZEfsyWApZ7YTZfY34jJkgXMR",
+    "decimals": 6,
+    "feeBps": 150,
+    "credit": "be46e64015b12b74d95fe7f5df3e5d68e386b18b2d626c49ff335bca5d9ecb0b",
+    "amount": "10000000000",
+    "depositNet": "49250000",
+    "redeemed": "20000000",
+    "payoutNet": "19700000",
+    "backing": true
+   },
+   {
+    "symbol": "LUKE",
+    "asset": "53d7e49d3a62c364059b193fb80317e17f742111293c59257a1ce2a795dd0807",
+    "mint": "KzTQBqjkz1fCybZW1Wm44UDvYNr1VAbzupCaLvDfXMR",
+    "decimals": 6,
+    "feeBps": 150,
+    "credit": "86c3dc7a24392dc3b08455083438d2a7e3d0d5a7e086790ef94dd9ec4b5be842",
+    "amount": "10000000000",
+    "depositNet": "49250000",
+    "redeemed": "20000000",
+    "payoutNet": "19700000",
+    "backing": true
+   },
+   {
+    "symbol": "XMR20~5NPSXG",
+    "asset": "5fe99ca34258f28c3f3f128f636f9b11b1cf10d91e8c9a0046672a69e8e35d06",
+    "mint": "5NPSXGtRcdZQx5kqy8SW1e7eSrwsfPHGnoXqf6TCx9Kp",
+    "decimals": 6,
+    "feeBps": 0,
+    "credit": "78cb9cd027f8c9fbd4cdaeffd4dd4a9a7c9d82ccbe930c20f492fa36b1a7f98f",
+    "amount": "10000000000",
+    "depositNet": "50000000",
+    "redeemed": "20000000",
+    "payoutNet": "20000000",
+    "backing": true
+   },
+   {
+    "symbol": "COVERT",
+    "asset": "07a92564beef36eb93b8dbcdac04548afd75ab360062b9ed85a8294cc2545112",
+    "mint": "8zWcEgUZvQKcHgtUoYTnaC6AHX7FmtWVV9WeM4kPuXMR",
+    "decimals": 6,
+    "feeBps": 150,
+    "credit": "dbdfa5291581c5026fb5f4fc2065d6d573295b5b3f764524e1c0437f9ca3111c",
+    "amount": "10000000000",
+    "depositNet": "49250000",
+    "redeemed": "20000000",
+    "payoutNet": "19700000",
+    "backing": true
+   }
+  ],
+  "future": {
+   "symbol": "USVEU",
+   "asset": "6b7bd43ec370a2abbf43fbd928b215555cee16788070ced89ea5edc0013ace02",
+   "mint": "3ds5DRShF7LdWUrSjsNRgvSkgk8Gyyr9GzwUTA7KKXMR",
+   "decimals": 6,
+   "feeBps": 150,
+   "credit": "ef5ca3e91ba7de1508fb9e64e390c78d73a37f8031ab0fa8c217c085492d60eb",
+   "amount": "10000000000",
+   "depositNet": "49250000",
+   "redeemed": "20000000",
+   "payoutNet": "19700000",
+   "backing": true
+  },
+  "legacyLot": "10000000000",
+  "privateAfterMigration": "10000000000",
+  "tax": "none on migration; later deposits and redemptions follow each token’s on-chain transfer-fee setting (0 or 150 bps), exact",
+  "holderXmrFeeForMigration": "0 (issuer-paid credit carrier)",
+  "issuerCreditCarrierFeePiconero": 2938800000,
+  "mintStandIn": "9MwJfFGc3jNkAKLwma4kkUYivs19yJsWXuPD15RegXMR",
+  "realMint": "9MwJfFGc3jNkAKLwma4kkUYivs19yJsWXuPD15RegXMR",
+  "decimals": 6
+ }
+}

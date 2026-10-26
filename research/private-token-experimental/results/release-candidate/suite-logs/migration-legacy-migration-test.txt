@@ -1,0 +1,37 @@
+TAP version 13
+# bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+# {"step":"catalog: every launched token has a unique derived asset id","tokens":66,"instantiatedNow":["EXTREMIST","XTAC","LUKE","XMR20~5NPSXG","COVERT"],"future":"USVEU"}
+# {"step":"legacy position visible","asset":"eea2bc81c55c6dda47c68bd82eba01f4da645e95f3bc1dbdbe1050b6aee46a12","mintStandIn":"9MwJfFGc3jNkAKLwma4kkUYivs19yJsWXuPD15RegXMR","realMint":"9MwJfFGc3jNkAKLwma4kkUYivs19yJsWXuPD15RegXMR","decimals":6,"lot":"10000000000"}
+# backend: SIMULATED CRASH after the credit was journaled (built), before publication
+# backend: Claim already consumed
+# {"step":"migrated","credit":"8cd07d5fc969158739d138887c95d19ee34c0993d984c45c53cc4eb5489de5f6","balance":"10000000000","backing":{"asset":"eea2bc81c55c6dda47c68bd82eba01f4da645e95f3bc1dbdbe1050b6aee46a12","reserve":"20000000000","owed":"20000000000","ok":true,"shortfall":"0","lossBearer":"operator b
+# backend: Claim already consumed
+# backend: Claim already consumed
+# backend: Legacy signature rejected
+# backend: Unknown legacy lot for this account
+# {"step":"duplicates, cutoff ownership, late registration, old path closed","lateRegistrant":{"X":"0","LUKE":"0","XTAC":"0","COVERT":"0","XMR20~5NPSXG":"0","EXTREMIST":"0"},"cutover":{"migratedToReserveAtTip":322,"legacyPositionAfter":"0"}}
+# {"step":"private transfer of migrated tokens","txid":"f6de4d04dc58dfa1dc5fb0df3658d53f85645c841a047c23bcc4ee61bb8c8dad","feePiconero":"3024000000","change":"7500000000"}
+# {"step":"redeemed to the same Solana asset","burn":"2e9bd5dafd59dfccb271ffe9569156d633dfc9ed79dc556aa7dc9dd9688695d6","net":"100000000","feeBps":0,"mint":"9MwJfFGc3jNkAKLwma4kkUYivs19yJsWXuPD15RegXMR","backing":{"asset":"eea2bc81c55c6dda47c68bd82eba01f4da645e95f3bc1dbdbe1050b6aee46a12","reserve":"19
+# {"step":"deposit per EXTREMIST fee policy","gross":"50000000","net":"50000000","feeBps":0,"backing":true}
+# backend: Claim already consumed
+# backend: Claim already consumed
+# backend: Claim already consumed
+# backend: Claim already consumed
+# {"step":"other catalog tokens migrated by the same path","others":[{"symbol":"XTAC","asset":"9fdadb5d7dd447a58c1c058804f0f847b230c68a514568bcbb44737174f5320a","mint":"HitiJphamArNBrDotTiJZEfsyWApZ7YTZfY34jJkgXMR","decimals":6,"feeBps":150,"credit":"be46e64015b12b74d95fe7f5df3e5d68e386b18b2d626c49ff3
+# backend: Claim already consumed
+# {"step":"FUTURE token added after startup migrated by the same path","added":{"symbol":"USVEU","asset":"6b7bd43ec370a2abbf43fbd928b215555cee16788070ced89ea5edc0013ace02","mint":"3ds5DRShF7LdWUrSjsNRgvSkgk8Gyyr9GzwUTA7KKXMR","decimals":6,"legacyLot":"10000000000","holdersWithLots":2},"future":{"symbo
+# Subtest: 10,000 legacy EXTREMIST -> exactly 10,000 private EXTREMIST; interrupted/duplicate/cutoff/recovery; transfer; redemption to the same mint
+ok 1 - 10,000 legacy EXTREMIST -> exactly 10,000 private EXTREMIST; interrupted/duplicate/cutoff/recovery; transfer; redemption to the same mint
+  ---
+  duration_ms: 266534.780458
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 268318.906375

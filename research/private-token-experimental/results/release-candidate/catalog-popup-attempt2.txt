@@ -1,0 +1,23 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✖ catalog tokens in the real popup: migrate (incl. interrupted), transfer, bridge out with real per-mint fees, deposit, fresh-profile recovery (982312.894709ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 984218.320916
+
+✖ failing tests:
+
+test at browser-catalog-migration-bridge.test.mjs:22:1
+✖ catalog tokens in the real popup: migrate (incl. interrupted), transfer, bridge out with real per-mint fees, deposit, fresh-profile recovery (982312.894709ms)
+  page.waitForFunction: Timeout 900000ms exceeded.
+      at h.waitText (<workspace>/research/privacy-release-candidate-20261025/browser-harness.mjs:50:62)
+      at h.sendApprove (<workspace>/research/privacy-release-candidate-20261025/browser-harness.mjs:52:196)
+      at async send (<workspace>/research/privacy-release-candidate-20261025/browser-catalog-migration-bridge.test.mjs:39:96)
+      at async TestContext.<anonymous> (<workspace>/research/privacy-release-candidate-20261025/browser-catalog-migration-bridge.test.mjs:69:37) {
+    name: 'TimeoutError'
+  }
+exit 1

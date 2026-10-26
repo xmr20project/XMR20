@@ -1,0 +1,3 @@
+Built extension-private-holder-test/app.js and test module.
+build exit 0
+bdbad7fe380f5482

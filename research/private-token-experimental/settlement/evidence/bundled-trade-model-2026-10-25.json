@@ -1,0 +1,488 @@
+{
+ "execution": "ABSTRACT MODEL (no wallet, no cryptography, no network)",
+ "construction": "listing reservation + one bundled Monero transaction (XMR payment + token delivery)",
+ "cases": [
+  {
+   "name": "reordering",
+   "chain": [
+    {
+     "height": 0,
+     "txs": [
+      "listing-1"
+     ]
+    },
+    {
+     "height": 1,
+     "txs": [
+      "other"
+     ]
+    },
+    {
+     "height": 2,
+     "txs": [
+      "bundle-1"
+     ]
+    }
+   ],
+   "outcomes": [
+    {
+     "bundle": "bundle-1",
+     "xmrPaid": true,
+     "tokensDelivered": true,
+     "fair": true,
+     "loser": null
+    }
+   ]
+  },
+  {
+   "name": "reordering",
+   "chain": [
+    {
+     "height": 0,
+     "txs": [
+      "listing-1"
+     ]
+    },
+    {
+     "height": 1,
+     "txs": [
+      "bundle-1",
+      "other"
+     ]
+    }
+   ],
+   "outcomes": [
+    {
+     "bundle": "bundle-1",
+     "xmrPaid": true,
+     "tokensDelivered": true,
+     "fair": true,
+     "loser": null
+    }
+   ]
+  },
+  {
+   "name": "reordering",
+   "chain": [
+    {
+     "height": 0,
+     "txs": [
+      "listing-1"
+     ]
+    },
+    {
+     "height": 1,
+     "txs": [
+      "other",
+      "bundle-1"
+     ]
+    }
+   ],
+   "outcomes": [
+    {
+     "bundle": "bundle-1",
+     "xmrPaid": true,
+     "tokensDelivered": true,
+     "fair": true,
+     "loser": null
+    }
+   ]
+  },
+  {
+   "name": "reordering",
+   "chain": [
+    {
+     "height": 0,
+     "txs": [
+      "listing-1"
+     ]
+    },
+    {
+     "height": 1,
+     "txs": [
+      "bundle-1"
+     ]
+    },
+    {
+     "height": 2,
+     "txs": [
+      "other"
+     ]
+    }
+   ],
+   "outcomes": [
+    {
+     "bundle": "bundle-1",
+     "xmrPaid": true,
+     "tokensDelivered": true,
+     "fair": true,
+     "loser": null
+    }
+   ]
+  },
+  {
+   "name": "reordering",
+   "chain": [
+    {
+     "height": 0,
+     "txs": [
+      "listing-1",
+      "other"
+     ]
+    },
+    {
+     "height": 1,
+     "txs": [
+      "bundle-1"
+     ]
+    }
+   ],
+   "outcomes": [
+    {
+     "bundle": "bundle-1",
+     "xmrPaid": true,
+     "tokensDelivered": true,
+     "fair": true,
+     "loser": null
+    }
+   ]
+  },
+  {
+   "name": "reordering-two-lots",
+   "chain": [
+    {
+     "height": 0,
+     "txs": [
+      "listing-1",
+      "listing-2"
+     ]
+    },
+    {
+     "height": 1,
+     "txs": [
+      "bundle-1",
+      "bundle-2"
+     ]
+    }
+   ],
+   "outcomes": [
+    {
+     "bundle": "bundle-1",
+     "xmrPaid": true,
+     "tokensDelivered": true,
+     "fair": true,
+     "loser": null
+    },
+    {
+     "bundle": "bundle-2",
+     "xmrPaid": true,
+     "tokensDelivered": true,
+     "fair": true,
+     "loser": null
+    }
+   ]
+  },
+  {
+   "name": "reordering-two-lots",
+   "chain": [
+    {
+     "height": 0,
+     "txs": [
+      "listing-1",
+      "listing-2"
+     ]
+    },
+    {
+     "height": 1,
+     "txs": [
+      "bundle-2",
+      "bundle-1"
+     ]
+    }
+   ],
+   "outcomes": [
+    {
+     "bundle": "bundle-2",
+     "xmrPaid": true,
+     "tokensDelivered": true,
+     "fair": true,
+     "loser": null
+    },
+    {
+     "bundle": "bundle-1",
+     "xmrPaid": true,
+     "tokensDelivered": true,
+     "fair": true,
+     "loser": null
+    }
+   ]
+  },
+  {
+   "name": "reordering-two-lots",
+   "chain": [
+    {
+     "height": 0,
+     "txs": [
+      "listing-1"
+     ]
+    },
+    {
+     "height": 1,
+     "txs": [
+      "listing-2",
+      "bundle-1"
+     ]
+    },
+    {
+     "height": 2,
+     "txs": [
+      "bundle-2"
+     ]
+    }
+   ],
+   "outcomes": [
+    {
+     "bundle": "bundle-1",
+     "xmrPaid": true,
+     "tokensDelivered": true,
+     "fair": true,
+     "loser": null
+    },
+    {
+     "bundle": "bundle-2",
+     "xmrPaid": true,
+     "tokensDelivered": true,
+     "fair": true,
+     "loser": null
+    }
+   ]
+  },
+  {
+   "name": "conflicting-spend-after-listing",
+   "chain": [
+    {
+     "height": 0,
+     "txs": [
+      "listing-1"
+     ]
+    },
+    {
+     "height": 1,
+     "txs": [
+      "spend-1"
+     ]
+    },
+    {
+     "height": 2,
+     "txs": [
+      "bundle-1"
+     ]
+    }
+   ],
+   "outcomes": [
+    {
+     "bundle": "bundle-1",
+     "xmrPaid": true,
+     "tokensDelivered": true,
+     "fair": true,
+     "loser": null
+    }
+   ]
+  },
+  {
+   "name": "conflicting-spend-no-reservation (what the construction fixes)",
+   "chain": [
+    {
+     "height": 0,
+     "txs": [
+      "spend-1"
+     ]
+    },
+    {
+     "height": 1,
+     "txs": [
+      "bundle-0"
+     ]
+    }
+   ],
+   "outcomes": [
+    {
+     "bundle": "bundle-0",
+     "xmrPaid": true,
+     "tokensDelivered": false,
+     "fair": false,
+     "loser": "buyer"
+    }
+   ]
+  },
+  {
+   "name": "listing-reorganised-bundle-survives",
+   "chain": [
+    {
+     "height": 0,
+     "txs": [
+      "other"
+     ]
+    },
+    {
+     "height": 1,
+     "txs": [
+      "other"
+     ]
+    },
+    {
+     "height": 2,
+     "txs": [
+      "bundle-1"
+     ]
+    }
+   ],
+   "outcomes": [
+    {
+     "bundle": "bundle-1",
+     "xmrPaid": true,
+     "tokensDelivered": false,
+     "fair": false,
+     "loser": "buyer"
+    }
+   ]
+  },
+  {
+   "name": "listing-reorganised-lot-spent-elsewhere",
+   "chain": [
+    {
+     "height": 0,
+     "txs": [
+      "spend-1"
+     ]
+    },
+    {
+     "height": 1,
+     "txs": [
+      "other"
+     ]
+    },
+    {
+     "height": 2,
+     "txs": [
+      "bundle-1"
+     ]
+    }
+   ],
+   "outcomes": [
+    {
+     "bundle": "bundle-1",
+     "xmrPaid": true,
+     "tokensDelivered": false,
+     "fair": false,
+     "loser": "buyer"
+    }
+   ]
+  },
+  {
+   "name": "bundle-rebroadcast-listing-intact",
+   "chain": [
+    {
+     "height": 0,
+     "txs": [
+      "listing-1"
+     ]
+    },
+    {
+     "height": 1,
+     "txs": [
+      "other"
+     ]
+    },
+    {
+     "height": 2,
+     "txs": [
+      "other"
+     ]
+    },
+    {
+     "height": 3,
+     "txs": [
+      "bundle-1"
+     ]
+    }
+   ],
+   "outcomes": [
+    {
+     "bundle": "bundle-1",
+     "xmrPaid": true,
+     "tokensDelivered": true,
+     "fair": true,
+     "loser": null
+    }
+   ]
+  },
+  {
+   "name": "duplicate-bundle",
+   "chain": [
+    {
+     "height": 0,
+     "txs": [
+      "listing-1"
+     ]
+    },
+    {
+     "height": 1,
+     "txs": [
+      "bundle-1"
+     ]
+    },
+    {
+     "height": 2,
+     "txs": [
+      "bundle-1-copy"
+     ]
+    }
+   ],
+   "outcomes": [
+    {
+     "bundle": "bundle-1",
+     "xmrPaid": true,
+     "tokensDelivered": true,
+     "fair": true,
+     "loser": null
+    },
+    {
+     "bundle": "bundle-1-copy",
+     "xmrPaid": true,
+     "tokensDelivered": false,
+     "fair": false,
+     "loser": "buyer"
+    }
+   ]
+  }
+ ],
+ "retainedCounterexample": {
+  "name": "B' (listing reorganised, bundle canonical)",
+  "loser": "buyer",
+  "failingAssumption": "the listing has reached a depth after which it will stay canonical; Monero gives no such depth (an 18-block reorganisation is on record)",
+  "notEliminatedBy": [
+   "bundling both legs",
+   "listing reservation",
+   "waiting D confirmations on the listing (changes the odds, not the existence)"
+  ]
+ },
+ "duplicateNote": "a byte-identical rebroadcast cannot be mined twice on Monero (same key images); the model shows the token layer also refuses a second delivery",
+ "summary": {
+  "fair": [
+   "reordering",
+   "conflicting spend with reservation",
+   "rebroadcast with listing intact",
+   "duplicates"
+  ],
+  "buyerLoss": [
+   "listing reorganised away while the bundle is canonical (B')"
+  ],
+  "sellerLoss": [],
+  "nextCandidates": [
+   "seller bond held by a party seeing both legs, released at depth D (trusted/escrow party: SETTLEMENT-DESIGN 4.3/4.4)",
+   "buyer signs only after the listing has D confirmations (shrinks the window; does not remove it)"
+  ],
+  "productionTrading": "DISABLED"
+ }
+}

@@ -1,0 +1,33 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+{"step":"case1: burn published and mined (1 confirmation)","txid":"62c2532ea0c270f181fca97eb9e30f5ead78303fc823958ea3b14c130e308ef6"}
+backend: Only 12 confirmations
+{"step":"case1 diagnostic after rollback","tip":417,"payout":{"txid":"62c2532ea0c270f181fca97eb9e30f5ead78303fc823958ea3b14c130e308ef6","amount":"10000000","status":"pending","confirmations":8},"operator":{"paused":false,"halted":false,"incidents":[]},"payouts":[{"txid":"62c2532ea0c270f181fca97eb9e30f5ead78303fc823958ea3b14c130e308ef6","amount":"10000000","status":"pending","confirmations":8}],"ho
+✖ payout depth policy D=20: rollbacks below/at/beyond the depth before payout are detected, pause payouts and re-validate; the post-payout loss is preserved (206835.180417ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 208645.127875
+
+✖ failing tests:
+
+test at settlement/payout-depth-policy.test.mjs:29:1
+✖ payout depth policy D=20: rollbacks below/at/beyond the depth before payout are detected, pause payouts and re-validate; the post-payout loss is preserved (206835.180417ms)
+  AssertionError [ERR_ASSERTION]: payouts PAUSED after the burn left canonical history: {"tip":417,"payout":{"txid":"62c2532ea0c270f181fca97eb9e30f5ead78303fc823958ea3b14c130e308ef6","amount":"10000000","status":"pending","confirmations":8},"operator":{"paused":false,"halted":false,"incidents":[]},"payouts":[{"txid":"62c2532ea0c270f181fca97eb9e30f5ead78303fc823958ea3b14c130e308ef6","amount":"10000000","status":"pending","confirmations":8}],"holderRecord":{"confirmations":8,"error":null,"height":410,"kind":3,"status":"accepted","txid":"62c2532ea0c270f181fca97eb9e30f5ead78303fc823958ea3b14c130e308ef6"},"holderTip":417}
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file://<workspace>/research/privacy-release-candidate-20261025/settlement/payout-depth-policy.test.mjs:66:333)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual'
+  }
+exit 1

@@ -1,0 +1,22 @@
+TAP version 13
+# bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+# {"step":"deposited and credited","credit":"912ae69a2d2c03c198f2bfc6ec0b3abbba5b5915ca29212351e8a217cc5f1640","balanceA":"98500000"}
+# {"step":"backing before the burn","asset":"3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f","reserve":"1083500000","owed":"1083500000","ok":true,"shortfall":"0","lossBearer":"operator backing shared by all holders (no per-holder insurance)","buckets":{"unclaimedLegacyRights":"985000000","depositsAwaitingCredit":"0","claimsAwaitingCredit":"0","outstandingPrivateNotes":"98500000","c
+# {"step":"burn paid out on Solana (irreversible program execution)","burnTxid":"fc1b04e7edb5c4a232dec5d104d4463e65e674d665e8231174eb510a0248fd15","burnHeight":334,"payoutNet":"39400000","liabilities":{"asset":"3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f","reserve":"1043500000","owed":"1043500000","ok":true,"shortfall":"0","lossBearer":"operator backing shared by all holders (no
+# {"step":"rollback removed the burn","popped":11,"from":343,"to":332}
+# {"step":"COUNTEREXAMPLE REPRODUCED: payout final, burn gone, note re-spent, backing short","liabilities":{"asset":"3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f","reserve":"1043500000","owed":"1083500000","ok":false,"shortfall":"40000000","lossBearer":"operator backing shared by all holders (no per-holder insurance)","buckets":{"unclaimedLegacyRights":"985000000","depositsAwaiti
+# Subtest: COUNTEREXAMPLE A (preserved): payout on a burn that a later rollback removes -> backing short by the paid amount
+ok 1 - COUNTEREXAMPLE A (preserved): payout on a burn that a later rollback removes -> backing short by the paid amount
+  ---
+  duration_ms: 142427.368375
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 144232.706917

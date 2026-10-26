@@ -1,0 +1,6 @@
+# node smoke-launch.mjs (scratchpad; harness h.launch after the fix), 25 Oct 2026 00:34 UTC
+00:34:55 case1 loaded id jigbpnljnmbbkebaopbnnhmiafgnofla in 1103 ms            (rebuilt extension-private-holder-test: service worker appears)
+00:34:55 case2 refused: Test extension build missing: .../does-not-exist          (missing build refused BEFORE any browser starts)
+00:35:25 case3 threw after 30 s: Extension service worker did not start from .../no-sw-ext: browserContext.waitForEvent: Timeout 30000ms exceeded while waiting for event "serviceworker"
+steps: [{"step":"extension failed to load; browser closed","profile":"smoke3","error":"browserContext.waitForEvent: Timeout 30000ms exceeded while waiting for event \"serviceworker\""}]
+00:35:25 done; process should now exit on its own  -> exit 0; no Chromium left using the smoke profiles

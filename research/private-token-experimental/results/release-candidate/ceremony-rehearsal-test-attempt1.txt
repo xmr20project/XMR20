@@ -1,0 +1,12 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✔ the rehearsal verifies from files: R1CS recomputed, both logs replayed, keys recombined byte-for-byte (3116071.070541ms)
+✔ tampering is refused: a flipped byte in a contribution, a substituted proving key, a foreign chain (5120715.736041ms)
+✔ trusted manifest bound to the attestation; roles refuse a foreign manifest; a holder proves and the indexer verifies with the rehearsed parameters (115084.368833ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8353632.893333

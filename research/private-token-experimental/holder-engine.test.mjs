@@ -1,6 +1,6 @@
 // Node-level test of the holder engine (the same wasm the extension worker
 // loads) against the real test backend: derivation, public-chain replay from
-// the daemon RPC, deposit credit, send with change (proved in wasm), relay,
+// the daemon RPC, deposit credit, send with change (proved in wasm), holder-funded carrier (no relay since stage 2),
 // redemption, fresh-root recovery, wrong-root and viewing-key separation.
 // No browser; the browser tests exercise the popup on top of this engine.
 import test from 'node:test';
@@ -13,6 +13,7 @@ import {ed25519} from '@noble/curves/ed25519';
 import {startBackend} from './backend/service.mjs';
 import {createHolderEngine,createChainScanner} from './wallet-extension/src/holder-engine.js';
 import {createParameterLoader} from './wallet-extension/src/holder-params.js';
+import {createCarrierBuilder} from './wallet-extension/src/holder-carrier.js';
 const dir=fileURLToPath(new URL('./',import.meta.url));
 const PORTS={rpcPort:30061,p2pPort:30060,httpPort:8942};
 // The SHIPPED manifest (params/test-v1/manifest.json) is the trust anchor; the backend's parameters.json is only compared against it.
@@ -24,7 +25,9 @@ const closeFetch=(u,o={})=>fetch(u,{...o,headers:{...(o.headers||{}),connection:
 const hex=b=>Buffer.from(b).toString('hex');
 const post=async(action,body)=>{const r=await fetch(`http://127.0.0.1:${PORTS.httpPort}/action/${action}`,{method:'POST',headers:{'content-type':'application/json',connection:'close'},body:JSON.stringify(body)});const v=await r.json();if(!r.ok)throw Error(v.error);return v;};
 // connection:close — the backend runs in this same Node process, and a 30 s synchronous wasm proof would otherwise leave a stale keep-alive socket (ECONNRESET). The browser build has no such coupling.
-async function openEngine(wasm,root,params){const e=await createHolderEngine({wasm});const d=e.call({op:'derive',root:hex(root),account:0});const loader=createParameterLoader({manifest:MANIFEST,engine:e,baseUrl:`http://127.0.0.1:${PORTS.httpPort}`,cache:sharedCache,fetch:closeFetch});const served=await loader.loadServedConfig();e.call({op:'params',manifest:MANIFEST,served});const s=createChainScanner(e,{rpc:params.rpcUrl,genesis:MANIFEST.network.genesis});return {engine:e,scanner:s,loader,tokenAddress:d.tokenAddress};}
+async function openEngine(wasm,root,params){const e=await createHolderEngine({wasm});const d=e.call({op:'derive',root:hex(root),account:0});const loader=createParameterLoader({manifest:MANIFEST,engine:e,baseUrl:`http://127.0.0.1:${PORTS.httpPort}`,cache:sharedCache,fetch:closeFetch});const served=await loader.loadServedConfig();e.call({op:'params',manifest:MANIFEST,served});const s=createChainScanner(e,{rpc:params.rpcUrl,genesis:MANIFEST.network.genesis});const carrier=createCarrierBuilder({engine:e,rpc:params.rpcUrl,fetch:closeFetch});return {engine:e,scanner:s,loader,carrier,tokenAddress:d.tokenAddress,nativeAddress:d.nativeAddress};}
+// Holder-funded carrier: quote the XMR fee, sign the carrier for the proved record, publish to the daemon directly (no relay).
+async function carry(h,kind,wire){const q=await h.carrier.quote({kind});const s=h.carrier.sign(q.quoteId,wire);assert.equal(s.fee,q.fee,'fee paid = fee quoted');const r=await h.carrier.publish(s.blob);assert.equal(r.ok,true,r.reason);return {txid:s.txid,nativeBytes:s.nativeBytes,extraBytes:s.extraBytes,fee:String(s.fee),blob:s.blob};}
 async function loadPk(h,slot){const info=await h.loader.loadProvingKey(slot);assert.equal(info.authenticated,true);return info;}
 test('holder engine: keys, replay, spend, redeem, recovery (wasm in Node)',{timeout:1200000},async()=>{
  const backend=await startBackend({...PORTS,log:m=>console.error('backend:',m),origins:[]});
@@ -36,7 +39,9 @@ test('holder engine: keys, replay, spend, redeem, recovery (wasm in Node)',{time
   const A=await openEngine(wasm,rootA,params),B=await openEngine(wasm,rootB,params);
   assert.notEqual(A.tokenAddress,B.tokenAddress);assert.ok(A.tokenAddress.startsWith('penumbra1'));
   const pub=()=>{const a=ed25519.utils.randomPrivateKey(),b=ed25519.utils.randomPrivateKey();return {A:hex(ed25519.getPublicKey(a)),B:hex(ed25519.getPublicKey(b))};};
-  for(const [id,sol,h] of [['nodeA',solA,A],['nodeB',solB,B]]){const r=await post('register',{id,sol:sol.publicKey.toBase58(),xmr:'synthetic',...pub(),tokenAddress:h.tokenAddress});assert.equal(r.registered,true);}
+  for(const [id,sol,h] of [['nodeA',solA,A],['nodeB',solB,B]]){const r=await post('register',{id,sol:sol.publicKey.toBase58(),xmr:h.nativeAddress,...pub(),tokenAddress:h.tokenAddress});assert.equal(r.registered,true);}
+  // TEST SERVICE: test XMR for both holders' carrier fees (coinbase matures after 60 blocks; the service mines at most 50 per call).
+  await post('fund',{id:'nodeA',blocks:3});await post('fund',{id:'nodeB',blocks:3});await post('mine',{blocks:50});await post('mine',{blocks:12});
   // Empty replay first.
   let sA=await A.scanner.sync();let st=A.engine.call({op:'status'});assert.deepEqual(st.balances,{});results.initialTip=sA.tip;
   // Deposit 100 X signed by A's Solana key -> credit to A's token address.
@@ -50,8 +55,9 @@ test('holder engine: keys, replay, spend, redeem, recovery (wasm in Node)',{time
   let t0=Date.now();const built=A.engine.call({op:'build',kind:'send',to:B.tokenAddress,amount:'40000000',notes:sel.notes});results.sendProvingMs=Date.now()-t0;
   assert.equal(built.bytes,996);assert.equal(built.change,'58500000');assert.equal(built.inputs,1);
   assert.equal(A.engine.call({op:'verify',wire:built.wire}).record,'accepted');
-  const relayed=await post('relay',{id:'nodeA',wire:built.wire});assert.equal(relayed.repeated,false);results.sendCarrier={nativeBytes:relayed.nativeBytes,extraBytes:relayed.extraBytes,fee:relayed.fee};
-  const again=await post('relay',{id:'nodeA',wire:built.wire});assert.equal(again.repeated,true);assert.equal(again.txid,relayed.txid);
+  const relayed=await carry(A,'send',built.wire);results.sendCarrier={nativeBytes:relayed.nativeBytes,extraBytes:relayed.extraBytes,fee:relayed.fee};
+  // Re-sending the SAME signed carrier is idempotent (same txid, already in the pool): never a second carrier or fee.
+  const again=await A.carrier.publish(relayed.blob);assert.equal(again.ok,true);assert.equal((await A.carrier.lookup(relayed.txid)).known,true);
   // Before mining: spend not visible; after: A has change, B has 40; the record id is tracked with confirmations.
   await post('mine',{blocks:10});await A.scanner.sync();await B.scanner.sync();
   const stA=A.engine.call({op:'status'}),stB=B.engine.call({op:'status'});
@@ -60,7 +66,7 @@ test('holder engine: keys, replay, spend, redeem, recovery (wasm in Node)',{time
   // Double-spend attempt of the already spent note is refused locally and by the relay.
   assert.throws(()=>A.engine.call({op:'build',kind:'send',to:B.tokenAddress,amount:'1000000',notes:sel.notes}),/already spent/);
   // Two- and three-input transfers: fragment B then spend.
-  for(const amt of ['1000000','2000000']){const s=A.engine.call({op:'select',asset:X,amount:amt,exclude:[]});const b=A.engine.call({op:'build',kind:'send',to:B.tokenAddress,amount:amt,notes:s.notes});await post('relay',{id:'nodeA',wire:b.wire});await post('mine',{blocks:10});await A.scanner.sync();}
+  for(const amt of ['1000000','2000000']){const s=A.engine.call({op:'select',asset:X,amount:amt,exclude:[]});const b=A.engine.call({op:'build',kind:'send',to:B.tokenAddress,amount:amt,notes:s.notes});await carry(A,'send',b.wire);await post('mine',{blocks:10});await A.scanner.sync();}
   await B.scanner.sync();let bst=B.engine.call({op:'status'});assert.equal(bst.notes.length,3);
   const pkB=await loadPk(B,0);assert.equal(pkB.source,'cache','second engine reuses the authenticated cached file');const sel3=B.engine.call({op:'select',asset:X,amount:'42500000',exclude:[]});assert.equal(sel3.notes.length,3);
   t0=Date.now();const three=B.engine.call({op:'build',kind:'send',to:A.tokenAddress,amount:'42500000',notes:sel3.notes});results.threeInputProvingMs=Date.now()-t0;assert.equal(three.inputs,3);assert.equal(three.change,'500000');
@@ -68,14 +74,15 @@ test('holder engine: keys, replay, spend, redeem, recovery (wasm in Node)',{time
   const two=B.engine.call({op:'build',kind:'send',to:A.tokenAddress,amount:'2500000',notes:sel2.notes});assert.equal(two.inputs,2);
   // Reservation semantics: exclude keeps a second selection off the same notes.
   assert.throws(()=>B.engine.call({op:'select',asset:X,amount:'1',exclude:sel3.notes}),/Insufficient unreserved/);
-  const r3=await post('relay',{id:'nodeB',wire:three.wire});results.threeInputCarrier={nativeBytes:r3.nativeBytes,extraBytes:r3.extraBytes,fee:r3.fee};
-  // The conflicting two-input record (same notes) must be rejected by the indexer rules once the first is mined.
-  await post('mine',{blocks:1});await assert.rejects(post('relay',{id:'nodeB',wire:two.wire}),/Spent or duplicate token input/);
+  const r3=await carry(B,'send',three.wire);results.threeInputCarrier={nativeBytes:r3.nativeBytes,extraBytes:r3.extraBytes,fee:r3.fee};
+  // The conflicting two-input record (same notes) must be refused once the first is mined: the holder's own admission check refuses to
+  // sign a carrier for it (the same pool rule the indexer applies: spent or duplicate token input), so no fee is spent on it.
+  await post('mine',{blocks:1});await B.scanner.sync();assert.notEqual(B.engine.call({op:'verify',wire:two.wire}).record,'accepted','conflicting record fails admission');await assert.rejects(carry(B,'send',two.wire),/admission|spent|duplicate|already/i);
   await post('mine',{blocks:9});await A.scanner.sync();await B.scanner.sync();assert.equal(B.engine.call({op:'status'}).balances[X],'500000');assert.equal(A.engine.call({op:'status'}).balances[X],String(58500000-3000000+42500000));
   // Redemption: binding from the operator, record proved locally with the boundary key, payout once at 10 confirmations.
   const rp=await post('redeemPrepare',{id:'nodeA',symbol:'X'});results.boundaryPk=await loadPk(A,1);
   const selR=A.engine.call({op:'select',asset:X,amount:'10000000',exclude:[]});t0=Date.now();const red=A.engine.call({op:'build',kind:'redeem',amount:'10000000',binding:rp.binding,notes:selR.notes});results.redeemProvingMs=Date.now()-t0;assert.equal(red.bytes,925);
-  const rr=await post('relay',{id:'nodeA',wire:red.wire});results.redeemCarrier={nativeBytes:rr.nativeBytes,extraBytes:rr.extraBytes,fee:rr.fee};
+  const rr=await carry(A,'redeem',red.wire);results.redeemCarrier={nativeBytes:rr.nativeBytes,extraBytes:rr.extraBytes,fee:rr.fee};
   await post('mine',{blocks:9});await assert.rejects(post('payout',{symbol:'X',txid:rr.txid}),/Only 9 confirmations/);
   await post('mine',{blocks:1});const paid=await post('payout',{symbol:'X',txid:rr.txid});assert.equal(paid.status,'paid');assert.equal(paid.net,'9850000');
   const paid2=await post('payout',{symbol:'X',txid:rr.txid});assert.equal(paid2.repeated,true);
@@ -83,7 +90,7 @@ test('holder engine: keys, replay, spend, redeem, recovery (wasm in Node)',{time
   // FRESH-INSTALL RECOVERY: a brand-new engine from the same root and the public chain only.
   const C=await openEngine(wasm,rootA,params);assert.equal(C.tokenAddress,A.tokenAddress);const cs=await C.scanner.sync();const stC=C.engine.call({op:'status'});
   assert.deepEqual(stC.balances,afterRedeem.balances);assert.deepEqual(stC.notes.map(n=>n.commitment).sort(),afterRedeem.notes.map(n=>n.commitment).sort());assert.deepEqual(stC.spent.map(n=>n.commitment).sort(),afterRedeem.spent.map(n=>n.commitment).sort());
-  await loadPk(C,0);const selC=C.engine.call({op:'select',asset:X,amount:'5000000',exclude:[]});const builtC=C.engine.call({op:'build',kind:'send',to:B.tokenAddress,amount:'5000000',notes:selC.notes});const rc=await post('relay',{id:'nodeA',wire:builtC.wire});assert.ok(rc.txid);
+  await loadPk(C,0);const selC=C.engine.call({op:'select',asset:X,amount:'5000000',exclude:[]});const builtC=C.engine.call({op:'build',kind:'send',to:B.tokenAddress,amount:'5000000',notes:selC.notes});const rc=await carry(C,'send',builtC.wire);assert.ok(rc.txid);// the recovered installation pays with the same (recovered) XMR outputs
   await post('mine',{blocks:10});await C.scanner.sync();assert.equal(C.engine.call({op:'status'}).balances[X],String(58500000-3000000+42500000-10000000-5000000));results.recovery={tip:cs.tip,applied:cs.applied,notes:stC.notes.length,spent:stC.spent.length};
   // Wrong root: a different phrase recovers nothing. Account separation: B's engine never sees A's notes.
   const W=await openEngine(wasm,randomBytes(32),params);await W.scanner.sync();assert.deepEqual(W.engine.call({op:'status'}).balances,{});
