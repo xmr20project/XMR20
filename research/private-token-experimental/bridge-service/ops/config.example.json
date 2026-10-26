@@ -1,0 +1,29 @@
+{
+  "_comment": "EXAMPLE ONLY (stagenet). The service refuses network=mainnet unless XMR20_BRIDGE_MAINNET=I-UNDERSTAND is set AND a mainnet manifest exists; this candidate ships none. Paths are resolved relative to this file. Never commit a real operator keypair or issuer secret; keep them 0600 outside the repository.",
+  "network": "stagenet",
+  "daemonRpc": "http://127.0.0.1:38091",
+  "indexerUrl": "http://127.0.0.1:8970",
+  "indexerToken": null,
+  "httpPort": 8975,
+  "listen": "127.0.0.1",
+  "adminToken": null,
+  "rolesBin": "../../token-format-unshielded-20261025/target/release/xmr20-unshielded-lab",
+  "paramsDir": "../../token-format-unshielded-20261025/params/stagenet-v1",
+  "trustedManifest": "../../token-format-unshielded-20261025/params/stagenet-v1/manifest.json",
+  "journalDir": "../runs/bridge-stagenet-journal",
+  "confirmations": 10,
+  "exposure": {"maxSinglePayout": "1000000000", "maxPaidPerWindow": "5000000000", "windowBlocks": 720},
+  "observers": [],
+  "requireObservers": false,
+  "pollMs": 15000,
+  "testServices": false,
+  "origins": null,
+  "assets": [
+    {"symbol": "X", "name": "Stagenet test token", "mint": "STAGENETTESTMINT", "decimals": 6, "legacyGross": "0"}
+  ],
+  "custody": {
+    "kind": "litesvm",
+    "_rpcExample": {"kind": "rpc", "network": "devnet", "rpcUrl": "https://api.devnet.solana.com", "program": "<program id>", "mint": "<mint>", "verifier": "<operator pubkey>", "policy": "<policy account>", "manifest": "<custody policy id hex>", "feeBps": 150, "decimals": 6, "operatorKeypairPath": "/secure/path/operator.json"}
+  },
+  "registrySnapshot": null
+}

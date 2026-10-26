@@ -1,0 +1,60 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✔ mainnet is refused before any process starts (1.066541ms)
+lab: {"event":"indexer-started","ready":{"domain":"93c114417b149524f41d35b679cac3b8a85d1826c63fe9b1d218c6468deb7b2d","mode":"indexer-service","network":"offline-fakechain","ready":true,"state":{"blocks":0,
+lab: {"event":"indexer-http","url":"http://127.0.0.1:8992"}
+lab: This token address is registered with another Solana account
++ actual - expected
+
++ 'DoUDBZZduiC41a8bYosM4TpoWdF6A4ijWMH1LNtTrLt1'
+- 'H96Ma1Q7MDaLVwASfya5ZwC6MFY4W4HddMVM3hb1ErTE'
+
+{"step":"lab up","tip":324,"indexer":"http://127.0.0.1:8992","bridge":"http://127.0.0.1:8991","reserve":"10000000000"}
+{"step":"deposit credited publicly","credit":"0769ac90c723e375ed0f4dbe9de94022c77bb771cd5b7bef0d6b9a2c3263e139","net":"98500000"}
+lab: {"event":"indexer-started","ready":{"domain":"93c114417b149524f41d35b679cac3b8a85d1826c63fe9b1d218c6468deb7b2d","mode":"indexer-service","network":"offline-fakechain","ready":true,"state":{"blocks":33
+{"step":"indexer crash/restart","restarts":2,"tip":334}
+lab: {"event":"indexer-started","ready":{"domain":"93c114417b149524f41d35b679cac3b8a85d1826c63fe9b1d218c6468deb7b2d","mode":"indexer-service","network":"offline-fakechain","ready":true,"state":{"blocks":33
+{"step":"public send","txid":"2f6b44e059248b1a59215ddb748c4625576ee1a1b5edf639c7fcb7ff136d4310","fee":"2071200000"}
+lab: Exposure: single payout above limit (max 60000000 atomic units); nothing was burned
+lab: Only 1 confirmations
+lab: Payout withheld: independent observation does not confirm the burn (http://127.0.0.1:8993: unknown)
+{"step":"payout withheld by observer disagreement","txid":"b4d6789985f31a74b4d05400178a8ec0dd404972114ddabd087f1c8941fb6f91"}
+{"step":"burn paid exactly once","txid":"b4d6789985f31a74b4d05400178a8ec0dd404972114ddabd087f1c8941fb6f91","net":"24625000"}
+{"step":"operator restart with pending redemption","txid":"4556e5b475426ca3f77a6b5cbc808381327b502ec2893e6c062f6938ca5dd034"}
+TEST FAILURE: Error: Record fails local admission; no carrier built: "Public input already spent"
+    at finish (file://<workspace>/research/token-format-unshielded-20261025/wallet-extension/src/holder-engine.js:15:86)
+    at file://<workspace>/research/token-format-unshielded-20261025/wallet-extension/src/holder-engine.js:18:90
+    at guard (file://<workspace>/research/token-format-unshielded-20261025/wallet-extension/src/holder-engine.js:16:30)
+    at Object.call (file://<workspace>/research/token-format-unshielded-20261025/wallet-extension/src/holder-engine.js:18:24)
+    at Object.sign (file://<workspace>/research/token-format-unshielded-20261025/wallet-extension/src/holder-carrier.js:38:67)
+    at Object.signCarrier (file://<workspace>/research/token-format-unshielded-20261025/wallet-lib/token-wallet.mjs:61:56)
+    at carry (file://<workspace>/research/bridge-service-unshielded-20261026/test/bridge-service.test.mjs:59:271)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async TestContext.<anonymous> (file://<workspace>/research/bridge-service-unshielded-20261026/test/bridge-service.test.mjs:114:117)
+    at async Test.run (node:internal/test_runner/test:1069:7)
+run folder kept for diagnosis: <workspace>/research/bridge-service-unshielded-20261026/runs/lab-1792982280315
+✖ bridge service: deposit, credit, send, burn, exactly-once payout, incidents, migration, recovery, disclosure audit (20011.1015ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 21458.828959
+
+✖ failing tests:
+
+test at test/bridge-service.test.mjs:39:1
+✖ bridge service: deposit, credit, send, burn, exactly-once payout, incidents, migration, recovery, disclosure audit (20011.1015ms)
+  Error: Record fails local admission; no carrier built: "Public input already spent"
+      at finish (file://<workspace>/research/token-format-unshielded-20261025/wallet-extension/src/holder-engine.js:15:86)
+      at file://<workspace>/research/token-format-unshielded-20261025/wallet-extension/src/holder-engine.js:18:90
+      at guard (file://<workspace>/research/token-format-unshielded-20261025/wallet-extension/src/holder-engine.js:16:30)
+      at Object.call (file://<workspace>/research/token-format-unshielded-20261025/wallet-extension/src/holder-engine.js:18:24)
+      at Object.sign (file://<workspace>/research/token-format-unshielded-20261025/wallet-extension/src/holder-carrier.js:38:67)
+      at Object.signCarrier (file://<workspace>/research/token-format-unshielded-20261025/wallet-lib/token-wallet.mjs:61:56)
+      at carry (file://<workspace>/research/bridge-service-unshielded-20261026/test/bridge-service.test.mjs:59:271)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async TestContext.<anonymous> (file://<workspace>/research/bridge-service-unshielded-20261026/test/bridge-service.test.mjs:114:117)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+exit 1

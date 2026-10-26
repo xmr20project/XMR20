@@ -1,0 +1,33 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✔ mainnet is refused before any process starts (1.03775ms)
+lab: {"event":"indexer-started","ready":{"domain":"93c114417b149524f41d35b679cac3b8a85d1826c63fe9b1d218c6468deb7b2d","mode":"indexer-service","network":"offline-fakechain","ready":true,"state":{"blocks":0,
+lab: {"event":"indexer-http","url":"http://127.0.0.1:8992"}
+lab: This token address is registered with another Solana account
++ actual - expected
+
++ 'oMZEaacyMaSnCr5J4SUGJtd4GhsNBWrAoaYQTtaB5st'
+- 'Gc2SqURZFaAQmKKuCBx2Fefz3uVUefQHty4VZg8QB71m'
+
+lab: k.toBase58 is not a function
+run folder kept for diagnosis: <workspace>/research/bridge-service-unshielded-20261026/runs/lab-1792979038116
+✖ bridge service: deposit, credit, send, burn, exactly-once payout, incidents, migration, recovery, disclosure audit (18038.614ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 19588.6365
+
+✖ failing tests:
+
+test at test/bridge-service.test.mjs:39:1
+✖ bridge service: deposit, credit, send, burn, exactly-once payout, incidents, migration, recovery, disclosure audit (18038.614ms)
+  Error: k.toBase58 is not a function
+      at post (file://<workspace>/research/bridge-service-unshielded-20261026/test/harness.mjs:41:257)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async state (file://<workspace>/research/bridge-service-unshielded-20261026/test/bridge-service.test.mjs:62:39)
+      at async TestContext.<anonymous> (file://<workspace>/research/bridge-service-unshielded-20261026/test/bridge-service.test.mjs:63:30)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7)
