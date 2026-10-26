@@ -17,7 +17,7 @@ import {service} from '../../privacy-integration-20261022/rpc.mjs';
 export async function startIndexerService({bin,paramsDir,trustedManifest,rpcUrl,stateDir,httpPort=8970,listen='127.0.0.1',pollMs=5000,maxBlocks=500,token=null,log=()=>{},restartLimit=20}){
  if(listen!=='127.0.0.1'&&!token)throw Error('A bearer token is required when the indexer listens beyond loopback');
  await mkdir(stateDir,{recursive:true});
- const port=new URL(rpcUrl).port||'18081';const env={XMR20_INDEXER_SERVICE:'1',XMR20_INTEGRATION_RPC_URL:rpcUrl,XMR20_INTEGRATION_RPC_PORT:String(port)};
+ const port=new URL(rpcUrl).port||'18081';const env={XMR20_INDEXER_SERVICE:'1',XMR20_INTEGRATION_RPC_URL:rpcUrl,XMR20_INTEGRATION_RPC_PORT:String(port),...(process.env.XMR20_MAINNET_PILOT==='I-UNDERSTAND'?{XMR20_MAINNET_PILOT:'I-UNDERSTAND'}:{})};// the mainnet pilot flag is passed through only when the operator set it explicitly
  let child=null,restarts=0,closing=false,lastSync=null,lastError=null,syncing=null;const children=new Set();
  const start=async()=>{child=await service(bin,[paramsDir,'--trusted-manifest',trustedManifest,'--state',stateDir],{env});children.add(child);log({event:'indexer-started',ready:child.ready});return child.ready;};
  const ready=await start();

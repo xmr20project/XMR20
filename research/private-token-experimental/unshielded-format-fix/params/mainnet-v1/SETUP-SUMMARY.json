@@ -1,0 +1,18 @@
+{
+ "secureDir": "<home>/.xmr20/mainnet-issuer-v1",
+ "secretFile": "<home>/.xmr20/mainnet-issuer-v1/issuer.secret.json",
+ "secretCopiedOrPrinted": false,
+ "paramsDir": "<workspace>/research/token-format-unshielded-fix-20261026/params/mainnet-v1",
+ "manifest": "<workspace>/research/token-format-unshielded-fix-20261026/params/mainnet-v1/manifest.json",
+ "manifestSha256": "1b1a27dcb1c4b3d93e4b38963c0b32595e44362a86296aa9445f468a51f1841b",
+ "label": "XMR20 UNSHIELDED FORMAT — MAINNET PILOT — EXPERIMENTAL — PENUMBRA KEYS",
+ "network": {
+  "kind": "mainnet",
+  "genesis": "418015bb9ae982a1975da7d79277c2705727a56894ba0fb246adaabb1f4632e3",
+  "startHeight": 3792000
+ },
+ "ledgerDomain": "e7aaca529eabea9bd58845591a570ae4cccb4bc0b2259d9b3ae3b5f89f00c6af",
+ "issuerVk": "e222e5e6896280cabefc461c749835a8f40adfdb622f9bff359f34c64758b901",
+ "issuerXmrAddress": "48nFZyr6dtMXimAv2CVPUmZKuA4itFLbCb6ksF8qTJpWHxxCXfhZ5EdMCwd4CQeMwFD2JjDUDem1tYju8uMzMEzJSk4LBv5",
+ "note": "Fund the issuer XMR address with a small amount for credit carrier fees. The roles binary accepts a mainnet daemon only with XMR20_MAINNET_PILOT=I-UNDERSTAND; the bridge service only with XMR20_BRIDGE_MAINNET=I-UNDERSTAND."
+}

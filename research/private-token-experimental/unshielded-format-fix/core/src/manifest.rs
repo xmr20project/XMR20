@@ -69,7 +69,9 @@ impl Manifest {
         ensure!(self.protocol.version == PROTOCOL, "Manifest protocol {:?} is not {PROTOCOL:?}", self.protocol.version);
         ensure!(self.protocol.domain_label == DOMAIN_LABEL, "Manifest protocol domain {:?} is not {DOMAIN_LABEL:?}", self.protocol.domain_label);
         ensure!(self.protocol.scheme == SCHEME, "Manifest key scheme {} is not {SCHEME}", self.protocol.scheme);
-        ensure!(self.network.kind == "offline-fakechain" || self.network.kind == "stagenet", "Unsupported network {:?} (offline-fakechain or stagenet only; mainnet refused)", self.network.kind);
+        // MAINNET PILOT (26 Oct 2026): "mainnet" is an accepted manifest kind. The operational refusals stay where the daemon is touched:
+        // the roles binary needs XMR20_MAINNET_PILOT=I-UNDERSTAND (format/native.rs), the service XMR20_BRIDGE_MAINNET=I-UNDERSTAND.
+        ensure!(matches!(self.network.kind.as_str(), "offline-fakechain" | "stagenet" | "mainnet"), "Unsupported network {:?} (offline-fakechain, stagenet or mainnet)", self.network.kind);
         ensure!(self.network.genesis == self.config.chain, "Manifest genesis differs from its configuration");
         ensure!(self.ledger_domain == self.config.domain, "Manifest ledger domain differs from its configuration");
         ensure!(self.issuer_vk == self.config.issuer_vk, "Manifest issuer key differs from its configuration");

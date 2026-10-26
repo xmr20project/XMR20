@@ -2,77 +2,77 @@
  "execution": "SIMULATED (offline fakechain, roles binary, LiteSVM custody); Penumbra published keys",
  "steps": [
   {
-   "at": "2026-10-26T10:58:29.614Z",
+   "at": "2026-10-26T11:34:35.720Z",
    "name": "deposit credited publicly",
    "net": "98500000",
-   "credit": "c55145aa2fcf5595974c80e75a53fff0864ea31cb2398420c2d76b028eecd995"
+   "credit": "9e102e35551bfc7acf05fbe284b91a3addea2097653a964a6cb749bb9df9686d"
   },
   {
-   "at": "2026-10-26T10:58:29.814Z",
+   "at": "2026-10-26T11:34:35.925Z",
    "name": "public transfer 40 X (1 tx)",
-   "txid": "f4d2e73b01f7f7039ce0e0623fc31b17edd688697811d1b794dc334e67fccda4",
+   "txid": "a3957c644a6c526fbf3d674f51ac7d040f31fa43a9f6088ffff4ea9bb658fbaf",
    "fee": "2071200000",
    "extraBytes": 262
   },
   {
-   "at": "2026-10-26T10:58:33.161Z",
+   "at": "2026-10-26T11:34:40.351Z",
    "name": "shield 50 X (1 tx)",
-   "txid": "e08d56b9230f3c3a7f6ee0b29ac34589c33920b75edeb54d70122853cfab3537",
+   "txid": "b26272613216d0e65522d1444261ff45cb570b9a8c8233e7e41686f2709e431f",
    "fee": "2598000000",
-   "provingMs": 2939
+   "provingMs": 3914
   },
   {
-   "at": "2026-10-26T10:59:07.092Z",
+   "at": "2026-10-26T11:35:15.656Z",
    "name": "private transfer 30 X (2 txs)",
    "txids": [
-    "573aa4f2971927af3f7514c4154af8861c96c28b4607070bb2d15761b83ba1c1",
-    "6d691dc5d69fa5e7fb0f755c11948ff5410e83659d5ae1495a93dc49929cb646"
+    "a23305f75cfb18df755a4b64e086b96728e0e66ac4a35ce29d8eb14ba66b97a4",
+    "f2db02d44e3490a7e172b2369dbd8aa77af1e40b4482509c5b7d7257f702e0f3"
    ],
    "fees": [
     "2947200000",
     "2908800000"
    ],
-   "provingMs": 32880
+   "provingMs": 34223
   },
   {
-   "at": "2026-10-26T10:59:19.971Z",
+   "at": "2026-10-26T11:35:28.620Z",
    "name": "unshield 10 X (1 tx)",
-   "txid": "1d2edb2f41893e3dd4cf92425fa50738f6d2be2436b061b486057e49c8e61b4a",
+   "txid": "d43a94ca2b8f01483bd2f8b31579fb2a2d56f66655d62f2d2a91169699499c4a",
    "fee": "2937600000",
-   "provingMs": 12135
+   "provingMs": 12206
   },
   {
-   "at": "2026-10-26T10:59:20.724Z",
+   "at": "2026-10-26T11:35:29.371Z",
    "name": "burn 25 X -> payout 24.625 X once",
-   "txid": "fcdd2b7671582f47b2be37dfc1679b9d55bc9d32e3012ac5dd0d152a7c63bf04",
+   "txid": "f04fb7fb4ab4b54e2ee438078300eaa59dcee148288b54f9a310268cfeafded0",
    "fee": "2070000000"
   },
   {
-   "at": "2026-10-26T10:59:21.159Z",
+   "at": "2026-10-26T11:35:29.813Z",
    "name": "legacy lot migrated to a PUBLIC note, exactly the lot",
    "amount": "492500000",
-   "credit": "921775a7fb5d5587f0aba9e7c2109738b67c4c27423c79a669f6429d72ce4e32"
+   "credit": "66cdf75bff27c7e0e82787b6f71bc4f77881ffd6d192198318c187a0b47eb907"
   },
   {
-   "at": "2026-10-26T10:59:22.218Z",
+   "at": "2026-10-26T11:35:30.887Z",
    "name": "recovery from root; wrong root empty; viewing key shielded-only"
   },
   {
-   "at": "2026-10-26T10:59:55.993Z",
+   "at": "2026-10-26T11:36:05.344Z",
    "name": "rollback of part A before part B; identical carriers re-published; completed once",
    "popped": 2,
    "txids": [
-    "26b35e840567aa9230f2d3403bc9a7799bd5da359ea6554c4e8ffe2847e0d969",
-    "16813f1cd753be7f879a240237cb0090177a9705dede9d150e5cd6fa33eed883"
+    "6d3057a953775ad101ad02c7237131c257853c24edb0506556875a5dd5904bfd",
+    "16d66a98792f5ae8eee7fa710eb4d438ccbc1c8c2c7ea236932ad12271afe455"
    ]
   },
   {
-   "at": "2026-10-26T10:59:56.201Z",
+   "at": "2026-10-26T11:36:05.547Z",
    "name": "indexer replay equals the holder replica",
-   "root": "001c22aa707f82dfd1eee24c128beb837d4644cd2316aee411b7587760c6700e"
+   "root": "89921f30eeb0cae1000a4ee5179d605f07c1ea593a71f53d4f0cab4f89ce6009"
   },
   {
-   "at": "2026-10-26T10:59:56.207Z",
+   "at": "2026-10-26T11:36:05.552Z",
    "name": "disclosure audit passed",
    "needles": 20,
    "records": 8
@@ -185,20 +185,20 @@
     {
      "amount": "98500000",
      "asset": "3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f",
-     "binding": "c1d160bf4e918aeb2b6273cafc73291a29ab750a3fb2518b1f16f659436744cc",
+     "binding": "8982c695a10bea296538b1cdbfae8dd693c9a7ffc317b5283b72c876527a6570",
      "height": 325,
      "kind": 1,
-     "owner": "82ee764d8257385762ef9e16cebce0a28e5aa23fdc2a92a277e6cc36f4bc380c",
-     "txid": "c55145aa2fcf5595974c80e75a53fff0864ea31cb2398420c2d76b028eecd995"
+     "owner": "a2b9cdd458a3aea0c87557191a93150a65dd202cc86da8dbd1b4459d5add2808",
+     "txid": "9e102e35551bfc7acf05fbe284b91a3addea2097653a964a6cb749bb9df9686d"
     },
     {
      "amount": "492500000",
      "asset": "3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f",
-     "binding": "e684a4c2c55d4212855cb7d9ac2d803238bbb2cd9acd63bb5116fec18d8de5c6",
+     "binding": "8cea0e7ee3bbffbe1bef2bffe8523ee1cf660f6e02ced70805280cef4e63e6e6",
      "height": 351,
      "kind": 2,
-     "owner": "82ee764d8257385762ef9e16cebce0a28e5aa23fdc2a92a277e6cc36f4bc380c",
-     "txid": "921775a7fb5d5587f0aba9e7c2109738b67c4c27423c79a669f6429d72ce4e32"
+     "owner": "a2b9cdd458a3aea0c87557191a93150a65dd202cc86da8dbd1b4459d5add2808",
+     "txid": "66cdf75bff27c7e0e82787b6f71bc4f77881ffd6d192198318c187a0b47eb907"
     }
    ],
    "invariant": {
@@ -229,14 +229,14 @@
     {
      "amount": "25000000",
      "asset": "3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f",
-     "binding": "a7176f35536924a68ebd40f1e6359dee5abec684b4ea7fa5247e9476b44f1a72",
+     "binding": "9e9aeaf3dc6e8c95f20b5aed52d9f8954d2448353e651e8712e9bfda2af5179c",
      "height": 340,
-     "owner": "0a9145b0462688bc54e89e740059411be5f4bb2ce3cb985374c782c483c0910f",
-     "txid": "fcdd2b7671582f47b2be37dfc1679b9d55bc9d32e3012ac5dd0d152a7c63bf04"
+     "owner": "68ec30790e1121c162b5f5eec199da554fd9c41dfa0d16fcc4c0259b0c917406",
+     "txid": "f04fb7fb4ab4b54e2ee438078300eaa59dcee148288b54f9a310268cfeafded0"
     }
    ],
    "rejected": 0,
-   "root": "001c22aa707f82dfd1eee24c128beb837d4644cd2316aee411b7587760c6700e",
+   "root": "89921f30eeb0cae1000a4ee5179d605f07c1ea593a71f53d4f0cab4f89ce6009",
    "shieldedNotes": 6,
    "shieldedSupply": {
     "3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f": "40000000"
