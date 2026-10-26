@@ -1,0 +1,137 @@
+[
+ {
+  "at": "2026-10-26T11:05:42.443Z",
+  "step": "isolated endpoints",
+  "rpcPort": 53500,
+  "p2pPort": 53501,
+  "httpPort": 53502,
+  "extensionDir": "<workspace>/research/token-format-unshielded-fix-20261026/runs/extension-53502-53500"
+ },
+ {
+  "at": "2026-10-26T11:05:54.318Z",
+  "step": "extension loaded",
+  "id": "jigbpnljnmbbkebaopbnnhmiafgnofla",
+  "profile": "unshielded"
+ },
+ {
+  "at": "2026-10-26T11:05:57.548Z",
+  "step": "account imported; shielded spend key and public owner key derived in the extension; registered by unified token address",
+  "name": "Alpha"
+ },
+ {
+  "at": "2026-10-26T11:06:00.395Z",
+  "step": "account imported; shielded spend key and public owner key derived in the extension; registered by unified token address",
+  "name": "Beta"
+ },
+ {
+  "at": "2026-10-26T11:06:03.790Z",
+  "step": "TEST SERVICE: mined test XMR to this account for carrier fees",
+  "text": "Mined 2 coinbase outputs to this account (test service). They unlock after 60 blocks; advance the chain. XMR for carrier fees: 0 XMR spendable in 0 outputs · 70.335063558728 XMR locked until block 311"
+ },
+ {
+  "at": "2026-10-26T11:06:04.458Z",
+  "step": "TEST SERVICE: mined test XMR to this account for carrier fees",
+  "text": "Mined 2 coinbase outputs to this account (test service). They unlock after 60 blocks; advance the chain. XMR for carrier fees: 0 XMR spendable in 0 outputs · 140.669858810737 XMR locked until block 313"
+ },
+ {
+  "at": "2026-10-26T11:06:05.120Z",
+  "step": "TEST SERVICE: mined test XMR to this account for carrier fees",
+  "text": "Mined 2 coinbase outputs to this account (test service). They unlock after 60 blocks; advance the chain. XMR for carrier fees: 0 XMR spendable in 0 outputs · 211.004385757051 XMR locked until block 315"
+ },
+ {
+  "at": "2026-10-26T11:06:08.317Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-26T11:06:08.875Z",
+  "step": "deposit arrived as a PUBLIC note",
+  "text": "Deposit accepted (net 98.5 X); PUBLIC credit 556d50493bfb4923… published to your owner key. Advance the chain 10 blocks to see it."
+ },
+ {
+  "at": "2026-10-26T11:06:10.608Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-26T11:06:15.566Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-26T11:06:15.570Z",
+  "step": "shielded 50 X",
+  "text": "Shielded 50 X (1 transaction d6c731934130…, fee 0.002598 XMR; public change 28.5 X; proved in 3 s). Advance the chain to confirm."
+ },
+ {
+  "at": "2026-10-26T11:06:50.501Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-26T11:06:53.299Z",
+  "step": "REFUSED: bridge never unshields silently",
+  "error": "Insufficient PUBLIC balance. The bridge does not unshield for you: use Unshield first."
+ },
+ {
+  "at": "2026-10-26T11:06:54.007Z",
+  "step": "TEST SERVICE: mined test XMR to this account for carrier fees",
+  "text": "Mined 2 coinbase outputs to this account (test service). They unlock after 60 blocks; advance the chain. XMR for carrier fees: 0 XMR spendable in 0 outputs · 70.322185990677 XMR locked until block 407"
+ },
+ {
+  "at": "2026-10-26T11:06:54.715Z",
+  "step": "TEST SERVICE: mined test XMR to this account for carrier fees",
+  "text": "Mined 2 coinbase outputs to this account (test service). They unlock after 60 blocks; advance the chain. XMR for carrier fees: 0 XMR spendable in 0 outputs · 140.644103723759 XMR locked until block 409"
+ },
+ {
+  "at": "2026-10-26T11:06:57.051Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-26T11:07:11.843Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-26T11:07:13.632Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-26T11:07:14.448Z",
+  "step": "payout",
+  "text": "Paid 24.625 X to your Solana address."
+ },
+ {
+  "at": "2026-10-26T11:07:19.175Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-26T11:07:53.583Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-26T11:07:54.967Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-26T11:07:56.818Z",
+  "step": "interrupted private transfer completed by journal recovery with the same second carrier",
+  "error": "TEST HOOK: simulated interruption after broadcasting-second (the popup stopped here; nothing else ran)."
+ },
+ {
+  "at": "2026-10-26T11:07:59.966Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-26T11:07:59.973Z",
+  "step": "legacy lot migrated publicly",
+  "amount": "492500000",
+  "text": "Claim credited: f47ae50af498972a… for 492.5 X as a PUBLIC note to your owner key. Advance the chain to see the balance."
+ },
+ {
+  "at": "2026-10-26T11:08:01.210Z",
+  "step": "extension loaded",
+  "id": "jigbpnljnmbbkebaopbnnhmiafgnofla",
+  "profile": "unshielded-restore"
+ },
+ {
+  "at": "2026-10-26T11:08:04.777Z",
+  "step": "account imported; shielded spend key and public owner key derived in the extension; registered by unified token address",
+  "name": "Alpha"
+ }
+]

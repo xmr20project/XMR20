@@ -1,0 +1,13 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+{"unfixed":{"ok":true,"tipHash":"b9bbf7a4deffe70769d355b5f5a1cc4922ce34df92adb1d34ae6aaf1ccf03066","last":{"hash":"309549e76e9e8f0a5c52dbddcd61f07f91580962cb3a5fd4855098f6dfafdf9e","height":12,"transactions":[]}},"calls":3,"log":["tip call 1: answered A, chain reorganised to B","tip call 2 (replay loop): forwarded, chain now shows B","tip call 3 (final check): answered cached A"]}
+{"tip":12,"hashA":"b9bbf7a4deffe70769d355b5f5a1cc4922ce34df92adb1d34ae6aaf1ccf03066","unfixed":{"accepted":true,"tipHash":"b9bbf7a4deffe70769d355b5f5a1cc4922ce34df92adb1d34ae6aaf1ccf03066","replayedTipHash":"309549e76e9e8f0a5c52dbddcd61f07f91580962cb3a5fd4855098f6dfafdf9e","mismatch":true},"fixed":{"accepted":false,"error":"Inconsistent canonical chain snapshot: the replayed tip differs from the snapshot tip; retry"},"fixedQuiet":{"accepted":true,"tipHash":"f196f1dacfade3e0ef7d52d3e179ac2224df8b7a9dd51ffb25103ee18c2aec9c"}}
+✔ Q1: an A/B/A tip view during replay is accepted by the reviewed binary (defect) and refused by the fixed binary (2536.737417ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6740.401083
+exit 0

@@ -1,0 +1,22 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+{"isolatedEndpoints":{"rpcPort":49913,"p2pPort":49915,"httpPort":49916}}
+✖ H2 (integration): interrupted custody submission keeps its reservation; window cap holds; receipt recovered; no double payment (18701.561041ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 23551.365333
+
+✖ failing tests:
+
+test at tests/bridge-integration.test.mjs:23:1
+✖ H2 (integration): interrupted custody submission keeps its reservation; window cap holds; receipt recovered; no double payment (18701.561041ms)
+  TypeError [Error]: Cannot read properties of null (reading 'exposure')
+      at TestContext.<anonymous> (file://<workspace>/research/token-format-unshielded-fix-20261026/tests/bridge-integration.test.mjs:33:85)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3)
+exit 1

@@ -1,0 +1,34 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+{"isolatedEndpoints":{"rpcPort":51801,"p2pPort":51802,"httpPort":51803}}
+backend: synthetic interruption after custody paid
+backend: Exposure: window payout limit reached (paid + unresolved submissions); wait for more blocks or resolve submissions
+backend: Exposure: window payout limit reached (paid + unresolved submissions); wait for more blocks or resolve submissions
+✖ H2 (integration): interrupted custody submission keeps its reservation; window cap holds; receipt recovered; no double payment (20882.697542ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 25169.91925
+
+✖ failing tests:
+
+test at tests/bridge-integration.test.mjs:23:1
+✖ H2 (integration): interrupted custody submission keeps its reservation; window cap holds; receipt recovered; no double payment (20882.697542ms)
+  AssertionError [ERR_ASSERTION]: {"asset":"3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f","reserve":"985000000","owed":"492500000","ok":false,"shortfall":"-492500000","lossBearer":"operator backing shared by all holders (no per-holder insurance)","buckets":{"unclaimedLegacyRights":"492500000","depositsAwaitingCredit":"0","claimsAwaitingCredit":"0","outstandingPrivateNotes":"0","confirmedBurnsAwaitingPayout":"0"},"minted":"300000000","burned":"300000000","incidents":0,"halted":false}
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file://<workspace>/research/token-format-unshielded-fix-20261026/tests/bridge-integration.test.mjs:57:102)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual'
+  }
+exit 1

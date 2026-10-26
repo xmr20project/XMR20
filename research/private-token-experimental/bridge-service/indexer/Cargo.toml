@@ -10,8 +10,8 @@ name = "xmr20-indexer"
 path = "src/main.rs"
 
 [dependencies]
-xmr20-unshielded-core = {path = "../../token-format-unshielded-20261025/core"}
-xmr20-unshielded-lab = {path = "../../token-format-unshielded-20261025/format"}
+xmr20-unshielded-core = {path = "../../token-format-unshielded-fix-20261026/core"}
+xmr20-unshielded-lab = {path = "../../token-format-unshielded-fix-20261026/format"}
 anyhow = "1"
 ark-groth16 = {version = "=0.4.0", features = ["parallel"]}
 decaf377 = {version = "=0.10.1", features = ["r1cs"]}

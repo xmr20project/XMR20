@@ -1,0 +1,45 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✔ mainnet is refused before any process starts (1.062791ms)
+lab: {"event":"indexer-started","ready":{"domain":"93c114417b149524f41d35b679cac3b8a85d1826c63fe9b1d218c6468deb7b2d","mode":"indexer-service","network":"offline-fakechain","ready":true,"state":{"blocks":0,
+lab: {"event":"indexer-http","url":"http://127.0.0.1:55404"}
+lab: This token address is registered with another Solana account
++ actual - expected
+
++ 'CTUcWgStbdqwfBN5i3Qr5fMnY8kbxgzeCLb17WP14AQE'
+- '3sce1PvsRvj4piHooG9a6GpyQy5Tt8eHnXst7AZhqk7q'
+
+{"step":"lab up","tip":324,"indexer":"http://127.0.0.1:55404","bridge":"http://127.0.0.1:55405","reserve":"10000000000"}
+{"step":"deposit credited publicly","credit":"51177fc0afe73c407518f4368f57f49cc70fe90c7b8a7edefe302c5e2cf3e880","net":"98500000"}
+lab: {"event":"indexer-started","ready":{"domain":"93c114417b149524f41d35b679cac3b8a85d1826c63fe9b1d218c6468deb7b2d","mode":"indexer-service","network":"offline-fakechain","ready":true,"state":{"blocks":33
+{"step":"indexer crash/restart","restarts":3,"tip":334}
+lab: {"event":"indexer-started","ready":{"domain":"93c114417b149524f41d35b679cac3b8a85d1826c63fe9b1d218c6468deb7b2d","mode":"indexer-service","network":"offline-fakechain","ready":true,"state":{"blocks":33
+lab: {"event":"indexer-started","ready":{"domain":"93c114417b149524f41d35b679cac3b8a85d1826c63fe9b1d218c6468deb7b2d","mode":"indexer-service","network":"offline-fakechain","ready":true,"state":{"blocks":33
+{"step":"public send","txid":"ea951065d282a84b93030653889f5a4d8fe0c5da0571d381d801953c0ac0d8c9","fee":"2071200000"}
+lab: Exposure: single payout above limit (max 60000000 atomic units); nothing was burned
+lab: Only 1 confirmations
+lab: Payout withheld: independent observation does not confirm the burn (http://127.0.0.1:55401: unknown)
+{"step":"payout withheld by observer disagreement","txid":"eac2aa853d9031b4be4a726e6068b7397799baafe2f54cef48623cfef3d1416b"}
+{"step":"burn paid exactly once","txid":"eac2aa853d9031b4be4a726e6068b7397799baafe2f54cef48623cfef3d1416b","net":"24625000"}
+{"step":"operator restart with pending redemption","txid":"8417c58b248b84f82e16ecbaf4058a75ad3cdefc872bd911fc3ab21f2dc0b334"}
+{"step":"lost reply recovered without double payment","txid":"39a5d86d37087b662efb2a769345881e9db45c5c1d9a462fcd044d0c2a010066"}
+lab: Operator paused after a reorganisation incident; review the incident and resume explicitly: {"kind":"burnReorganised","txid":"4efc6edad11c7de2537599abaf4dbab951d6a9ede9adc57f691f4709ca09da7c","previousHeight":373,"newHeight":383,"tip":393,"at":"2026-10-26T11:16:42.101Z","note":"The burn moved to another height (reorganisation). Payout confirmations restart from the new height; payouts paused until resume."}
+{"step":"reorganised burn: incident, pause, republish, paid once","txid":"4efc6edad11c7de2537599abaf4dbab951d6a9ede9adc57f691f4709ca09da7c","popped":4}
+lab: Claim already consumed
+lab: Claim owner must be this account
++ actual - expected
+
++ 'xmr20t17fyc4eud25yvw0tmulgn9xj4396vwpcpmxvzyhvtg0zwquhw2avwgxq6pkqs8mqumz3tyexqsdwd4ekyplku549hx8ewehgq07sj3jpntlh2j9kdn732armw37xqesdcdpyue563s7wmnz0772365sr48hu6u04ld09240uxgmwzxzzc9vysu6akra'
+- 'xmr20t1um9ml5w3ks6p50nvj208evrlg6gwlrs4k6uy6ezlfn3a9ku429583enw570a6rj658k4ttf7rpgjcdcy80vg50y7j5kvr2pzlnf8dep4mzpnap9jeppk9zfcehererzd76jmkceyc3ejeg5fjc28cjjesp5mkfcj229hn6tlpl07dclgtygqlu0ukd'
+
+{"step":"migration claim credited once","txid":"ffde47936799921b767b914e7301e1f74ab19c7049c06070fd0cf9d4b1d4dd11","amount":"10000000000"}
+{"step":"disclosure audit clean","filesScanned":15,"keyImagesChecked":5}
+✔ bridge service: deposit, credit, send, burn, exactly-once payout, incidents, migration, recovery, disclosure audit (26692.59725ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 28625.3265
+exit 0

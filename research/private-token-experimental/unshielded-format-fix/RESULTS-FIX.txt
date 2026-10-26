@@ -1,0 +1,63 @@
+RESULTS — fix candidate research/token-format-unshielded-fix-20261026 (26 October 2026)
+Execution: everything SIMULATED on disposable offline fakechains and the in-process Solana VM; synthetic keys only. No stagenet,
+no mainnet, no real funds, no deployment, no push. The reviewed candidate (research/token-format-unshielded-20261025) was
+used read-only (its parameter files via symlinks; its roles binary as the "unfixed" reference in the Q1 test).
+Independent security review: NOT PERFORMED. These are regression results for the review's findings, not an audit.
+
+1. BUILDS (own Cargo targets; nothing shared with the reviewed candidate's hash-pinned artefacts)
+   core:  cargo test --release --offline  -> 11 passed (10 existing + fragment_duplicates_are_not_stored_and_pending_counts_stay_exact)
+          runs/core-test-attempt1.log
+   format: target/release/xmr20-unshielded-lab (10,422,912 B)                       runs/build-format-attempt2.log
+   holder: holder-wasm/target/wasm32-unknown-unknown/release/xmr20_holder_wasm.wasm (5,335,814 B)  runs/build-holder-attempt2.log
+   extension: built per browser run (runs/extension-<http>-<rpc>, deleted after the run)
+
+2. REGRESSION TESTS (tests/)  — commands from the candidate directory
+   node --test --test-concurrency=1 tests/isolation.test.mjs             3/3   attempt 2 (attempt 1: missing workspace symlinks)
+     occupied RPC port -> REFUSED; fixture height unchanged (4); fixture still running; no orphan daemon
+     occupied HTTP port -> fails before any process; exclusive ports -> owned daemon, startup mining on OUR daemon only
+   node --test --test-concurrency=1 tests/operator-regressions.test.mjs  4/4   attempt 2 (attempt 1: test bug, registration on the wrong instance)
+     H1 latch + journal reload; H2 interrupted submission (cap holds: 200 not 300; recovery; window passes -> 300 total, paid once each);
+     H2 reload keeps the reservation, definite refusal releases, uncertain exception keeps, abandonSubmission; H2 concurrent: 2 paid / 2 refused
+   node --test --test-concurrency=1 tests/parameter-regressions.test.mjs 5/5   attempt 3 (attempts 1–2: test stub needed real block blobs)
+     L1 oversized -> cancelled after 1 chunk; content-length mismatch -> 0 bytes read; truncated/exact/tampered; M1 mismatch refused,
+     pin without bytes refused, frozen configuration, bytes-only, wrong pin refused
+   node --test --test-concurrency=1 tests/wallet-regressions.test.mjs    5/5   attempt 2 (attempt 1 passed before the refusal rule was added)
+     M2 serialized reservations (second refused), crash releases the lock, slow holder delays the waiter, refusal without a lock;
+     M3 transition/reservation/abandonment rules; L2 exact fees (0.00004952)
+   node --test --test-concurrency=1 tests/replay-snapshot.test.mjs       1/1   attempt 4 (1–3: proxy trap placement, binary endpoints)
+     Q1: reviewed binary ACCEPTED a snapshot labelled tip A (b9bbf7a4…) whose replayed tip was B (309549e7…); fixed binary REFUSED
+     ("replayed tip differs from the snapshot tip"); quiet chain scans normally. runs/replay-snapshot-evidence.json
+   node --test --test-concurrency=1 tests/bridge-integration.test.mjs    1/1   attempt 4 (1–3: fixture registration details)
+     H2 on the real backend: custody paid then interrupted -> submitting kept; second payout ok; third refused by the cap; recovery
+     resolves the first from the custody receipt (no second payment); after the window the third is paid; 3 receipts; liabilities ok
+
+   Review's original tests against this candidate (review-original/, unchanged):
+     operator-security-repro: both REPRO tests FAIL (halt now latched; 300 no longer paid)       runs/original-operator-repro-on-fix.log
+     parameter-security-repro: both REPRO tests FAIL (rejected after one chunk; mismatching object refused)
+     reservations-and-fees: fee test FAILS (exact value shown); reservation test still passes because it applies the OLD transition by
+       hand (the publisher no longer performs it) — superseded by tests/wallet-regressions M3
+     journal-race: not meaningful here — the journal now refuses writes without a lock implementation; the lease only by opt-in
+
+3. SUPPLIED SUITES ON THE FINAL BUILD (exclusive per-run endpoints)
+   node --test flow.test.mjs            PASSED attempt 1, 102.5 s  (rpc 63846 / p2p 63847 / http 63848)        runs/flow-attempt1.log
+   node --test parts-rollback.test.mjs  attempt 1 FAILED while two other proving jobs ran ("invalid node (response wasn't the
+                                        expected json)" from the daemon under load, at the state call after step a);
+                                        PASSED attempt 2 alone, 194.5 s                                        runs/parts-rollback-attempt2.log
+   node --test browser-flow.test.mjs    attempt 1 TimeoutError opening the asset detail after the private send, while two other
+                                        proving jobs ran; PASSED attempt 2 alone, 143.8 s, evidence/verified-popup-unshielded-2026-10-26T11-05-42
+                                        (per-run extension build with the run's endpoints compiled in)   runs/browser-flow-attempt2.log
+   Preserved behaviour confirmed by these suites: one-transaction public sends, explicit shield/unshield, two-part private transfers
+   (rollback of one or both parts, conflicting spend, reversed arrival, replay equality), holder-controlled keys, exact accounting,
+   bridge from public balance only, migration, interruption recovery, restore, and the disclosure audit of the popup's network traffic.
+
+4. DISK AND PROCESSES
+   Candidate size 2.3 GB: target/ 1.2 GB + holder-wasm/target/ 0.94 GB (own build caches), source + docs ~12 MB, runs/ logs + JSON
+   only (run folders, profiles and disposable extension builds deleted), evidence/ 1.3 MB (one browser run). Parameter files are
+   symlinks (0 bytes duplicated). Free disk after the work: ~100 GB. All daemons, roles, proxies and browsers started by the tests
+   were stopped by the tests; a final process check found none left.
+
+5. WHAT THESE RESULTS DO NOT SHOW
+   - That the system is safe for real funds; no independent review has happened.
+   - Finality: payout after a deep reorganisation is still a loss (detect-and-halt only, now reliably latched).
+   - The ceremony: Penumbra's published keys are pinned by bytes/ids; the transcript is unverified.
+   - Mainnet: no manifest, keys or policy exist; nothing here authorises a pilot.

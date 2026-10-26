@@ -4,7 +4,8 @@ Status: EXPERIMENTAL RESEARCH CANDIDATE. Tested on the offline fakechain and rea
 NOT reviewed independently, NO real funds, NO mainnet manifest exists. Independent security review: NOT PERFORMED.
 
 WHAT THIS IS
-The format candidate (research/token-format-unshielded-20261025) ships a TEST backend (backend/service.mjs) that boots a
+The format candidate (research/token-format-unshielded-20261025, reviewed by Codex; this service now builds on the
+review-fix candidate research/token-format-unshielded-fix-20261026) ships a TEST backend (backend/service.mjs) that boots a
 fakechain and replays the whole chain on every scan. This candidate turns that into the two long-running services a real
 deployment needs, without touching the reviewed format core:
 
@@ -45,7 +46,7 @@ HOW TO RUN THE TEST (fakechain, LiteSVM; ~ten minutes; synthetic keys only)
   cd research/bridge-service-unshielded-20261026
   node --test --test-concurrency=1 test/bridge-service.test.mjs
 The binaries come from the format candidate's shared Cargo target: `cargo build --release -p xmr20-unshielded-lab` there and
-`cargo build --release` in indexer/ (CARGO_TARGET_DIR=../../token-format-unshielded-20261025/target). Run folders under runs/
+`cargo build --release` in indexer/ (CARGO_TARGET_DIR=../../token-format-unshielded-fix-20261026/target). Run folders under runs/
 are deleted on success and kept on failure.
 
 HOW TO RUN THE SERVICES (stagenet example; test funds only)
