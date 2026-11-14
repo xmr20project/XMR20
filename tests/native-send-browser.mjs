@@ -19,7 +19,7 @@ try{
   res.setHeader('content-type',path.endsWith('.js')?'text/javascript':path.endsWith('.css')?'text/css':'text/html');
   res.end(path==='/'?'<!doctype html><html lang="en"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Public native send fixture</title><link rel="stylesheet" href="/fixture.css"><script type="module" src="/fixture.js"></script><body class="native-popup-root"></body></html>':await readFile(join(temp,path.slice(1))));
  });await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://127.0.0.1:'+server.address().port;
- chrome=spawn('/Users/mark/Library/Caches/ms-playwright/chromium-1194/chrome-mac/Chromium.app/Contents/MacOS/Chromium',[
+ chrome=spawn(process.env.CHROMIUM_PATH??(()=>{throw Error('Set CHROMIUM_PATH to a Chromium executable, for example the one `npx playwright install chromium` downloads.');})(),[
   '--headless=new','--disable-gpu','--no-first-run','--no-default-browser-check','--disable-background-networking',
   '--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1','--remote-debugging-port=0','--user-data-dir='+join(temp,'profile'),'about:blank'
  ],{stdio:['ignore','ignore','pipe']});
