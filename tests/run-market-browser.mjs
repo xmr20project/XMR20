@@ -31,7 +31,7 @@ try{
  }
  await build({stdin:{contents:'export {encryptVault} from "./src/core.js";',resolveDir:join(root,'wallet-extension')},bundle:true,format:'esm',platform:'browser',target:'chrome120',outfile:join(extension,'fixture.js'),inject:[join(root,'wallet-extension/src/polyfill.js')],logLevel:'silent'});
  await writeFile(join(extension,'fixture.html'),'<!doctype html><title>Disposable public fixture</title><body>Disposable fixture only</body>');
- chrome=spawn('/Users/user/Library/Caches/ms-playwright/chromium-1194/chrome-mac/Chromium.app/Contents/MacOS/Chromium',[
+ chrome=spawn(process.env.CHROMIUM_PATH??(()=>{throw Error('Set CHROMIUM_PATH to a Chromium executable, for example the one `npx playwright install chromium` downloads.');})(),[
   '--headless=new','--disable-gpu','--no-first-run','--no-default-browser-check','--disable-background-networking',
   '--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1',
   '--disable-extensions-except='+extension,'--load-extension='+extension,'--remote-debugging-port=0','--user-data-dir='+join(temp,'profile'),'about:blank'
