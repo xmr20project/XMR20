@@ -17,7 +17,7 @@ try{
   const files={'/fixture.js':join(temp,'fixture.js'),'/style.css':join(candidate,'style.css'),'/market-entry.css':join(candidate,'market-entry.css')};
   if(!files[path])return res.writeHead(404).end();res.setHeader('content-type',path.endsWith('.js')?'text/javascript':'text/css');res.end(await readFile(files[path]));
  });await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://127.0.0.1:'+server.address().port;
- browser=await chromium.launch({executablePath:'/Users/user/Library/Caches/ms-playwright/chromium-1194/chrome-mac/Chromium.app/Contents/MacOS/Chromium',headless:true,args:['--disable-background-networking']});
+ browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||undefined,headless:true,args:['--disable-background-networking']});
  const checks=[];
  for(const mode of ['convert','redeem'])for(const size of [{width:360,height:600},{width:390,height:480}]){
   const page=await browser.newPage({viewport:size}),errors=[];page.on('pageerror',e=>errors.push(e.message));
