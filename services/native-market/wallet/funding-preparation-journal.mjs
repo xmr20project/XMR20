@@ -116,7 +116,7 @@ export function createFundingPreparations({db, wallet, scopeHash, active, hash, 
   function validateCompletion(value,b){
     if(b.purpose?.kind==='operator-credit'){
       exact(value,['operationId','status','receipt','checkpoint']);exact(value.checkpoint,['height','hash']);
-      need(value.operationId===b.operationId&&value.status==='refunded'&&typeof value.receipt==='string'&&
+      need(value.operationId===b.operationId&&['refunded','cancelled'].includes(value.status)&&typeof value.receipt==='string'&&
         /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(value.receipt)&&Number.isSafeInteger(value.checkpoint.height)&&
         value.checkpoint.height>=b.checkpoint.height&&digest(value.checkpoint.hash),'Verified custody refund completion required');
       return;
