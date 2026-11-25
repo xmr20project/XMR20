@@ -1,0 +1,61 @@
+RUNBOOK — indexer + bridge service (unshielded format)                                   status: research candidate, NOT deployed
+
+0. BEFORE ANYTHING
+   - This runbook describes how the candidate would be operated. Nothing here is authorised for production; the project owner
+     decides on deployment separately, after independent review. No step here moves real funds.
+   - Secrets: the issuer secret (parameters dir, issuer.secret.json) and the Solana operator keypair (custody.operatorKeypairPath)
+     are 0600 files outside the repository. The services never print them; never paste them into chats, logs or tickets.
+   - Networks: the trusted manifest fixes network kind and genesis. The services refuse a daemon of another network and refuse
+     mainnet unless a mainnet manifest exists AND XMR20_BRIDGE_MAINNET=I-UNDERSTAND is set. No mainnet manifest exists.
+
+1. LAYOUT
+   <deploy>/config.json          copy of ops/config.example.json with real paths; listen 127.0.0.1 unless a token is set
+   <params>/                     parameters.json, spend_pk.bin, output_pk.bin, manifest.json (+ issuer.secret.json for the bridge)
+   <trusted>/manifest.json       the manifest the roles trust, kept OUTSIDE the parameter directory
+   <state>/indexer/              blocks.jsonl, records.jsonl, meta.json (append-only; safe to back up while running)
+   <state>/bridge/               operator-<SYMBOL>.json (journal), holders.json, audit.log (append-only)
+
+2. START
+   a) monerod of the right network, synced (read-only use; the services never need wallet RPC).
+   b) node ops/run-indexer.mjs config.json      -> {"ready":true,...}; wait until GET /health reports behind <= 1.
+   c) node bridge/bridge-service.mjs config.json -> {"ready":true,...}. It refuses to start if the indexer serves another
+      ledger domain or the daemon network differs from the manifest.
+   d) node ops/health-probe.mjs config.json      -> {"ok":true,...}. Wire this into monitoring (exit code).
+   Order matters: bridge after indexer. Both are plain foreground processes; use the host's supervisor for restarts.
+
+3. STOP / RESTART
+   SIGINT or SIGTERM. The bridge closes its issuer child; the indexer wrapper closes the follower. State is durable: on restart
+   the indexer rebuilds the pool from records.jsonl without refetching blocks and the operator reopens its journal, re-publishes
+   credits that were built or published but not indexed (same carrier bytes, idempotent on the daemon), and recovers payouts
+   that were submitted but not journaled as paid by reading the custody receipt (never pays twice).
+
+4. UPGRADE
+   Stop bridge, stop indexer, replace binaries/scripts, start indexer, wait for health, start bridge. State formats: indexer
+   state log (blocks/records/meta) and operator journal version 4. An upgrade that changes either must ship a migration and be
+   rehearsed on the fakechain test first. Never edit journals by hand.
+
+5. INCIDENTS (admin API: POST /admin/<name>; token required off loopback)
+   /admin/status, /admin/incidents, /admin/liabilities, /admin/pause {symbol,note}, /admin/resume {symbol,note}, /admin/tick
+   - burnReorganised / burnVanished: a burn with recorded confirmations moved or left canonical history before payout. The
+     operator PAUSES payouts for that asset; nothing was paid. Review: confirm with the daemon (get_transactions) and the
+     indexer (/tx/<txid>) whether the burn is canonical again; if the holder republished, it will show pending with new
+     confirmations. Then /admin/resume with a note. Confirmations restart from the new height.
+   - paidWithoutBurn: a Solana payout is final and the burn left canonical history. This is a LOSS the operator cannot revoke;
+     it HALTS the asset (no credits, no payouts). Do not resume. Record the incident, quantify with /admin/liabilities
+     (shortfall), and decide outside the service. Mitigations are confirmations depth, exposure limits and observers; none
+     removes this counterexample.
+   - Indexer behind / restarts rising: check daemon health first (the follower refuses to sync when the daemon network or genesis
+     differs). A restart loop with the same error means a corrupted state log: stop, move the state dir aside, start again
+     (full resync from the manifest start height) — the operator journal is independent and stays.
+   - Liabilities not ok (reserve != owed): stop payouts (/admin/pause) and reconcile buckets: unclaimed legacy rights,
+     deposits awaiting credit, claims awaiting credit, outstanding notes (minted − burned), confirmed burns awaiting payout.
+
+6. OBSERVERS AND EXPOSURE
+   observers: additional monerod RPC URLs that must agree on the burn's height, block hash and depth before a payout;
+   requireObservers: refuse payouts when none is configured. exposure.maxSinglePayout / maxPaidPerWindow / windowBlocks bound
+   what a single reorganisation can cost. Start small; raise only after measured operation.
+
+7. KEY CUSTODY
+   Issuer key: signs credits only; its XMR wallet pays credit carrier fees (fund it with small amounts). Operator keypair:
+   authorises redemptions in the custody program; on mainnet it should be the policy's verifier and kept on a separate,
+   access-controlled host. Rotation of either requires a new manifest/policy; not implemented in this candidate.

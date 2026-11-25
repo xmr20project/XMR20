@@ -1,0 +1,4 @@
+{"event":"indexer-started","ready":{"domain":"cf7216d55fe449db7cce626a343cd073d5014aedc1c62945ea3624ce8492bf47","mode":"indexer-service","network":"stagenet","ready":true,"state":{"blocks":0,"dir":"/U
+{"event":"indexer-http","url":"http://127.0.0.1:8972"}
+{"event":"indexer-started","ready":{"domain":"cf7216d55fe449db7cce626a343cd073d5014aedc1c62945ea3624ce8492bf47","mode":"indexer-service","network":"stagenet","ready":true,"state":{"blocks":143,"dir":"
+{"ok":true,"firstSyncSeconds":4.054,"tip":2236729,"records":6,"completedOperations":1,"restart":{"restarts":1,"tip":2236729,"sameRoot":true}}

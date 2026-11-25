@@ -1,0 +1,68 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✔ mainnet is refused before any process starts (0.950792ms)
+lab: {"event":"indexer-started","ready":{"domain":"93c114417b149524f41d35b679cac3b8a85d1826c63fe9b1d218c6468deb7b2d","mode":"indexer-service","network":"offline-fakechain","ready":true,"state":{"blocks":0,
+lab: {"event":"indexer-http","url":"http://127.0.0.1:8992"}
+lab: This token address is registered with another Solana account
++ actual - expected
+
++ 'BpaTrc7SrxjZebVRavxKUDWJrgRyYCGKhmRR5LSRfv2t'
+- 'HayyvsduoSSyfX6Z2Ej4YHsNzVzMeAf3zHXLATR46A9e'
+
+{"step":"lab up","tip":324,"indexer":"http://127.0.0.1:8992","bridge":"http://127.0.0.1:8991","reserve":"10000000000"}
+{"step":"deposit credited publicly","credit":"2bbc948a17ae5406a5435592b2ff553191ec25d5715290312bba69bf389d1234","net":"98500000"}
+lab: {"event":"indexer-started","ready":{"domain":"93c114417b149524f41d35b679cac3b8a85d1826c63fe9b1d218c6468deb7b2d","mode":"indexer-service","network":"offline-fakechain","ready":true,"state":{"blocks":33
+{"step":"indexer crash/restart","restarts":2,"tip":334}
+lab: {"event":"indexer-started","ready":{"domain":"93c114417b149524f41d35b679cac3b8a85d1826c63fe9b1d218c6468deb7b2d","mode":"indexer-service","network":"offline-fakechain","ready":true,"state":{"blocks":33
+{"step":"public send","txid":"484d77612be827f516db2e2afd103a243355ba30dbb8b1caf8e3851d71fdea43","fee":"2071200000"}
+lab: Exposure: single payout above limit (max 60000000 atomic units); nothing was burned
+lab: Only 1 confirmations
+lab: Payout withheld: independent observation does not confirm the burn (http://127.0.0.1:8993: unknown)
+{"step":"payout withheld by observer disagreement","txid":"5cae849dc726643a95e167b12d50e441f7a328b60b6833899db96f83f6a6b616"}
+{"step":"burn paid exactly once","txid":"5cae849dc726643a95e167b12d50e441f7a328b60b6833899db96f83f6a6b616","net":"24625000"}
+TEST FAILURE: AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ 'submitting'
+- 'paid'
+
+    at TestContext.<anonymous> (file://<workspace>/research/bridge-service-unshielded-20261026/test/bridge-service.test.mjs:109:70)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Test.run (node:internal/test_runner/test:1069:7)
+    at async Test.processPendingSubtests (node:internal/test_runner/test:752:7)
+run folder kept for diagnosis: <workspace>/research/bridge-service-unshielded-20261026/runs/lab-1792980541953
+✖ bridge service: deposit, credit, send, burn, exactly-once payout, incidents, migration, recovery, disclosure audit (20583.150833ms)
+✖ test/bridge-service.test.mjs (91052.743541ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 1
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 91055.311583
+
+✖ failing tests:
+
+test at test/bridge-service.test.mjs:39:1
+✖ bridge service: deposit, credit, send, burn, exactly-once payout, incidents, migration, recovery, disclosure audit (20583.150833ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'submitting'
+  - 'paid'
+  
+      at TestContext.<anonymous> (file://<workspace>/research/bridge-service-unshielded-20261026/test/bridge-service.test.mjs:109:70)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'submitting',
+    expected: 'paid',
+    operator: 'strictEqual'
+  }
+
+test at test/bridge-service.test.mjs:1:1
+✖ test/bridge-service.test.mjs (91052.743541ms)
+  'Promise resolution is still pending but the event loop has already resolved'
+exit 1

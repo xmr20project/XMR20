@@ -1,0 +1,129 @@
+{
+ "execution": "PUBLIC STAGENET (read-only follow)",
+ "firstSyncSeconds": 4.054,
+ "health": {
+  "ok": true,
+  "tip": 2236729,
+  "daemonTip": 2236729,
+  "behind": 0,
+  "synced": true,
+  "invariant": true,
+  "pendingParts": 0,
+  "completedOperations": 1,
+  "restarts": 0,
+  "lastSyncAt": "2026-10-26T01:26:09.278Z",
+  "lastError": null,
+  "network": "stagenet",
+  "domain": "cf7216d55fe449db7cce626a343cd073d5014aedc1c62945ea3624ce8492bf47",
+  "manifestSha256": "efadb5b324ee9a43744020e93306d935cb1878eda203d16d0b737f0076b3cc92"
+ },
+ "state": {
+  "accepted": 6,
+  "burned": {
+   "0fda60fc23baddb053cbce7343dda3bdb156394b64d05df222de347c3dbd5903": "1000000"
+  },
+  "completedOperations": 1,
+  "credits": [
+   {
+    "amount": "10000000",
+    "asset": "0fda60fc23baddb053cbce7343dda3bdb156394b64d05df222de347c3dbd5903",
+    "binding": "70b21ba942d998d98eee9e1d37fc11c1de69113e86a9f04eaaba1fae4963b7cd",
+    "height": 2236629,
+    "kind": 1,
+    "owner": "305bc4aa7c3be13a3627c1571ec84e0e199093957f2fb7d9f068faf2b5f34108",
+    "txid": "6e7e48fce93fbb779862afbe7639d4ec4344c873cde85685374fa009f0023851"
+   }
+  ],
+  "invariant": {
+   "ok": true,
+   "rows": [
+    {
+     "asset": "0fda60fc23baddb053cbce7343dda3bdb156394b64d05df222de347c3dbd5903",
+     "ok": true,
+     "outstanding": "9000000",
+     "publicSupply": "5000000",
+     "shieldedSupply": "4000000"
+    }
+   ]
+  },
+  "minted": {
+   "0fda60fc23baddb053cbce7343dda3bdb156394b64d05df222de347c3dbd5903": "10000000"
+  },
+  "nullifiers": 4,
+  "outstanding": {
+   "0fda60fc23baddb053cbce7343dda3bdb156394b64d05df222de347c3dbd5903": "9000000"
+  },
+  "pendingParts": 0,
+  "publicNotes": 3,
+  "publicSupply": {
+   "0fda60fc23baddb053cbce7343dda3bdb156394b64d05df222de347c3dbd5903": "5000000"
+  },
+  "redemptions": [
+   {
+    "amount": "1000000",
+    "asset": "0fda60fc23baddb053cbce7343dda3bdb156394b64d05df222de347c3dbd5903",
+    "binding": "1eadb94e62b834642a9a455b2a8f8954d38fdc399ed356d5951ddc373ff16a05",
+    "height": 2236682,
+    "owner": "2828fc46a716a4d9cff124bc1776c096078f51094ecc73e2f52332297012b401",
+    "txid": "73409210a5fb7b14e8b851ffb7f0eb42f8c95fd18ed25f7c0cf26cde6830af79"
+   }
+  ],
+  "rejected": 0,
+  "root": "b3d30692d08a922a3fa831d0b1bcc8c518c95b4fe7cbd285c3a7ec1354d11707",
+  "shieldedNotes": 4,
+  "shieldedSupply": {
+   "0fda60fc23baddb053cbce7343dda3bdb156394b64d05df222de347c3dbd5903": "4000000"
+  }
+ },
+ "expectedTxids": 7,
+ "found": {
+  "6e7e48fce93fbb779862afbe7639d4ec4344c873cde85685374fa009f0023851": {
+   "found": true,
+   "record": "accepted",
+   "kind": "public-credit",
+   "confirmations": 101
+  },
+  "24bdd6ce195733a6cfc5b0736b62ec21b2fba3787323774916c5e960e23c60cb": {
+   "found": true,
+   "record": "accepted",
+   "kind": "public-transfer",
+   "confirmations": 90
+  },
+  "18ede2c6b6415629fecbf0a10cc9b3360658a3375afe235f5de61f434aa830e1": {
+   "found": true,
+   "record": "accepted",
+   "kind": "shield",
+   "confirmations": 79
+  },
+  "4cd64aaefeb24f816c166a897356638179a893376381b13e992ed1d75dfe8a74": {
+   "found": true,
+   "record": "accepted",
+   "kind": "private-part-a",
+   "confirmations": 68
+  },
+  "06598dad083887099bf4c596dd75ac9a17fdae5d600155a0ceb2c587905fd029": {
+   "found": true,
+   "record": "accepted",
+   "kind": "private-part-b",
+   "confirmations": 68
+  },
+  "9351c5daba4a7b9323dc0d5872681f1ae6455c41c07373b35e5182c3c00470b6": {
+   "found": true,
+   "record": "accepted",
+   "kind": "unshield",
+   "confirmations": 58
+  },
+  "73409210a5fb7b14e8b851ffb7f0eb42f8c95fd18ed25f7c0cf26cde6830af79": {
+   "found": true,
+   "record": "accepted",
+   "kind": "public-burn",
+   "confirmations": 48
+  }
+ },
+ "restart": {
+  "restarts": 1,
+  "tip": 2236729,
+  "sameRoot": true
+ },
+ "ok": true
+}

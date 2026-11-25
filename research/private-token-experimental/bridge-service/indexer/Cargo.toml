@@ -1,0 +1,32 @@
+[package]
+name = "xmr20-indexer"
+version = "0.0.0"
+edition = "2021"
+publish = false
+description = "Persistent, incremental indexer for the XMR20 unshielded-by-default token format: follows a Monero daemon from a trusted manifest's start height, applies records with the reviewed core pool, persists an append-only block/record log, recovers from restarts and reorganisations without re-fetching history. Stdio JSON service wrapped by bridge/indexer-service.mjs. UNREVIEWED research code; offline fakechain / stagenet only unless explicitly configured."
+
+[[bin]]
+name = "xmr20-indexer"
+path = "src/main.rs"
+
+[dependencies]
+xmr20-unshielded-core = {path = "../../token-format-unshielded-20261025/core"}
+xmr20-unshielded-lab = {path = "../../token-format-unshielded-20261025/format"}
+anyhow = "1"
+ark-groth16 = {version = "=0.4.0", features = ["parallel"]}
+decaf377 = {version = "=0.10.1", features = ["r1cs"]}
+decaf377-rdsa = "=0.11.0"
+penumbra-sdk-keys = {version = "=2.1.1", default-features = false}
+penumbra-sdk-shielded-pool = {version = "=2.1.1", default-features = false}
+serde = {version = "1", features = ["derive"]}
+serde_json = "1"
+hex = "0.4"
+monero-wallet = "=0.2.0"
+monero-simple-request-rpc = "=0.1.0"
+tokio = {version = "1", features = ["rt", "macros"]}
+
+[patch.crates-io]
+monero-wallet = {path = "../../../proof-of-concepts/native-market-local/vendor/monero-wallet"}
+penumbra-sdk-shielded-pool = {path = "../../privacy-single-tx-20261022/vendor/penumbra-sdk-shielded-pool"}
+
+[workspace]
