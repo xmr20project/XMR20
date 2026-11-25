@@ -1,0 +1,22 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✖ catalog tokens in the real popup: migrate (incl. interrupted), transfer, bridge out with real per-mint fees, deposit, fresh-profile recovery (87362.662ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 89279.554083
+
+✖ failing tests:
+
+test at browser-catalog-migration-bridge.test.mjs:22:1
+✖ catalog tokens in the real popup: migrate (incl. interrupted), transfer, bridge out with real per-mint fees, deposit, fresh-profile recovery (87362.662ms)
+  Error: popup error: No spendable XMR for the carrier fee: unlocked 0 piconero (of which 0 too small for any carrier at 1200000 piconero/byte), locked 0 (unlocks by block 0), reserved by pending carriers 0; chain tip 334 | native={"tip":334,"outputs":0,"scanned":null,"address":"4A9B35g1VNQB"}
+      at feeOrError (file://<workspace>/research/privacy-release-candidate-20261025/browser-catalog-migration-bridge.test.mjs:40:554)
+      at async send (file://<workspace>/research/privacy-release-candidate-20261025/browser-catalog-migration-bridge.test.mjs:41:205)
+      at async TestContext.<anonymous> (file://<workspace>/research/privacy-release-candidate-20261025/browser-catalog-migration-bridge.test.mjs:71:127)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3)
+exit 1

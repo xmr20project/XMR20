@@ -1,0 +1,124 @@
+{
+ "suite": "ceremony-rehearsal",
+ "at": "2026-10-25T21:17:56.527Z",
+ "status": "REHEARSAL — DISPOSABLE — zero independent participants",
+ "circuits": [
+  {
+   "name": "normal",
+   "degree": 262144,
+   "constraints": 135684,
+   "r1cs": "dae1a919aed268000fb0fb23891a477641298e961da761cc04281658d581907e",
+   "phase1": [
+    "22a725d07458ae6f",
+    "2771d5fd9244b3ff",
+    "d15541455dbe8085"
+   ],
+   "phase2": [
+    "0fce8b60cd70fb46",
+    "550d55dcd2fe7824",
+    "ba8e636aaa1340a9"
+   ],
+   "pk": "da71279886cf4d060388c7d6ab23722898174669c3f02bae5570908116c462e7",
+   "pkBytes": 82675440
+  },
+  {
+   "name": "boundary",
+   "degree": 131072,
+   "constraints": 121809,
+   "r1cs": "fe8033a31b63b84e321c034d714de193bc45d55fb9964279ec136d7686717104",
+   "phase1": [
+    "3791c446b6798ba5",
+    "c37ad2e6d7680548",
+    "d085092acab8f8f1"
+   ],
+   "phase2": [
+    "428ad0fb420087f7",
+    "a6198bebc78c5605",
+    "38967510667c199a"
+   ],
+   "pk": "33745cd2cc5e4e9969e67d7f0656b48b26e51580118041dfedc041688896f756",
+   "pkBytes": 64409328
+  }
+ ],
+ "verify": {
+  "independentParticipants": 0,
+  "mode": "quick: logs replayed, keys recombined from the hash-checked cached transition",
+  "ok": true,
+  "seconds": 3115.487066959,
+  "status": "REHEARSAL — DISPOSABLE PARAMETERS — NOT A PRODUCTION CEREMONY",
+  "verified": [
+   {
+    "circuit": "normal",
+    "degree": 262144,
+    "phase1Contributions": 3,
+    "phase1Last": "d15541455dbe8085a26b22d2bbe2e34fad395af7873bd477dce13ecc9dc159d5",
+    "phase2Contributions": 3,
+    "phase2Last": "ba8e636aaa1340a9d89bada00864b16e467cb351558f5fedd8b2170e57d6568a",
+    "pkBytes": 82675440,
+    "pkSha256": "da71279886cf4d060388c7d6ab23722898174669c3f02bae5570908116c462e7",
+    "r1cs": "dae1a919aed268000fb0fb23891a477641298e961da761cc04281658d581907e",
+    "vkMatches": true
+   },
+   {
+    "circuit": "boundary",
+    "degree": 131072,
+    "phase1Contributions": 3,
+    "phase1Last": "d085092acab8f8f164a03d295a83fa20db5cd801f99f2439d54fac3be41f35ef",
+    "phase2Contributions": 3,
+    "phase2Last": "38967510667c199a4b14a333138b9e2b850566f9834b9f3aaa56f99460169bed",
+    "pkBytes": 64409328,
+    "pkSha256": "33745cd2cc5e4e9969e67d7f0656b48b26e51580118041dfedc041688896f756",
+    "r1cs": "fe8033a31b63b84e321c034d714de193bc45d55fb9964279ec136d7686717104",
+    "vkMatches": true
+   }
+  ]
+ },
+ "fullVerify": {
+  "independentParticipants": 0,
+  "mode": "full: logs replayed, transition recomputed, keys recombined",
+  "ok": true,
+  "seconds": 3764.373618541,
+  "status": "REHEARSAL — DISPOSABLE PARAMETERS — NOT A PRODUCTION CEREMONY",
+  "verified": [
+   {
+    "circuit": "normal",
+    "degree": 262144,
+    "phase1Contributions": 3,
+    "phase1Last": "d15541455dbe8085a26b22d2bbe2e34fad395af7873bd477dce13ecc9dc159d5",
+    "phase2Contributions": 3,
+    "phase2Last": "ba8e636aaa1340a9d89bada00864b16e467cb351558f5fedd8b2170e57d6568a",
+    "pkBytes": 82675440,
+    "pkSha256": "da71279886cf4d060388c7d6ab23722898174669c3f02bae5570908116c462e7",
+    "r1cs": "dae1a919aed268000fb0fb23891a477641298e961da761cc04281658d581907e",
+    "vkMatches": true
+   },
+   {
+    "circuit": "boundary",
+    "degree": 131072,
+    "phase1Contributions": 3,
+    "phase1Last": "d085092acab8f8f164a03d295a83fa20db5cd801f99f2439d54fac3be41f35ef",
+    "phase2Contributions": 3,
+    "phase2Last": "38967510667c199a4b14a333138b9e2b850566f9834b9f3aaa56f99460169bed",
+    "pkBytes": 64409328,
+    "pkSha256": "33745cd2cc5e4e9969e67d7f0656b48b26e51580118041dfedc041688896f756",
+    "r1cs": "fe8033a31b63b84e321c034d714de193bc45d55fb9964279ec136d7686717104",
+    "vkMatches": true
+   }
+  ]
+ },
+ "tamperContribution": "Error: the input buffer contained invalid data",
+ "tamperSubstitutedKey": "Error: normal: <workspace>/research/privacy-release-candidate-20261025/runs/ceremony-tamper-9ea0eb/params-swapped/normal.public-pk differs from the key recombined from the verified log",
+ "tamperChain": "Error: parameters.json chain 1111111111111111111111111111111111111111111111111111111111111111 is not the ceremony's 418015bb9ae982a1975da7d79277c2705727a56894ba0fb246adaabb1f4632e3",
+ "manifest": {
+  "sha256": "b130d0a49bc7713cd19c21495f0760f09efa59f550ba4739ac87debe0e6c0e08",
+  "domain": "db96740193a777c4729ad7302d4d99c98ab4d02b3bf621df953672720cc22bf1",
+  "label": "CEREMONY REHEARSAL — DISPOSABLE PARAMETERS — NOT PRODUCTION"
+ },
+ "foreignManifestRefused": true,
+ "endToEnd": {
+  "transferRecord": "9905883c2fce8e94e50421670ade2ba8b7734c936b63a9af8db6f614758f8be8",
+  "boundaryRecord": "85a1a144a6afd06f83ca5063f39f72c2221312ef26bbc048f162bddd820219ef",
+  "provingMs": 30602,
+  "payout": "9850000"
+ }
+}

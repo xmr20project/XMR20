@@ -1,0 +1,11 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✔ journal-vs-phrase recovery through two installations with the same phrase (342622.571834ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 344560.997708
+exit 0

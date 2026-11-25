@@ -1,0 +1,40 @@
+TAP version 13
+# bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+# {"step":"catalog: every launched token has a unique derived asset id","tokens":66,"instantiatedNow":["EXTREMIST","XTAC","LUKE","XMR20~5NPSXG","COVERT"],"future":"USVEU"}
+# {"step":"legacy position visible","asset":"eea2bc81c55c6dda47c68bd82eba01f4da645e95f3bc1dbdbe1050b6aee46a12","mintStandIn":"9MwJfFGc3jNkAKLwma4kkUYivs19yJsWXuPD15RegXMR","realMint":"9MwJfFGc3jNkAKLwma4kkUYivs19yJsWXuPD15RegXMR","decimals":6,"lot":"10000000000"}
+# backend: SIMULATED CRASH after the credit was journaled (built), before publication
+# backend: Claim already consumed
+# {"step":"migrated","credit":"623d009d44b43246784b631ef938109c5c25be895fe6b165a0def547e4b75629","balance":"10000000000","backing":{"asset":"eea2bc81c55c6dda47c68bd82eba01f4da645e95f3bc1dbdbe1050b6aee46a12","reserve":"20000000000","owed":"20000000000","ok":true,"shortfall":"0","lossBearer":"operator b
+# backend: Claim already consumed
+# backend: Claim already consumed
+# backend: Legacy signature rejected
+# backend: Unknown legacy lot for this account
+# {"step":"duplicates, cutoff ownership, late registration, old path closed","lateRegistrant":{"X":"0","LUKE":"0","XTAC":"0","COVERT":"0","XMR20~5NPSXG":"0","EXTREMIST":"0"},"cutover":{"migratedToReserveAtTip":322,"legacyPositionAfter":"0"}}
+# {"step":"private transfer of migrated tokens","txid":"e951e0940b0a6698716254e69bd331eb2ebece8c2d11db052f0bc223801954a6","feePiconero":"3024000000","change":"7500000000"}
+# {"step":"redeemed to the same Solana asset","burn":"afb3d45d8aee26b2ec2650c44142f392f79aca9b3c3c4e82934e91109a42c24d","net":"100000000","feeBps":0,"mint":"9MwJfFGc3jNkAKLwma4kkUYivs19yJsWXuPD15RegXMR","backing":{"asset":"eea2bc81c55c6dda47c68bd82eba01f4da645e95f3bc1dbdbe1050b6aee46a12","reserve":"19
+# Subtest: 10,000 legacy EXTREMIST -> exactly 10,000 private EXTREMIST; interrupted/duplicate/cutoff/recovery; transfer; redemption to the same mint
+not ok 1 - 10,000 legacy EXTREMIST -> exactly 10,000 private EXTREMIST; interrupted/duplicate/cutoff/recovery; transfer; redemption to the same mint
+  ---
+  duration_ms: 121309.936333
+  type: 'test'
+  location: '<workspace>/research/privacy-release-candidate-20261025/migration/legacy-migration.test.mjs:42:1'
+  failureType: 'testCodeFailure'
+  error: 'Transaction is not defined'
+  code: 'ERR_TEST_FAILURE'
+  name: 'ReferenceError'
+  stack: |-
+    TestContext.<anonymous> (file://<workspace>/research/privacy-release-candidate-20261025/migration/legacy-migration.test.mjs:110:14)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:1069:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 123145.180791
+exit 1

@@ -85,3 +85,14 @@ assumptions; REVIEW = independent security review / audit; RESEARCH = no known c
      - accept/document: change-chain linkage, carrier fingerprint, memory-erasure limits, confirmation latency
      - whether to run any mainnet measurement (not authorised by this research)
    Until the REVIEW column is closed, every verdict above stays NO-GO regardless of test results.
+
+7. UPDATE 25 Oct 2026 — research/privacy-release-candidate-20261025 (RELEASE-CHECKLIST.txt is now the authoritative status)
+   CLOSED since §6: popup port of lookup-before-retry + pool-aware exclusion (stagenet real-popup run PASSED, privacy-stagenet-
+   wallet-20261024); replay equivalence clean-vs-incremental incl. restart and rollback (conformance/indexer-replay-equivalence);
+   independent observation as a payout GATE in the test service (conformance/observer-gated-payout); operator journal corruption
+   refuses to open (conformance/operator-journal-corruption); third-party legacy migration acceptance (migration/legacy-migration,
+   synthetic EXTREMIST: exactly 10,000 -> 10,000, no tax, interrupted/duplicate/cutoff/recovery/redemption to the same mint).
+   REPRODUCED AND PRESERVED: counterexample A live (settlement/bridge-rollback-loss) and B (model + prior evidence);
+   SETTLEMENT-DESIGN.txt evaluates constructions; none closes A or B; bridging payouts and native trading stay GATED.
+   STILL OPEN: everything in the REVIEW and PRODUCT columns of §6; ceremony tooling; phone proving cost; wallet-side second
+   node; production adapters; old-path cutover enforcement in the shipping indexer. Verdicts: unchanged (NO-GO).

@@ -17,6 +17,7 @@ import {ed25519} from '@noble/curves/ed25519';
 import {startBackend} from './backend/service.mjs';
 import {createHolderEngine,createChainScanner} from './wallet-extension/src/holder-engine.js';
 import {createParameterLoader,checkManifest} from './wallet-extension/src/holder-params.js';
+import {createCarrierBuilder} from './wallet-extension/src/holder-carrier.js';   // stage 2+: no relay; the holder pays and publishes its own carrier
 const dir=fileURLToPath(new URL('./',import.meta.url));
 const PORTS={rpcPort:30063,p2pPort:30062,httpPort:8943};
 const BASE=`http://127.0.0.1:${PORTS.httpPort}`;
@@ -82,11 +83,13 @@ test('parameter authentication: shipped manifest is the only trust anchor',{time
   backend.faults.boundary='abort-midway';await assert.rejects(loader.loadProvingKey(1),/interrupted/);assert.equal(cache.m.size,1);backend.faults.boundary=null;const ib=await loader.loadProvingKey(1);assert.equal(ib.source,'download');assert.equal(cache.m.size,2);results.accepted.push(ib);
   // 8. The authenticated parameters actually work: deposit, replay, prove a transfer, publish.
   const sol=Keypair.generate();const pub=()=>{const a=ed25519.utils.randomPrivateKey(),b=ed25519.utils.randomPrivateKey();return {A:hex(ed25519.getPublicKey(a)),B:hex(ed25519.getPublicKey(b))};};
-  await post('register',{id:'paramsA',sol:sol.publicKey.toBase58(),xmr:'synthetic',...pub(),tokenAddress:d.tokenAddress});
+  await post('register',{id:'paramsA',sol:sol.publicKey.toBase58(),xmr:d.nativeAddress,...pub(),tokenAddress:d.tokenAddress});
   const prep=await post('depositPrepare',{id:'paramsA',symbol:'X',amount:'50000000'});const tx=Transaction.from(Buffer.from(prep.transaction,'base64'));tx.sign(sol);await post('depositSubmit',{id:'paramsA',nonce:prep.nonce,transaction:tx.serialize().toString('base64')});await post('mine',{blocks:10});
+  // TEST SERVICE: mine test XMR to this holder for the carrier fee (coinbase matures after 60 blocks; the service mines at most 50 per call).
+  await post('fund',{id:'paramsA',blocks:1});await post('mine',{blocks:50});await post('mine',{blocks:12});
   const scanner=createChainScanner(engine,{rpc:backend.rpcUrl,genesis:MANIFEST.network.genesis});await scanner.sync();const X=backend.assets.X.asset;assert.equal(engine.call({op:'status'}).balances[X],'49250000');
   const sel=engine.call({op:'select',asset:X,amount:'10000000',exclude:[]});t0=Date.now();const built=engine.call({op:'build',kind:'send',to:d.tokenAddress,amount:'10000000',notes:sel.notes});results.provingMs=Date.now()-t0;assert.equal(built.bytes,996);
-  const rel=await post('relay',{id:'paramsA',wire:built.wire});assert.ok(rel.txid);await post('mine',{blocks:10});await scanner.sync();assert.equal(engine.call({op:'status'}).balances[X],'49250000');assert.equal(engine.call({op:'status'}).notes.length,2);
+  const carrier=createCarrierBuilder({engine,rpc:backend.rpcUrl,fetch:closeFetch});const q=await carrier.quote({kind:'send'});const signed=carrier.sign(q.quoteId,built.wire);assert.equal(signed.fee,q.fee,'fee paid = fee quoted');const rel=await carrier.publish(signed.blob);assert.equal(rel.ok,true,rel.reason);results.carrier={txid:signed.txid,nativeBytes:signed.nativeBytes,extraBytes:signed.extraBytes,fee:String(signed.fee)};await post('mine',{blocks:10});await scanner.sync();assert.equal(engine.call({op:'status'}).balances[X],'49250000');assert.equal(engine.call({op:'status'}).notes.length,2);
   results.events=events;
  }finally{await backend.close();}
  // 9. A backend serving ANOTHER ledger's parameters (another setup) is refused end to end: parameters.json differs, and its proving key would differ.

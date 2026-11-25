@@ -1,0 +1,12 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+{"rejections":8,"accepted":2,"provingMs":31188,"normalLoadMs":1315,"cacheLoadMs":1230}
+✔ parameter authentication: shipped manifest is the only trust anchor (153040.849375ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 155932.563833
+exit 0

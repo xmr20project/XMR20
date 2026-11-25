@@ -1,0 +1,61 @@
+   |
+22 |     pub fn previous() -> &'static str {
+   |            ^^^^^^^^
+
+warning: unused import: `io`
+  --> <workspace>/research/privacy-stagenet-roles-20261023-lab/src/chain.rs:13:38
+   |
+13 | use std::{collections::BTreeMap, fs, io, path::Path};
+   |                                      ^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `penumbra-sdk-shielded-pool` (lib) generated 4 warnings (run `cargo fix --lib -p penumbra-sdk-shielded-pool` to apply 1 suggestion)
+warning: `xmr20-integration-lab` (lib) generated 1 warning (run `cargo fix --lib -p xmr20-integration-lab` to apply 1 suggestion)
+error[E0277]: the trait bound `Phase2CRSElements: CanonicalDeserialize` is not satisfied
+   --> src/main.rs:201:35
+    |
+201 |     let root: Phase2CRSElements = read_bin(&dir.join(format!("{}/phase2/root.bin", e.name)))?;
+    |                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `CanonicalDeserialize` is not implemented for `Phase2CRSElements`
+    |
+    = help: the following other types implement trait `CanonicalDeserialize`:
+              ()
+              (A, B)
+              (A, B, C)
+              (A, B, C, D)
+              (A,)
+              Arc<T>
+              BTreeMap<K, V>
+              BTreeSet<V>
+            and 64 others
+note: required by a bound in `read_bin`
+   --> src/main.rs:164:16
+    |
+164 | fn read_bin<T: CanonicalDeserialize>(p: &Path) -> Result<T> {
+    |                ^^^^^^^^^^^^^^^^^^^^ required by this bound in `read_bin`
+
+error[E0277]: the trait bound `Phase2CRSElements: CanonicalSerialize` is not satisfied
+   --> src/main.rs:319:61
+    |
+319 |     write_bin(&dir.join(format!("{name}/phase2/root.bin")), &phase2_root)?;
+    |     --------- required by a bound introduced by this call   ^^^^^^^^^^^^ the trait `CanonicalSerialize` is not implemented for `Phase2CRSElements`
+    |
+    = help: the following other types implement trait `CanonicalSerialize`:
+              &'a [T]
+              ()
+              (A, B)
+              (A, B, C)
+              (A, B, C, D)
+              (A,)
+              Arc<T>
+              BTreeMap<K, V>
+            and 67 others
+note: required by a bound in `write_bin`
+   --> src/main.rs:158:17
+    |
+158 | fn write_bin<T: CanonicalSerialize>(p: &Path, t: &T) -> Result<()> {
+    |                 ^^^^^^^^^^^^^^^^^^ required by this bound in `write_bin`
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `xmr20-params-ceremony` (bin "xmr20-params-ceremony") due to 2 previous errors
+exit 

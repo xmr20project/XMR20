@@ -1,0 +1,13 @@
+ATTEMPT 1 — labRoles: fresh CARGO_TARGET_DIR, no remapping (NOT byte-identical, cause identified)
+source     research/privacy-stagenet-roles-20261023-lab (Cargo.toml, Cargo.lock --locked, src/, path deps: ../privacy-multi-input-20261022, vendor monero-wallet, vendor penumbra-sdk-shielded-pool)
+command    cd research/privacy-stagenet-roles-20261023-lab && CARGO_TARGET_DIR=<candidate>/runs/repro-builds/labRoles/target cargo build --release --offline --locked
+toolchain  rustc 1.99.0 (b940084d7 2026-09-28) aarch64-apple-darwin; cargo 1.99.0 (5f94df478); RUSTFLAGS unset
+started    2026-10-25T14:07:01Z   finished 2026-10-25T14:08:11Z   Finished `release` profile [optimized] target(s) in 1m 09s
+recorded   375a49e2d0208acd35d25d41ad158cd16dbcc28d50ffca360417cef9905a160e (13996848 B)
+produced   61e3c823196426c97a21cac268461c2eaed540796be016d50b818a05f9163a12 (13996848 B)
+difference same size; 910125 differing bytes. The ONLY differing strings are the two
+           build-script output paths embedded by the monero-bulletproofs crate (…/build/monero-bulletproofs-c534f7400f2d66b4/out/generators.rs
+           and generators_plus.rs): the recorded binary carries research/privacy-stagenet-roles-20261023-lab/target/…, this one carries the new target dir.
+           The different path length shifts the string table and relocations after it, and LC_UUID (bytes 1945-1960) is a content hash.
+conclusion the embedded CARGO_TARGET_DIR path is the sole identified source of difference; attempt 2 pins it with
+           RUSTFLAGS=--remap-path-prefix=<new target dir>=<recorded target dir>.

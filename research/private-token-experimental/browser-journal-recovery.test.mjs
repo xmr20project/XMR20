@@ -66,10 +66,24 @@ test('journal-vs-phrase recovery through two installations with the same phrase'
   const histB=await history(B.page);const conf4=histB.find(x=>x.amount==='4000000');assert.equal(conf4.status,'confirmed');const xmrAfter4=await nativeTotal(B.page);
   const popped=await backend.actions.pop({blocks:12});h.log('TEST SERVICE: rolled the chain back 12 blocks and flushed the pool',popped);
   assert.ok(await refreshUntil(B.page,async()=>bal(await h.balanceText())===alphaBal+4,30),'B: the rolled-back send is gone; notes unspent again (balance '+bal(await h.balanceText())+')');
-  assert.ok(await refreshUntil(B.page,async()=>{const p=Object.values(await pending(B.page));return p.length===1&&p[0].status==='published'&&p[0].carrier?.txid===conf4.carrier.txid;}),'B re-sent the SAME carrier after the rollback');await h.shot('4-B-after-rollback-resent');
+  // Two legitimate outcomes after a rollback. (i) The daemon still accepts the identical signed carrier -> the popup re-sends it
+  // (lookup-before-retry), same txid, no new fee. (ii) The identical carrier is REFUSED because some of its ring members were created
+  // in the rolled-back blocks and no longer exist -> the popup keeps the proved record as 'refused' and offers a NEW carrier for the
+  // SAME record. Either way the record settles exactly once and only one carrier fee is ultimately paid (the rolled-back carrier's
+  // fee came back with the rollback). Found 25 Oct: three isolated runs hit (ii); earlier runs hit (i); the choice is the decoy draw.
+  const resent=await refreshUntil(B.page,async()=>{const p=Object.values(await pending(B.page));return p.length===1&&(p[0].status==='published'||p[0].status==='refused')&&p[0].carrier?.txid===conf4.carrier.txid;});
+  assert.ok(resent,'after the rollback the saved carrier was re-tried exactly once (published or refused), never silently dropped');
+  let p4=Object.values(await pending(B.page))[0];let newCarrier=null;
+  if(p4.status==='published'){h.log('4. (i) the daemon accepted the identical carrier again: same txid, no new fee',{txid:p4.carrier.txid});await h.shot('4-B-after-rollback-resent');}
+  else{assert.match(p4.error||'',/refused the carrier/,'refusal recorded with the daemon reason');assert.equal(p4.recordId,conf4.recordId,'the proved record is retained');assert.equal(await daemonHas(conf4.carrier.txid),false,'the refused carrier is not in the daemon');
+   h.log('4. (ii) the daemon refused the identical carrier after the rollback (its ring members vanished with the popped blocks); the record is kept and a NEW carrier is approved for it',{error:p4.error});await h.shot('4-B-after-rollback-refused');
+   await h.openDetail();await B.page.$$eval('#modal details',ds=>ds.forEach(x=>x.open=true));await B.page.click(`[data-carry="${p4.id}"]`);await h.waitText('#pf-fee',/Carrier fee: .* XMR/);await B.page.click('#pf-approve');await h.progress(/ublished/);await h.closeModal();
+   p4=Object.values(await pending(B.page))[0];assert.equal(p4.status,'published');assert.equal(p4.recordId,conf4.recordId,'same proved record under the new carrier');assert.notEqual(p4.carrier.txid,conf4.carrier.txid,'a different carrier transaction');newCarrier=p4.carrier;}
   h.page=A3.page;assert.ok(await refreshUntil(A3.page,async()=>bal(await h.balanceText())===alphaBal+4,30),'A agrees with the rolled-back chain');
-  h.page=B.page;await h.mine();assert.ok(await refreshUntil(B.page,async()=>bal(await h.balanceText())===alphaBal,30),'re-mined');assert.ok(await refreshUntil(B.page,async()=>Object.keys(await pending(B.page)).length===0));assert.equal(await nativeTotal(B.page),xmrAfter4,'same carrier, same fee: no second payment');
-  results.cases.c4={rolledBack:12,resentSameTxid:conf4.carrier.txid,secondFee:'0'};h.log('4. rollback: balances reverted, same carrier re-sent once, no second fee',results.cases.c4);
+  h.page=B.page;await h.mine();assert.ok(await refreshUntil(B.page,async()=>bal(await h.balanceText())===alphaBal,30),'re-mined');assert.ok(await refreshUntil(B.page,async()=>Object.keys(await pending(B.page)).length===0));
+  const expectedXmr=newCarrier?BigInt(xmrAfter4)+BigInt(conf4.carrier.fee)-BigInt(newCarrier.fee):BigInt(xmrAfter4);
+  assert.equal(BigInt(await nativeTotal(B.page)),expectedXmr,newCarrier?'exactly one carrier fee paid in total (the rolled-back carrier\'s fee returned; the new carrier\'s fee paid once)':'same carrier, same fee: no second payment');
+  results.cases.c4={rolledBack:12,outcome:newCarrier?'identical carrier refused by the daemon (ring members gone); same record re-carried once':'identical carrier re-sent once',resentSameTxid:newCarrier?null:conf4.carrier.txid,newCarrierTxid:newCarrier?.txid||null,feesPaidForThisRecord:1};h.log('4. rollback: balances reverted, the record settled once, one fee in total',results.cases.c4);
   // ---- STALE BACKUP: A's storage from the moment of case 2a (a 'built' entry for notes that are long spent) restored over A's current storage: reconcile rejects it, nothing is sent.
   const sendsBefore=h.requests.filter(r=>r.url?.endsWith('/send_raw_transaction')).length;
   await A3.page.evaluate(async snap=>{await chrome.storage.local.clear();await chrome.storage.local.set(snap);},snapBuilt);await A3.page.reload();await unlock(A3.page,password);

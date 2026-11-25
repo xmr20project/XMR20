@@ -1,0 +1,127 @@
+[suite] run 2026-10-25T02-10-05-549Z-a6b279; fingerprinting inputs…
+[suite] SKIP journal (--only)
+[suite] SKIP carrier lookup-before-retry (--only)
+[suite] SKIP fault proxy (--only)
+[suite] SKIP parameter authentication (--only)
+[suite] SKIP engine + records (--only)
+[suite] SKIP finality model (trading, abstract) (--only)
+[suite] SKIP COUNTEREXAMPLE A live (bridge payout then rollback) (--only)
+[suite] SKIP indexer replay equivalence + restart + rollback (--only)
+[suite] SKIP operator journal corruption (--only)
+[suite] SKIP observer-gated payout (--only)
+[suite] SKIP catalog migration: 5 selected mints + 1 added after startup (synthetic holdings), exact entitlement, per-mint fees; asset ids of all 66 catalog entries (--only)
+[suite] SKIP independent checker over the interop vectors (--only)
+  [two-wallet interop: real popup A + CLI wallet B on one pool; tamper/duplicate admission] not reused: earlier row did not pass
+[suite] two-wallet interop: real popup A + CLI wallet B on one pool; tamper/duplicate admission (interop.test.mjs)…
+  [two-wallet interop: real popup A + CLI wallet B on one pool; tamper/duplicate admission] … 60s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [two-wallet interop: real popup A + CLI wallet B on one pool; tamper/duplicate admission] … 120s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [two-wallet interop: real popup A + CLI wallet B on one pool; tamper/duplicate admission] … 180s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [two-wallet interop: real popup A + CLI wallet B on one pool; tamper/duplicate admission] … 240s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [two-wallet interop: real popup A + CLI wallet B on one pool; tamper/duplicate admission] … 300s; last: # bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+  [two-wallet interop: real popup A + CLI wallet B on one pool; tamper/duplicate admission] # pass 1
+  [two-wallet interop: real popup A + CLI wallet B on one pool; tamper/duplicate admission] # fail 0
+  [two-wallet interop: real popup A + CLI wallet B on one pool; tamper/duplicate admission] # cancelled 0
+[suite] PASS two-wallet interop: real popup A + CLI wallet B on one pool; tamper/duplicate admission: 1/1 in 328s
+[suite] SKIP stagenet-aware roles (simulation) (--only)
+[suite] REUSED suite runner: provenance + reuse rules: 4/4 (executed 2026-10-25T01:55:15.953Z in run 2026-10-25T01-49-50-049Z-12c787; identical inputs: 23 files, digest a536bcdb3957e43a…)
+[suite] SKIP real popup: carriers incl. actual lost reply (--only)
+[suite] SKIP real popup: recovery (--only)
+[suite] SKIP real popup: journal recovery (--only)
+[suite] SKIP real popup: interruptions (--only)
+{
+ "runId": "2026-10-25T02-10-05-549Z-a6b279",
+ "passed": true,
+ "complete": false,
+ "claim": "PARTIAL (--only): selected rows only; no full-suite completion is claimed",
+ "executed": 1,
+ "reused": 1,
+ "failedSuites": 0,
+ "suites": [
+  {
+   "name": "journal",
+   "skipped": true
+  },
+  {
+   "name": "carrier lookup-before-retry",
+   "skipped": true
+  },
+  {
+   "name": "fault proxy",
+   "skipped": true
+  },
+  {
+   "name": "parameter authentication",
+   "skipped": true
+  },
+  {
+   "name": "engine + records",
+   "skipped": true
+  },
+  {
+   "name": "finality model (trading, abstract)",
+   "skipped": true
+  },
+  {
+   "name": "COUNTEREXAMPLE A live (bridge payout then rollback)",
+   "skipped": true
+  },
+  {
+   "name": "indexer replay equivalence + restart + rollback",
+   "skipped": true
+  },
+  {
+   "name": "operator journal corruption",
+   "skipped": true
+  },
+  {
+   "name": "observer-gated payout",
+   "skipped": true
+  },
+  {
+   "name": "catalog migration: 5 selected mints + 1 added after startup (synthetic holdings), exact entitlement, per-mint fees; asset ids of all 66 catalog entries",
+   "skipped": true
+  },
+  {
+   "name": "independent checker over the interop vectors",
+   "skipped": true
+  },
+  {
+   "name": "two-wallet interop: real popup A + CLI wallet B on one pool; tamper/duplicate admission",
+   "ok": true,
+   "pass": 1,
+   "fail": 0,
+   "seconds": 328,
+   "inputs": "2e17815d4852b09d"
+  },
+  {
+   "name": "stagenet-aware roles (simulation)",
+   "skipped": true
+  },
+  {
+   "name": "suite runner: provenance + reuse rules",
+   "ok": true,
+   "pass": 4,
+   "fail": 0,
+   "seconds": 0,
+   "reused": true,
+   "origin": "2026-10-25T01-49-50-049Z-12c787",
+   "inputs": "a536bcdb3957e43a"
+  },
+  {
+   "name": "real popup: carriers incl. actual lost reply",
+   "skipped": true
+  },
+  {
+   "name": "real popup: recovery",
+   "skipped": true
+  },
+  {
+   "name": "real popup: journal recovery",
+   "skipped": true
+  },
+  {
+   "name": "real popup: interruptions",
+   "skipped": true
+  }
+ ]
+}

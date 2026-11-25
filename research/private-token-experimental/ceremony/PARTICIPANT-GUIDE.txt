@@ -1,0 +1,109 @@
+XMR20 PRIVATE-TOKEN KEY CEREMONY — PARTICIPANT GUIDE (DRAFT, 25 October 2026)
+
+Status: this is a draft for the owner to review. Nobody has been invited yet. The ceremony has not been scheduled.
+The software it describes has been rehearsed end to end on one laptop (see ceremony/README.txt), but the code has not
+had an independent security review. Do not circulate this guide until that review has happened and the owner has
+fixed the tool version and circuit fingerprints below.
+
+------------------------------------------------------------------------------------------------------------------
+1. WHAT THIS IS, IN ONE PARAGRAPH
+------------------------------------------------------------------------------------------------------------------
+XMR20 private tokens are protected by zero-knowledge proofs. Proofs need a set of public "parameter" files that every
+wallet and indexer uses. Creating those files produces a secret by-product. Anyone who kept that secret could forge
+tokens forever and nobody could tell. To make sure the secret is gone, the files are created by a chain of people:
+each person mixes in their own random secret and then destroys it. The result is safe as long as at least ONE person
+in the chain was honest. You are being asked to be one of those people. The whole job takes well under an hour and
+you never touch money, keys, servers or anyone's wallet.
+
+------------------------------------------------------------------------------------------------------------------
+2. WHAT YOU NEED
+------------------------------------------------------------------------------------------------------------------
+  - A computer you control (laptop or desktop; macOS or Linux; about 2 GB free disk, 8 GB RAM or more).
+  - Rust installed (https://rustup.rs). You will build the small tool yourself from source. Please do NOT use a
+    binary sent to you by the coordinator; the point is that you do not have to trust us.
+  - About 40 minutes. On a 2024 laptop one contribution takes roughly 15 minutes for the "normal" circuit and
+    7 minutes for the "boundary" circuit. Slower machines take longer; that is fine.
+  - A place to post a short hash that we cannot edit: your own X/Twitter, GitHub, Mastodon, Nostr or similar.
+
+------------------------------------------------------------------------------------------------------------------
+3. BEFORE YOU START — CHECK YOU HAVE THE RIGHT CEREMONY
+------------------------------------------------------------------------------------------------------------------
+The coordinator will have PUBLISHED these before the first contribution. Compare what you receive against them:
+  tool source commit:        <to be fixed by the owner before the ceremony>
+  circuit "normal"   R1CS:   <digest from ceremony.json; published in advance>
+  circuit "boundary" R1CS:   <digest from ceremony.json; published in advance>
+  previous contribution:     <hash the participant before you posted publicly>
+If any of these do not match what the coordinator sends you, stop and say so publicly. Do not contribute.
+
+------------------------------------------------------------------------------------------------------------------
+4. STEPS
+------------------------------------------------------------------------------------------------------------------
+Step 1 — get the code and build the tool (one time, about 5 minutes)
+    git clone <repository URL>            # the public XMR20 research repository
+    cd <repository>/ceremony
+    git checkout <tool source commit>     # the commit published in section 3
+    cargo build --release
+    # the tool is now at target/release/xmr20-params-ceremony
+
+Step 2 — receive the ceremony folder from the coordinator
+    You get a folder (we will call it CEREMONY) containing ceremony.json and the contribution files so far.
+    Check that the hash of the latest contribution in ceremony.json equals the hash the previous participant posted
+    publicly. If you cannot find their post, ask them, not us.
+
+Step 3 — make your contribution (one command per circuit)
+    Type a long random string as your entropy: dice rolls, a sentence nobody could guess, keyboard mashing. The tool
+    mixes your text with your operating system's random generator, so the text does not have to be perfect.
+
+    ./target/release/xmr20-params-ceremony contribute CEREMONY normal   phase2 --participant <your-handle> --entropy "<your random text>"
+    ./target/release/xmr20-params-ceremony contribute CEREMONY boundary phase2 --participant <your-handle> --entropy "<different random text>"
+
+    Each command prints one line of JSON ending in a "hash" value and writes one new file:
+      CEREMONY/normal/phase2/NNN-<your-handle>.bin     (about 35 MB)
+      CEREMONY/boundary/phase2/NNN-<your-handle>.bin   (about 22 MB)
+    It also appends your entry to CEREMONY/ceremony.json.
+
+Step 4 — publish your two hashes somewhere we cannot edit
+    Post the two "hash" values from Step 3 on your own channel, with the date and the words "XMR20 key ceremony".
+    This is what lets anyone later check that your step is really in the final transcript and was not replaced.
+
+Step 5 — send the folder to the coordinator
+    Send CEREMONY (or just the two new .bin files plus ceremony.json) back to the coordinator. Any channel is fine;
+    the files are public. The next participant builds on your result.
+
+Step 6 — clean up
+    Reboot your computer (this clears the memory the secret lived in), then delete the CEREMONY folder and the
+    terminal history line that contains your entropy text. Keep your two hashes.
+
+------------------------------------------------------------------------------------------------------------------
+5. AFTER THE CEREMONY — HOW YOU CHECK WE DID NOT CHEAT
+------------------------------------------------------------------------------------------------------------------
+When all participants are done, the coordinator publishes the full folder (every contribution), the final parameter
+files and attestation.json. From a fresh checkout of the same tool commit, anyone can run:
+
+    ./target/release/xmr20-params-ceremony verify <published CEREMONY folder> <published params folder>
+
+This rebuilds the circuits from source, checks their fingerprints, replays every contribution (each must be valid
+AND link to the one before it), recomputes the keys and compares them byte for byte with the published files and the
+manifest that wallets ship. Look for your two hashes in attestation.json. If they are there and verify passes, your
+honest deletion in Step 6 is enough to make the keys safe, regardless of what anyone else did.
+
+------------------------------------------------------------------------------------------------------------------
+6. WHAT YOU ARE NOT BEING ASKED TO DO
+------------------------------------------------------------------------------------------------------------------
+  - You do not hold or send any funds, tokens or private keys.
+  - You do not run a server or node, and nothing keeps running afterwards.
+  - You do not need to understand the cryptography. The tool checks everything that can be checked.
+  - You are not asked to vouch for XMR20. You are only asked to add randomness and then delete it.
+
+------------------------------------------------------------------------------------------------------------------
+7. WHO COUNTS AS A PARTICIPANT
+------------------------------------------------------------------------------------------------------------------
+A person who is not the XMR20 operator, running on hardware the operator does not control. Several machines, virtual
+machines, accounts or AI processes belonging to the same person count as one participant. The ceremony needs people
+who are independent of the operator AND of each other.
+
+------------------------------------------------------------------------------------------------------------------
+8. QUESTIONS
+------------------------------------------------------------------------------------------------------------------
+Technical background, the risk statement and the coordinator's own duties are in ceremony/README.txt in the same
+repository. Independent review status: NOT performed as of this draft.

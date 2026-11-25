@@ -1,0 +1,85 @@
+CONFORMANCE — ONE SET OF RULES FOR EVERY COMPONENT (wallet popup, library/CLI, reference holder process, indexer, issuer,
+bridge operator, marketplace controller). Version: XMR20-PRIVATE-v0.1-experimental. research/privacy-release-candidate-20261025.
+Normative text: SPEC-XMR20-PRIVATE-TOKENS-v0.1-experimental.txt (byte layouts, keys, addresses, scanning). This file fixes the
+rules that the spec leaves to implementations and names the vector/test that checks each one in this candidate.
+
+1. ASSET IDENTITY, DECIMALS, AMOUNTS
+  - Asset id = penumbra asset::Id of the denom string (e.g. uxmr20private-rehearsal); 32 bytes, hex. All components derive it
+    the same way (lab `asset` op; vectors/vectors.json asset rows; independent/check.mjs).
+  - Amounts are exact integers (u128 in records; strings in every JSON interface); display decimals 6; no rounding anywhere.
+    Exact-change assertions: browser suites, recovery cases, replay test (B 2,000,000 + 6,000,000 - 1,000,000 = 7,000,000).
+  - Asset substitution: a record spending asset a cannot create asset b; checked by the circuit's value balance and by
+    independent/check.mjs; stage-3 adversarial groups.
+
+2. RECORDS, PROOFS, SIGNATURES, COMMITMENTS, NULLIFIERS
+  - XM3 (996 B) / XB3 (925 B) exact layouts per SPEC 6; magic + protocol version + ledger domain inside the record.
+  - Validity = Groth16 proof over the pinned verifying key AND binding signature AND (XB3) issuer decaf377-rdsa signature AND
+    nullifier not previously spent in the canonical chain AND anchor known. Vectors: vectors/vectors.json (valid, tampered
+    byte, wrong domain, wrong vk, replayed nullifier); independent/check.mjs verifies without the engine.
+  - A nullifier spent in a canonical block can never be accepted again (double-spend): TWO case (recovery cases), c2b
+    (stage 3), replay test (rollback then re-admission at a new height is the SAME record, not a second spend).
+
+3. PARAMETER AUTHENTICATION, NETWORK AND DOMAIN SEPARATION
+  - Trust anchor = the shipped XMR20-PARAMS-1 manifest (sha256 pinned into the build/role); every parameter file is hashed over
+    its complete contents before parsing; served checksums are never trusted. Ledger domain binds genesis + vks + issuer key.
+  - network.kind in {offline-fakechain, stagenet}; mainnet refused by every component from the node's own get_info; genesis
+    must match; records under another domain are invalid. Tests: holder-params, verifier-params, stagenet-roles 4/4, popup
+    worker (stagenet build), backend checkDaemonNetwork.
+
+4. CANONICAL ORDERING, INVALID-RECORD REJECTION, ROLLBACK
+  - Canonical order = Monero chain order (height, then transaction order in the block). A record is admitted at the first
+    canonical height where it is valid; later duplicates are rejected; an invalid record in a valid Monero transaction is
+    simply ignored for the pool (the XMR still moved — see SETTLEMENT-DESIGN 0).
+  - Rollback: every component rebuilds from the canonical chain; a record that left canonical history is no longer spent/
+    credited; a re-mined identical carrier re-admits the SAME record at its new height. Replay equivalence: clean replay ==
+    incremental state at the same tip (conformance/indexer-replay-equivalence.test.mjs); wallet view: recovery cases RB.
+  - Limitation: the lab indexer is stateless per process (rebuilds on each scan): "database corruption" cannot occur in it;
+    the stateful component is the operator journal (conformance/operator-journal-corruption.test.mjs: a corrupted journal
+    refuses to open rather than silently resetting).
+
+5. OPERATION STATES (every user-facing component uses exactly these words; none may show success for anything else)
+  selected -> quoted -> built -> signed -> broadcasting -> {published | uncertain | refused | conflicted}
+  published -> mined (n of CONFIRMATIONS) -> confirmed            uncertain -> (lookup) published | re-sent | rejected
+  rejected (nothing sent, no fee) | conflicted (XMR input spent elsewhere; record kept) | refused (node refused; record kept)
+  Rules: "confirmed" only at >= CONFIRMATIONS; "uncertain" is never shown as sent or failed; a refusal is final (explicit new
+  carrier); lookup before any retry; the same blob is the only thing ever re-sent for an operation. Exit codes of the
+  reference process: 0 completed/released, 2 pending/unknown, 1 failed/refused/rejected/conflicted.
+  Vectors: conformance/states-vectors.json; tests: recovery cases (offline 76/76, stagenet 57/57), popup suites.
+
+6. MIGRATION, DEPOSITS, CREDITS, BURNS, PAYOUTS, TRADE SETTLEMENT
+  - Deposit: signed by the holder's Solana key; receipt nonce = credit binding; one credit per receipt (operator journal);
+    credit = XB3 kind 1 signed by the issuer; visible after CONFIRMATIONS.
+  - EVERY XMR20-launched token (past and future) is an asset of the private format by one rule: asset id = asset::Id of
+    'uxmr20private' + Solana mint; its own custody state at its real mint; its own cutover snapshot; the legacy amount is
+    credited EXACTLY (no deposit fee, no second bridge tax; the issuer pays the credit carrier's XMR fee and it is disclosed);
+    decimals come from the mint account; later deposits and redemptions follow the mint's own Token-2022 transfer-fee
+    setting (0 or 150 bps), enforced by the custody program and tested with real mint bytes. The catalog migration/third-party-assets.json (66 launched tokens in the 24 Oct
+    snapshot) is the source; a new launch is appended (or registered at runtime) with no per-token code
+    (migration/legacy-migration.test.mjs: asset ids of all 66 entries; end-to-end EXTREMIST journey; XTAC, LUKE, XMR20~5NPSXG
+    and COVERT by the same path; USVEU added after startup — six mints, synthetic holdings).
+  - Legacy migration: claim consumes the registry row once; a second claim with the same id is refused; a claim journaled as
+    built is re-consumed after restart (no double entitlement); old-path issuance must be stopped at cutover (NOT enforced by
+    this candidate's shipping path — RELEASE-CHECKLIST 3).
+  - Burn: XB3 kind redemption bound to (destination, request); payout exactly once per burn txid; a repeat returns the
+    receipt; payout admission requires CONFIRMATIONS AND, in this candidate, independent observer agreement (backend
+    observers; conformance/observer-gated-payout.test.mjs). A payout is irreversible; counterexample A stands.
+  - Trade settlement: reservation/purchase construction of the market lab; GATED; counterexample B stands; no component in
+    this candidate executes a trade.
+
+7. WHAT IS SHARED vs MOCKED
+  Shared implementation: holder-carrier.js, holder-engine.js, holder-params.js, private-journal.js (popup and Node tests);
+  wallet-lib wraps the same engine; roles.mjs/param-server.mjs shared by every harness. Mocked/simulated: offline fakechain
+  (regtest, instant blocks, unrealistic fee rate), LiteSVM Solana custody (compiled program, no network), lab issuer with a
+  synthetic key, witness process on the same machine (market lab). Real: stagenet node, faucet, third-party node views.
+
+7. OPERATOR PAYOUT RULES ADDED 25 Oct (backend/operator.mjs — candidate copy; the earlier lab's operator is unchanged)
+  R-OP-1 depth: a redemption is payable only when its burn has >= D confirmations counted from the burn's CURRENT canonical
+         height (D is per operator instance; the lab default is 10, the provisional policy under test is 20).
+  R-OP-2 reorganisation before payout: if a pending redemption's burn changes height, or leaves canonical history after it had a
+         recorded height, the operator records an incident (burnReorganised / burnVanished) and PAUSES payouts. Paused is not
+         halted: nothing was lost; an explicit `resume` (a reviewed operator action) re-opens payouts, and the next payout
+         re-validates R-OP-1 against the new height — resume never pays by itself.
+  R-OP-3 loss: a paid redemption whose burn leaves canonical history latches `paidWithoutBurn` and HALTS the operator; a halted
+         operator cannot be resumed (the loss is final on Solana; counterexample A).
+  R-OP-4 exposure: a redemption above the single-payout limit is refused at redeemPrepare, before anything is proved or burned.
+  Tested by settlement/payout-depth-policy.test.mjs (D = 20; rollbacks below / at / beyond the depth, before and after payout).

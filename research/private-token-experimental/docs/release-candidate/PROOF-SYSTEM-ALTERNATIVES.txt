@@ -1,0 +1,177 @@
+PROOF-SYSTEM ALTERNATIVES — can we keep ONE-TRANSACTION private transfers AND avoid an XMR20-specific trusted setup?
+research/privacy-release-candidate-20261025 — 25 October 2026. Desk study with byte arithmetic; one prototype attempted and stopped (section 8).
+Independent review: NOT performed. Nothing here changes the tested XM3/XB3 implementation or its evidence. Nothing here touches the
+separate bridge and marketplace settlement risks (SETTLEMENT-DESIGN.txt): a smaller proof or a reused ceremony does not change them.
+
+0. THE TWO REQUIREMENTS, SEPARATED
+  R1  One Monero transaction per private transfer. Hard bound: Monero nodes relay at most 1,060 bytes of tx_extra (relay policy,
+      not consensus). The tested XM3 record is 996 bytes and its complete tx_extra is 1,056 bytes (1,045 without the optional
+      encrypted payment id). XB3 is 925 / 985 bytes. Framing per record (SPEC 7.2): tx pubkey 33 B, then chunks of <=254 record
+      bytes each costing 3-4 B of tags/length/marker, optional payment id 11 B. MEASURED in this candidate (SPEC 6.1, CARRIER.txt).
+  R2  No XMR20-specific trusted setup, i.e. the proving/verifying keys must come from a setup that (a) already exists, (b) is publicly
+      verifiable and (c) was run by many independent participants. Today's keys fail R2: every set was made by one process on one
+      laptop (ceremony/README.txt 2).
+  Today R1 is MET and R2 is NOT. The question is whether any construction meets both.
+
+1. WHAT MUST BE INSIDE THE RECORD WHATEVER THE PROOF SYSTEM
+  Every verifier (indexer, wallet) must be able to check, from the record and public chain state only:
+    ownership        each spent note belongs to the signer (spend authorization)
+    conservation     sum of inputs = sum of outputs (+ fee/burn for boundary records)
+    no double spend  one nullifier per spent note, unique for the pool, derived from the note and the holder's nullifier key
+    membership       spent notes exist in the pool (anchor = tiered commitment tree root)
+    delivery         the recipient can find and decrypt its note (commitment + ephemeral key + ciphertext)
+  Hence the bytes that stay regardless of proof system: anchor 32, nullifier 32 per input, output payload 176 per output (commitment
+  32 + epk 32 + ciphertext 112, SPEC 6.3), magic 4. With 3 inputs and 2 outputs that is 4 + 32 + 96 + 352 = 484 bytes before any
+  proof or signature. Today's XM3 adds per input a value commitment (32), one rk (32), one spend-auth signature (64), per output a
+  value commitment (32), one binding signature (64) and the 192-byte Groth16 proof: 484 + 96 + 32 + 64 + 64 + 64 + 192 = 996.
+
+2. PROOF SIZES BY SYSTEM (derived from the protocols' definitions; not measured here unless stated)
+  Groth16, BLS12-377 (today)                 192 B compressed (G1 48 + G2 96 + G1 48)        MEASURED (our proofs)
+  Groth16, BN254 (RISC Zero / SP1 wrappers)  128 B compressed (G1 32 + G2 64 + G1 32); 256 B uncompressed as RISC Zero emits it
+                                              (RISC Zero's seal = 4-byte selector + 256 B; SP1 "~260 bytes")
+  PLONK/KZG (universal setup)                 ~600-900 B (9+ G1 and 6+ field elements; TurboPlonk more); SP1's PLONK "~868 bytes"
+  Marlin (universal setup)                    ~900 B
+  Bulletproofs (transparent)                  ~1.2 KB for ~135k constraints (2·log2(n) group elements + extras)
+  Halo2/IPA, STARKs, Ligero-style             several KB to hundreds of KB
+  Only Groth16 fits the byte budget. The ONLY ways to use Groth16 without running our own circuit-specific phase 2 are:
+    (i) use somebody else's circuit unchanged with their keys (Penumbra's Spend/Output: five proofs per record -> 960 B, does not
+        fit; CONFIRMED rejection, ceremony/README.txt 3), or
+    (ii) use a general-purpose zkVM whose VENDOR already ran the Groth16 ceremony for its fixed "STARK verifier" circuit, and put
+        OUR logic in the zkVM program. The vendor's Groth16 proof then attests "program with image id X ran and produced journal J".
+
+3. THE ZKVM WRAPPER CONSTRUCTION (approach ii) — WHAT IT WOULD LOOK LIKE
+  3.1 Vendors with an existing, verifiable Groth16 setup (primary documentation read 25 Oct; quotes in section 9):
+    RISC Zero  Groth16 over BN254 for its fixed stark_verify circuit; ceremony "coordinated with the PSE team" using p0tion and
+               DefinitelySetup; phase 1 = Hermez powersOfTau28_hez_final_23.ptau (2^23); transcript inside the published zkey on
+               ceremony.pse.dev; third-party verification = recompile stark_verify.circom (Circom 2.2.2) and `snarkjs zkey verify`;
+               r1cs sha256 84d3c34b…; RISC Zero's blog reports 238 contributions (search summary; the blog itself returned HTTP 500).
+    SP1        Groth16 over BN254; "a circuit-specific trusted setup ceremony among several contributors to the project" — 18 named
+               contributors from Succinct, Polygon, OP Labs, Offchain Labs, Coinbase, Across, Alpen, Etherealize; generated with
+               Semaphore tooling; the docs themselves say "circuit-specific ceremonies inherently carry higher trust assumptions" and
+               "Users uncomfortable with these security assumptions are strongly encouraged to use PLONK instead" (PLONK = 868 B, does
+               not fit our budget).
+  3.2 Verification binding. The verifier holds the vendor's verifying key (fixed, public) and OUR program's image id (32 B, a
+      constant pinned in the XMR20-PARAMS-1 manifest). It computes the journal digest = SHA-256 of the record's public body and checks
+      Groth16(seal; vk_vendor, imageId, journalDigest). So the seal proves: "the program whose code hashes to imageId accepted the
+      private witness and emitted exactly these public bytes". Binding therefore requires the program to emit, in the journal, every
+      field the verifier relies on: anchor, nullifiers, output commitments AND a hash of the payload ciphertexts (otherwise a payload
+      could be swapped), the asset domain and network id (so a proof for a test chain is not replayable on another), and the record
+      kind. Ownership / conservation / double-spend prevention become statements the program checks internally: it recomputes each
+      spent note's commitment from the witness, verifies the Merkle path to the anchor, derives nullifiers with the holder's nk,
+      checks sum(in) = sum(out), recomputes output commitments, and checks spend authorization (either verifies the SpendAuth
+      signatures inside the program, or proves knowledge of the spend key directly). The indexer rules stay as in SPEC 7.3 with the
+      Groth16 verifier swapped for `risc0-groth16::Verifier` (pure-Rust arkworks BN254; no Solidity involved).
+  3.3 Two sub-variants of what the program contains:
+      (a) ZKVM-NATIVE: re-implement the note logic in ordinary Rust inside the program (poseidon377, decaf377, Penumbra note types
+          compile as plain Rust). No Penumbra R1CS circuits are used. Audit status: the Penumbra sub-circuits we rely on today are
+          audited and byte-identical; a native program would be NEW unaudited code (our own) doing the same checks.
+      (b) RECURSIVE: verify five Penumbra Groth16 proofs (Penumbra's keys, from their ceremony with >15,000 phase-1 contributors)
+          inside the program and emit one journal. Keeps Penumbra's audited circuits unchanged and removes any XMR20 setup. Cost:
+          five BLS12-377 Groth16 verifications (pairings) in software inside the zkVM — RISC Zero's accelerators cover BLS12-381
+          and 256/384-bit modular arithmetic, not BLS12-377 pairings (section 9). ESTIMATE: billions of cycles per record.
+      (c) Wrapping OUR EXISTING combined Groth16 proof recursively does NOT help: the inner proof's soundness still rests on our
+          single-party keys. Rejected on construction, no byte analysis needed.
+
+4. COMPLETE SERIALIZED TRANSFER UNDER EACH CREDIBLE VARIANT (computed with the SPEC 7.2 framing; python arithmetic, 25 Oct)
+                                                           record   tx_extra (with / without payment id)   vs 1,060
+  XM3 today (192 B BLS12-377 Groth16)                        996 B     1,056 / 1,045 B                       FITS (4 B spare)
+  XM3 with vendor Groth16, seal COMPRESSED to 128 B          932 B       992 /   981 B                       FITS (68 B spare)
+  XM3 with vendor seal UNCOMPRESSED (256 B as emitted)     1,060 B     1,123 / 1,112 B                       DOES NOT FIT
+  zkVM-native record: magic 4 + anchor 32 + 3 nullifiers 96 + 2 payloads 352 + 128 B proof; value commitments, rk, SpendAuth and
+    binding signatures all folded into the program                 612 B       667 /   656 B                 FITS (393 B spare)
+  XB3 with 128 B proof                                        861 B       920 /   909 B                       FITS
+  Notes: the compressed form is a transport choice; the indexer decompresses the three points before verification (arkworks does this
+  natively). The journal is not carried: the verifier recomputes its digest from the record. Image id is not carried: pinned by the
+  manifest. So the byte budget is NOT the obstacle for approach (ii).
+
+5. PROVING COST, PARAMETERS AND WALLET COMPATIBILITY (the actual obstacle)
+  5.1 Where proving happens. The holder's wallet (browser extension, WASM) proves today's Groth16 in-wallet with a 147 MB proving
+      key downloaded once (MEASURED: holder-params tests, catalog popup run). Private witnesses never leave the device. The handoff
+      rule "do not outsource private witnesses to a service" rules out RISC Zero's Bonsai/Boundless and Succinct's prover network.
+  5.2 The vendor Groth16 step cannot run where our wallets run. Documentation (section 9):
+      RISC Zero: "The Groth16 prover currently only works on x86 architecture, and so Apple Silicon is currently unsupported (even
+      via Docker)." The STARK-to-SNARK step "requires an x86 architecture and Docker installed". No browser path exists.
+      SP1: Groth16 wrapping "requires roughly 14GB of memory", recommended "16+" cores and "16GB+" RAM, Docker memory limits raised;
+      a third-party report puts the circuit-artifact download at about 6.2 GB (not an official figure).
+      Consequence: a browser extension, a phone, or any Apple-silicon laptop cannot produce the record. Every holder would need an
+      x86-64 Linux machine with Docker and 16 GB RAM, or would have to hand the witness to a server (forbidden). This alone decides
+      the question for a wallet product in 2026.
+  5.3 Guest execution cost (ESTIMATE, not measured — see 8). Per XM3: ~83 Poseidon377 permutations (3 x (24 Merkle levels + note
+      commitment + nullifier + ivk) + 2 output commitments) and ~18 decaf377 scalar multiplications (rk, transmission-key check,
+      value commitments). A 377-bit field multiplication in a 32-bit RISC-V zkVM costs on the order of 1,000 cycles in plain code;
+      RISC Zero's bigint2 offers modmul_384 (whether an arbitrary 377-bit modulus is accepted is not stated in its docs), which would
+      bring it to the order of 100 cycles including data movement. With ~2,500 field multiplications per permutation and ~4,000 per
+      scalar multiplication: ~30 million cycles accelerated, ~300 million unaccelerated. Local STARK proving of that many cycles is
+      minutes on a GPU and tens of minutes to hours on a laptop CPU (vendor pages publish no throughput figures; "many minutes
+      without GPU" is the only published characterisation found). Then the Groth16 wrap adds its own minutes on x86. Variant 3.3(b)
+      (five pairings in software) is one to two orders of magnitude worse. Today's in-wallet Groth16 proof takes seconds (MEASURED
+      in the popup runs: a transfer completes in well under a minute including network round trips).
+  5.4 Parameter downloads. Today: 147 MB proving key, pinned by sha256 in the manifest. zkVM route: RISC Zero's groth16 component
+      (`rzup install risc0-groth16`, size not stated) plus the toolchain, or SP1's ~6 GB artifacts — on the HOLDER's machine.
+  5.5 Verifier side would be fine: `risc0-groth16` verifies in pure Rust in milliseconds; indexers keep working as today.
+
+6. THE SIMPLIFIED XMR20 CEREMONY, FOR COMPARISON (what the participants actually have to do)
+  Measured in the rehearsal (runs/ceremony-rehearsal.log, this laptop, Apple M4 Pro, 25 Oct):
+    phase-2 contribution, normal circuit (2^18):   780-1,100 s each (13-18 min)     file 36.7 MB
+    phase-2 contribution, boundary circuit (2^17): 407-429 s each (7 min)           file 22.9 MB
+    phase-1 contribution (if we also run phase 1): 50 / 247 / 448 s (normal), 20 / 117 / 213 s (boundary) — grows with chain
+      length because each contribution re-verifies all predecessors first; files 151 MB each (normal)
+  Phase 1 reuse: ceremony/README.txt previously stated that Penumbra's phase 1 "covers degree up to 2^21"; that figure is NOT
+    verified. Penumbra's proof-setup code runs phase 1 per circuit at each circuit's own degree (penumbra-sdk-proof-setup 2.1.1,
+    all.rs: `Phase1CRSElements::root(circuit_degree(&c))` for seven circuits), and the protocol spec gives only the symbol d. Whether
+    a Penumbra phase-1 transcript of degree >= 2^18 exists and where it is published remains to be established before relying on it.
+    If none is usable, participants contribute to phase 1 as well (one more command, minutes).
+  Participant burden, minimum credible: 3-5 people independent of us and of each other, each: install one binary or build from
+    source, run two (or four) commands, ~20-40 minutes of unattended compute, post two hashes. One-command client + coordinator
+    service would remove the file handling. Everything else (indexers, wallets, 147 MB key, seconds-long proving, 996-byte record,
+    audited Penumbra sub-circuits) stays exactly as tested.
+
+7. RECOMMENDATION (evidence-backed)
+  Keep the tested XM3/XB3 format and the combined Groth16 circuits. Meet R2 by running the XMR20 phase-2 ceremony with a small number
+  of independent participants, after independent review, using the tooling rehearsed in ceremony/. Reasons, in order of weight:
+    1. The zkVM route meets the byte budget (932 B record) but fails wallet compatibility by the vendors' own documentation: the final
+       Groth16 step is x86-64-with-Docker only, 14-16 GB RAM, multi-GB artifacts, and cannot run in a browser or on Apple silicon.
+       Our holders prove in a browser extension in seconds with a 147 MB key.
+    2. Proving time would rise from seconds to (estimated) tens of minutes or more per transfer, per holder, with no measured path to
+       fit a wallet.
+    3. The zkVM-native variant replaces audited, byte-identical Penumbra circuits with new code of our own; the recursive variant
+       keeps the circuits but multiplies the proving cost by pairings in software. Neither reduces review burden; both increase it.
+    4. The vendor ceremonies are real and verifiable (RISC Zero: PSE-coordinated, Hermez 2^23 phase 1, snarkjs-verifiable transcript;
+       SP1: 18 named contributors) — but SP1's own documentation describes its Groth16 setup as carrying "higher trust assumptions".
+       Reusing them would trade "trust that one of our 3-5 participants was honest" for "trust that one of theirs was", at the cost of
+       points 1-3. That is not a security gain large enough to justify abandoning a working wallet path.
+    5. The ceremony cost is bounded and measured: 7-18 minutes of compute per circuit per participant, two commands each.
+  What would change this recommendation: a zkVM vendor shipping a browser/ARM Groth16 wrapper with small artifacts, or Monero raising
+  the tx_extra relay limit (then PLONK over a universal setup, 600-900 B proofs, becomes a candidate and R2 is met without anyone's
+  phase 2). Neither is on any published roadmap we found.
+
+8. PROTOTYPE STATUS
+  A bounded prototype was prepared (proof-of-concepts/zkvm-wrapper-probe/: measure guest cycles for Poseidon377/decaf377 and local
+  STARK proving time on this laptop; the Groth16 wrap cannot run here — Apple silicon). Disk checked first: 104 GiB free; the RISC
+  Zero toolchain (~1-2 GB) would have been installed under ~/.risc0 without touching the shell profile. Downloading and executing the
+  vendor's installer binary was refused by this session's permission policy ("code from external"), so NO MEASUREMENT was taken; the
+  figures in 5.3 are estimates. The owner can allow the install and rerun the probe; it would turn the cycle-count estimate into a
+  measurement but cannot change the x86-only finding in 5.2, which is documentary.
+
+9. SOURCES READ (25 Oct 2026; quotes reproduced as found)
+  RISC Zero  https://dev.risczero.com/api/trusted-setup-ceremony — p0tion/DefinitelySetup, "coordinated with the PSE team", Hermez
+             powersOfTau28_hez_final_23.ptau, r1cs sha256 84d3c34b7c0eb55ad1b16b24f75e0b9de307f7b74089ea4a20a998390ee24178,
+             verification via Circom 2.2.2 + `snarkjs zkey verify`, attestation gists (editable by contributors).
+             https://dev.risczero.com/api/generating-proofs/local-proving — "The Groth16 prover currently only works on x86
+             architecture, and so Apple Silicon is currently unsupported (even via Docker)." General CPU proving "x86 or ARM".
+             https://docs.rs/risc0-groth16 — BN254 verifier (arkworks); prove feature "requires an x86 architecture and Docker".
+             https://dev.risczero.com/api/zkvm/precompiles, https://docs.rs/risc0-bigint2 — modmul_256/384/4096, EC for secp256k1 /
+             secp384r1 only; no BLS12-377; no cycle counts stated. https://github.com/risc0/risc0 README — Metal on Apple silicon.
+             https://dev.risczero.com/api/zkvm/benchmarks — no figures published; run the datasheet example yourself.
+             238 contributions: from a search summary of https://risczero.com/blog/verifying-risc-zeros-trusted-setup-ceremony
+             (the page returned HTTP 500 when fetched directly; treat the count as unconfirmed).
+  SP1        https://docs.succinct.xyz/docs/sp1/security/security-model — 18 contributors listed; "circuit-specific ceremonies
+             inherently carry higher trust assumptions"; PLONK uses Aztec Ignition; Semaphore tooling.
+             https://docs.succinct.xyz/docs/sp1/getting-started/hardware-requirements — Groth16 16+ cores, 16 GB+ ("roughly 14GB"),
+             PLONK 64 GB+, disk 10 GB+, Docker memory limits. https://docs.succinct.xyz/docs/sp1/generating-proofs/proof-types —
+             Groth16 "~260 bytes", PLONK "~868 bytes". Artifact size ~6.2 GB: third-party PR report only.
+  Penumbra   https://penumbra.exchange/blog/summoning-ceremony-phase-2 — "over 15,000 contributors" in phase 1 (2023); phase 2 2024.
+             https://protocol.penumbra.zone/main/setup/contributions.html — discrete-log proofs link contributions; degree only as d;
+             no publication location or tool named. penumbra-sdk-proof-setup 2.1.1 all.rs — phase 1 per circuit degree (local crate).
+             penumbra-sdk-proof-params 2.1.1 build.rs — keys fetched as git-lfs objects from github.com/penumbra-zone/penumbra.
+  Local      SPEC-XMR20-PRIVATE-TOKENS-v0.1-experimental.txt 6-7; CARRIER.txt; runs/ceremony-rehearsal.log; ceremony/README.txt.

@@ -1,0 +1,22 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✖ payout depth policy D=20: rollbacks below/at/beyond the depth before payout are detected, pause payouts and re-validate; the post-payout loss is preserved (49773.964208ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 51587.556042
+
+✖ failing tests:
+
+test at settlement/payout-depth-policy.test.mjs:29:1
+✖ payout depth policy D=20: rollbacks below/at/beyond the depth before payout are detected, pause payouts and re-validate; the post-payout loss is preserved (49773.964208ms)
+  SyntaxError [Error]: Unexpected end of JSON input
+      at JSON.parse (<anonymous>)
+      at parseJSONFromBytes (node:internal/deps/undici/undici:6249:19)
+      at successSteps (node:internal/deps/undici/undici:6230:27)
+      at readAllBytes (node:internal/deps/undici/undici:5199:13)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+exit 1

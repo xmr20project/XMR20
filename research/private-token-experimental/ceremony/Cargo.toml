@@ -1,0 +1,31 @@
+[package]
+name = "xmr20-params-ceremony"
+version = "0.0.0"
+edition = "2021"
+publish = false
+description = "Multi-party Groth16 parameter setup REHEARSAL for the XMR20 private-token circuits (XM3 combined, XB3 boundary). Disposable test parameters only. UNREVIEWED."
+
+[dependencies]
+penumbra-sdk-proof-setup = {path = "vendor/penumbra-sdk-proof-setup"}
+xmr20-integration-lab = {path = "../../privacy-stagenet-roles-20261023-lab"}
+xmr20-multi-input-lab = {path = "../../privacy-multi-input-20261022"}
+anyhow = "1"
+ark-relations = "=0.4.0"
+ark-serialize = "=0.4.2"
+ark-groth16 = {version = "=0.4.0", features = ["parallel"]}
+decaf377 = {version = "=0.10.1", features = ["r1cs"]}
+decaf377-rdsa = "=0.11.0"
+penumbra-sdk-shielded-pool = {version = "=2.1.1", default-features = false}
+rand_core = {version = "=0.6.4", features = ["getrandom"]}
+serde = {version = "1", features = ["derive"]}
+serde_json = "1"
+hex = "0.4"
+
+[patch.crates-io]
+monero-wallet = {path = "../../../proof-of-concepts/native-market-local/vendor/monero-wallet"}
+penumbra-sdk-shielded-pool = {path = "../../privacy-single-tx-20261022/vendor/penumbra-sdk-shielded-pool"}
+
+[profile.release]
+opt-level = 3
+
+[workspace]

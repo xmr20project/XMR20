@@ -1,0 +1,26 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✖ journal-vs-phrase recovery through two installations with the same phrase (365425.2265ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 367367.014042
+
+✖ failing tests:
+
+test at browser-journal-recovery.test.mjs:20:1
+✖ journal-vs-phrase recovery through two installations with the same phrase (365425.2265ms)
+  AssertionError [ERR_ASSERTION]: B re-sent the SAME carrier after the rollback
+      at TestContext.<anonymous> (file://<workspace>/research/privacy-release-candidate-20261025/browser-journal-recovery.test.mjs:71:10)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '=='
+  }
+exit 1

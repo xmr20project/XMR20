@@ -1,0 +1,47 @@
+TAP version 13
+# bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+# {"step":"catalog: every launched token has a unique derived asset id","tokens":66,"instantiatedNow":["EXTREMIST","XTAC","LUKE","XMR20~5NPSXG","COVERT"],"future":"USVEU"}
+# {"step":"legacy position visible","asset":"eea2bc81c55c6dda47c68bd82eba01f4da645e95f3bc1dbdbe1050b6aee46a12","mintStandIn":"9MwJfFGc3jNkAKLwma4kkUYivs19yJsWXuPD15RegXMR","realMint":"9MwJfFGc3jNkAKLwma4kkUYivs19yJsWXuPD15RegXMR","decimals":6,"lot":"10000000000"}
+# backend: SIMULATED CRASH after the credit was journaled (built), before publication
+# backend: Claim already consumed
+# {"step":"migrated","credit":"006109f4db82b739f51757ab6bfc8744dfaa94c36b4f0f76cfb87b5ab421df0d","balance":"10000000000","backing":{"asset":"eea2bc81c55c6dda47c68bd82eba01f4da645e95f3bc1dbdbe1050b6aee46a12","reserve":"20000000000","owed":"20000000000","ok":true,"shortfall":"0","lossBearer":"operator b
+# backend: Claim already consumed
+# backend: Claim already consumed
+# backend: Legacy signature rejected
+# backend: Unknown legacy lot for this account
+# {"step":"duplicates, cutoff ownership, late registration, old path closed","lateRegistrant":{"X":"0","LUKE":"0","XTAC":"0","COVERT":"0","XMR20~5NPSXG":"0","EXTREMIST":"0"},"cutover":{"migratedToReserveAtTip":322,"legacyPositionAfter":"0"}}
+# {"step":"private transfer of migrated tokens","txid":"1bfaf778a76c0c776b0d9ddf876a1ead4d7f568a21735379953b8961a540e76d","feePiconero":"3024000000","change":"7500000000"}
+# {"step":"redeemed to the same Solana asset","burn":"1e86b9093619b61716a2d3b6e30d4b7bd710d7b4886c14c5370e9eafb3be71ac","net":"100000000","feeBps":0,"mint":"9MwJfFGc3jNkAKLwma4kkUYivs19yJsWXuPD15RegXMR","backing":{"asset":"eea2bc81c55c6dda47c68bd82eba01f4da645e95f3bc1dbdbe1050b6aee46a12","reserve":"19
+# {"step":"deposit per EXTREMIST fee policy","gross":"50000000","net":"50000000","feeBps":0,"backing":true}
+# backend: Claim already consumed
+# Subtest: 10,000 legacy EXTREMIST -> exactly 10,000 private EXTREMIST; interrupted/duplicate/cutoff/recovery; transfer; redemption to the same mint
+not ok 1 - 10,000 legacy EXTREMIST -> exactly 10,000 private EXTREMIST; interrupted/duplicate/cutoff/recovery; transfer; redemption to the same mint
+  ---
+  duration_ms: 127037.141417
+  type: 'test'
+  location: '<workspace>/research/privacy-release-candidate-20261025/migration/legacy-migration.test.mjs:42:1'
+  failureType: 'testCodeFailure'
+  error: 'No spendable XMR for the carrier fee: unlocked 0 piconero (of which 0 too small for any carrier at 1200000 piconero/byte), locked 0 (unlocks by block 0), reserved by pending carriers 0; chain tip 382'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    finish (file://<workspace>/research/privacy-release-candidate-20261025/wallet-extension/src/holder-engine.js:15:86)
+    file://<workspace>/research/privacy-release-candidate-20261025/wallet-extension/src/holder-engine.js:18:90
+    guard (file://<workspace>/research/privacy-release-candidate-20261025/wallet-extension/src/holder-engine.js:16:30)
+    Object.call (file://<workspace>/research/privacy-release-candidate-20261025/wallet-extension/src/holder-engine.js:18:24)
+    Object.quote (file://<workspace>/research/privacy-release-candidate-20261025/wallet-extension/src/holder-carrier.js:31:16)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async migrate (file://<workspace>/research/privacy-release-candidate-20261025/migration/legacy-migration.test.mjs:128:102)
+    async TestContext.<anonymous> (file://<workspace>/research/privacy-release-candidate-20261025/migration/legacy-migration.test.mjs:133:97)
+    async Test.run (node:internal/test_runner/test:1069:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 128825.704167
+exit 1

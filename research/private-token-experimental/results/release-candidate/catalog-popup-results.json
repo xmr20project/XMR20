@@ -1,0 +1,84 @@
+{
+ "suite": "browser-catalog-migration-bridge",
+ "at": "2026-10-25T17:29:51.590Z",
+ "steps": {
+  "rows": {
+   "EXTREMIST": {
+    "mint": "9MwJfFGc3jNkAKLwma4kkUYivs19yJsWXuPD15RegXMR",
+    "feeBps": 0,
+    "lot": "10000000000"
+   },
+   "LUKE": {
+    "mint": "KzTQBqjkz1fCybZW1Wm44UDvYNr1VAbzupCaLvDfXMR",
+    "feeBps": 150,
+    "lot": "10000000000"
+   },
+   "catalogRows": 5
+  },
+  "migrateEXTREMIST": {
+   "credited": "Claim credited: bcb83b5ad72b5f3c… for 10,000 EXTREMIST to your private address. Advance the chain to see the private balance.",
+   "privateBalance": "10000000000",
+   "feeOnMigration": "0"
+  },
+  "interruptedLUKE": {
+   "hook": "claim-signed",
+   "popupText": "TEST HOOK: simulated interruption after claim-signed (the popup stopped here; nothing else ran).",
+   "credits": 2,
+   "privateBalance": "10000000000"
+  },
+  "transfer": {
+   "amount": "4000000000",
+   "change": "6000000000",
+   "fee": "Carrier fee: 0.003024 XMR (2520 weight bytes × 1200000 piconero on the offline t"
+  },
+  "redeemOverLimit": {
+   "requested": "4000000000",
+   "refused": "popup error: Exposure: single payout above lab limit (max 100000000 atomic units per payout); nothing was proved or burned | native={\"tip\":344,\"outputs\":3,\"scanned\":null,\"address\":\"42w2g8Xcb3KN\"}",
+   "burned": false
+  },
+  "redeemEXTREMIST": {
+   "txid": "e63b372e29a234010a46616a986578b84c220b613bd375508c6faffc9de2b5d5",
+   "beforeDepth": "refused below depth: popup error: Only 1 confirmations",
+   "paid": "Paid 100 EXTREMIST to your Solana address.",
+   "repeat": {
+    "status": "paid",
+    "repeated": true
+   },
+   "solanaDelta": "100000000",
+   "carrierFee": "Carrier fee: 0.002938 XMR (2449 weight bytes × 1200000 piconero on the offline t"
+  },
+  "redeemLUKE": {
+   "paid": "Paid 98.5 LUKE to your Solana address.",
+   "solanaDelta": "98500000",
+   "feeBps": 150,
+   "carrierFee": "Carrier fee: 0.002938 XMR (2449 weight bytes × 1200000 piconero on the offline t"
+  },
+  "deposits": {
+   "EXTREMIST": {
+    "gross": "100000000",
+    "credited": "100000000",
+    "text": "Deposit accepted (net 100 EXTREMIST); private credit 11d87297aac58c13… published to your private address. Advance the ch"
+   },
+   "LUKE": {
+    "gross": "100000000",
+    "credited": "98500000",
+    "text": "Deposit accepted (net 98.5 LUKE); private credit a77f80b9a8f8ca02… published to your private address. Advance the chain "
+   }
+  },
+  "freshProfile": {
+   "EXTREMIST": "6000000000",
+   "LUKE": "98500000",
+   "extremistLegacyOffered": 0,
+   "lukeLegacyOffered": 1
+  }
+ },
+ "ok": true,
+ "audit": {
+  "external": 0,
+  "leaks": 0,
+  "backendAudit": {
+   "filesChecked": 9,
+   "hits": []
+  }
+ }
+}

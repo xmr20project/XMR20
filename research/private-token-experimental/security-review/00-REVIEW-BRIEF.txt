@@ -122,3 +122,5 @@ STATUS OF THIS PACKAGE
   recommendations; a verdict on whether the composition is sound enough to be worth a ceremony (08 R1.c); a review of the
   ceremony design before it runs; and a list of what the reviewer could not assess (so it is not claimed as reviewed).
   Engagement, scope confirmation and payment are owner decisions; this brief authorises none of them.
+
+POINTER (25 Oct 2026): the integration candidate research/privacy-release-candidate-20261025 carries this package forward; its RELEASE-CHECKLIST.txt, SETTLEMENT-DESIGN.txt, CONFORMANCE.txt and DISCLOSURES.txt are additional inputs to the review. No reviewer has been contacted; nothing has been paid.

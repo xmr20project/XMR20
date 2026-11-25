@@ -1,0 +1,58 @@
+{
+ "execution": "SIMULATED (offline fakechains)",
+ "runs": [
+  {
+   "case": "disagreeing observer (unrelated chain)",
+   "observe": {
+    "ok": false,
+    "txid": "b7ecd85a32115b4b44c1ebe345185e95ed5c51e7e8af9f0c6c0c91ae804ae7e8",
+    "primary": {
+     "url": "http://127.0.0.1:30083",
+     "known": true,
+     "inPool": false,
+     "height": 322,
+     "confirmations": 10,
+     "blockHash": "795bd0446372719c0d5f862578efbecc3ee98e4a20a29c78a92ff7ec78d52bb0"
+    },
+    "observers": [
+     {
+      "url": "http://127.0.0.1:30085",
+      "known": false
+     }
+    ],
+    "reason": "http://127.0.0.1:30085: unknown"
+   },
+   "payout": "withheld",
+   "status": "pending"
+  },
+  {
+   "case": "observers required, none configured",
+   "observe": {
+    "ok": false,
+    "txid": "1d8820f081aabda52e3c4b8ecaf7117033f93ec411a8c6f9d3365672f29eff9c",
+    "primary": {
+     "url": "http://127.0.0.1:30083",
+     "known": true,
+     "inPool": false,
+     "height": 322,
+     "confirmations": 10,
+     "blockHash": "07f15e0fca0e70bfa9d863fdf3f6531957ad758aac0253842ea883851e5585c4"
+    },
+    "observers": [],
+    "reason": "no independent observer configured"
+   },
+   "payout": "withheld"
+  },
+  {
+   "case": "agreeing observer",
+   "observe": {
+    "ok": true,
+    "height": 322
+   },
+   "payout": "paid",
+   "repeat": true,
+   "net": "48511250"
+  }
+ ],
+ "result": "PASSED"
+}

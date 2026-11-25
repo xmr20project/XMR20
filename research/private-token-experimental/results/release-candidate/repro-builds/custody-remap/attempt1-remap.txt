@@ -1,0 +1,11 @@
+ATTEMPT 1 — custodyProgram: platform-tools v1.57, fresh CARGO_TARGET_DIR, registry path remapped (REPRODUCED byte-for-byte)
+source     proof-of-concepts/joint-escrow-wallet/core-monero-send/program (Cargo.toml, program/Cargo.lock --locked, src/lib.rs, monero_accounts.rs, universal_identity.rs); 166 packages in the sbpf graph, 1 local
+command    cd proof-of-concepts/joint-escrow-wallet/core-monero-send && RUSTC=<pt>/rust/bin/rustc CARGO_TARGET_SBPF_SOLANA_SOLANA_LINKER=<pt>/llvm/bin/ld.lld
+           RUSTFLAGS="--remap-path-prefix=$HOME/.cargo/registry=<workspace>/proof-of-concepts/joint-escrow-wallet/.cargo-cache/registry"
+           CARGO_TARGET_DIR=<candidate>/runs/repro-builds/custody-remap/target <pt>/rust/bin/cargo build --manifest-path program/Cargo.toml --release --target sbpf-solana-solana --locked --offline
+           <pt> = ~/.cache/solana/v1.57/platform-tools (rustc 1.95.0-dev ae660768a 2026-08-17; LLD 22.1.2 anza); the recorded .so names "rustc version 1.95.0-dev"
+why remap  the recorded .so (built 20 Oct 03:25 by build-program.mjs with CARGO_HOME=<base>/.cargo-cache) embeds 8 panic-location paths under that
+           vendored registry, which no longer exists; the same crates from ~/.cargo/registry are remapped onto that path. No target-dir path is embedded.
+started    2026-10-25T14:10:03Z   finished 2026-10-25T14:11:05Z   (1m 01s)
+recorded   a8b7c7919485d88758b721729fb0fb9f13f73484a93e8b49e933b9d4bebcc6bd (203,472 B)
+produced   a8b7c7919485d88758b721729fb0fb9f13f73484a93e8b49e933b9d4bebcc6bd (203,472 B); cmp: 0 differing bytes

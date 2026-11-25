@@ -1,0 +1,41 @@
+411 |     let attestation: serde_json::Value = serde_json::from_slice(&fs::read(params.join("attestation.json")).context("attestation.jso...
+    |                      ^^^^^^^^^^ use of unresolved module or unlinked crate `serde_json`
+    |
+    = help: if you wanted to use a crate named `serde_json`, use `cargo add serde_json` to add it to your `Cargo.toml`
+
+error[E0433]: cannot find module or crate `serde_json` in this scope
+   --> src/main.rs:411:42
+    |
+411 |     let attestation: serde_json::Value = serde_json::from_slice(&fs::read(params.join("attestation.json")).context("attestation.jso...
+    |                                          ^^^^^^^^^^ use of unresolved module or unlinked crate `serde_json`
+    |
+    = help: if you wanted to use a crate named `serde_json`, use `cargo add serde_json` to add it to your `Cargo.toml`
+
+error[E0433]: cannot find module or crate `rand_core` in this scope
+   --> src/main.rs:438:6
+    |
+438 | impl rand_core::RngCore for MixedRng {
+    |      ^^^^^^^^^ use of unresolved module or unlinked crate `rand_core`
+    |
+    = help: if you wanted to use a crate named `rand_core`, use `cargo add rand_core` to add it to your `Cargo.toml`
+
+error[E0433]: cannot find module or crate `rand_core` in this scope
+   --> src/main.rs:453:65
+    |
+453 |     fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_core::Error> { self.fill_bytes(dest); Ok(()) }
+    |                                                                 ^^^^^^^^^ use of unresolved module or unlinked crate `rand_core`
+    |
+    = help: if you wanted to use a crate named `rand_core`, use `cargo add rand_core` to add it to your `Cargo.toml`
+
+error[E0433]: cannot find module or crate `rand_core` in this scope
+   --> src/main.rs:455:6
+    |
+455 | impl rand_core::CryptoRng for MixedRng {}
+    |      ^^^^^^^^^ use of unresolved module or unlinked crate `rand_core`
+    |
+    = help: if you wanted to use a crate named `rand_core`, use `cargo add rand_core` to add it to your `Cargo.toml`
+
+Some errors have detailed explanations: E0432, E0433.
+For more information about an error, try `rustc --explain E0432`.
+error: could not compile `xmr20-params-ceremony` (bin "xmr20-params-ceremony") due to 38 previous errors
+exit 

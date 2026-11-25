@@ -1,0 +1,39 @@
+TAP version 13
+# bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+# {"step":"catalog: every launched token has a unique derived asset id","tokens":66,"instantiatedNow":["EXTREMIST","XTAC","LUKE","XMR20~5NPSXG","COVERT"],"future":"USVEU"}
+# {"step":"legacy position visible","asset":"eea2bc81c55c6dda47c68bd82eba01f4da645e95f3bc1dbdbe1050b6aee46a12","mintStandIn":"9MwJfFGc3jNkAKLwma4kkUYivs19yJsWXuPD15RegXMR","realMint":"9MwJfFGc3jNkAKLwma4kkUYivs19yJsWXuPD15RegXMR","decimals":6,"lot":"10000000000"}
+# backend: SIMULATED CRASH after the credit was journaled (built), before publication
+# backend: Claim already consumed
+# {"step":"migrated","credit":"c24e8ae82447faab3bd1c0515bf02c5fc554291f19fd28542b3d2b67b709c1af","balance":"10000000000","backing":{"asset":"eea2bc81c55c6dda47c68bd82eba01f4da645e95f3bc1dbdbe1050b6aee46a12","reserve":"20000000000","owed":"20000000000","ok":true,"shortfall":"0","lossBearer":"operator b
+# backend: Claim already consumed
+# backend: Claim already consumed
+# backend: Legacy signature rejected
+# backend: Unknown legacy lot for this account
+# {"step":"duplicates, cutoff ownership, late registration, old path closed","lateRegistrant":{"X":"492500000","LUKE":"10000000000","XTAC":"10000000000","COVERT":"10000000000","XMR20~5NPSXG":"10000000000","EXTREMIST":"0"},"cutover":{"migratedToReserveAtTip":322,"legacyPositionAfter":"0"}}
+# {"step":"private transfer of migrated tokens","txid":"976dacded653a3251254334c713c730ca287d4687fd0106fe1084d40593e155f","feePiconero":"3024000000","change":"7500000000"}
+# Subtest: 10,000 legacy EXTREMIST -> exactly 10,000 private EXTREMIST; interrupted/duplicate/cutoff/recovery; transfer; redemption to the same mint
+not ok 1 - 10,000 legacy EXTREMIST -> exactly 10,000 private EXTREMIST; interrupted/duplicate/cutoff/recovery; transfer; redemption to the same mint
+  ---
+  duration_ms: 116667.3235
+  type: 'test'
+  location: '<workspace>/research/privacy-release-candidate-20261025/migration/legacy-migration.test.mjs:42:1'
+  failureType: 'testCodeFailure'
+  error: 'burn is not defined'
+  code: 'ERR_TEST_FAILURE'
+  name: 'ReferenceError'
+  stack: |-
+    TestContext.<anonymous> (file://<workspace>/research/privacy-release-candidate-20261025/migration/legacy-migration.test.mjs:104:113)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:1069:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 118517.19925
+exit 1

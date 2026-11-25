@@ -1,0 +1,77 @@
+{
+  "reproduced": true,
+  "asset": "X",
+  "rollbackBlocks": 10,
+  "redemption": "f6745c1c10a61ac59434656fcdc3f2cd995b3128e241b5af5a9e9910bbc98b0e",
+  "payout": {
+    "amount": "40000000",
+    "binding": "058a56f6c1cd79df6a00337c5eaabf1407c4c46ba9d8ba89d9410866724fcb16",
+    "status": "paid",
+    "height": 1051,
+    "confirmations": 0,
+    "destination": "8yQgeLtbrqxQYaKJEtSPyp18SkMkaGHxAwimHBPP8S81",
+    "paidAtTip": 1060,
+    "receipt": {
+      "kind": 14,
+      "from": "4uYG1mrfKcNr5AaSc2DBQ3L6zVp9NJg2eNJUSj18XDG2",
+      "to": "8yQgeLtbrqxQYaKJEtSPyp18SkMkaGHxAwimHBPP8S81",
+      "nonce": "f6745c1c10a61ac59434656fcdc3f2cd995b3128e241b5af5a9e9910bbc98b0e",
+      "commitment": "05960f65746312895b65331c5ed4a3a81a0aba4b556bef7c1a4ca7834feccfc9",
+      "gross": "40000000",
+      "net": "39400000",
+      "fee": "600000",
+      "binding": "76751ce24aa9ae4dcccdfa791bdebaf6ea323712dea29414a1060202a3b9a8d2"
+    }
+  },
+  "before": {
+    "asset": "6652c59ee978481e96ddeb251576f22efddd715fcafd92631b8cd72b7709730a",
+    "reserve": "792800000",
+    "owed": "792800000",
+    "ok": true,
+    "shortfall": "0",
+    "lossBearer": "operator backing shared by all holders (no per-holder insurance)",
+    "buckets": {
+      "unclaimedLegacyRights": "0",
+      "depositsAwaitingCredit": "0",
+      "claimsAwaitingCredit": "0",
+      "outstandingPrivateNotes": "792800000",
+      "confirmedBurnsAwaitingPayout": "0"
+    },
+    "minted": "1083500000",
+    "burned": "290700000",
+    "incidents": 0,
+    "halted": false
+  },
+  "after": {
+    "asset": "6652c59ee978481e96ddeb251576f22efddd715fcafd92631b8cd72b7709730a",
+    "reserve": "792800000",
+    "owed": "832800000",
+    "ok": false,
+    "shortfall": "40000000",
+    "lossBearer": "operator backing shared by all holders (no per-holder insurance)",
+    "buckets": {
+      "unclaimedLegacyRights": "0",
+      "depositsAwaitingCredit": "0",
+      "claimsAwaitingCredit": "0",
+      "outstandingPrivateNotes": "832800000",
+      "confirmedBurnsAwaitingPayout": "0"
+    },
+    "minted": "1083500000",
+    "burned": "250700000",
+    "incidents": 1,
+    "halted": true
+  },
+  "shippingInvariant": {
+    "ok": false,
+    "error": "Inconsistent bridge backing."
+  },
+  "incident": {
+    "kind": "paidWithoutBurn",
+    "txid": "f6745c1c10a61ac59434656fcdc3f2cd995b3128e241b5af5a9e9910bbc98b0e",
+    "amount": "40000000",
+    "tip": 1070,
+    "note": "Solana payout is final; the Monero burn left canonical history. Cannot be revoked."
+  },
+  "lossBearer": "operator backing shared by all holders (no per-holder insurance)",
+  "explanation": "Ten-confirmed burn paid on Solana; controlled ten-block rollback; notes respent from a backup wallet; replay rejected. The shipping reconcileSupply copy also fails. Payout is final. Exposure caps bound one such event per window under stated assumptions only."
+}

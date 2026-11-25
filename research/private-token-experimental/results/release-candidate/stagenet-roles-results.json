@@ -1,0 +1,194 @@
+{
+ "paramServer": {
+  "served": [
+   "parameters.json",
+   "normal.public-pk",
+   "boundary.public-pk"
+  ],
+  "refused": [
+   {
+    "p": "/params/manifest.json",
+    "status": 404
+   },
+   {
+    "p": "/params/issuer.secret.json",
+    "status": 404
+   },
+   {
+    "p": "/params/../stagenet-roles.test.mjs",
+    "status": 404
+   },
+   {
+    "p": "/params/..%2Fpackage.json",
+    "status": 404
+   },
+   {
+    "p": "/params/wallet-a.root",
+    "status": 404
+   },
+   {
+    "p": "/params/journal.json",
+    "status": 404
+   },
+   {
+    "p": "/params/",
+    "status": 404
+   },
+   {
+    "p": "/",
+    "status": 404
+   },
+   {
+    "p": "/runs/stagenet-roles-results.json",
+    "status": 404
+   },
+   {
+    "p": "/params/normal.public-pk/",
+    "status": 404
+   },
+   {
+    "p": "/params/NORMAL.public-pk",
+    "status": 404
+   }
+  ],
+  "post": 405
+ },
+ "tamperedServer": {
+  "corruptedProvingKeyRefused": true,
+  "foreignParametersRefused": true,
+  "honestServerLoaded": true
+ },
+ "roleNetworkSelection": {
+  "binary: stagenet manifest vs fakechain daemon": {
+   "refused": true,
+   "reason": "Service exited: Error: Stagenet daemon required by the trusted manifest (daemon reports nettype \"fakechain\") "
+  },
+  "binary: manifest kind mainnet": {
+   "refused": true,
+   "reason": "Service exited: Error: Unsupported network \"mainnet\" (offline-fakechain or stagenet only; mainnet refused) "
+  },
+  "positive": {
+   "network": "offline-fakechain",
+   "tip": 0,
+   "issuerAddressPrefix": "4"
+  },
+  "futureStart": {
+   "startHeight": 1000,
+   "tip": 0,
+   "blocks": 0
+  }
+ },
+ "rehearsalLocal": {
+  "execution": "SIMULATED on an offline fakechain (not stagenet, not mainnet)",
+  "transfers": [
+   {
+    "label": "T1 one-input",
+    "inputs": 1,
+    "amount": "4000000",
+    "change": "1000000",
+    "fee": "3024000000",
+    "txid": "08ebfbf09398d0b667254f6447a9caff041bd84e04cbe43bd5d369ddc6cc2927",
+    "recordId": "79d8c06a29c0710cbfc61d5e70017946d2d1b7f64e078fbc60ac37e89a804641",
+    "provingMs": 32043,
+    "signMs": 81,
+    "recordBytes": 996,
+    "extraBytes": 1056,
+    "nativeBytes": 2520
+   },
+   {
+    "label": "T2 three-input (recovered A)",
+    "inputs": 3,
+    "amount": "5500000",
+    "change": "500000",
+    "fee": "3024000000",
+    "txid": "c48b877e33758bb0330decd42df24543da31a749c3396b29b19ab41defa6f3aa",
+    "recordId": "ad8c928ccc2e3f730e77dabb2550255d7f89fb2b6cd0a6f40f2f2d9c9c9362db",
+    "provingMs": 31244,
+    "signMs": 73,
+    "recordBytes": 996,
+    "extraBytes": 1056,
+    "nativeBytes": 2520
+   },
+   {
+    "label": "T3 two-input (recovered B)",
+    "inputs": 2,
+    "amount": "9000000",
+    "change": "500000",
+    "fee": "3024000000",
+    "txid": "9d26dc55051ca68b188b6aa4850b85809a3d392a77b10b8c78fae4ff9291c716",
+    "recordId": "7b8d292d581c3ddfd2301e94b39a9544367156f220cb17e901b823151b96bc83",
+    "provingMs": 31008,
+    "signMs": 73,
+    "recordBytes": 996,
+    "extraBytes": 1056,
+    "nativeBytes": 2520
+   }
+  ],
+  "credits": [
+   {
+    "amount": "5000000",
+    "issuerFee": "2938800000",
+    "extraBytes": 985
+   },
+   {
+    "amount": "3000000",
+    "issuerFee": "2938800000",
+    "extraBytes": 985
+   },
+   {
+    "amount": "2000000",
+    "issuerFee": "2938800000",
+    "extraBytes": 985
+   }
+  ],
+  "final": {
+   "A": {
+    "f9b1999ab6960533f5e956adb77110954744bed68139e0d2dd435eff0a0d7b05": "9500000"
+   },
+   "B": {
+    "f9b1999ab6960533f5e956adb77110954744bed68139e0d2dd435eff0a0d7b05": "500000"
+   },
+   "nativeA": {
+    "unlocked": "105537706986355",
+    "locked": "0",
+    "outputs": 5
+   },
+   "nativeB": {
+    "unlocked": "105540127061297",
+    "locked": "0",
+    "outputs": 4
+   }
+  },
+  "fees": {
+   "basis": "OFFLINE fakechain fee rate — not stagenet, not mainnet",
+   "holderPaid": [
+    {
+     "label": "T1 one-input",
+     "fee": "3024000000"
+    },
+    {
+     "label": "T2 three-input (recovered A)",
+     "fee": "3024000000"
+    },
+    {
+     "label": "T3 two-input (recovered B)",
+     "fee": "3024000000"
+    }
+   ],
+   "issuerPaid": [
+    {
+     "txid": "c87448a2a927ed616ef59d049252bb4304ad89e5182aaa45ef0e70c0807465c4",
+     "fee": "2938800000"
+    },
+    {
+     "txid": "93f80747262b5b8547a9a253551d7131f1c44ced436d5b0448da0a2ae261c235",
+     "fee": "2938800000"
+    },
+    {
+     "txid": "df6068bfa98ed4fa43124505abb65d104c1bf3cc0da9cb6b0ddac3b4c4ec37d2",
+     "fee": "2938800000"
+    }
+   ]
+  }
+ }
+}

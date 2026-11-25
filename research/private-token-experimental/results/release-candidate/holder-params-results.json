@@ -1,0 +1,107 @@
+{
+ "rejections": [
+  {
+   "fault": "missing",
+   "slot": 0,
+   "reason": "missing",
+   "received": null,
+   "message": "Parameter file /params/normal.public-pk is missing from the parameter server (HTTP 404)."
+  },
+  {
+   "fault": "truncate",
+   "slot": 0,
+   "reason": "length",
+   "received": 74407896,
+   "message": "Parameter file normal.public-pk (download) rejected before use: 74407896 bytes, the shipped manifest pins 82675440 bytes (missing, truncated or substituted file)."
+  },
+  {
+   "fault": "abort-midway",
+   "slot": 0,
+   "reason": "interrupted",
+   "received": 33070176,
+   "message": "Download of /params/normal.public-pk was interrupted after 33070176 bytes (terminated). Nothing was kept; it will be downloaded again."
+  },
+  {
+   "fault": "corrupt-query",
+   "slot": 0,
+   "reason": "sha256",
+   "received": "e3c91f164b1918621b71aec6410f4a160a84c6a93e1bb8e5d6d797fbd3404803",
+   "message": "Parameter file normal.public-pk (download) rejected before use: sha256 e3c91f164b191862… does not match the shipped manifest (8152016c33b1f4bb…)."
+  },
+  {
+   "fault": "foreign",
+   "slot": 0,
+   "reason": "sha256",
+   "received": "1e3cb9d44a93cdbb732cd1bbab2a9d52fc25c4c738397d7f42e5c3642eca25cc",
+   "message": "Parameter file normal.public-pk (download) rejected before use: sha256 1e3cb9d44a93cdbb… does not match the shipped manifest (8152016c33b1f4bb…)."
+  },
+  {
+   "fault": "swap",
+   "slot": 0,
+   "reason": "length",
+   "received": 64409328,
+   "message": "Parameter file normal.public-pk (download) rejected before use: 64409328 bytes, the shipped manifest pins 82675440 bytes (missing, truncated or substituted file)."
+  },
+  {
+   "fault": "swap",
+   "slot": 1,
+   "reason": "length",
+   "received": 82675440,
+   "message": "Parameter file boundary.public-pk (download) rejected before use: 82675440 bytes, the shipped manifest pins 64409328 bytes (missing, truncated or substituted file)."
+  },
+  {
+   "fault": "corrupt-query",
+   "slot": 1,
+   "reason": "sha256",
+   "received": "0b0288225bcfce2ac9132fe931e11b7c6cde5ca8c7589775214ef643f0afb33a",
+   "message": "Parameter file boundary.public-pk (download) rejected before use: sha256 0b0288225bcfce2a… does not match the shipped manifest (b9b5c8269adf6377…)."
+  }
+ ],
+ "accepted": [
+  {
+   "authenticated": true,
+   "bytes": 82675440,
+   "label": "DISPOSABLE TEST SETUP — NOT PRODUCTION",
+   "manifest": "XMR20-PARAMS-1",
+   "sha256": "8152016c33b1f4bb10da5c2de242b38763bb7461fac3d611dcbee0306326aced",
+   "slot": 0,
+   "source": "download",
+   "path": "normal.public-pk"
+  },
+  {
+   "authenticated": true,
+   "bytes": 64409328,
+   "label": "DISPOSABLE TEST SETUP — NOT PRODUCTION",
+   "manifest": "XMR20-PARAMS-1",
+   "sha256": "b9b5c8269adf6377480b4713c8449bc28170eb4b3ad5ed00c08b981886bc6120",
+   "slot": 1,
+   "source": "download",
+   "path": "boundary.public-pk"
+  }
+ ],
+ "corruptQueryOffset": 41337720,
+ "normalLoadMs": 1326,
+ "cacheLoadMs": 1226,
+ "provingMs": 30584,
+ "carrier": {
+  "txid": "59174d05b9bac0eeb6f2085e4cf7a6a508c66127bd0079da8c43a9567ede2b38",
+  "nativeBytes": 2520,
+  "extraBytes": 1056,
+  "fee": "3024000000"
+ },
+ "events": [
+  {
+   "event": "parameters-loaded",
+   "name": "normal",
+   "source": "download",
+   "sha256": "8152016c33b1f4bb10da5c2de242b38763bb7461fac3d611dcbee0306326aced"
+  },
+  {
+   "event": "parameters-loaded",
+   "name": "boundary",
+   "source": "download",
+   "sha256": "b9b5c8269adf6377480b4713c8449bc28170eb4b3ad5ed00c08b981886bc6120"
+  }
+ ],
+ "otherLedgerRefused": true
+}
