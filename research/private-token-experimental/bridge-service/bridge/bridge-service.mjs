@@ -17,36 +17,38 @@ import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import {Transaction,PublicKey} from '@solana/web3.js';
 import {service} from '../../privacy-integration-20261022/rpc.mjs';
-import {parseTokenAddress} from '../../token-format-unshielded-20261025/backend/address.mjs';
-import {Registry,PROFILE,legacyMessageHash} from '../../token-format-unshielded-20261025/backend/migration-registry.mjs';
+import {parseTokenAddress} from '../../token-format-unshielded-fix-20261026/backend/address.mjs';
+import {Registry,PROFILE,legacyMessageHash} from '../../token-format-unshielded-fix-20261026/backend/migration-registry.mjs';
 import {createIndexerClient} from './indexer-service.mjs';
 import {Operator,DEFAULT_CONFIRMATIONS,DEFAULT_EXPOSURE,redeemBindingFor,depositBindingFor} from './operator.mjs';
 import {createLiteSvmCustody} from './custody-litesvm.mjs';
 const here=path.dirname(fileURLToPath(import.meta.url));
-export const SUPPORTED_NETWORKS=['offline-fakechain','stagenet'];
+export const SUPPORTED_NETWORKS=['offline-fakechain','stagenet','mainnet'];// mainnet only with XMR20_BRIDGE_MAINNET=I-UNDERSTAND and a mainnet trusted manifest
 export async function startBridgeService(cfg){
  // ---- configuration and guards
- const {network,daemonRpc,indexerUrl,indexerToken=null,httpPort=8975,listen='127.0.0.1',adminToken=null,rolesBin,paramsDir,trustedManifest,journalDir,confirmations=DEFAULT_CONFIRMATIONS,exposure=DEFAULT_EXPOSURE,observers=[],requireObservers=false,assets,custody:custodyCfg,registrySnapshot=null,testServices=false,pollMs=10000,origins=null,log=()=>{}}=cfg;
- if(network==='mainnet'){assert.equal(process.env.XMR20_BRIDGE_MAINNET,'I-UNDERSTAND','REFUSED: mainnet requires XMR20_BRIDGE_MAINNET=I-UNDERSTAND and a mainnet manifest; neither exists in this candidate');throw Error('REFUSED: no mainnet manifest exists in this candidate');}
+ const {network,daemonRpc,indexerUrl,indexerToken=null,httpPort=8975,listen='127.0.0.1',adminToken=null,rolesBin,paramsDir,trustedManifest,journalDir,confirmations=DEFAULT_CONFIRMATIONS,exposure=DEFAULT_EXPOSURE,observers=[],requireObservers=false,assets,custody:custodyCfg,registrySnapshot=null,registrySnapshots=null,testServices=false,pollMs=10000,origins=null,log=()=>{}}=cfg;
+ if(network==='mainnet'){assert.equal(process.env.XMR20_BRIDGE_MAINNET,'I-UNDERSTAND','REFUSED: mainnet requires XMR20_BRIDGE_MAINNET=I-UNDERSTAND and a mainnet trusted manifest');assert.ok(custodyCfg?.kind==='rpc'&&custodyCfg.network==='mainnet-beta','REFUSED: mainnet needs the RPC custody on mainnet-beta');assert.ok(!testServices,'REFUSED: test services on mainnet');}
  assert.ok(SUPPORTED_NETWORKS.includes(network),'network must be offline-fakechain or stagenet');
  if(listen!=='127.0.0.1')assert.ok(adminToken,'adminToken required beyond loopback');
  const manifest=JSON.parse(await readFile(trustedManifest,'utf8'));assert.equal(manifest.network.kind,network,'trusted manifest network differs from the configuration');
  const info=await (await fetch(daemonRpc+'/json_rpc',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:'b',method:'get_info'}),signal:AbortSignal.timeout(20000)})).json();
- assert.ok(info.result&&info.result.nettype!=='mainnet'&&info.result.mainnet!==true,'REFUSED: mainnet daemon');
- if(network==='offline-fakechain')assert.ok(info.result.nettype==='fakechain'&&info.result.offline===true,'offline fakechain required');else assert.ok(info.result.nettype==='stagenet','stagenet daemon required');
+ const isMainnet=info.result&&(info.result.nettype==='mainnet'||info.result.mainnet===true);
+ assert.ok(!isMainnet||network==='mainnet','REFUSED: mainnet daemon for a non-mainnet configuration');
+ if(network==='offline-fakechain')assert.ok(info.result.nettype==='fakechain'&&info.result.offline===true,'offline fakechain required');else if(network==='stagenet')assert.ok(info.result.nettype==='stagenet','stagenet daemon required');else assert.ok(isMainnet&&info.result.synchronized===true,'synchronized mainnet daemon required');
  await mkdir(journalDir,{recursive:true});const run=journalDir;const auditFile=path.join(run,'audit.log');
  const audit=line=>appendFile(auditFile,JSON.stringify({at:new Date().toISOString(),...line})+'\n').catch(()=>{});
  const rpc=async(method,params={})=>{const r=await fetch(daemonRpc+'/json_rpc',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:'b',method,params}),signal:AbortSignal.timeout(60000)});const v=await r.json();if(v.error)throw Error(JSON.stringify(v.error));return v.result;};
  // ---- indexer client, issuer role
  const indexer=createIndexerClient(indexerUrl,{token:indexerToken});const ih=await indexer.health();assert.equal(ih.domain,manifest.ledgerDomain,'indexer serves another ledger');
- const port=new URL(daemonRpc).port||'18081';const issuer=await service(rolesBin,['issuer',path.resolve(paramsDir),'--trusted-manifest',trustedManifest],{env:{XMR20_INTEGRATION_LAB:'offline-synthetic-only',XMR20_INTEGRATION_RPC_URL:daemonRpc,XMR20_INTEGRATION_RPC_PORT:String(port)}});
+ const port=new URL(daemonRpc).port||'18081';const issuer=await service(rolesBin,['issuer',path.resolve(paramsDir),'--trusted-manifest',trustedManifest],{env:{XMR20_INTEGRATION_LAB:'offline-synthetic-only',XMR20_INTEGRATION_RPC_URL:daemonRpc,XMR20_INTEGRATION_RPC_PORT:String(port),...(network==='mainnet'?{XMR20_MAINNET_PILOT:'I-UNDERSTAND'}:{})}});
  await issuer.call({op:'scan'});const issuerNative=issuer.ready.issuerNativeAddress;
  // ---- custody + operators per asset
  const custodies={},ops={},assetIds={};
  for(const a of assets){const c=custodyCfg.kind==='litesvm'?(custodyCfg.instances?.[a.symbol]??(custodyCfg.instances?(custodyCfg.instances[a.symbol]=createLiteSvmCustody({mintAddress:a.mint,decimals:a.decimals??6,legacyGross:BigInt(a.legacyGross||0),layout:a.layout||'synthetic',mintData:a.mintData||null})):createLiteSvmCustody({mintAddress:a.mint,decimals:a.decimals??6,legacyGross:BigInt(a.legacyGross||0),layout:a.layout||'synthetic',mintData:a.mintData||null}))):(await import('./custody-rpc.mjs')).createRpcCustody({...custodyCfg,...a.custody,network:custodyCfg.network});
   const id=(await issuer.call({op:'asset',mint:c.mint})).asset;assetIds[a.symbol]=id;custodies[a.symbol]=c;
   if(c.kind==='litesvm'&&BigInt(a.legacyGross||0)>0n){const m=await c.migrateLegacy();await audit({event:'legacy-position-migrated',symbol:a.symbol,...m});}
-  const registry=registrySnapshot&&a.symbol===registrySnapshot.asset?new Registry(registrySnapshot):null;
+  // Migration registry per asset: registrySnapshots[symbol] (address-based XMR20-CUTOVER-SNAPSHOT-2 rows) or the legacy single registrySnapshot
+  const snap=registrySnapshots?.[a.symbol]??(registrySnapshot&&a.symbol===registrySnapshot.asset?registrySnapshot:null);const registry=snap?new Registry(snap):null;
   ops[a.symbol]=await Operator.open({file:path.join(run,'operator-'+a.symbol+'.json'),auditFile,custody:c,issuer,indexer,registry,asset:id,confirmations,exposure,observers,requireObservers});ops[a.symbol].primaryRpc=daemonRpc;}
  const holders=new Map(),aliases=new Map();const stateFile=path.join(run,'holders.json');try{const s=JSON.parse(await readFile(stateFile,'utf8'));for(const [k,v] of Object.entries(s.holders))holders.set(k,{...v,viewingShared:new Set(v.viewingShared||[])});for(const [k,v] of Object.entries(s.aliases))aliases.set(k,v);}catch{}
  const persistHolders=()=>writeFile(stateFile,JSON.stringify({holders:Object.fromEntries([...holders].map(([k,v])=>[k,{...v,viewingShared:[...v.viewingShared]}])),aliases:Object.fromEntries(aliases)},null,1));
@@ -70,7 +72,7 @@ export async function startBridgeService(cfg){
  // ---- holder actions
  const assetRows=async(h)=>{const summary=await indexer.summary();const rows=[];for(const a of assets){const op=ops[a.symbol],c=custodies[a.symbol];const row={symbol:a.symbol,ticker:a.symbol,name:a.name||a.symbol,asset:assetIds[a.symbol],mint:c.mint,decimals:c.decimals,feeBps:c.feeBps,layout:c.kind,liabilities:await op.liabilities(summary).catch(e=>({error:e.message.slice(0,120)})),payouts:[],legacy:[],operator:{halted:op.state.halted,paused:op.state.paused,confirmations:op.confirmations,incidents:op.state.incidents.length}};
    if(h){row.payouts=Object.entries(op.state.payouts).filter(([,p])=>op.state.requests[p.binding]?.destination===h.sol||p.owner===h.ownerKey).map(([txid,p])=>({txid,amount:p.amount,status:p.status,confirmations:p.confirmations,requested:Boolean(op.state.requests[p.binding])}));row.solanaBalance=c.kind==='litesvm'&&h.ata?.[a.symbol]?await c.tokenBalance(h.ata[a.symbol]):null;row.viewingKeyShared=h.viewingShared.has(a.symbol);
-    if(op.registry){const consumed=new Set(op.registry.consumedIds());row.legacy=op.registry.rows.filter(r=>h.legacyKeys.includes(r.legacyOwner)).map(r=>({claim:r.claim,amount:r.amount,legacyOwner:r.legacyOwner,txPublicKey:r.txPublicKey||null,outputIndex:r.outputIndex??null,consumed:consumed.has(r.claim),credit:op.state.credits[r.claim]?{txid:op.state.credits[r.claim].txid,status:op.state.credits[r.claim].status}:null}));}}
+    if(op.registry){const consumed=new Set(op.registry.consumedIds());row.legacy=op.registry.rows.filter(r=>(r.address&&r.address===h.xmr)||h.legacyKeys.includes(r.legacyOwner)).map(r=>({claim:r.claim,amount:r.amount,legacyOwner:r.legacyOwner,address:r.address||null,txPublicKey:r.txPublicKey||null,outputIndex:r.outputIndex??null,consumed:consumed.has(r.claim),credit:op.state.credits[r.claim]?{txid:op.state.credits[r.claim].txid,status:op.state.credits[r.claim].status}:null}));}}
    rows.push(row);}return {summary,rows};};
  const actions={
   async state({id}){const registered=aliases.has(id);const h=registered?holder(id):null;const {summary,rows}=await assetRows(h);const i=await rpc('get_info');
@@ -93,7 +95,8 @@ export async function startBridgeService(cfg){
    const request=randomBytes(32).toString('hex'),destination=h.sol,binding=redeemBindingFor(destination,request);await op.registerRedemption(binding,destination,request);await audit({event:'redeem-prepared',symbol,binding,destination});return {binding,destination,request,confirmations,maxSinglePayout:op.exposure.maxSinglePayout};},
   async payout({symbol,txid}){const op=ops[symbol];assert.ok(op,'asset');const summary=await indexer.summary();await op.reconcile(summary);const p=await op.payout(txid);return {status:p.status,net:p.receipt?custodies[symbol].net(BigInt(p.amount)).toString():null,feeBps:custodies[symbol].feeBps,repeated:Boolean(p.repeated)};},
   async claimPrepare({id,claim,symbol}){const h=holder(id);const op=ops[symbol];assert.ok(op?.registry,'No migration registry for this asset');const row=op.registry.rows.find(r=>r.claim===claim);assert.ok(row,'Unknown legacy lot');
-   const body={profile:PROFILE,manifest:op.registry.id,kind:'MIGRATE',claim:row.claim,amount:row.amount,owner:h.tokenAddress};return {body,messageHash:legacyMessageHash(body),P:row.legacyOwner,txPublicKey:row.txPublicKey||null,outputIndex:row.outputIndex??null,amount:row.amount};},
+   assert.ok((row.address&&row.address===h.xmr)||h.legacyKeys.includes(row.legacyOwner),'This legacy entitlement belongs to another Monero address');
+   const body={profile:PROFILE,manifest:op.registry.id,kind:'MIGRATE',claim:row.claim,amount:row.amount,owner:h.tokenAddress};return {body,messageHash:legacyMessageHash(body),P:row.legacyOwner,legacyOwner:row.legacyOwner,address:row.address||null,signWith:row.address?'address-spend-key':'output-key',txPublicKey:row.txPublicKey||null,outputIndex:row.outputIndex??null,amount:row.amount,mint:row.mint||null};},
   async claimSubmit({id,body,legacySignature,symbol}){const h=holder(id);const op=ops[symbol];assert.ok(op?.registry,'No migration registry for this asset');assert.equal(body.owner,h.tokenAddress,'Claim owner must be this account');const c=await op.creditClaim({body,legacySignature},h.tokenAddress,h.ownerKey);return {txid:c.txid,status:c.status,amount:body.amount,symbol,asset:assetIds[symbol],note:'Migration credit (PUBLIC note to your owner key): exactly the legacy lot; the credit carrier fee is paid by the issuer.'};},
   async view({id,symbol,viewingKey}){const h=holder(id);assert.ok(typeof viewingKey==='string'&&viewingKey.startsWith('penumbrafullviewingkey1'),'Full viewing key required');const v=await indexer.view(viewingKey);h.viewingShared.add(symbol);await persistHolders();return {balance:v.balances[assetIds[symbol]]??'0',notes:v.notes,canSpend:false};},
   // TEST SERVICES (offline fakechain only)
@@ -128,7 +131,9 @@ export async function startBridgeService(cfg){
  await audit({event:'started',network,httpPort,assets:assets.map(a=>a.symbol),confirmations,observers:observers.length});
  return {url:`http://${listen}:${httpPort}/`,run,actions,admin,ops,custodies,assetIds,issuer,issuerNative,indexer,tick,async close(){clearInterval(timer);server.closeAllConnections?.();await new Promise(r=>server.close(r));await issuer.close().catch(()=>{});await issuer.kill().catch(()=>{});}};
 }
-export async function loadConfig(file){const cfg=JSON.parse(await readFile(file,'utf8'));const base=path.dirname(path.resolve(file));for(const k of ['rolesBin','paramsDir','trustedManifest','journalDir'])if(cfg[k]&&!path.isAbsolute(cfg[k]))cfg[k]=path.resolve(base,cfg[k]);if(cfg.custody?.operatorKeypairPath&&!path.isAbsolute(cfg.custody.operatorKeypairPath))cfg.custody.operatorKeypairPath=path.resolve(base,cfg.custody.operatorKeypairPath);return cfg;}
+export async function loadConfig(file){const cfg=JSON.parse(await readFile(file,'utf8'));const base=path.dirname(path.resolve(file));
+ // per-asset migration registries: assets[].registry = path to a registry-<SYMBOL>.json produced by migration/holders-snapshot.mjs
+ cfg.registrySnapshots={};for(const a of cfg.assets||[])if(a.registry){cfg.registrySnapshots[a.symbol]=JSON.parse(await readFile(path.resolve(base,a.registry),'utf8'));}for(const k of ['rolesBin','paramsDir','trustedManifest','journalDir'])if(cfg[k]&&!path.isAbsolute(cfg[k]))cfg[k]=path.resolve(base,cfg[k]);if(cfg.custody?.operatorKeypairPath&&!path.isAbsolute(cfg.custody.operatorKeypairPath))cfg.custody.operatorKeypairPath=path.resolve(base,cfg.custody.operatorKeypairPath);return cfg;}
 if(process.argv[1]===fileURLToPath(import.meta.url)){const file=process.argv[2];if(!file){console.error('usage: node bridge-service.mjs <config.json>');process.exit(2);}
  const cfg=await loadConfig(file);const b=await startBridgeService({...cfg,log:m=>console.error('[bridge] '+m)});console.log(JSON.stringify({ready:true,url:b.url,network:cfg.network,assets:Object.keys(b.assetIds),issuerNative:b.issuerNative,journal:b.run,pid:process.pid}));
  const stop=async()=>{await b.close().catch(()=>{});process.exit(0);};process.on('SIGINT',stop);process.on('SIGTERM',stop);}

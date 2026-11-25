@@ -1,0 +1,13 @@
+✔ H1: a paid burn that leaves canonical history halts even after an earlier reorganisation incident, and the halt survives a journal reload (80.793333ms)
+✔ H2: an interrupted submission keeps its exposure reservation; the window cap holds; receipt recovery resolves it (70.819916ms)
+✔ H2: a reservation persists across a journal reload and blocks new admissions until resolved; definite custody refusal releases it (98.713041ms)
+✔ H2: concurrent payout requests are serialized; together they never exceed the window cap (50.70375ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 404.180958
+exit 0

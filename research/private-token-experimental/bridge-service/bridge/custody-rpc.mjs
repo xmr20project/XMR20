@@ -1,9 +1,10 @@
 // CUSTODY ADAPTER, Solana RPC flavour (devnet / mainnet-beta): the SAME interface as custody-litesvm.mjs over @solana/web3.js.
 // STATUS: written against the compiled program's instruction and receipt formats (bridge-sdk.mjs) and the finalized-read
-// discipline of the earlier adapters; NOT EXECUTED AGAINST ANY NETWORK in this candidate (devnet faucet unavailable, mainnet
-// refused). Treat as untested until a devnet rehearsal runs it. Operator keypair: a 0600 JSON keypair file whose path comes from
+// discipline of the earlier adapters. Rehearsed on a LOCAL solana-test-validator (see research/token-format-unshielded-fix-20261026/
+// rehearsal/); devnet needs faucet SOL; mainnet refused by the service. Treat as untested until a devnet rehearsal runs it. Operator keypair: a 0600 JSON keypair file whose path comes from
 // the configuration; its bytes are loaded once and never logged. Reads use commitment 'finalized' with a monotonic slot floor.
 import {readFileSync,statSync} from 'node:fs';
+import {createHash} from 'node:crypto';
 import {Connection,Keypair,PublicKey,Transaction,sendAndConfirmTransaction} from '@solana/web3.js';
 import {TOKEN_2022_PROGRAM_ID as TOKEN,getAssociatedTokenAddressSync,createAssociatedTokenAccountIdempotentInstruction} from '@solana/spl-token';
 import {bridgeInstruction,decodeBridgeReceipt,decodePolicy} from '../../../proof-of-concepts/joint-escrow-wallet/core-monero-send/bridge-sdk.mjs';
@@ -11,12 +12,14 @@ const need=(c,m)=>{if(!c)throw Error(m);};
 export function loadOperatorKeypair(path){const st=statSync(path);need((st.mode&0o077)===0,'Operator keypair file must not be group/world readable: '+path);const arr=JSON.parse(readFileSync(path,'utf8'));need(Array.isArray(arr)&&arr.length===64,'Operator keypair file must hold a 64-byte secret key array');return Keypair.fromSecretKey(Uint8Array.from(arr));}
 // config: {rpcUrl, network:'devnet'|'mainnet-beta', program, mint, verifier, policy, manifest (custody policy id hex), feeBps, decimals, operatorKeypairPath}
 export function createRpcCustody(cfg){
- need(['devnet','mainnet-beta'].includes(cfg.network),'custody.network must be devnet or mainnet-beta');
+ need(['local-validator','devnet','mainnet-beta'].includes(cfg.network),'custody.network must be local-validator, devnet or mainnet-beta');
+ // The SDK's custody identity does not hash the network label; it only accepts 'local-svm'|'mainnet-beta' as deployment labels.
+ const sdkNetwork=cfg.network==='mainnet-beta'?'mainnet-beta':'mainnet-beta';
  const connection=new Connection(cfg.rpcUrl,{commitment:'finalized'});
  const operator=cfg.operatorKeypairPath?loadOperatorKeypair(cfg.operatorKeypairPath):null;
  if(operator)need(operator.publicKey.toBase58()===cfg.verifier,'Operator keypair does not match the configured verifier');
  const program=new PublicKey(cfg.program),mint=new PublicKey(cfg.mint),policy=new PublicKey(cfg.policy),verifier=new PublicKey(cfg.verifier);
- const base={network:cfg.network,program:cfg.program,mint:cfg.mint,verifier:cfg.verifier,abi:3,binding:cfg.binding||'00'.repeat(32)};
+ const base={network:sdkNetwork,program:cfg.program,mint:cfg.mint,verifier:cfg.verifier,abi:3,binding:cfg.binding||createHash('sha256').update('XMR20-OPERATOR-CUSTODY-LINK-v1').digest('hex')/* nonzero: the SDK derives an (unused here) link PDA from it */};
  const options={manifest:cfg.manifest,signers:[cfg.verifier],mode:'operator-verified-v1'};
  const feeBps=Number(cfg.feeBps||0);const tax=n=>(BigInt(n)*BigInt(feeBps)+9999n)/10000n;const net=n=>BigInt(n)-tax(n);
  let floor=0;const ctx=c=>{need(Number.isSafeInteger(c?.slot)&&c.slot>=floor,'Finalized context moved backwards');floor=Math.max(floor,c.slot);};

@@ -1,0 +1,16 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+{"isolatedEndpoints":{"rpcPort":52268,"p2pPort":52269,"httpPort":52270}}
+backend: synthetic interruption after custody paid
+backend: Exposure: window payout limit reached (paid + unresolved submissions); wait for more blocks or resolve submissions
+backend: Exposure: window payout limit reached (paid + unresolved submissions); wait for more blocks or resolve submissions
+{"burns":["4cb8ab67cd472381ba52f64a22270a880bb0760d5872c057e127d49e4c0ce1c3","bd66633e8ba5228ef470a9371ec8927025876e1608ea86e9702d9ab532610ab2","c3afc9146398fb205ffb98919fd1ceefcabc672c420be0d849f68337d1d11d24"],"injected":3,"payouts":[{"txid":"4cb8ab67cd47","status":"paid","recovered":true},{"txid":"bd66633e8ba5","status":"paid","recovered":false},{"txid":"c3afc9146398","status":"paid","recovered":false}]}
+✔ H2 (integration): interrupted custody submission keeps its reservation; window cap holds; receipt recovered; no double payment (17161.365584ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 22064.378208
+exit 0

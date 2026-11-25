@@ -1,0 +1,32 @@
+✔ H1: a paid burn that leaves canonical history halts even after an earlier reorganisation incident, and the halt survives a journal reload (71.589833ms)
+✔ H2: an interrupted submission keeps its exposure reservation; the window cap holds; receipt recovery resolves it (62.794583ms)
+✖ H2: a reservation persists across a journal reload and blocks new admissions until resolved; definite custody refusal releases it (64.589625ms)
+✔ H2: concurrent payout requests are serialized; together they never exceed the window cap (49.568125ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 3
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 360.904875
+
+✖ failing tests:
+
+test at tests/operator-regressions.test.mjs:68:1
+✖ H2: a reservation persists across a journal reload and blocks new admissions until resolved; definite custody refusal releases it (64.589625ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Custody refused/. Input:
+  
+  'AssertionError [ERR_ASSERTION]: No destination registered for this redemption binding'
+  
+      at async TestContext.<anonymous> (file://<workspace>/research/token-format-unshielded-fix-20261026/tests/operator-regressions.test.mjs:86:3)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:752:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: AssertionError [ERR_ASSERTION]: No destination registered for this redemption binding
+        at #payout (file://<workspace>/research/token-format-unshielded-fix-20261026/backend/operator.mjs:99:51),
+    expected: /Custody refused/,
+    operator: 'rejects'
+  }
+exit 1

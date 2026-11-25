@@ -1,0 +1,39 @@
+TRY THE UNSHIELDED-FORMAT TEST WALLET YOURSELF — offline test chain, synthetic balances, NO real funds
+research/token-format-unshielded-20261025 — 25 October 2026. Experimental research, not audited. Nothing here touches your
+installed wallet, your normal browser profile, real keys or real funds. Use a DEDICATED temporary browser profile.
+
+1. Build once (from this folder; everything offline, pinned):
+     export CARGO_TARGET_DIR=$PWD/target
+     (cd format && cargo build --release --offline)
+     (cd holder-wasm && CARGO_TARGET_DIR=$PWD/target cargo build --release --offline --target wasm32-unknown-unknown)
+     (cd wallet-extension && XMR20_PRIVATE_HOLDER_TEST=local node build.mjs)
+   (The parameter set params/test-v2 and the Penumbra keys are already in place.)
+
+2. Start the test backend (offline fakechain + roles + LiteSVM custody) in a terminal and leave it running:
+     node -e "import('./backend/service.mjs').then(async m=>{const b=await m.startBackend({log:console.error});console.log('backend',b.url,'daemon',b.rpcUrl,'run',b.run);process.on('SIGINT',async()=>{await b.close();process.exit(0);});})"
+   Default ports: backend 127.0.0.1:8940, daemon RPC 127.0.0.1:30041 (both compiled into the test extension).
+
+3. Load the extension in a THROWAWAY Chromium/Chrome profile:
+     chromium --user-data-dir=/tmp/xmr20-unshielded-profile --load-extension=$PWD/wallet-extension/extension-private-holder-test
+   Open the extension popup. Create or import a Monero recovery phrase (a fresh one; never a real wallet) and a Solana key.
+
+4. What you can do in the popup (every step is labelled "test service" where it is a simulation convenience):
+   - "Mine test XMR to this account" (test service) a few times, then "Advance test chain" so the XMR matures. A private transfer needs
+     TWO spendable XMR outputs because it is two Monero transactions.
+   - Bridge → deposit 100 X: arrives as a PUBLIC balance after the confirmations.
+   - Send → mode "Public transfer — 1 transaction": the review shows one fee. Amounts and owner keys are visible on the test chain.
+   - Shield: moves public tokens into your shielded balance (1 transaction; the amount is published at this boundary).
+   - Send → mode "Private transfer — 2 transactions": the review shows BOTH fees and the total; the recipient sees it only when both
+     carriers are on chain. Proving takes 30–60 s in the browser (Penumbra's published keys, 29 MB downloaded once from the backend).
+   - Unshield: one shielded note back to your public balance (1 transaction; the amount becomes public).
+   - Bridge → redeem: from the PUBLIC balance only. The wallet never unshields for you; it tells you to Unshield first.
+   - Legacy rows: "Migrate to the new format" credits exactly the legacy amount as a PUBLIC note (plain Monero signature, no key image).
+   - Pending operations list: journal status per carrier; after an interruption, Refresh re-sends only what the node does not know.
+
+5. Second wallet: add another account in the popup (or a second throwaway profile) and send between them; the unified token
+   address "xmr20t1…" works for public and private sends; a "penumbra1…" address only receives private sends.
+
+6. Stop: Ctrl-C the backend; delete /tmp/xmr20-unshielded-profile. Nothing persists outside this folder's runs/ directory.
+
+Known limits of this test wallet: one shielded note per unshield; proving times in the browser are tens of seconds; the offline
+chain's fee rate is far above mainnet (the review shows the exact test fee); payouts are to the LiteSVM custody, not Solana devnet.

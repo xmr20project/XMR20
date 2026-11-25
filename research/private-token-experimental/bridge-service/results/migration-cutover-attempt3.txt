@@ -1,0 +1,12 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+{"ok":true,"execution":"SIMULATED (fakechain lab, real holder engine, address-based snapshot)","snapshotDigest":"21dff89333cf8141ab55e941daddcde0dacfdd91d3473f918ac02922ab9691d3","registryId":"a60cbb40c66bfbd629ddebd4386bd78c063b94b8b841570da9c392b69678b528","claims":[{"txid":"0b8a9f2488cc3c5f6433d0f14a2294ad13138e1224097cebeccece15a8b129c2","amount":"10000000000"},{"txid":"5fe93b27c4a6d3d6a74f983
+✔ cutover rehearsal: address-based snapshot -> registry -> signed claims -> exact public credits; refusals; liabilities (16039.016708ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 17681.423667
+exit 0

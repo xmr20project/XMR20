@@ -1,0 +1,34 @@
+node:internal/modules/esm/resolve:274
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '<workspace>/research/token-format-unshielded-fix-20261026/proof-of-concepts/joint-escrow-wallet/core-next/test-fixture.mjs' imported from <workspace>/research/token-format-unshielded-fix-20261026/backend/solana.mjs
+    at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+    at moduleResolve (node:internal/modules/esm/resolve:859:10)
+    at defaultResolve (node:internal/modules/esm/resolve:983:11)
+    at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:799:12)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:723:25)
+    at ModuleLoader.resolve (node:internal/modules/esm/loader:706:38)
+    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:307:38)
+    at #link (node:internal/modules/esm/module_job:170:49) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file://<workspace>/research/token-format-unshielded-fix-20261026/proof-of-concepts/joint-escrow-wallet/core-next/test-fixture.mjs'
+}
+
+Node.js v24.1.0
+✖ tests/isolation.test.mjs (72.189833ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 75.955667
+
+✖ failing tests:
+
+test at tests/isolation.test.mjs:1:1
+✖ tests/isolation.test.mjs (72.189833ms)
+  'test failed'
+exit 1

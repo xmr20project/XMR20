@@ -1,0 +1,22 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✖ cutover rehearsal: address-based snapshot -> registry -> signed claims -> exact public credits; refusals; liabilities (20.252625ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 301.392417
+
+✖ failing tests:
+
+test at test/migration-cutover.test.mjs:30:1
+✖ cutover rehearsal: address-based snapshot -> registry -> signed claims -> exact public credits; refusals; liabilities (20.252625ms)
+  Error: engine open: fetch failed
+      at file://<workspace>/research/bridge-service-unshielded-20261026/test/migration-cutover.test.mjs:42:125
+      at async addrOf (file://<workspace>/research/bridge-service-unshielded-20261026/test/migration-cutover.test.mjs:42:37)
+      at async TestContext.<anonymous> (file://<workspace>/research/bridge-service-unshielded-20261026/test/migration-cutover.test.mjs:43:15)
+      at async Test.run (node:internal/test_runner/test:1069:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3)
+exit 1
