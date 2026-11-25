@@ -43,6 +43,8 @@ Start with [HOSTING.md](HOSTING.md), [MAINNET_PILOT.md](MAINNET_PILOT.md) and [A
 
 ## Release scope
 
-Published on 14 October 2026 from hosted application release `dbbdc960535af846`. Runtime files under `src/`, vendored reviewers and the restricted gateway match that release. Documentation is refreshed; the host handoff helper accepts an operator-configured SSH hostname instead of embedding the production server address. No production settings or user data are included.
+Initially published on 14 October 2026 from hosted application release `dbbdc960535af846`. The 21 October repair updates credential-specific policy comparison and startup handling of a paused launch backend, with regression tests. Existing transaction reviewers, signing checks and backend readiness enforcement are preserved. See the [Meteora review and restoration evidence](verification/meteora-20261021/REVIEW.md) for the independently reproduced program hash, review scope and verification limits.
+
+The host handoff helper accepts an operator-configured SSH hostname. Production settings and user data are excluded. This is application source and public verification evidence; applying it alone does not update a separate backend's reviewed program policy.
 
 The hosted service and public registration were verified, and one owner launch has finalized receipts. This does not establish every funded buy, sell, withdrawal or recovery path for every user. The software has not received an independent custody security audit. See [VERIFICATION.md](VERIFICATION.md) for the exact scope. Original project code is covered by the repository's [MIT license](../LICENSE); dependency licenses remain with their respective authors.

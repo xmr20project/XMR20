@@ -14,6 +14,8 @@ files.push('src/registration.mjs','src/state-path.mjs','test/registration.test.m
 files.push('Enable Public Hosted XMR20 Bot.command','HOSTING.md');
 files.push('assets/default-token.png');
 files.push('src/launch-directory.mjs','test/launch-directory.test.mjs');
+files.push('src/launch-availability.mjs','test/launch-availability.test.mjs','test/policy-scope.test.mjs');
+files.push('verification/meteora-20261021/REVIEW.md','verification/meteora-20261021/linux-source-proof.json','verification/meteora-20261021/program-capture.json','verification/meteora-20261021/source-manifest.json','verification/meteora-20261021/verify-build.py');
 const manifest=[];
 for(const name of files) {
  const path=resolve(root,name);if(!lstatSync(path).isFile()||lstatSync(path).isSymbolicLink())throw Error('Unexpected source type');

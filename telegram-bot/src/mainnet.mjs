@@ -9,6 +9,7 @@ import {openOfficial,existingFile,verifyOfficialBot,bindOfficialRuntime} from '.
 import {Telegram,poll} from './telegram.mjs';
 import {TurnkeyClient} from './turnkey-client.mjs';
 import {pilotPreflight} from './pilot-preflight.mjs';
+import {launchAvailability} from './launch-availability.mjs';
 import {createHelius} from './helius-mainnet.mjs';
 import {LaunchGateway} from './launch-gateway.mjs';
 import {ExecutionJournal} from './execution-journal.mjs';
@@ -24,10 +25,10 @@ import {assertNoNativeBigint} from './dependency-guard.mjs';
 // wallet/policy review and local settings before this can start handling funds.
 let raw='',paper,turnkey,vault,journal,gateway;
 let publicRegistration=false;
-let connected=false,stoppedReason='startup-incomplete';
+let connected=false,stoppedReason='startup-incomplete',startupLaunchAvailable=false;
 function runtimeReport(running){
   const p=statePath('mainnet-runtime.json'),tmp=p+'.'+process.pid+'.tmp';
-  writeFileSync(tmp,JSON.stringify({checkedAt:new Date().toISOString(),running,connected,mode:'xmr20',privateOwnerOnly:!publicRegistration,pid:process.pid,...(!running?{reason:stoppedReason}:{})},null,2)+'\n',{flag:'wx',mode:0o600});renameSync(tmp,p);
+  writeFileSync(tmp,JSON.stringify({checkedAt:new Date().toISOString(),running,connected,startupLaunchAvailable,mode:'xmr20',privateOwnerOnly:!publicRegistration,pid:process.pid,...(!running?{reason:stoppedReason}:{})},null,2)+'\n',{flag:'wx',mode:0o600});renameSync(tmp,p);
 }
 const abort=new AbortController();
 for(const event of ['SIGINT','SIGTERM','SIGHUP'])process.on(event,()=>abort.abort());
@@ -71,7 +72,7 @@ try{
   need(settings.walletAddress===report.walletAddress&&settings.withdrawalAddress!==report.walletAddress,'WALLET_SETTINGS');
   gateway=new LaunchGateway({...settings.gateway,owner:report.walletAddress});
   const catalog=await gateway.call('meteoraCatalog');
-  need(catalog?.enabled===true&&catalog.network==='mainnet-beta'&&catalog.oneApprovalEnabled===true,'LAUNCH_UNAVAILABLE');
+  startupLaunchAvailable=launchAvailability(catalog);
   vault=new Vault(statePath('mainnet.vault'),input.turnkeyPassword,{profile:'mainnet-pilot'});
   vault.transaction(s=>{if(input.official===true){bindOfficialRuntime(s,{bot:credentials.bot,ownerId:credentials.allowedUsers[0],wallet:report.walletAddress});return;}if(s.owner&&s.owner!==report.walletAddress)throw Error('WALLET_CHANGED');if(s.telegramOwner&&s.telegramOwner!==credentials.allowedUsers[0])throw Error('OWNER_CHANGED');s.owner=report.walletAddress;s.telegramOwner=credentials.allowedUsers[0];s.offset??=paper.state.offset||0;s.updates??={};});
   journal=new ExecutionJournal(statePath('mainnet-journal.vault'),input.turnkeyPassword);
@@ -99,7 +100,7 @@ try{
     }});
   }
   need(!abort.signal.aborted,'STOPPED');
-  await poll(api,engine,vault,{signal:abort.signal,expectedBot:credentials.bot,onReady:()=>{connected=true;runtimeReport(true);console.log('XMR20 connected on mainnet. Launches and trades require your confirmation in Telegram.');}});
+  await poll(api,engine,vault,{signal:abort.signal,expectedBot:credentials.bot,onReady:()=>{connected=true;runtimeReport(true);console.log(startupLaunchAvailable?'XMR20 connected on mainnet. Launches and trades require your confirmation in Telegram.':'XMR20 connected on mainnet. New Meteora launches are paused by the backend readiness check; saved accounts and receipts are preserved.');}});
   stoppedReason='stopped';
 }catch(error){
   stoppedReason=error.code==='VAULT_LOCKED'?'vault-in-use':error.message==='WALLET_OR_POLICY_CHANGED'?'wallet-or-policy-changed':'startup-or-runtime-error';
