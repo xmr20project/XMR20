@@ -1,0 +1,36 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✖ real popup: public by default, explicit shield/unshield, 2-tx private send, bridge from public only, migration, interruption recovery, restore (123648.969ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 125593.162333
+
+✖ failing tests:
+
+test at browser-flow.test.mjs:14:1
+✖ real popup: public by default, explicit shield/unshield, 2-tx private send, bridge from public only, migration, interruption recovery, restore (123648.969ms)
+  page.click: Timeout 30000ms exceeded.
+  Call log:
+  [2m  - waiting for locator('[data-payout]')[22m
+  [2m    - locator resolved to <button class="text-btn wide" data-payout="bf6ab939da05d54b998dfb43d4d3643de153ce1e7d1da9408160f8745bc1c71f">Request operator payout (test service)</button>[22m
+  [2m  - attempting click action[22m
+  [2m    2 × waiting for element to be visible, enabled and stable[22m
+  [2m      - element is not visible[22m
+  [2m    - retrying click action[22m
+  [2m    - waiting 20ms[22m
+  [2m    2 × waiting for element to be visible, enabled and stable[22m
+  [2m      - element is not visible[22m
+  [2m    - retrying click action[22m
+  [2m      - waiting 100ms[22m
+  [2m    58 × waiting for element to be visible, enabled and stable[22m
+  [2m       - element is not visible[22m
+  [2m     - retrying click action[22m
+  [2m       - waiting 500ms[22m
+  
+      at TestContext.<anonymous> (<workspace>/research/token-format-unshielded-20261025/browser-flow.test.mjs:60:116) {
+    name: 'TimeoutError'
+  }

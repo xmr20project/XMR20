@@ -1,0 +1,246 @@
+{
+ "execution": "SIMULATED (offline fakechain, roles binary, LiteSVM custody); Penumbra published keys",
+ "steps": [
+  {
+   "at": "2026-10-25T21:22:19.975Z",
+   "name": "deposit credited publicly",
+   "net": "98500000",
+   "credit": "d6105b06a68f84b3f318128b27712c0f53de2597086fcb7da57e8cce577ba6f5"
+  },
+  {
+   "at": "2026-10-25T21:22:20.179Z",
+   "name": "public transfer 40 X (1 tx)",
+   "txid": "38f856daf315cc7743eb2de264e34a286909837346e70bc9908fa5a8cc909293",
+   "fee": "2071200000",
+   "extraBytes": 262
+  },
+  {
+   "at": "2026-10-25T21:22:23.631Z",
+   "name": "shield 50 X (1 tx)",
+   "txid": "3744514aa5e165e41b56ddfbd749b8e9bab4ffa15b70c114963d092ba5688c6b",
+   "fee": "2598000000",
+   "provingMs": 3012
+  },
+  {
+   "at": "2026-10-25T21:22:58.489Z",
+   "name": "private transfer 30 X (2 txs)",
+   "txids": [
+    "f5ae126cd4cf0b9451c09e48213fdaf71732fab567a47f82fa6b05baa6ae0b39",
+    "01a793160f24f869f40021cf306d51fe6a8dd37a17889b2937941d5180498b00"
+   ],
+   "fees": [
+    "2947200000",
+    "2908800000"
+   ],
+   "provingMs": 33768
+  },
+  {
+   "at": "2026-10-25T21:23:11.775Z",
+   "name": "unshield 10 X (1 tx)",
+   "txid": "d1c021d6528da3e2775b8e3f1b1cbed8d50ebe8617a4a0f1048895f1d4c71be4",
+   "fee": "2937600000",
+   "provingMs": 12508
+  },
+  {
+   "at": "2026-10-25T21:23:12.592Z",
+   "name": "burn 25 X -> payout 24.625 X once",
+   "txid": "c8f329bfef73fd1adc6055099a07de802090ae29dcf1649f7181ce0299e8b206",
+   "fee": "2070000000"
+  },
+  {
+   "at": "2026-10-25T21:23:13.044Z",
+   "name": "legacy lot migrated to a PUBLIC note, exactly the lot",
+   "amount": "492500000",
+   "credit": "26818c5ab778c70ac22d030d6843dabf9d9d801625f4f7cfcec91bd8f231bc30"
+  },
+  {
+   "at": "2026-10-25T21:23:14.205Z",
+   "name": "recovery from root; wrong root empty; viewing key shielded-only"
+  },
+  {
+   "at": "2026-10-25T21:23:50.131Z",
+   "name": "rollback of part A before part B; identical carriers re-published; completed once",
+   "popped": 2,
+   "txids": [
+    "2bb892128c5d9f646018a393967b65986a55aea04c0b597d27d8287ae06af7d9",
+    "c74b06337385a6f2d6e0f707617e388ef8beda29e667bc8862101ad70ae4a11b"
+   ]
+  },
+  {
+   "at": "2026-10-25T21:23:50.354Z",
+   "name": "indexer replay equals the holder replica",
+   "root": "c65995939e8537065f806596db3f5d9634dab66a1c6d2b0ba9a68216297e120d"
+  },
+  {
+   "at": "2026-10-25T21:23:50.361Z",
+   "name": "disclosure audit passed",
+   "needles": 20,
+   "records": 8
+  }
+ ],
+ "sizes": [
+  {
+   "kind": "public",
+   "recordBytes": 214,
+   "extraBytes": 262,
+   "nativeBytes": 1726
+  },
+  {
+   "kind": "shield",
+   "recordBytes": 645,
+   "extraBytes": 701,
+   "nativeBytes": 2165
+  },
+  {
+   "kind": "private",
+   "recordBytes": 932,
+   "extraBytes": 992,
+   "nativeBytes": 2456
+  },
+  {
+   "kind": "private",
+   "recordBytes": 900,
+   "extraBytes": 960,
+   "nativeBytes": 2424
+  },
+  {
+   "kind": "unshield",
+   "recordBytes": 924,
+   "extraBytes": 984,
+   "nativeBytes": 2448
+  },
+  {
+   "kind": "burn",
+   "recordBytes": 213,
+   "extraBytes": 261,
+   "nativeBytes": 1725
+  },
+  {
+   "kind": "private",
+   "recordBytes": 932,
+   "extraBytes": 992,
+   "nativeBytes": 2456
+  },
+  {
+   "kind": "private",
+   "recordBytes": 900,
+   "extraBytes": 960,
+   "nativeBytes": 2424
+  }
+ ],
+ "fees": [
+  {
+   "kind": "public",
+   "fee": "2071200000"
+  },
+  {
+   "kind": "shield",
+   "fee": "2598000000"
+  },
+  {
+   "kind": "private",
+   "fee": "2947200000"
+  },
+  {
+   "kind": "private",
+   "fee": "2908800000"
+  },
+  {
+   "kind": "unshield",
+   "fee": "2937600000"
+  },
+  {
+   "kind": "burn",
+   "fee": "2070000000"
+  },
+  {
+   "kind": "private",
+   "fee": "2947200000"
+  },
+  {
+   "kind": "private",
+   "fee": "2908800000"
+  }
+ ],
+ "final": {
+  "A": {
+   "3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f": "501000000"
+  },
+  "Ash": {
+   "3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f": "15000000"
+  },
+  "B": {
+   "3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f": "25000000"
+  },
+  "Bsh": {
+   "3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f": "25000000"
+  },
+  "pool": {
+   "accepted": 8,
+   "burned": {
+    "3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f": "25000000"
+   },
+   "completedOperations": 2,
+   "credits": [
+    {
+     "amount": "492500000",
+     "asset": "3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f",
+     "binding": "21ae91379fff4b5a3dc65f57da4fc9f566a6bd4f6607da9a9ebfcb3c545e39ed",
+     "height": 351,
+     "kind": 2,
+     "owner": "3a607f4b9d2f46d03047a68e6610a52ad07ab609e59d05dc4c7f0fc8b94b970d",
+     "txid": "26818c5ab778c70ac22d030d6843dabf9d9d801625f4f7cfcec91bd8f231bc30"
+    },
+    {
+     "amount": "98500000",
+     "asset": "3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f",
+     "binding": "9a3523443261db3feca8742d637ae0b55af4d8cf1756349965a0ef862feae2df",
+     "height": 325,
+     "kind": 1,
+     "owner": "3a607f4b9d2f46d03047a68e6610a52ad07ab609e59d05dc4c7f0fc8b94b970d",
+     "txid": "d6105b06a68f84b3f318128b27712c0f53de2597086fcb7da57e8cce577ba6f5"
+    }
+   ],
+   "invariant": {
+    "ok": true,
+    "rows": [
+     {
+      "asset": "3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f",
+      "ok": true,
+      "outstanding": "566000000",
+      "publicSupply": "526000000",
+      "shieldedSupply": "40000000"
+     }
+    ]
+   },
+   "minted": {
+    "3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f": "591000000"
+   },
+   "nullifiers": 7,
+   "outstanding": {
+    "3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f": "566000000"
+   },
+   "pendingParts": 0,
+   "publicNotes": 4,
+   "publicSupply": {
+    "3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f": "526000000"
+   },
+   "redemptions": [
+    {
+     "amount": "25000000",
+     "asset": "3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f",
+     "binding": "0d639e42189ca34e54a6a54bb7ede708fce076a347322a0f8ed8a31cf6d8a7fc",
+     "height": 340,
+     "owner": "c40072e08a60fb26e824bc471ea1e7f3c5f6f3e8a870256f19c465876faae808",
+     "txid": "c8f329bfef73fd1adc6055099a07de802090ae29dcf1649f7181ce0299e8b206"
+    }
+   ],
+   "rejected": 0,
+   "root": "c65995939e8537065f806596db3f5d9634dab66a1c6d2b0ba9a68216297e120d",
+   "shieldedNotes": 6,
+   "shieldedSupply": {
+    "3cacb211956f6de017c01ff1e67176c4cd14ceca1b956a7fa59101c7408f480f": "40000000"
+   }
+  }
+ }
+}
