@@ -1,0 +1,131 @@
+PUBLIC-STAGENET REHEARSAL — research/privacy-stagenet-roles-20261023 — 23/24 October 2026 (DRAFT, updated as the run proceeds)
+EXECUTED ON MONERO STAGENET with worthless faucet coins. Not mainnet. Stagenet fees and decoy behaviour are NOT mainnet
+measurements. Nothing here changes the readiness verdicts (NO-GO everywhere; bridge payouts and native XMR trading gated)
+or resolves the disposable-trusted-setup, independent-security-review and rollback-loss blockers.
+
+NODE
+- Binary: operations/native-market-20261016/local-chain/bin/monerod, Monero v0.18.5.3 (Fluorine Fermi), sha256
+  28c233e0a92c09c422b8b309062f332f3138babdc097388a9ac9c93ea2e66518. Provenance re-verified on 23 Oct: the archive
+  monero-mac-armv8-v0.18.5.3.tar.bz2 (sha256 7a083ed2e2499dc25ac046ce7ef740c11183bdf4ac92460ffe503a5be46a54ab) matches
+  binaryFate's GPG-signed hashes.txt (good signature, fingerprint 81AC 591F E9C4 B65C 5806 AFC3 F0AF 4D46 2A0B DF92) and
+  the re-extracted monerod hashes identically. No replacement download was needed.
+- Isolated node: operations/stagenet-node-20261023 (README.txt, start.sh): --stagenet --prune-blockchain, RPC 127.0.0.1:38091
+  (loopback only), P2P 127.0.0.1:38090 (outbound only, 0 inbound peers, no IGD, no ZMQ), own data dir. Started 21:50Z 23 Oct,
+  synchronized 03:04Z 24 Oct (height 2,235,784). Pruned database 6.3 GB on disk (7.5 GB apparent).
+- Storage plan: 38 GB free at start; reserve >= 25 GB intended; a free-space watchdog (logs/space-watch.log) stops ONLY this
+  node below 12 GB free. Free space dipped to 17 GB because another session left ~14 GB of tmp_pack_* files in the main
+  workspace's .git (not touched); 11 GB of rebuildable Rust build intermediates of earlier research candidates were removed
+  on the owner's request (final binaries kept). Free space after: 43 GB.
+- Mining (owner-authorised 24 Oct, 03:04Z): the node mines stagenet blocks with 6 CPU threads (~2.2 kH/s against a network
+  difficulty implying ~70 kH/s, i.e. a few percent) to the issuer address. Blocks found by this node are logged
+  (logs/monerod.log "Found block") and are NOT independent mining. Relay evidence therefore comes from a THIRD-PARTY node
+  (node.monerodevs.org:38089) that is asked whether it holds each carrier.
+
+TRUSTED MANIFEST AND WALLETS
+- runs/stagenet/trusted-manifest.json: params/stagenet-v0 bound to the stagenet genesis
+  76ee3cc98646292206cd3e86f74d88b4dcc1d937088645e9b0cbca84b7ce74eb, startHeight 2,235,745, sha256
+  ed12e12441ab4f6d5cc6ad02e3839d9c14b3346b953ebfc277a66d3053903e9b. The roles load it as --trusted-manifest; the wallets
+  ship it; the static parameter service is transport only.
+- Fresh synthetic wallets: roots in runs/stagenet/wallets (mode 0600, never logged, not published). Addresses
+  (runs/stagenet/addresses.json, derived with stagenet/addresses.mjs before the sync finished):
+  issuer 57niMTvo…4FQM, A 55VMrQmP…PxPxv, B 56RMFW1Z…pzEnw (stagenet prefixes).
+- Faucet: cypherfaucet.com (the only reachable stagenet faucet; xmr-tw.org's no longer resolves), 0.01 sXMR per address
+  per hour, one claim per IP per hour, API without human step. Six claims (runs/stagenet/faucet-claims.jsonl, tx_key
+  dropped): issuer x3 (8fccc19a… h2235750, 9667028f… h2235766, 02d03cb9… h2235777), A x2 (56df294f… h2235758,
+  d1ec7423… h2235784), B x1 (e7c37eaa… h2235761). All at or above startHeight.
+
+ATTEMPTS (every attempt preserved)
+Attempt 1 (03:05Z–03:06Z, runs/stagenet/rehearsal-stagenet-attempt1-too-young.json): the FIRST credit (5,000,000 to A)
+  was built, published, relayed (third-party pool: yes) and mined in block 2,235,785:
+  txid 4b3a2c61d098c441c6ffeb7cfba9268c36e8e7e7cc801d5fd32e7959c9d99747, 985-byte extra, 2,466-byte carrier, fee
+  49,320,000 piconero, 16-member ring. The SECOND credit was refused by the daemon: log "Transaction spends at least one
+  output which is too young" (the lab issuer's input selection ignored Monero's 10-block spend lock and picked a
+  9-confirmation faucet output; the deterministic fakechain never exposed this). Harness result: failed
+  "transaction was rejected ()".
+  Fix (lab crate, staged and rebuilt before attempt 2; regression suite 4/4): native::Wallet records each output's
+  height and coinbase flag and `single()` only selects outputs with tip+1 >= height+10 (coinbase +60). Nothing about
+  the daemon's validation was changed. The harness also treats "too young"/"rejected" as retryable (one block per attempt).
+Attempt 2 (03:26Z–, runs/stagenet/rehearsal-stagenet.json while running): credits 5,000,000
+  (fa2b73a89488b29ab0b38e614aeeced487ce83c6b4027afb6841e10e59bb6706, fee 49,320,000, 2,466 B) and 3,000,000
+  (5978895b8b82ede38df978092daa02954d412464c140b6bc6802466b90be7965, fee 49,260,000, 2,463 B) built, relayed (third-party
+  pool: yes) and mined in block 2,235,788. The third credit (2,000,000) waits one block per attempt for a mature issuer
+  output (the change of the attempt-1 carrier matures at tip 2,235,794) — the maturity rule working as intended.
+  Expected outcome: because attempt 1 left an extra accepted 5,000,000 note in A, attempt 2's exact-note assertion will
+  fail after the credits confirm. That is a harness limitation, not a protocol defect, and no credit is lost.
+  Fix (harness only, staged; the running process is unaffected): resume support — notes already present at start are
+  either matched to the planned credit amounts and REUSED (no replacement credit, no extra issuer fee) or recorded as
+  BASELINE notes that the run never spends or counts. Local mode is unchanged (regression suite rerun).
+  OUTCOME (03:47Z): attempt 2 ended with "fetch failed" while still waiting for the third credit's input: the free-space
+  watchdog stopped the stagenet node (clean shutdown, database intact) because free disk fell below the 12 GB reserve.
+  The cause was NOT the node (6.3 GB, unchanged): another session's repeated git packing of the whole main workspace grew
+  .git/objects/pack to 29.8 GB (tmp_pack_* files created at 23:41, 23:59, 00:08, 02:29, 02:33, 03:21, 04:05, 04:12, 04:40
+  local time). Nothing of ours was deleted; attempt 2's evidence is preserved as rehearsal-stagenet-attempt2-node-stopped.json.
+  No credit was lost: 4b3a2c61… (5,000,000), fa2b73a8… (5,000,000) and 5978895b… (3,000,000) are mined; the 2,000,000
+  credit was never built (no second payment, no duplicate).
+Attempt 3: planned with the resume-capable harness (regression suite 4/4), same wallets, same trusted manifest; it will
+  reuse the mined 5,000,000 and 3,000,000 credits, treat the extra 5,000,000 as baseline, and issue only the 2,000,000 one.
+  Free space returned to 38 GB at 04:02Z (the tmp_pack_* files were still there; something else was freed). Node restarted
+  04:02Z (clean restart, no resync; height 2,235,795), mining resumed 04:03Z, watchdog re-armed. Attempt 3 started 04:03Z:
+  the resume step reused the mined 5,000,000 (commitment 6e4bb82f…) and 3,000,000 (1522b731…) credits, recorded the extra
+  5,000,000 (c54596c8…) as baseline, and issued ONLY the missing 2,000,000 credit:
+  txid cda5d1f71d68ba1de6ad309b37f110f9673ece0499576282fef7209ff9bd804e, fee 49,240,000 piconero, 2,462 B, 985-byte extra,
+  third-party pool: yes. Then waiting for confirmations (stagenet pace during the run: ~5 min/block).
+
+RESULTS — attempt 3, EXECUTED ON STAGENET, 04:03:43Z–07:05:42Z 24 Oct 2026 (3 h 02 min; 57 steps; no failure, no block)
+  Evidence: rehearsal-stagenet.json (every step with timestamps; mode and fee basis in every row), rehearsal-stagenet.stderr.log.
+  Verification of the four attempt-3 carriers by a THIRD-PARTY stagenet node (node.monerodevs.org:38089): each was seen in
+  its pool after broadcast and later reported mined with 10 confirmations. None of the six carrier-bearing blocks
+  (2,235,785 / 788 / 795 / 805 / 815 / 825) was found by our miner (our 10 blocks: 2,235,786, 790, 792, 796, 809, 813,
+  819, 821, 829, 832), so relay AND mining of every carrier were done by other stagenet nodes.
+
+  Credits (XB3 boundary records, 985-byte tx_extra, issuer-funded; the holder never pays for a credit):
+    5,000,000  4b3a2c61d098c441c6ffeb7cfba9268c36e8e7e7cc801d5fd32e7959c9d99747  block 2,235,785  fee 49,320,000  2,466 B  (attempt 1; surplus -> BASELINE)
+    5,000,000  fa2b73a89488b29ab0b38e614aeeced487ce83c6b4027afb6841e10e59bb6706  block 2,235,788  fee 49,320,000  2,466 B  (attempt 2; reused)
+    3,000,000  5978895b8b82ede38df978092daa02954d412464c140b6bc6802466b90be7965  block 2,235,788  fee 49,260,000  2,463 B  (attempt 2; reused)
+    2,000,000  cda5d1f71d68ba1de6ad309b37f110f9673ece0499576282fef7209ff9bd804e  block 2,235,795  fee 49,240,000  2,462 B  (attempt 3)
+    All four admitted by the token indexer ("accepted"). Total issued 15,000,000 (12,000,000 planned + 5,000,000 surplus).
+  Transfers (XM3 transfer records, 996 B inside a 1,056-byte tx_extra; HOLDER-funded; fee shown before approval; the same
+  signed blob re-sent once after each publish -> daemon status OK / already in pool, no second payment):
+    T1 A->B 4,000,000, ONE input (5,000,000), change 1,000,000: txid c7d959f9f4d75de7fa43f8c3864a09f22778d1293f29ea1b4d77f9a4f00d981f
+       block 2,235,805, 2,538 B, fee 50,760,000 piconero (20,000 piconero/byte, ring 16), proving 35.1 s, sign 91 ms.
+    recovery: A and B closed and reopened from their roots in fresh instances: identical balances and note counts
+       (A 11,000,000 / 4 notes incl. the baseline note; B 4,000,000 / 1 note). Nothing was pending, so no journal was needed;
+       a root cannot reconstruct unpublished pending transactions (stage 3, RECOVERY-CASES.txt).
+    T2 recovered A->B 5,500,000, THREE inputs (3,000,000+2,000,000+1,000,000), change 500,000:
+       txid d7ab4ed27ccb9d30ca465b17933677e21b7a90a59fb742b73d681f06b33845b7, block 2,235,815, 2,539 B, fee 50,780,000,
+       proving 36.1 s, sign 81 ms.
+    T3 recovered B->A 9,000,000, TWO inputs (5,500,000+4,000,000), change 500,000:
+       txid 6eb08dfb9172ac0a452507b6ff6fed99e19cb031d69b30aea511b09f7e2483cd, block 2,235,825, 2,533 B, fee 50,660,000,
+       proving 35.6 s, sign 85 ms.
+    Every transfer: record admissible locally, accepted by the daemon WITH sanity checks, admitted by sender, recipient and
+    indexer; exact notes after each step; the sender's native XMR moved by EXACTLY the quoted fee each time.
+  Final reconciliation: tokens A 14,500,000 (500,000 + 9,000,000 + 5,000,000 baseline), B 500,000; A+B = 15,000,000 =
+    total credited (conserved). Native: A 19,898,460,000 = 20,000,000,000 - 50,760,000 - 50,780,000; B 9,949,340,000 =
+    10,000,000,000 - 50,660,000. Engine memory during proving 391-400 MB.
+  Timing on stagenet: waits for 10 confirmations took 43.5, 58.0, 40.0 and 37.5 minutes (stagenet hashrate was low; the
+    difficulty implied ~70 kH/s while blocks arrived every ~5-10 minutes). Real-network fee rate 20,000 piconero/byte
+    (lowest priority), versus 1,200,000 piconero/byte on the offline fakechain: the fakechain fee figures in earlier
+    documents are NOT indicative. Stagenet fees are not mainnet fees either.
+  Retry / recovery evidence: attempt 1 -> 2 -> 3 reused mined credits without issuing replacements or paying extra issuer
+    fees (only the four carriers above exist; the refused attempt-1 transaction never entered any pool); the same-blob
+    re-send was accepted idempotently 3 times; recovery from roots in fresh instances matched exactly.
+  What this does NOT show: mainnet behaviour (fees, decoy statistics, miner policies); anything about the disposable
+    single-party Groth16 setup; constant-time safety; an independent security review; the bridge/native-trading rollback
+    loss. Verdicts unchanged: NO-GO for private transfers, migration, bridging and native XMR trading; bridge payouts and
+    native trading gated.
+  Node left running (mining stopped 07:06Z) for the recovery cases below; it was then stopped CLEANLY by its disk-space watchdog
+    at 13:01:57Z (free space < 12 GB; node data unchanged at 6.3 GB). Restart with operations/stagenet-node-20261023/start.sh only
+    once free space is comfortably above the 12 GB reserve.
+
+RECOVERY CASES ON STAGENET (second execution, 11:15:34Z-13:00:47Z 24 Oct 2026; stagenet/recovery-cases.mjs --mode stagenet)
+  Report runs/stagenet/recovery-cases-stagenet.json (57/57 checks, exit 0), proxy log runs/stagenet/recovery-run/proxy-faults.json,
+  journals runs/stagenet/recovery-run/installs/<case>-orig/ (public data only: records, signed carriers, txids; roots stay in
+  runs/stagenet/wallets and are never logged), observation runs/stagenet/recovery-public-observation.json. Full case-by-case
+  account in RESULTS.txt ("RESTART, LOST-REPLY AND RECOVERY CASES" -> STAGENET). Ordinary authorised test transactions only.
+    LR   36946f8ce49b207c90461d98fcd4a57099f9192fdfc7c5c66ab9a1b1dd0164b1  block 2,235,873  fee 50,760,000  A->B 1,000,000  actual lost reply, recovered by lookup, 0 re-sends
+    R1b  8c9777ef27aaed015127615b7e7f7b82d36155ef24c3dbadae4909d8154f3962  block 2,235,873  fee 50,740,000  B->A   200,000  killed after proving, signed once on resume
+    R2   7732fd7784c4f0f4893a259806823db80d3d5dea20762e075eee6f4304e89e59  block 2,235,873  fee 50,760,000  A->B 2,000,000  killed after signing, same blob/txid sent on resume
+    R3   d4c3d94bc39dd6cead0ec4180b7b742ae14486b4fd4eb2e838eff442a84a763e  block 2,235,884  fee 50,680,000  B->A   100,000  lost reply + crash, found in pool on resume, 0 sends
+    R1a  no carrier (killed after the quote; released, no fee).  S: stale signed backup settled without a re-send; stale built backup conflicted (no send, no fee).
+  Third-party node node.monerodevs.org:38089 at height 2,235,894 (13:02:06Z): all four mined, 21/21/21/10 confirmations.
+  Not shown here (offline chain only, by design): lost request (ordinary repeat broadcast), two installations with one phrase, rollback.

@@ -1,0 +1,174 @@
+{
+ "startedAt": "2026-10-24T03:05:25.887Z",
+ "mode": "stagenet",
+ "execution": "EXECUTED ON STAGENET (not mainnet; stagenet fees are not mainnet fees)",
+ "sanityChecks": true,
+ "gates": {
+  "bridgePayouts": "gated (not exercised)",
+  "nativeTrading": "gated (not exercised)"
+ },
+ "steps": [
+  {
+   "at": "2026-10-24T03:05:25.898Z",
+   "name": "manifest",
+   "path": "<workspace>/research/privacy-stagenet-roles-20261023/runs/stagenet/trusted-manifest.json",
+   "sha256": "ed12e12441ab4f6d5cc6ad02e3839d9c14b3346b953ebfc277a66d3053903e9b",
+   "label": "DISPOSABLE TEST SETUP — STAGENET REHEARSAL — NOT PRODUCTION",
+   "network": {
+    "kind": "stagenet",
+    "genesis": "76ee3cc98646292206cd3e86f74d88b4dcc1d937088645e9b0cbca84b7ce74eb",
+    "startHeight": 2235745
+   },
+   "ledgerDomain": "5234ab346f9ea1b181e2879f9512b537ad6d595a529d9a0e7ccad87368acba2d"
+  },
+  {
+   "at": "2026-10-24T03:05:25.931Z",
+   "name": "daemon",
+   "rpcUrl": "http://127.0.0.1:38091",
+   "nettype": "stagenet",
+   "height": 2235785,
+   "synchronized": true,
+   "offline": false,
+   "busySyncing": false,
+   "genesis": "76ee3cc98646292206cd3e86f74d88b4dcc1d937088645e9b0cbca84b7ce74eb",
+   "startHeight": 2235745
+  },
+  {
+   "at": "2026-10-24T03:05:26.240Z",
+   "name": "param-server",
+   "url": "http://127.0.0.1:8951",
+   "files": {
+    "parameters.json": {
+     "bytes": 4732,
+     "sha256": "c440a78eb81b8f00008178957a1fd2b463f2f49f7fbcbcf7d719129e510c4d34"
+    },
+    "normal.public-pk": {
+     "bytes": 82675440,
+     "sha256": "a11b2f05ecc33001fed7515e9824d2dfc5b7349f099e90a49a007c3de6e1aea0"
+    },
+    "boundary.public-pk": {
+     "bytes": 64409328,
+     "sha256": "b7f6c83597a29a8ae77affc412019aa96e2630a65df69b6b1d9cc6bc4c871f76"
+    }
+   },
+   "note": "serves parameters.json and the two proving keys only; the wallets authenticate them against their own manifest"
+  },
+  {
+   "at": "2026-10-24T03:06:23.028Z",
+   "name": "roles",
+   "network": "stagenet",
+   "startHeight": 2235745,
+   "issuerNativeAddress": "57niMTvoAZ5GigRF1mQVXxVAmGwJihSSsDLjwPX9vH8hcxA3cyFUP3SjaJefz4ty19iSzfFmWTmoPC6Wg59i9ufTV8p4FQM",
+   "issuerTokenAddress": "penumbra13dsttnlshskauhg9dr9wvs4uhhlazf9eqhv86g2l46c0zkwqqcxt0093ue0e95njr40939cluyw6fz2852y6ten6duhrzvvu7vl9utmt6j5v26g7eynz6aml508jzz20k5muqk",
+   "trustedManifest": {
+    "issuer": {
+     "label": "DISPOSABLE TEST SETUP — STAGENET REHEARSAL — NOT PRODUCTION",
+     "sha256": "ed12e12441ab4f6d5cc6ad02e3839d9c14b3346b953ebfc277a66d3053903e9b"
+    },
+    "indexer": {
+     "label": "DISPOSABLE TEST SETUP — STAGENET REHEARSAL — NOT PRODUCTION",
+     "sha256": "ed12e12441ab4f6d5cc6ad02e3839d9c14b3346b953ebfc277a66d3053903e9b"
+    }
+   }
+  },
+  {
+   "at": "2026-10-24T03:06:23.221Z",
+   "name": "wallets",
+   "A": {
+    "token": "penumbra1pvadxvfw752swzjg5czh2ae9uz854w20qzkuqpt5zjadc9nf99t7d2hrdwa78m6drz3lu4cgu9sng2g3wkfxdye6xff6qygm2v2mxtc3t70fegj4weu0y2je60kqf3s9h3rzfh",
+    "native": "55VMrQmPTFTf79xNRYioc9fXrk5wZQ1ipXMWnUXQ3fSbB3jan6ewzcRKBgUFuHHAAfif8DXy89x3gPJxoNYbKMRXLQuxPxv"
+   },
+   "B": {
+    "token": "penumbra1p5upagjfve5pr740ffrjcq4hwsjxc7exn2tal4szem74w8y94574uuu2kpsrhactsadyw9rree4lw4yjc4q0mwttpkjf2phcxqz5zexxa6jdkjd7lle2wsfpv75yva0r8qxu4w",
+    "native": "56RMFW1ZE9x4rbgogsqzSyfyWHhHie6RvTt8USAjsoFiX5UqDzAUqoeVzo6DZJtx7aMtF2SAr66w3YhPH9V5Gghn35pzEnw"
+   },
+   "walletDir": "<workspace>/research/privacy-stagenet-roles-20261023/runs/stagenet/wallets",
+   "note": "roots stored in walletDir (0600), never logged"
+  },
+  {
+   "at": "2026-10-24T03:06:23.452Z",
+   "name": "sync",
+   "A": {
+    "tip": 2235784,
+    "startHeight": 2235745,
+    "ms": 110
+   },
+   "B": {
+    "tip": 2235784,
+    "startHeight": 2235745,
+    "ms": 120
+   }
+  },
+  {
+   "at": "2026-10-24T03:06:23.453Z",
+   "name": "mining-status",
+   "active": true,
+   "threads": 6,
+   "speed": 2430,
+   "address": "57niMTvoAZ5GigRF1mQVXxVAmGwJihSSsDLjwPX9vH8hcxA3cyFUP3SjaJefz4ty19iSzfFmWTmoPC6Wg59i9ufTV8p4FQM",
+   "note": "the OWNER node is mining stagenet blocks itself (CPU); blocks it finds are not independent third-party mining"
+  },
+  {
+   "at": "2026-10-24T03:06:23.456Z",
+   "name": "sync",
+   "A": {
+    "tip": 2235784,
+    "startHeight": 2235745,
+    "ms": 2
+   },
+   "B": {
+    "tip": 2235784,
+    "startHeight": 2235745,
+    "ms": 1
+   }
+  },
+  {
+   "at": "2026-10-24T03:06:23.532Z",
+   "name": "native-balances",
+   "issuer": "30000000000",
+   "A": {
+    "unlocked": "10000000000",
+    "locked": "10000000000",
+    "outputs": 2
+   },
+   "B": {
+    "unlocked": "10000000000",
+    "locked": "0",
+    "outputs": 1
+   }
+  },
+  {
+   "at": "2026-10-24T03:06:26.542Z",
+   "name": "credit",
+   "amount": "5000000",
+   "txid": "4b3a2c61d098c441c6ffeb7cfba9268c36e8e7e7cc801d5fd32e7959c9d99747",
+   "recordId": "0f4052b1947f3448550f85d336ff6cc2e5f8f6a12a9ef0fd2c68ce3b85b41dc7",
+   "issuerFee": "49320000",
+   "extraBytes": 985,
+   "nativeBytes": 2466,
+   "note": "issuer-funded carrier (issuer fee, not holder fee)"
+  },
+  {
+   "at": "2026-10-24T03:06:32.017Z",
+   "name": "public-relay",
+   "label": "credit 5000000",
+   "txid": "4b3a2c61d098c441c6ffeb7cfba9268c36e8e7e7cc801d5fd32e7959c9d99747",
+   "node": "http://node.monerodevs.org:38089",
+   "inPool": true,
+   "blockHeight": null,
+   "confirmations": null,
+   "note": "third-party stagenet node asked whether it holds the carrier (relay evidence independent of our node)"
+  },
+  {
+   "at": "2026-10-24T03:06:34.152Z",
+   "name": "failed",
+   "message": "transaction was rejected ()"
+  }
+ ],
+ "blocked": null,
+ "failed": {
+  "message": "transaction was rejected ()",
+  "stack": "Error: transaction was rejected ()\n    at run (file://<workspace>/research/privacy-integration-20261022/rpc.mjs:15:167)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+ },
+ "finishedAt": "2026-10-24T03:06:34.165Z"
+}

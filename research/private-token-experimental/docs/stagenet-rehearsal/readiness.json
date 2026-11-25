@@ -1,0 +1,181 @@
+{
+ "verdict": "NO-GO",
+ "productionReady": false,
+ "realFundReadiness": false,
+ "nativeXmrTradingGated": true,
+ "candidate": "research/privacy-stagenet-rehearsal-20261023",
+ "basedOn": "research/privacy-verifier-params-20261023 (unchanged) <- stage 4",
+ "decision": "private by default: no public token mode, no shield step; bridge deposits credit the holder's private address automatically; legacy balances labelled until explicitly migrated; viewing-key sharing optional and explicit",
+ "holderControl": {
+  "inExtensionWorker": [
+   "token spend key derived from the recovery phrase (scheme XMR20-TKD1, KEY-SCHEME.txt)",
+   "full viewing key, nullifier key, address",
+   "local replay of the public chain from the daemon RPC with full record verification",
+   "trial decryption, spent status (nullifiers derived locally)",
+   "note selection, Groth16 proving (XM3 996 B, XB3 925 B), spend-authorization and binding signatures",
+   "self-check of every record against the local replica",
+   "encrypted pending-operation journal (password-derived AES-GCM key)",
+   "the account’s Monero spend/view keys (same root; view = Hs(spend)); scanning of the holder’s own XMR outputs with a LOCAL RingCT index count; key-image spent tracking",
+   "native input selection, monero-oxide gamma decoy sampling (ring 16) over a replayable cache of daemon answers, exact fee quote BEFORE proving, CLSAG+Bulletproof+ carrier signing, publication straight to the daemon"
+  ],
+  "stillTestService": [
+   "operator/bridge: deposit construction (signed in popup), credits, redemption bindings, payouts, synthetic legacy snapshot, claim verification",
+   "mining of the offline test chain",
+   "proving keys downloaded from the test backend (verifying key checked against the ledger domain; query vectors NOT authenticated: production must pin proving-key hashes)",
+   "monero-ts for recovery phrase -> account keys (unchanged; no per-output signing API, documented in the previous candidate)",
+   "fund: mines coinbase test XMR to the holder’s public Monero address so the test wallet has fee funds (mainnet XMR is bought/received, never minted by a service)"
+  ],
+  "backendHeldHolderSecrets": "none (no holder wallet vault exists; audited per run)",
+  "relay": "NONE. The holder builds, signs, pays for and publishes its carriers. The backend refuses any key-image/carrier/ring/record field and never receives one (audited per run)."
+ },
+ "freshInstallRecovery": {
+  "engineTest": "PASSED (holder-engine.test.mjs): new engine from the same root + public parameters + public chain reproduces balance, unspent set and spent set, then spends; wrong root recovers nothing; viewing-only engine cannot spend",
+  "browserTest": "PASSED (browser-recovery.test.mjs, evidence/verified-recovery-2026-10-23T00-59-57): fresh profile, new storage, different password, no holder vault anywhere; same address, balance, unspent and spent sets; spend with two recovered inputs; wrong phrase recovers nothing; account separation; viewing-only share",
+  "notProven": [
+   "recovery of proved-but-unpublished operations (they live in the original install's journal)",
+   "anything about production chain/parameters (offline fakechain, disposable Groth16 setups)",
+   "parameter authenticity"
+  ]
+ },
+ "exposureStatementRetained": "maxPaidPerWindow is a payout-RATE control, not a loss bound; the rollback-loss counterexample (two 100 payouts at height 100, two at 120, rollback 121->90 exposes 400 under a 200 cap) stands; see research/privacy-extension-20261022/ERRATUM-exposure-window.txt. This wallet work does not resolve bridge finality.",
+ "components": {
+  "privateTransfers": {
+   "ready": false,
+   "status": "keys, scanning, proving, authorization AND native carrier construction/fee payment in the extension worker; published to the daemon directly; exercised through the real popup",
+   "blockers": [
+    "unreviewed XB3/XM3 composition and disposable setups",
+    "no security review of the wasm engine or key scheme",
+    "proving ~30 s single-threaded, 83 MB proving key in the worker",
+    "metadata privacy analysis",
+    "mainnet fee/decoy behaviour unmeasured (offline fakechain only; sanity checks disabled for the fakechain)",
+    "change-chain linkage and carrier fingerprint (extra size) are inherent and undocumented for users"
+   ]
+  },
+  "migration": {
+   "ready": false,
+   "status": "claim signed under the extension account's derived output key; interrupted-claim resume verified",
+   "blockers": [
+    "no constant-time review of the noble-based signer",
+    "synthetic snapshot; production needs the XN1 cutover snapshot and claim window"
+   ]
+  },
+  "bridging": {
+   "ready": false,
+   "status": "deposit signed by the extension's Solana key, credited privately by default; redemption proved in the extension; payout exactly once",
+   "blockers": [
+    "irreversible payout vs reorganization (unbounded without an assumed depth)",
+    "independent chain observation",
+    "production adapters and authentication"
+   ]
+  },
+  "nativeXmrTrading": {
+   "ready": false,
+   "status": "not exercised; gated",
+   "blockers": [
+    "unresolved asymmetric-finality loss"
+   ]
+  }
+ },
+ "notClaimed": [
+  "audit",
+  "constant-time safety",
+  "Monero-equivalent privacy",
+  "any loss bound from the exposure window",
+  "memory erasure of JS strings/CryptoKey material"
+ ],
+ "tests": {
+  "stagenetLocalChecks": "12/12 (runs/stagenet-local-checks.log)",
+  "stagenetTransfers": "NOT RUN (requires a synced stagenet node and a stagenet-aware issuer)"
+ },
+ "networkAudit": {
+  "externalRequests": 0,
+  "secretLeaks": 0,
+  "viewingKeySentOnlyOnShare": true,
+  "backendRunFolderSecretHits": 0
+ },
+ "stage": "stagenet rehearsal PREPARED, NOT EXECUTED (no blockchain download, no public broadcast)",
+ "carrierFunding": {
+  "who": "holder (own XMR)",
+  "feeShownBeforeApproval": true,
+  "secondOutput": "0-amount dummy to a fresh random address (wallet2-like); no self-payment dust",
+  "offlineChainFee": "2,520-byte transfer carrier = 3,024,000,000 piconero (0.003024 XMR) at the fakechain rate of 1,200,000 piconero/byte; redemption carrier 2,449 bytes",
+  "mainnetFee": "NOT estimated here; the popup shows an illustrative figure at 20,000 piconero/byte (about 0.0000504 XMR for 2,520 bytes), labelled; real rates come from the node at send time",
+  "retry": "same signed carrier re-sent on lost replies/restarts (idempotent on monerod); never an automatic second carrier",
+  "relayStillNeededFor": "nothing for correctness; only fee sponsorship for holders without XMR or IP decoupling, both product decisions with their own metadata exposure"
+ },
+ "securityReview": {
+  "status": "PACKAGE PREPARED, NOT COMMISSIONED, NOT PERFORMED",
+  "package": "review/01..07",
+  "selfReview": "review/06-ADVERSARIAL-SELF-REVIEW.txt (implementer self-review, not an audit)",
+  "verdicts": "review/07-READINESS-VERDICTS.txt"
+ },
+ "recoveryCases": {
+  "engineLevel": "see runs/holder-journal-recovery-results.json",
+  "browserLevel": {
+   "c2a": {
+    "staleStatus": "rejected",
+    "feePaid": "0",
+    "balanceA": 91.5
+   },
+   "c2b": {
+    "staleCarrierSent": false,
+    "feeSaved": "3024000000",
+    "balanceA": 88.5
+   },
+   "c4": {
+    "rolledBack": 12,
+    "resentSameTxid": "15a4c7eebc5472bf12dfd5fa9f1cc46bc0daa377b006d438447607e8a008beab",
+    "secondFee": "0"
+   },
+   "staleBackup": {
+    "broadcasts": 0,
+    "status": "rejected"
+   },
+   "c5": {
+    "outcomes": [
+     {
+      "amount": "500000",
+      "status": "rejected",
+      "error": "Notes already spent by another installation (or an earlier operation); this saved record was NOT sent and no carrier fee was paid (signed carrier discarded)."
+     },
+     {
+      "amount": "600000",
+      "status": "confirmed",
+      "error": null
+     }
+    ],
+    "credited": 0.6,
+    "feesPaidPiconero": "3025200000"
+   }
+  },
+  "phraseCannotRestore": "unpublished proofs and unsent carriers (original journal only); documented in RECOVERY-CASES.txt",
+  "reconcileHardening": "stale records whose notes another installation spent are marked rejected and never re-sent (no fee); the same carrier is re-sent after a rollback (no new fee); admission failure on carry marks rejected"
+ },
+ "interoperability": {
+  "specification": "SPEC-XMR20-PRIVATE-TOKENS-v0.1-experimental.txt (experimental; version identity XMR20-PRIVATE-v0.1-experimental)",
+  "library": "wallet-lib/private-wallet.mjs (no UI, no operator; secrets in the engine)",
+  "secondWallet": "cli-wallet/xmr20-private-cli.mjs (synthetic only)",
+  "applicationInteroperability": "DEMONSTRATED on one pool: extension A <-> CLI B, 1/2/3-note inputs with exact change, phrase recovery in the CLI, viewing-only, wrong keys / malformed / duplicate / mismatched parameters refused (interop.test.mjs)",
+  "independentDecoding": "42 checks from the specification with Node crypto passed, 0 failed; commitments, nullifiers, signatures, proofs, decryption and address derivation are NOT independently checkable in JavaScript (no decaf377 library)",
+  "independentCryptographicImplementation": "NONE: both applications share holder-wasm and the host modules",
+  "cryptographicSecurityReview": "NOT PERFORMED (package in stage 3)",
+  "doesNotResolve": [
+   "bridge settlement finality",
+   "native XMR trading",
+   "need for independent security review",
+   "disposable parameter setup"
+  ]
+ },
+ "stagenetRehearsal": {
+  "prepared": [
+   "network-aware engine/scanner/carrier (fakechain | stagenet; sanity checks ON off-fakechain)",
+   "params/stagenet-v0 + manifest (disposable setup bound to the stagenet genesis)",
+   "stagenet/rehearsal.mjs harness",
+   "stagenet/local-checks.mjs"
+  ],
+  "localChecks": "12 passed / 0 failed (runs/stagenet-local-checks.json)",
+  "observed": "fakechain accepted a carrier with monerod sanity checks ON in this run; stage-2 concession was precautionary",
+  "stillRequired": "see README-STAGENET.txt (synced stagenet node, static parameter server, stagenet-aware lab roles + credit, faucet funding, the transfers themselves)",
+  "notMainnet": true
+ }
+}

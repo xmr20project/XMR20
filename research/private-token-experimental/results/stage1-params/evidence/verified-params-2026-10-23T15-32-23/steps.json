@@ -1,0 +1,111 @@
+[
+ {
+  "at": "2026-10-23T15:33:54.491Z",
+  "step": "extension loaded",
+  "id": "jigbpnljnmbbkebaopbnnhmiafgnofla",
+  "profile": "params"
+ },
+ {
+  "at": "2026-10-23T15:33:57.545Z",
+  "step": "account imported; holder keys derived in the extension and registered by public token address",
+  "name": "Alpha"
+ },
+ {
+  "at": "2026-10-23T15:33:58.664Z",
+  "step": "popup reports the shipped parameter manifest (label, pinned hash) and authenticates against it",
+  "label": "DISPOSABLE TEST SETUP — NOT PRODUCTION",
+  "manifestSha256": "ae7ba302194ca3e6f85bd045a653f58026a4fcda9141b1ed8a86600f31611e66"
+ },
+ {
+  "at": "2026-10-23T15:34:01.846Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T15:34:02.822Z",
+  "step": "REFUSED visibly, nothing proved or published: corrupt-query",
+  "error": "Parameters refused: Parameter file normal.public-pk (download) rejected before use: sha256 e3c91f164b191862… does not match the shipped manifest (8152016c33b1f4bb…). Nothing was proved or published."
+ },
+ {
+  "at": "2026-10-23T15:34:03.563Z",
+  "step": "REFUSED visibly, nothing proved or published: truncated",
+  "error": "Parameters refused: Parameter file normal.public-pk (download) rejected before use: 74407896 bytes, the shipped manifest pins 82675440 bytes (missing, truncated or substituted file). Nothing was proved or published."
+ },
+ {
+  "at": "2026-10-23T15:34:04.188Z",
+  "step": "REFUSED visibly, nothing proved or published: missing",
+  "error": "Parameters refused: Parameter file /params/normal.public-pk is missing from the parameter server (HTTP 404). Nothing was proved or published."
+ },
+ {
+  "at": "2026-10-23T15:34:04.873Z",
+  "step": "REFUSED visibly, nothing proved or published: interrupted",
+  "error": "Parameters refused: Download of /params/normal.public-pk was interrupted after 33070176 bytes (network error). Nothing was kept; it will be downloaded again. Nothing was proved or published."
+ },
+ {
+  "at": "2026-10-23T15:34:38.448Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T15:34:38.451Z",
+  "step": "genuine parameters authenticated and used",
+  "text": "Published 6c59efe335415ca2… (996-byte record, 1 input, change 88.5 X; proved locally in 29 s; carrier 0ccceeff6ce2af7a…). Advance the chain to confirm.",
+  "loaded": {
+   "authenticated": true,
+   "bytes": 82675440,
+   "label": "DISPOSABLE TEST SETUP — NOT PRODUCTION",
+   "manifest": "XMR20-PARAMS-1",
+   "sha256": "8152016c33b1f4bb10da5c2de242b38763bb7461fac3d611dcbee0306326aced",
+   "slot": 0,
+   "source": "download",
+   "path": "normal.public-pk"
+  }
+ },
+ {
+  "at": "2026-10-23T15:34:38.564Z",
+  "step": "cache entry corrupted deliberately (one byte)",
+  "found": true,
+  "bytes": 82675440
+ },
+ {
+  "at": "2026-10-23T15:35:13.573Z",
+  "step": "corrupted cache discarded and re-downloaded after unlock; send succeeded",
+  "log": [
+   {
+    "at": 1792769680654,
+    "event": "cache-rejected",
+    "name": "normal",
+    "reason": "sha256",
+    "received": "aa31301921e84f4d05c1bfdc669085e20866adbaeefb3bd852a77a5dfd0dbcc7"
+   },
+   {
+    "at": 1792769683276,
+    "event": "parameters-loaded",
+    "name": "normal",
+    "source": "download",
+    "sha256": "8152016c33b1f4bb10da5c2de242b38763bb7461fac3d611dcbee0306326aced"
+   }
+  ]
+ },
+ {
+  "at": "2026-10-23T15:35:48.592Z",
+  "step": "after restart the authenticated cached file was used; the parameter server was not needed",
+  "loaded": {
+   "authenticated": true,
+   "bytes": 82675440,
+   "label": "DISPOSABLE TEST SETUP — NOT PRODUCTION",
+   "manifest": "XMR20-PARAMS-1",
+   "sha256": "8152016c33b1f4bb10da5c2de242b38763bb7461fac3d611dcbee0306326aced",
+   "slot": 0,
+   "source": "cache",
+   "path": "normal.public-pk"
+  }
+ },
+ {
+  "at": "2026-10-23T15:35:49.612Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-23T15:35:51.460Z",
+  "step": "REFUSED: parameter server configuration from another ledger/version",
+  "error": "Private holder test unavailable: Served parameters.json rejected: sha256 d00c64cb5df55136… differs from the shipped manifest (413c0356e2339763…). The parameter server serves another version or ledger."
+ }
+]

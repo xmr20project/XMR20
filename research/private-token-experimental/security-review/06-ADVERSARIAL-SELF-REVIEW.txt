@@ -1,0 +1,132 @@
+EXTERNAL SECURITY REVIEW PACKAGE — 06 ADVERSARIAL SELF-REVIEW (engineering issues found and fixed; open questions)
+research/privacy-review-20261023 (stage 3); section F added 24 Oct 2026 from research/privacy-stagenet-roles-20261023.
+THIS IS A SELF-REVIEW BY THE IMPLEMENTER (with AI assistance), NOT AN INDEPENDENT SECURITY AUDIT. It lists what was attacked, what broke, what was fixed and what remains open, so a
+reviewer can start from the attack surface rather than from the happy path. Nobody was contacted.
+
+A. ATTACKS TRIED AGAINST THE HOLDER ENGINE (wasm) — results
+1. Parameter substitution (stage 1): missing / truncated / interrupted / foreign setup / swapped
+   circuit / altered query vector with the expected verifying key / corrupted cache / server from
+   another ledger. ALL refused before parsing, nothing proved or published. FOUND+FIXED: the previous
+   check (embedded vk only) accepted an altered query vector; shipped-hash authentication closes it.
+2. Engine accepts any internally valid manifest -> OPEN by design: the host (worker) pins the manifest
+   hash. A compromised build is out of scope of this control.
+3. Carrier fee quote vs signed fee: the engine refuses to sign if the fee differs from the quote the
+   holder approved (byte-exact weight model). Not observed to differ in any run.
+4. Pre-sign admission: the engine re-verifies the record against its own replica before paying a fee.
+   FOUND (stage 3 design): a saved record whose notes were spent by another installation would have
+   cost a carrier fee for nothing if re-sent blindly; the pre-sign check refuses it ("fails local
+   admission; no carrier built"). Reconcile must consult it before re-sending SIGNED carriers too
+   (see B.3).
+5. Dust inputs (stage 2): FOUND+FIXED. The first carrier design paid 0.000001 XMR to itself, creating a
+   dust output per carrier; the input selector later picked a dust output and construction failed with
+   NotEnoughFunds. Fixed by (a) a wallet2-like 0-amount dummy output to a fresh random address instead
+   of a self-payment, (b) never selecting outputs below fee_rate x 1,500 bytes, (c) a precise error
+   naming the fee when the largest output cannot pay.
+6. Unlock rule: FOUND+FIXED. The first rule (tip >= height + 10) was one block stricter than monerod's
+   (tip + 1 >= height + 10) and would have refused a spend monerod accepts; aligned.
+7. Local RingCT index: the engine counts outputs itself and refuses a daemon distribution whose total
+   differs; monero-oxide refuses a node whose view of the real output differs. A malicious node can
+   still bias decoys (standard wallet exposure).
+8. Record/native separation: no native field exists in XM3/XB3; byte-containment regression test
+   (stage 3) over every published record against every carrier's key image, ring member keys and tx
+   pubkey. See 03.
+9. Randomness: wasm randomness is the worker's crypto.getRandomValues through the single import;
+   the decoy RNG is ChaCha20 seeded from it per quote (replayed deterministically only within one
+   quote). OPEN: no review of RNG use inside the vendored Penumbra/arkworks/monero-oxide code paths.
+
+B. ATTACKS TRIED AGAINST THE POPUP / JOURNAL
+1. Concurrent windows: notes and native inputs are reserved in the encrypted journal with heartbeats
+   and leased writes; the second window excludes them or is refused. FOUND+FIXED earlier (holder
+   candidate): a journal lost-update race and a double relay; stage 2 adds native-input reservations.
+2. Lost replies and restarts: the SAME signed carrier is re-sent (idempotent on monerod); a proved
+   record without a carrier waits for an explicit fee approval. Verified in Node and the popup.
+3. Stale journal re-send (stage 3): FOUND+FIXED. A stale installation could re-send a signed carrier
+   whose token notes were already spent by another installation; the carrier mines (fee lost) and the
+   pool rejects the record. Reconcile now checks the replica first: if any reserved note is already
+   spent on chain, the entry is marked rejected ("notes spent by another installation; carrier not
+   sent, fee saved") and never re-sent; the engine's pre-sign check covers the 'built' case.
+4. Stale success: an installation must never report a conflicting send as successful. Status comes
+   from the chain replica (records map keyed by record id) on every refresh; a rejected record shows
+   'rejected' with the fee consequence in the pending list / history.
+5. Interrupted approval: the quoted entry is released after its heartbeat; the native input is
+   released in the engine and the journal. Verified.
+6. Lock: terminates the worker (keys freed, not scrubbed); vault/journal remain encrypted at rest.
+   OPEN: memory erasure limits (JS strings, CryptoKey), no constant-time claims.
+7. Phishing-style UI concerns: the fee review shows amount, rate, input, change, record size, ring
+   size and an illustrative mainnet figure labelled as such; it never implies sponsorship. OPEN:
+   a reviewer should check the wording against the product's fee disclosure policy.
+
+C. ATTACKS NOT TRIED / OUT OF SCOPE HERE
+- Malicious or colluding node (decoy bias, eclipse); network-level IP correlation.
+- Side channels in wasm proving (timing/memory); constant-time behaviour of any component.
+- Browser extension platform attacks (compromised build, malicious co-installed extension, devtools).
+- Economic attacks on the bridge beyond the retained rollback cases (05).
+- The Solana program itself (compiled artifact pinned by the earlier labs; not re-reviewed).
+
+D. ENGINEERING ISSUES FIXED IN STAGES 1-3 (chronological)
+stage 1: wrong test assumption about manifest pinning (documented instead); same-process keep-alive
+         sockets during 30 s proofs (connection: close); compile errors (Debug derive, borrow).
+stage 2: scalar reduction of synthetic roots; `ProvidesUnvalidatedDecoys` import; dust inputs and
+         self-payment outputs (dummy 0-amount output + minimum-input rule); unlock rule aligned with
+         monerod; tests: largest-first selection expectations, lock expectation, refusal-text regex,
+         test runs colliding on ports/logs when two were started at once (process hygiene).
+stage 3: see RESULTS.txt of this candidate (reconcile hardening against stale re-sends; rollback
+         replay; rejected-record presentation).
+
+E. QUESTIONS FOR THE INDEPENDENT REVIEWER (ranked)
+1. Soundness of the XM3/XB3 composition: three Penumbra SpendCircuits + Output circuits in one Groth16
+   relation with a SHARED randomizer and ONE rk/auth; public amount only in the binding signature for
+   XB3; issuer authorization. Is anything about the composition unsound or malleable?
+2. Compact payload codec (176 bytes): confidentiality/integrity of amount, asset, rseed; clue key.
+3. Key derivation from the Monero spend key (XMR20-TKD1): acceptable coupling? Account/sub-address
+   plans?
+4. Parameter trust: review the manifest format and the plan for a ceremony + signed provenance.
+5. Carrier construction in wasm: decoy sampling faithfulness, fee model, fingerprintability of the
+   dummy-output pattern versus wallet2, change-chain linkage.
+6. Journal/recovery semantics (RECOVERY-CASES.txt): anything that could cause inflation, a lost note
+   or a falsely reported success beyond the documented fee-loss cases?
+7. Bridge finality and native trading (05): confirm the retained counterexamples and the absence of a
+   construction that binds payout to burn finality without native source disclosure.
+
+F. FOUND ON PUBLIC STAGENET AND IN THE RESTART / LOST-REPLY CASES (24 October 2026; evidence in RESULTS.txt of
+   research/privacy-stagenet-roles-20261023, runs/stagenet/, runs/recovery-cases-*.json). Validation, maturity rules and
+   confirmation requirements were not changed by any of these fixes.
+1. FOUND+FIXED (stagenet attempt 1): the laboratory issuer's input selection ignored Monero's 10-block spend lock and chose a
+   9-confirmation change output; the daemon refused the carrier ("spends at least one output which is too young"). Fix: the
+   issuer wallet tracks each output's height and coinbase status and selects only mature outputs (lab native.rs). The holder
+   engine already had the aligned unlock rule (A.6); this was the lab role's own selector. Input-selection policy, not validation.
+2. FOUND+FIXED (stagenet attempt 2): the rehearsal harness could not resume an interrupted attempt and would have issued
+   replacement credits. Fix: mined credits are reused, surplus notes are baselined (never spent or counted), the sender waits
+   for native unlock; no credit was ever issued twice across three attempts.
+3. FOUND+FIXED (restart cases, offline chain): a restarted or second installation of the SAME wallet picked a native input
+   already spent by its own UNCONFIRMED carrier in the daemon's pool (the fresh engine only knows the chain), so the daemon
+   refused the new carrier as a double spend. Fix: the carrier builder excludes key images that the daemon's pool reports as
+   spent (get_transaction_pool.spent_key_images) when quoting (holder-carrier.js). This is availability, not security: the
+   daemon's refusal was correct. A malicious node could hide pool spends and provoke the refusal again (no loss: no fee is paid
+   for a refused carrier).
+4. FOUND+FIXED (design gap): the carrier module treated every publish failure alike. A TRANSPORT failure after the blob left the
+   wallet (reply lost, connection reset, timeout) is an UNKNOWN outcome, not a refusal. New publishWithRecovery: on a transport
+   failure the wallet first asks the daemon whether it knows the txid (get_transactions); only if the daemon positively does not,
+   the SAME blob is re-sent; every attempt is journaled before the network call. Lost reply (daemon answered OK, reply dropped by
+   a loopback fault proxy) and lost request (dropped before the daemon saw it) are now separate tested cases; the ordinary
+   "same blob re-sent after a received reply" of the rehearsal is a third, weaker case.
+5. FOUND+FIXED (journal semantics made explicit in a reference implementation, stagenet/holder-process.mjs): states selected →
+   quoted → built → signed → broadcasting → published → confirming → completed, with released / refused / rejected / conflicted
+   / uncertain as terminal or holding states; the display never says "completed" without the required confirmations; a restart
+   from 'signed' or 'broadcasting' consults the chain FIRST and re-checks local admission before re-sending; a restart from
+   'built' re-checks admission before paying any fee; a COMPLETED record that disappears (rollback) is reinstated from history
+   and the same carrier re-sent (no new fee). Exit codes distinguish completed (0), pending (2) and failed/rejected (1).
+6. CONFIRMED, NOT FIXED (by design; documented): two installations with one phrase can still spend the same note concurrently;
+   exactly one record is admitted; the loser either pays a lost carrier fee (its carrier was a valid Monero transaction) or is
+   refused by the daemon as a double spend of the same XMR input (no fee). A stale 'built' backup whose notes were spent elsewhere
+   is refused before any carrier; a stale 'signed' backup whose carrier is already on chain settles without a re-send.
+7. OPEN: the restart cases run the reference holder process, not the extension popup; the popup's own journal flow (private-
+   format.js) was exercised in the stage-3 browser suites and must be re-read against §F.4-5 (lookup-before-retry, pool-aware
+   input selection) before any product build. OPEN: the roles trust one daemon (no second observation) — on stagenet the harness
+   only RECORDS a third-party node's view; it does not gate on it.
+8. OPEN (confirmed on stagenet, not a defect): confirmation latency is network-bound (37-58 minutes per 10 blocks on stagenet in
+   this run); the lab CONFIRMATIONS=10 is not a reviewed depth for any claim (05).
+9. FIXED (evidence defect, found while assembling the publication): the harness wrote the proxy fault-log file from a per-case
+   event view that the cases clear, so the file contained no faults. The faults were present in the report steps and the run log;
+   the writer now uses a never-cleared history and the two runs' files were reconstructed from their logs with the tails preserved.
+   Lesson for the reviewer: evidence files must be checked against the claims they are cited for, not only for presence.

@@ -1,0 +1,74 @@
+EXTERNAL SECURITY REVIEW PACKAGE — 02 WHAT EACH PARTY CAN LEARN
+research/privacy-review-20261023 (stage 3). Private by default; viewing keys optional; no relay.
+
+PUBLIC CHAIN OBSERVER (anyone with a Monero node)
+- Which transactions carry XM3/XB3 records (fixed sizes 996 / 925 bytes; the 0x7f-marked extra
+  chunks are recognisable); so the SET of carrier transactions and their timing are public.
+- For each XM3: anchor, 3 nullifiers, 3 input and 2 output value commitments, rk, payloads
+  (ciphertext), proof, signatures. NOT: amounts, asset (for transfers), sender/recipient addresses,
+  which earlier record created the spent notes (nullifiers are unlinkable to commitments without
+  the nullifier key), whether an input is a padding zero-note.
+- For each XB3: everything above plus the PUBLIC kind, asset id, amount and binding; for credits the
+  issuer signature. So total minted/burned per asset and the deposit/redemption schedule are public.
+- The carrier's ordinary Monero data: its ring (16 members), key image, two outputs (both to the
+  holder: a 0.000001 XMR payment and the change), fee. As for any Monero transaction the real ring
+  member is hidden among 15 decoys. The record does not reference any ring member or key image.
+- Correlations: a holder publishing one carrier per record leaves one key image per record; the
+  change output of carrier k is typically the input of carrier k+1 (standard Monero wallet
+  behaviour, same as any chain of payments from one wallet). A wallet with few XMR outputs
+  therefore produces a chain of carriers linked through its own change — exactly as its ordinary
+  payments would be. We claim nothing about resistance to statistical ring analysis.
+- Fee rate and transaction size make carriers distinguishable from ordinary 2-output transactions by
+  their extra size. Nothing hides that a transaction is a carrier. MEASURED ON STAGENET (24 Oct 2026):
+  XM3 carriers 2,533-2,539 bytes with a 1,056-byte tx_extra, XB3 credit carriers 2,462-2,466 bytes with
+  a 985-byte extra, fee 20,000 piconero/byte (not a mainnet figure); all were relayed by and visible on
+  a third-party public node, i.e. the fingerprint is public network-wide, as expected.
+- Pool observers additionally see a wallet's RETRY behaviour: after a lost reply the wallet asks its node
+  (get_transactions) and re-sends the identical blob only if unknown; identical re-sends reveal nothing
+  new (same txid). The wallet's queries themselves are visible to its own node only.
+
+PUBLIC INDEXER (runs the pool rules; no keys)
+- Everything the observer sees, plus the derived pool state: accepted/rejected records, total
+  minted/burned per asset, the TCT root history, the nullifier set. It cannot decrypt payloads, map
+  nullifiers to commitments, or see balances.
+- With a SHARED viewing key (explicit holder action): that holder's incoming notes, amounts, and
+  spent status (it can derive nullifiers with the nullifier key component of the fvk) - i.e. the
+  holder's full token history - but it cannot spend. Sharing is per holder, revocable only by
+  moving funds to a new address.
+
+RELAY
+- None exists in stage 2+. (Before stage 2 the test relay saw each finished record before
+  publication, the sender's loopback origin and timing; it could not alter or forge records.)
+  A future fee-sponsoring relay would regain exactly that view and must be documented as such.
+
+MONERO NODE THE HOLDER TALKS TO (test daemon here; a remote node in production)
+- Standard wallet/node exposure: block and transaction requests (scanning everything hides the
+  holder's interest), `get_outs` for the ring candidates INCLUDING the real spend (as every wallet),
+  the signed carrier (so the node links the holder's IP to the carrier and, by the extra, to the
+  record), fee-estimate and distribution queries. A malicious node can attempt the usual active
+  attacks on decoy selection (monero-oxide warns about this). Running one's own node or Tor/i2p
+  is the standard mitigation; nothing here changes the exposure versus an ordinary Monero wallet,
+  except that the node also learns that this IP publishes token records.
+
+BRIDGE OPERATOR (deposit/credit/redeem/payout)
+- Deposits: the Solana depositor address, amount, and the token address the credit goes to (the
+  holder gives it when depositing) - so the operator can link Solana identity -> token address ->
+  the public credit record. It does not learn the holder's later transfers.
+- Redemptions: the token address requesting (it registered the binding), the Solana destination,
+  the public burn amount, the burn record's carrier txid once published, timing.
+- Registration (test backend): token address, Solana address, public Monero address, legacy output
+  keys for migration lots. The test backend keeps no holder secrets (audited every run); it never
+  receives key images, carriers, rings or record bytes (refused by field name; grep-audited).
+- The operator can therefore build a map {token address -> Solana address -> public Monero address}
+  for every holder who bridges; private transfers between two such addresses remain hidden from it
+  but its deposit/redeem ledger is a strong identity graph. This is inherent to a custodial bridge.
+
+ANOTHER HOLDER / RECIPIENT
+- A recipient decrypts the note sent to it (amount, asset, rseed) and learns nothing about the
+  sender's other notes or address (no sender address in the payload; memo-free codec).
+
+WHAT IS NOT CLAIMED
+- Monero-equivalent privacy for the token layer: the set of carriers, their timing, public XB3
+  amounts, and the single-key-image-per-record pattern are all public.
+- Network-level unlinkability of the holder's IP from its carriers.
+- Any protection if the holder shares its viewing key.

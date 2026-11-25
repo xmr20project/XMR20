@@ -1,0 +1,47 @@
+{
+ "cases": {
+  "c1": {
+   "phraseSeesPending": false,
+   "fee": "0",
+   "released": true,
+   "sel": 1
+  },
+  "c2a": {
+   "doomedRecordFee": "0",
+   "rejectedLocally": true,
+   "balanceA": "91500000",
+   "balanceB": "7000000"
+  },
+  "c2bi": {
+   "daemonRefused": "double_spend",
+   "feePaid": "0",
+   "recordOnChain": false
+  },
+  "c2bii": {
+   "staleCarrierMined": true,
+   "recordRejected": true,
+   "duplicateCredit": false,
+   "feeLost": "3024000000",
+   "lesson": "a wallet must check local admission before re-sending a saved carrier; the popup marks such entries rejected and never re-sends them"
+  },
+  "c3": {
+   "rebroadcasts": 2,
+   "feesPaid": 1
+  },
+  "c4": {
+   "poppedFrom": 395,
+   "to": 383,
+   "returnedToPool": false,
+   "reminedSameTxid": "363fb79d2a72e8591f7149797c7676d64ae182fd8fb129b35a2f67c09ec81b9b",
+   "secondFee": "0"
+  },
+  "c5": {
+   "outcomes": [
+    "rejected",
+    "accepted"
+   ],
+   "bothFeesPaid": true,
+   "loserFee": "3025200000"
+  }
+ }
+}

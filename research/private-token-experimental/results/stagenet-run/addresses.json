@@ -1,0 +1,27 @@
+{
+ "network": "stagenet",
+ "genesis": "76ee3cc98646292206cd3e86f74d88b4dcc1d937088645e9b0cbca84b7ce74eb",
+ "startHeight": 2235745,
+ "daemonHeight": 42699,
+ "synchronized": false,
+ "trustedManifestSha256": "ed12e12441ab4f6d5cc6ad02e3839d9c14b3346b953ebfc277a66d3053903e9b",
+ "walletDir": "<workspace>/research/privacy-stagenet-roles-20261023/runs/stagenet/wallets",
+ "issuer": {
+  "native": "57niMTvoAZ5GigRF1mQVXxVAmGwJihSSsDLjwPX9vH8hcxA3cyFUP3SjaJefz4ty19iSzfFmWTmoPC6Wg59i9ufTV8p4FQM",
+  "token": "penumbra13dsttnlshskauhg9dr9wvs4uhhlazf9eqhv86g2l46c0zkwqqcxt0093ue0e95njr40939cluyw6fz2852y6ten6duhrzvvu7vl9utmt6j5v26g7eynz6aml508jzz20k5muqk"
+ },
+ "A": {
+  "native": "55VMrQmPTFTf79xNRYioc9fXrk5wZQ1ipXMWnUXQ3fSbB3jan6ewzcRKBgUFuHHAAfif8DXy89x3gPJxoNYbKMRXLQuxPxv",
+  "token": "penumbra1pvadxvfw752swzjg5czh2ae9uz854w20qzkuqpt5zjadc9nf99t7d2hrdwa78m6drz3lu4cgu9sng2g3wkfxdye6xff6qygm2v2mxtc3t70fegj4weu0y2je60kqf3s9h3rzfh"
+ },
+ "B": {
+  "native": "56RMFW1ZE9x4rbgogsqzSyfyWHhHie6RvTt8USAjsoFiX5UqDzAUqoeVzo6DZJtx7aMtF2SAr66w3YhPH9V5Gghn35pzEnw",
+  "token": "penumbra1p5upagjfve5pr740ffrjcq4hwsjxc7exn2tal4szem74w8y94574uuu2kpsrhactsadyw9rree4lw4yjc4q0mwttpkjf2phcxqz5zexxa6jdkjd7lle2wsfpv75yva0r8qxu4w"
+ },
+ "fundingNeeded": {
+  "issuer": "> 0.01 XMR unlocked, ideally 2-3 separate outputs (one per credit carrier; change relocks 10 blocks)",
+  "A": "> 0 unlocked (holder-paid carrier fees)",
+  "B": "> 0 unlocked"
+ },
+ "note": "STAGENET addresses for worthless faucet coins; funds must arrive at or above startHeight; 10 confirmations before use"
+}

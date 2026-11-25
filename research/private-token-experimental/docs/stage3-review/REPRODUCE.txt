@@ -1,0 +1,41 @@
+REPRODUCTION — research/privacy-review-20261023 (stage 3: journal-vs-phrase recovery cases + external security-review package)
+Synthetic, offline, isolated. Builds on research/privacy-carrier-20261023 (stage 2, unchanged) which builds on stage 1
+(research/privacy-params-20261023) and the holder candidate (research/privacy-holder-20261022). Nothing here touches the
+installed extension, the website, the bridge, the backend, NFTs, real keys or funds; no one was contacted.
+
+Code changes in this stage (on top of stage 2)
+- wallet-extension/src/private-format.js reconcile: (a) a saved record (proved or signed) whose notes were spent by another
+  record is marked rejected, never carried or re-sent, its native input released, no fee; (b) after a chain rollback a
+  settled record that is no longer on chain returns to pending as its SAME signed carrier and is re-sent (no new fee);
+  (c) "Approve carrier fee and publish" on a stale record is refused by the engine's admission check and marked rejected.
+- backend/service.mjs: TEST SERVICE `pop` action (monerod /pop_blocks + flush_txpool) for the rollback cases.
+- build identity 0.1.93; review/ package; tests below.
+
+Prerequisites: as in stage 2 (Rust + wasm32 target, lab binary for issuer/indexer, offline monerod, Playwright 1.56.1).
+Ports: 8940/30041 (browser), 8945/30067 (journal recovery, Node), 8946/30069 (leak regression, Node), 8944/30065 (stage-2 Node carrier test).
+
+1. Build
+   cd research/privacy-review-20261023/holder-wasm && PATH=$HOME/.cargo/bin:$PATH cargo build --offline --release --target wasm32-unknown-unknown
+   PATH=$HOME/.cargo/bin:$PATH cargo test --offline --release                                   # 9 host tests
+   cd ../wallet-extension && XMR20_PRIVATE_HOLDER_TEST=local node build.mjs && npm test        # 561
+   cd .. && node --test private-journal.test.mjs
+
+2. Engine-level recovery cases and leak regression (Node, real daemon; ≈8 min each)
+   node --test holder-journal-recovery.test.mjs      # RECOVERY-CASES.txt 1,2a,2b,3,4,5 -> runs/holder-journal-recovery-results.json
+   node --test holder-leak-regression.test.mjs       # records vs key images / ring members / tx keys -> runs/holder-leak-regression-results.json
+   node --test holder-carrier.test.mjs               # stage-2 carrier test on this build
+
+3. Real browser flows (sequential; each starts its own backend + daemon)
+   node --test browser-journal-recovery.test.mjs     # two profiles, same phrase: stale proved/signed records, rollback, stale backup, concurrent installs
+   node --test browser-carrier.test.mjs              # stage-2 carrier suite
+   node --test browser.test.mjs                      # complete deposit -> credit -> transfer -> migration -> redemption flow, account switching, lock/unlock
+   node --test browser-recovery.test.mjs             # fresh-profile recovery incl. native outputs
+   node --test browser-params.test.mjs               # parameter rejection
+   node --test browser-interruptions.test.mjs        # interruption/concurrency suite adapted to holder-funded carriers (if present in this stage)
+   Evidence: evidence/verified-*/ (screenshots, steps.json, network-audit.json); failed attempts kept as evidence/failed-*/.
+
+4. Review package: review/01..07 (proof construction and trust model, observers, original leak and regression coverage,
+   migration/cutover, retained rollback-loss examples, adversarial self-review, readiness verdicts). Frozen hashes:
+   MANIFEST.sha256 (sh make-manifest.sh); dependencies: holder-wasm/Cargo.lock, wallet-extension/package.json.
+
+Processes: the tests stop what they start. If a test is killed: `pgrep -fl "xmr20-integration-lab|monerod.*privacy-review"`.

@@ -1,0 +1,182 @@
+STAGENET-AWARE ROLES, PARAMETER SERVICE AND REHEARSAL HARNESS v2 — research/privacy-stagenet-roles-20261023
+(+ lab crate research/privacy-stagenet-roles-20261023-lab), 23 October 2026. Synthetic, offline, isolated.
+The TESTS section below ran on an offline zero-peer regtest fakechain: SIMULATED. UPDATE 24 Oct 2026: the rehearsal was
+then EXECUTED ON PUBLIC STAGENET (section "EXECUTED ON STAGENET" at the end; full detail in runs/stagenet/STAGENET-RUN.txt).
+Mainnet is refused by every component. Readiness unchanged: NO-GO; bridge payouts and native XMR trading gated; the
+disposable setup, the independent-review and the rollback-loss blockers stand.
+
+WHAT CHANGED
+Lab crate (issuer / indexer / wallet binary; copied from the verifier-params lab, which is unchanged):
+- Manifest::validate accepts network.kind "offline-fakechain" or "stagenet" and refuses everything else ("Unsupported
+  network … mainnet refused"). ManifestNetwork gained startHeight (default 0).
+- native::guard(daemon, kind): mainnet refused unconditionally from the daemon's own get_info; fakechain needs nettype
+  fakechain + offline + zero peers; stagenet needs nettype stagenet. All five call sites pass the manifest's kind; the
+  reconnect path too. native::rpc_url(): XMR20_INTEGRATION_RPC_URL (operator node) or the loopback port.
+- Chain::scan and the issuer's native Wallet::refresh replay from max(1, startHeight); a start above the tip yields an
+  empty pool and no error; the daemon genesis check at startup is kept.
+- Addresses are formatted for the selected network (Wallet::address_for; stagenet prefix on stagenet).
+Holder engine / library:
+- lib.rs: Network.startHeight; op nativeStart{height, rctOutputs} (fresh wallet only); op nativeAddress (formatted for
+  the manifest's network). native.rs: NativeWallet::start_at, address_for.
+- holder-engine.js scanner: startHeight/base; seeds the RingCT index count from get_output_distribution(cumulative) up to
+  base-1 once the daemon has reached base-1 (before that: nothing scanned, waitingForStart); replays from base.
+- wallet-lib: passes manifest.network.startHeight; nativeAddress() uses the network-aware op.
+New: stagenet/roles.mjs (startRoles with a JS-level network/genesis/mainnet refusal BEFORE any process starts; credit;
+scans; startFakechain), stagenet/param-server.mjs (static service, three files only), stagenet/rehearsal.mjs v2 (module
++ CLI; --mode local|stagenet), stagenet/make-stagenet-manifest.mjs --start-height/--out, stagenet-roles.test.mjs.
+
+TESTS — stagenet-roles.test.mjs (node --test; SIMULATED; ports 8951-8953, 30080-30083)
+1. Static parameter service: parameters.json, normal.public-pk and boundary.public-pk served with the manifest's exact
+   lengths and sha256 (GET and HEAD); refused with 404: /params/manifest.json, /params/issuer.secret.json, traversal
+   (../, ..%2F), wallet roots, journals, directory paths, case variants; POST 405; /params info says "not a trust anchor".
+2. A tampered server cannot substitute parameters: a second service with a byte-flipped normal.public-pk (query vector)
+   -> the wallet library's loadProvingKey rejects (hash check against its own manifest); the same manifest loads the
+   genuine file from the honest service; a foreign parameters.json served under the manifest is refused at open time.
+3. Network selection by the roles (fakechain daemon running):
+   - stagenet manifest vs fakechain daemon: refused by roles.mjs before any process ("REFUSED: the trusted manifest
+     selects stagenet…") AND by the binary when started directly ("Stagenet daemon required by the trusted manifest
+     (daemon reports nettype "fakechain")").
+   - manifest kind "mainnet": refused at both layers ("Unsupported network "mainnet" (offline-fakechain or stagenet
+     only; mainnet refused)").
+   - manifest genesis mismatch: refused before any process. A non-daemon URL (the parameter server): refused.
+   - positive: fakechain manifest + XMR20_INTEGRATION_RPC_URL (a wrong legacy port variable is ignored): both roles
+     start, report the trusted manifest sha256, mainnet-format addresses on the fakechain.
+   - startHeight 1000 above the tip: roles start, indexer replays nothing (0 canonical blocks), no error.
+4. Rehearsal harness, --mode local, start height 40 (the complete simulated flow; figures below are from
+   runs/rehearsal-local.json of the passing run; OFFLINE fakechain values, not stagenet, not mainnet):
+   - roles started at tip 0 with startHeight 40 (pool in the future); wallets synced with startHeight 40 (waitingForStart,
+     then seeded from get_output_distribution); funding mined to issuer, A and B; 250 further blocks for the decoy sampler.
+   - three issuer credits to A (5,000,000 / 3,000,000 / 2,000,000): XB3 985-byte extra, 2,449-byte carriers, issuer fee
+     2,938,800,000 piconero each (ISSUER-funded, not holder-funded); indexer admitted all three; A exactly {5M,3M,2M}.
+   - T1 A->B 4,000,000 with ONE input (5M), change 1,000,000: proof 996 B in 32.1 s, sign 84 ms, extra 1,056 B, carrier
+     2,520 B, holder fee 3,024,000,000 piconero shown before approval; same-blob re-send OK and in pool; A's native total
+     moved by exactly the fee; sender, recipient and indexer all "accepted"; A {3M,2M,1M}, B {4M}.
+   - recovery: A and B closed, reopened from their roots in fresh instances (memory cache), resynced: identical balances
+     and note counts (6,000,000 / 3 notes; 4,000,000 / 1 note). Nothing was pending, so no journal was needed; a root
+     cannot reconstruct unpublished pending transactions (RECOVERY-CASES.txt, stage 3).
+   - T2 recovered A->B 5,500,000 with THREE inputs (3M+2M+1M), change 500,000: proof 31.2 s; fee exact; admitted everywhere.
+   - T3 recovered B->A 9,000,000 with TWO inputs (5.5M+4M), change 500,000: proof 31.0 s; fee exact; admitted everywhere.
+   - final: A {500,000, 9,000,000} = 9,500,000; B {500,000}; three holder-paid fees of 3,024,000,000 piconero (offline
+     rate 1,200,000 piconero/byte x 2,520 bytes); engine memory ≈386 MB during proving.
+   Fixed on the way (all harness/scanner defects, none in the roles): seeding before the daemon reached the start height
+   failed ("Failed to get output distribution") -> seed deferred; the gamma decoy sampler on a ~120-block chain hit its
+   round limit -> the local mode mines 250 extra blocks (irrelevant on stagenet); an empty balance compared as undefined.
+
+PREREQUISITE CHECK (read-only; no wallets or credentials inspected): no monerod process, no ~/.bitmonero or stagenet data
+directory, no synced stagenet node, no known synthetic stagenet funds on this machine. Nothing was downloaded.
+
+WHAT IS STILL NEEDED TO RUN THE REAL STAGENET REHEARSAL: README-STAGENET.txt (synced owner node; trusted manifest with
+startHeight = node height; faucet coins on the three printed stagenet addresses; ~40+ stagenet blocks of waiting; then the
+relay/sanity/fee/decoy/timing facts that only stagenet can show).
+
+FINAL RUN: node --test --test-concurrency=1 stagenet-roles.test.mjs PASSED 4/4 in 237.7 s (runs/stagenet-roles-test.log,
+runs/stagenet-roles-results.json, runs/rehearsal-local.json): parameter-service scope; tampered/foreign served parameters
+refused by the client; role network selection (stagenet-vs-fakechain and mainnet refused at both layers, genesis mismatch,
+non-daemon URL, URL override, start height above tip); simulated rehearsal with inputs [1,3,2], exact change, three
+holder-paid fees of 3,024,000,000 piconero (OFFLINE rate), proving 32.2 / 31.3 / 31.4 s, both wallets recovered from their
+roots, every record admitted by sender, recipient and indexer. All processes started by the tests were stopped (0 left).
+
+EXECUTED ON STAGENET — 24 October 2026 (owner-authorised; worthless faucet coins; not mainnet)
+Setup: Monero v0.18.5.3 monerod (provenance re-verified: archive sha256 7a083ed2… matches binaryFate's GPG-signed hashes.txt,
+fingerprint 81AC…DF92; binary sha256 28c233e0…6518) as an isolated pruned stagenet node (operations/stagenet-node-20261023,
+RPC 127.0.0.1:38091, outbound-only p2p, 6.3 GB, synced 21:50Z–03:04Z); trusted manifest runs/stagenet/trusted-manifest.json
+(startHeight 2,235,745, sha256 ed12e124…); fresh wallet roots (not published); six cypherfaucet.com payments (0.01 sXMR each);
+owner-authorised CPU mining with 6 threads (~2.2 kH/s) — our 10 blocks contained no carrier.
+Attempt 1 (03:05Z): credit 4b3a2c61… (5,000,000) relayed and mined (block 2,235,785); the second credit was refused by the
+daemon: "Transaction spends at least one output which is too young" -> lab issuer fix (10/60-block maturity in input
+selection; validation untouched); simulated suite 4/4.
+Attempt 2 (03:26Z): credits fa2b73a8… (5,000,000) and 5978895b… (3,000,000) relayed and mined (block 2,235,788); ended when
+the free-space watchdog stopped the node (another session's git packing filled the disk; nothing of ours deleted) ->
+harness resume support (reuse mined credits, baseline surplus notes; no replacement credits); simulated suite 4/4.
+Attempt 3 (04:03Z–07:05Z, 3 h 02 min, 57 steps, PASSED): reused the 5,000,000 and 3,000,000 credits, baselined the surplus
+5,000,000, issued credit cda5d1f7… (2,000,000; fee 49,240,000; 2,462 B; block 2,235,795); T1 A->B 4,000,000 ONE input,
+change 1,000,000, txid c7d959f9…, block 2,235,805, 2,538 B, holder fee 50,760,000 piconero, proving 35.1 s; recovery of A
+and B from roots in fresh instances (identical); T2 recovered A->B 5,500,000 THREE inputs, change 500,000, txid d7ab4ed2…,
+block 2,235,815, 2,539 B, fee 50,780,000, proving 36.1 s; T3 recovered B->A 9,000,000 TWO inputs, change 500,000, txid
+6eb08dfb…, block 2,235,825, 2,533 B, fee 50,660,000, proving 35.6 s. Every carrier (1,056-byte tx_extra) accepted WITH
+sanity checks, seen in a third-party public node's pool and confirmed (10) there; same-blob re-send idempotent 3/3; exact
+notes after every step; the sender's native XMR moved by exactly the quoted fee 3/3; sender, recipient and indexer admitted
+all records. Final: tokens A 14,500,000 (incl. 5,000,000 baseline), B 500,000 — conserved against 15,000,000 credited;
+native A 19,898,460,000, B 9,949,340,000. Fee rate 20,000 piconero/byte on stagenet (offline fakechain: 1,200,000) — stagenet
+fees are NOT mainnet fees. Confirmation waits 37-58 minutes per 10 blocks (low stagenet hashrate).
+Full txids, timings and the attempt files: runs/stagenet/STAGENET-RUN.txt, runs/stagenet/rehearsal-stagenet*.json.
+
+RESTART, LOST-REPLY AND RECOVERY CASES — 24 October 2026 (stagenet/recovery-cases.mjs, holder-process.mjs, lossy-proxy.mjs)
+Design: each "installation" is a separate OS process (holder-process.mjs = wallet-lib + the extension's encrypted journal module
+on a file-backed store) behind a loopback fault-injection proxy that can drop the daemon's REPLY after the daemon answered
+(evidence logged) or drop the REQUEST before the daemon saw it. --crash-at kills the process (SIGKILL) right after a named phase
+was journaled. A FRESH installation is an empty directory with the same root ("phrase"): it knows the chain, not the journal.
+Rule enforced everywhere: COMPLETED only with 10 confirmations on chain; uncertain/conflicting/rejected is never shown as completed.
+Fixes made (validation, maturity and confirmation rules untouched; see review/06 §F):
+- holder-carrier.js publishWithRecovery/lookup: a transport failure is UNCERTAIN — the daemon is asked (get_transactions) before
+  any retry; the SAME blob is re-sent only when the daemon positively does not know the txid; every attempt is journaled first.
+- holder-carrier.js quote: key images spent by UNCONFIRMED pool transactions are excluded from native input selection (found when
+  a restarted installation re-picked the input its own unconfirmed carrier had spent; the daemon correctly refused the double
+  spend; the smoke-run evidence of the defect is kept in runs/recovery-smoke.*).
+- holder-process.mjs: explicit journal states and exit codes (0 completed/released, 2 pending, 1 failed/refused/rejected/
+  conflicted); a completed record that disappears after a rollback is reinstated and the same carrier re-sent.
+OFFLINE (SIMULATED, zero-peer regtest fakechain, 2026-10-24T11:09:59.105Z – 2026-10-24T11:17:29.496Z): node stagenet/recovery-cases.mjs --mode local
+  PASSED 76/76 checks, exit 0 (runs/recovery-cases-local.json; proxy fault log runs/recovery-run-local/proxy-faults.json).
+  LR  lost REPLY: daemon answered OK, reply dropped; wallet saw UND_ERR_SOCKET, asked the daemon, found the carrier in the pool,
+      re-sent nothing (1 send request at the proxy); completed, txid 564697bcc0e75ae7…, one fee 3024000000 (offline rate).
+  LRQ lost REQUEST: dropped before the daemon; lookup unknown; the identical blob re-sent once and accepted; one fee; same txid.
+  R1a killed after the fee quote: fresh install sees nothing; resume releases (no send, no fee, exit 0).
+  R1b killed after proving, before signing: the proof exists only in the original journal (fresh install: notes unspent, nothing
+      pending); resume signs once and publishes (1 send); completed with one fee (8cc1fc0427a1ea8d…).
+  R2  killed after signing, before broadcast: resume asks the daemon (unknown), sends the saved blob — same txid as journaled at
+      the crash (72ccbc61eb4f46eb…), no re-sign, one fee.
+  R3  killed after the send with the reply lost (daemon had answered OK): the journal says "Broadcast outcome UNKNOWN"; resume asks
+      the daemon, finds it in the pool, re-sends nothing (0 send requests); completed with one fee (10172e66e9bb2a73…).
+  S   stale backups: the R2 backup taken at 'signed' settles from chain state without a re-send and without any fee change; the
+      R1b backup taken at 'built', whose notes were spent by the resumed original, is refused before any carrier (conflicted, no
+      send, no fee) and never shows completed.
+  TWO two installations, same phrase, same note, concurrently: outcome ['completed', 'refused'] — the second carrier was refused by the
+      daemon as a double spend of the same XMR input (largest-first picks the same output), so no fee was lost this time; the
+      other documented outcome (both carriers valid, the loser's record rejected by the pool and its fee lost) was shown at stage 3
+      (holder-journal-recovery.test.mjs cases 2b-ii and 5). Recipient credited exactly once; both installations follow the chain.
+  RB  completed transfer removed by a deliberate 12-block rollback (pop_blocks + flush): fresh and original views revert (record
+      gone, notes unspent, recipient credit gone); settle detects the vanished record, asks the daemon (unknown), re-checks
+      admission and re-sends the SAME carrier; re-mined with the same txid (bdf03894f8db7549…), no second fee; recipient
+      credited exactly once. Operator-side rollback loss (review/05) is NOT addressed by this and remains the gating reason.
+  Round accounting (fresh installations): token after = before − sent + received, native after = before − Σ journaled fees, exact
+  for A and B in both rounds. Indexer admitted every completed record.
+Harness evidence defect found while assembling the evidence (fixed, third fix): the proxy fault log file (proxy-faults.json) was
+  written from the proxy's per-case event view, which the cases clear between themselves, so the file held only trailing pass-through
+  traffic and NO faults; the faults and every send were still in the report steps and in the run log ({"proxy":…} lines, written at
+  the time of each event). lossy-proxy.mjs now keeps a never-cleared `history` (every fault, every send request with the daemon's
+  answer, every upstream error) and recovery-cases.mjs writes that. The two completed runs' files were reconstructed from their run
+  logs (field reconstructedFrom; the originally written tails are preserved as proxy-events-tail.json): offline 3 faults / 10 send
+  requests, stagenet 2 faults / 4 send requests. lossy-proxy.test.mjs 3/3 (runs/lossy-proxy-test.log) covers drop-reply, drop-request,
+  pass-through and history-survives-clearing. No wallet, validation or protocol code changed for this fix.
+Regression after the fixes: holder-carrier-recovery.test.mjs 6/6 (scripted daemon: lost reply, lost request, refusal is final,
+  all-uncertain → UNCERTAIN, lookup states, pool-aware exclusion); stagenet-roles.test.mjs 4/4 (runs/stagenet-roles-test-rerun2.log);
+  holder-carrier.test.mjs 1/1 (6 transfers; runs/holder-carrier-test-rerun.log).
+STAGENET (EXECUTED; ordinary authorised test transactions only — no rollback, no conflicting histories on the public network):
+  node stagenet/recovery-cases.mjs --mode stagenet … (runs/stagenet/recovery-cases-stagenet.json, recovery-run/):
+  PASSED 57/57 checks, exit 0 (11:15:34Z-13:00:47Z 24 Oct 2026; cases LR, R1a, R1b, R2, R3, S). LRQ, TWO and RB were run
+  OFFLINE ONLY: a lost request is the ordinary repeat broadcast already executed on stagenet in the rehearsal, and rollbacks or
+  conflicting histories are never provoked on the public network. Fees at 20,000 piconero/byte (STAGENET rate, not mainnet);
+  XM3 carriers 1,283-1,287 B pruned with the 1,056-byte tx_extra:
+    LR  A->B 1,000,000 from a 9,000,000 note: daemon answered OK, reply dropped by the proxy (proxy-faults.json:
+        replyDroppedAfterDaemonAnswered=true); wallet saw UND_ERR_SOCKET, asked the daemon (in pool), re-sent nothing
+        (1 send request); state 'published' (exit 2), later completed; txid 36946f8ce49b207c…, block 2,235,873, fee 50,760,000.
+    R1a A: SIGKILL after the fee quote; fresh (phrase-only) install sees nothing pending; resume released, 0 sends, no fee.
+    R1b B->A 200,000 from a 500,000 note: SIGKILL after proving (proof only in the original journal); resume signed once,
+        1 send; txid 8c9777ef27aaed01…, block 2,235,873, fee 50,740,000.
+    R2  A->B 2,000,000 from a 5,000,000 note: SIGKILL after signing, never broadcast; fresh install: carrier unknown to the
+        daemon; resume: lookup unknown -> the SAME blob sent, same txid as journaled at the crash 7732fd7784c4f0f4…, no re-sign;
+        block 2,235,873, fee 50,760,000.
+    R3  B->A 100,000 from a 2,000,000 note: daemon answered OK, reply dropped, process SIGKILLed before it could ask; journal
+        'Broadcast outcome UNKNOWN'; resume asked the daemon, found it in the pool, 0 sends; txid d4c3d94bc39dd6ce…,
+        block 2,235,884, fee 50,680,000.
+    S   stale R2 backup at 'signed': daemon asked first, carrier already on chain (10 confirmations), NOTHING re-sent, settled
+        completed, native balance unchanged; stale R1b backup at 'built' (notes spent meanwhile): conflicted, 0 sends, 0 fee,
+        shown as conflicted, never completed.
+  Exact accounting (fresh installations): A tokens 14,500,000 -> 11,700,000 -> 11,800,000, native 29,898,460,000 -> 29,796,940,000
+  (two fees) -> unchanged; B tokens 500,000 -> 3,300,000 -> 3,200,000, native 9,949,340,000 -> 9,898,600,000 -> 9,847,920,000 (one
+  fee each round). Indexer admitted all four records; original and fresh installations agreed on chain state after every case; no
+  view ever showed a pending, duplicate or uncertain transfer as completed. Third-party node node.monerodevs.org:38089 at height
+  2,235,894: all four carriers mined (21/21/21/10 confirmations) — runs/stagenet/recovery-public-observation.json.
+  Confirmation waits: round 1 51 min (10 blocks, 1-8 min apart), round 2 53 min (one 25.5-minute gap).
+  Owner node: stopped CLEANLY by the disk-space watchdog at 13:01:57Z (free space fell below 12 GB; the node's data stayed at
+  6.3 GB, so the space was consumed elsewhere on the machine), one minute after the run completed. Not restarted.
