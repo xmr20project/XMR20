@@ -1,0 +1,154 @@
+{
+ "execution": "EXECUTED ON STAGENET (real popup, real blocks, worthless faucet coins; not mainnet)",
+ "evidence": "<workspace>/research/privacy-stagenet-wallet-20261024/evidence/stagenet-popup-2026-10-24T17-50-16",
+ "results": {
+  "nativeStart": "10000000000",
+  "send1": {
+   "txid": "80c2be96b679a0d6698426ef3336dea35d70a697099d40f0c683e02210a00086",
+   "fee": "50760000",
+   "nativeBytes": 2538,
+   "extraBytes": 1056,
+   "recordBytes": 996,
+   "inputs": 1,
+   "change": "7",
+   "provingS": 31,
+   "feeReview": "Carrier fee: 0.000050 XMR (2538 weight bytes × 20000 piconero at the stagenet node’s current rate — worthless test coins; mainnet rates differ). Paid from this account’s own stagenet XMR: input 0.010000 XMR, change 0.009",
+   "at": "2026-10-24T18:21:59.848Z",
+   "confirmations": 10,
+   "height": 2235963,
+   "unlocked": "9949240000"
+  },
+  "lost": {
+   "txid": "4aacb060ff09cc3f1f5a9f4511b3c5b08b8d80a913706ca6390eb41e8905cb2e",
+   "fee": "50700000",
+   "nativeBytes": 2535,
+   "change": "8",
+   "recovered": true,
+   "sendRequests": 1,
+   "text": "Published 356f3252b7c7951c… (996-byte record, 1 input, change 8 X; proved locally in 31 s; carrier 4aacb060ff09cc3f… 2535 bytes, tx_extra 1056 bytes, fee 0.000050 XMR paid from this wallet). The node’s reply was lost but it already held the carrier: nothing wa",
+   "at": "2026-10-24T19:12:23.455Z",
+   "confirmations": 10,
+   "height": 2235974
+  },
+  "balances": {
+   "A": 15,
+   "B": 5,
+   "nativeStart": "10000000000",
+   "nativeEnd": "9898540000",
+   "feesPiconero": "101460000"
+  },
+  "observation": {
+   "owner-node": {
+    "status": "OK",
+    "missed": [],
+    "txs": {
+     "80c2be96b679a0d6698426ef3336dea35d70a697099d40f0c683e02210a00086": {
+      "in_pool": false,
+      "block_height": 2235963,
+      "confirmations": 21,
+      "pruned_bytes": 1287
+     },
+     "4aacb060ff09cc3f1f5a9f4511b3c5b08b8d80a913706ca6390eb41e8905cb2e": {
+      "in_pool": false,
+      "block_height": 2235974,
+      "confirmations": 10,
+      "pruned_bytes": 1284
+     }
+    }
+   },
+   "third-party node.monerodevs.org:38089": {
+    "status": "OK",
+    "missed": [],
+    "txs": {
+     "80c2be96b679a0d6698426ef3336dea35d70a697099d40f0c683e02210a00086": {
+      "in_pool": false,
+      "block_height": 2235963,
+      "confirmations": 21,
+      "pruned_bytes": 1287
+     },
+     "4aacb060ff09cc3f1f5a9f4511b3c5b08b8d80a913706ca6390eb41e8905cb2e": {
+      "in_pool": false,
+      "block_height": 2235974,
+      "confirmations": 10,
+      "pruned_bytes": 1284
+     }
+    }
+   }
+  },
+  "freshRecovery": {
+   "A": 15,
+   "B": 5,
+   "sameAddresses": true,
+   "pending": {
+    "pending": 0,
+    "history": 0
+   }
+  },
+  "finishedAt": "2026-10-24T20:00:54.444Z"
+ },
+ "phases": {
+  "faucet": {
+   "at": "2026-10-24T17:18:54.224Z",
+   "text": "Faucet sent 0.01000000 stagenet XMR (txid 0112a3d5f12a970c…). It becomes spendable after 10 confirmations; refresh later. XMR for carrier fees: 0.000000 XMR spendable"
+  },
+  "credits": {
+   "credits": [
+    {
+     "txidPrefix": "a5f39f80cb7cf62e",
+     "amount": "10",
+     "issuerFeeXmr": "0.000049",
+     "at": "2026-10-24T17:51:15.103Z"
+    },
+    {
+     "txidPrefix": "31e498c48e038ce3",
+     "amount": "10",
+     "issuerFeeXmr": "0.000049",
+     "at": "2026-10-24T17:51:17.528Z"
+    }
+   ],
+   "at": "2026-10-24T17:51:18.053Z"
+  },
+  "send1": {
+   "txid": "80c2be96b679a0d6698426ef3336dea35d70a697099d40f0c683e02210a00086",
+   "fee": "50760000",
+   "nativeBytes": 2538,
+   "extraBytes": 1056,
+   "recordBytes": 996,
+   "inputs": 1,
+   "change": "7",
+   "provingS": 31,
+   "feeReview": "Carrier fee: 0.000050 XMR (2538 weight bytes × 20000 piconero at the stagenet node’s current rate — worthless test coins; mainnet rates differ). Paid from this account’s own stagenet XMR: input 0.010000 XMR, change 0.009",
+   "at": "2026-10-24T18:21:59.848Z"
+  },
+  "reopen": {
+   "statusAfter": "published",
+   "pendingTexts": [
+    "published · in the node’s pool, waiting for a block"
+   ],
+   "at": "2026-10-24T18:22:08.407Z"
+  },
+  "lost": {
+   "txid": "4aacb060ff09cc3f1f5a9f4511b3c5b08b8d80a913706ca6390eb41e8905cb2e",
+   "fee": "50700000",
+   "nativeBytes": 2535,
+   "change": "8",
+   "recovered": true,
+   "sendRequests": 1,
+   "text": "Published 356f3252b7c7951c… (996-byte record, 1 input, change 8 X; proved locally in 31 s; carrier 4aacb060ff09cc3f… 2535 bytes, tx_extra 1056 bytes, fee 0.000050 XMR paid from this wallet). The node’s reply was lost but it already held the carrier: nothing wa",
+   "at": "2026-10-24T19:12:23.455Z"
+  },
+  "done": {
+   "at": "2026-10-24T20:00:54.444Z"
+  }
+ },
+ "accounts": {
+  "A": {
+   "token": "penumbra10z6dkf2tplrf0xcj4axlu03r69x2w9k7n4tzylsucxust4cmffp0r0z0lga3p3ycnqjctytvuvc9xjm3xyezdpswe5ctqv4xuju2np8gtmvkudfnp8avfwdkgt2amvm467gnhe",
+   "native": "53DBsHvPFD5hfqh4WZXL5GTH6A18V5viJ5wLbZAFYwBCEsacPNpU4KFfNExnVqDbCDEG85arrGUoPS2QdEsnJ4MA3EZpBz6"
+  },
+  "B": {
+   "token": "penumbra1kplqave9pl03m8rq20erac458yu0jnerttm02wgrpj0k8xqmj9s0h5w2jshmhf3v9dmc2q446ft6nrqxk3w0xdvjd53ncr2rggjwpgquf3duepqf8s3r0tvl2jepkkj0m9m3nh",
+   "native": "58jLXpgZWHPdyPwhpcSVdv38nQzczd7f3DvGjFr7e6tZigA7A2CWxjkLpAPakq63YgYcwgeWjDjhLHUHvZSVMYvBCTrCkCS"
+  }
+ }
+}

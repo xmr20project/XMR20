@@ -1,0 +1,57 @@
+{
+ "totalRequests": 784,
+ "backendRequests": 9,
+ "daemonRequests": 760,
+ "externalRequests": [],
+ "secretLeaks": [],
+ "consoleSample": [
+  "Refused to connect to 'https://api.coingecko.com/api/v3/simple/price?ids=solana,monero&vs_currencies=usd&include_last_updated_at=true' because it violates the following Content Security Policy directive: \"connect-src 'self' http://127.0.0.1:8961 http://127.0.0.1:38091\".\n",
+  "Fetch API cannot load https://api.coingecko.com/api/v3/simple/price?ids=solana,monero&vs_currencies=usd&include_last_updated_at=true. Refused to connect because it violates the document's Content Security Policy.",
+  "Refused to connect to 'https://xmr20.org/api/wallet' because it violates the following Content Security Policy directive: \"connect-src 'self' http://127.0.0.1:8961 http://127.0.0.1:38091\".\n",
+  "Fetch API cannot load https://xmr20.org/api/wallet. Refused to connect because it violates the document's Content Security Policy.",
+  "Refused to connect to 'https://api.xmr20.org/api/xmr20/pending?address=48XJSymbrgHdyPwhpcSVdv38nQzczd7f3DvGjFr7e6tZigA7A2CWxjkLpAPakq63YgYcwgeWjDjhLHUHvZSVMYvBCTgRaQA' because it violates the following Content Security Policy directive: \"connect-src 'self' http://127.0.0.1:8961 http://127.0.0.1:3809",
+  "Fetch API cannot load https://api.xmr20.org/api/xmr20/pending?address=48XJSymbrgHdyPwhpcSVdv38nQzczd7f3DvGjFr7e6tZigA7A2CWxjkLpAPakq63YgYcwgeWjDjhLHUHvZSVMYvBCTgRaQA. Refused to connect because it violates the document's Content Security Policy.",
+  "Refused to connect to 'https://xmr20.org/api/wallet-holdings?address=48XJSymbrgHdyPwhpcSVdv38nQzczd7f3DvGjFr7e6tZigA7A2CWxjkLpAPakq63YgYcwgeWjDjhLHUHvZSVMYvBCTgRaQA&network=monero' because it violates the following Content Security Policy directive: \"connect-src 'self' http://127.0.0.1:8961 http://1",
+  "Fetch API cannot load https://xmr20.org/api/wallet-holdings?address=48XJSymbrgHdyPwhpcSVdv38nQzczd7f3DvGjFr7e6tZigA7A2CWxjkLpAPakq63YgYcwgeWjDjhLHUHvZSVMYvBCTgRaQA&network=monero. Refused to connect because it violates the document's Content Security Policy.",
+  "Refused to connect to 'https://xmr20.org/api/xmr20/tokens' because it violates the following Content Security Policy directive: \"connect-src 'self' http://127.0.0.1:8961 http://127.0.0.1:38091\".\n",
+  "Fetch API cannot load https://xmr20.org/api/xmr20/tokens. Refused to connect because it violates the document's Content Security Policy.",
+  "Refused to connect to 'https://xmr20.org/api/wallet' because it violates the following Content Security Policy directive: \"connect-src 'self' http://127.0.0.1:8961 http://127.0.0.1:38091\".\n",
+  "Fetch API cannot load https://xmr20.org/api/wallet. Refused to connect because it violates the document's Content Security Policy.",
+  "Refused to connect to 'https://xmr20.org/api/wallet' because it violates the following Content Security Policy directive: \"connect-src 'self' http://127.0.0.1:8961 http://127.0.0.1:38091\".\n",
+  "Fetch API cannot load https://xmr20.org/api/wallet. Refused to connect because it violates the document's Content Security Policy.",
+  "Refused to connect to 'https://api.xmr20.org/api/xmr20/pending?address=4319nT1Rbbyhfqh4WZXL5GTH6A18V5viJ5wLbZAFYwBCEsacPNpU4KFfNExnVqDbCDEG85arrGUoPS2QdEsnJ4MA3E6SxYt' because it violates the following Content Security Policy directive: \"connect-src 'self' http://127.0.0.1:8961 http://127.0.0.1:3809",
+  "Fetch API cannot load https://api.xmr20.org/api/xmr20/pending?address=4319nT1Rbbyhfqh4WZXL5GTH6A18V5viJ5wLbZAFYwBCEsacPNpU4KFfNExnVqDbCDEG85arrGUoPS2QdEsnJ4MA3E6SxYt. Refused to connect because it violates the document's Content Security Policy.",
+  "Refused to connect to 'https://xmr20.org/api/wallet-holdings?address=4319nT1Rbbyhfqh4WZXL5GTH6A18V5viJ5wLbZAFYwBCEsacPNpU4KFfNExnVqDbCDEG85arrGUoPS2QdEsnJ4MA3E6SxYt&network=monero' because it violates the following Content Security Policy directive: \"connect-src 'self' http://127.0.0.1:8961 http://1",
+  "Fetch API cannot load https://xmr20.org/api/wallet-holdings?address=4319nT1Rbbyhfqh4WZXL5GTH6A18V5viJ5wLbZAFYwBCEsacPNpU4KFfNExnVqDbCDEG85arrGUoPS2QdEsnJ4MA3E6SxYt&network=monero. Refused to connect because it violates the document's Content Security Policy.",
+  "Refused to connect to 'https://xmr20.org/api/xmr20/tokens' because it violates the following Content Security Policy directive: \"connect-src 'self' http://127.0.0.1:8961 http://127.0.0.1:38091\".\n",
+  "Fetch API cannot load https://xmr20.org/api/xmr20/tokens. Refused to connect because it violates the document's Content Security Policy.",
+  "Refused to connect to 'https://xmr20.org/api/wallet' because it violates the following Content Security Policy directive: \"connect-src 'self' http://127.0.0.1:8961 http://127.0.0.1:38091\".\n",
+  "Fetch API cannot load https://xmr20.org/api/wallet. Refused to connect because it violates the document's Content Security Policy.",
+  "Refused to connect to 'https://xmr20.org/api/wallet' because it violates the following Content Security Policy directive: \"connect-src 'self' http://127.0.0.1:8961 http://127.0.0.1:38091\".\n",
+  "Fetch API cannot load https://xmr20.org/api/wallet. Refused to connect because it violates the document's Content Security Policy.",
+  "Refused to connect to 'https://api.xmr20.org/api/xmr20/pending?address=4319nT1Rbbyhfqh4WZXL5GTH6A18V5viJ5wLbZAFYwBCEsacPNpU4KFfNExnVqDbCDEG85arrGUoPS2QdEsnJ4MA3E6SxYt' because it violates the following Content Security Policy directive: \"connect-src 'self' http://127.0.0.1:8961 http://127.0.0.1:3809",
+  "Fetch API cannot load https://api.xmr20.org/api/xmr20/pending?address=4319nT1Rbbyhfqh4WZXL5GTH6A18V5viJ5wLbZAFYwBCEsacPNpU4KFfNExnVqDbCDEG85arrGUoPS2QdEsnJ4MA3E6SxYt. Refused to connect because it violates the document's Content Security Policy.",
+  "Refused to connect to 'https://xmr20.org/api/wallet-holdings?address=4319nT1Rbbyhfqh4WZXL5GTH6A18V5viJ5wLbZAFYwBCEsacPNpU4KFfNExnVqDbCDEG85arrGUoPS2QdEsnJ4MA3E6SxYt&network=monero' because it violates the following Content Security Policy directive: \"connect-src 'self' http://127.0.0.1:8961 http://1",
+  "Fetch API cannot load https://xmr20.org/api/wallet-holdings?address=4319nT1Rbbyhfqh4WZXL5GTH6A18V5viJ5wLbZAFYwBCEsacPNpU4KFfNExnVqDbCDEG85arrGUoPS2QdEsnJ4MA3E6SxYt&network=monero. Refused to connect because it violates the document's Content Security Policy.",
+  "Refused to connect to 'https://xmr20.org/api/xmr20/tokens' because it violates the following Content Security Policy directive: \"connect-src 'self' http://127.0.0.1:8961 http://127.0.0.1:38091\".\n",
+  "Fetch API cannot load https://xmr20.org/api/xmr20/tokens. Refused to connect because it violates the document's Content Security Policy.",
+  "Refused to connect to 'https://xmr20.org/api/wallet' because it violates the following Content Security Policy directive: \"connect-src 'self' http://127.0.0.1:8961 http://127.0.0.1:38091\".\n",
+  "Fetch API cannot load https://xmr20.org/api/wallet. Refused to connect because it violates the document's Content Security Policy."
+ ],
+ "screenshots": [
+  "<workspace>/research/privacy-stagenet-wallet-20261024/evidence/stagenet-popup-fresh-2026-10-24T20-00-44/01-import-form-Bob-fresh.png",
+  "<workspace>/research/privacy-stagenet-wallet-20261024/evidence/stagenet-popup-fresh-2026-10-24T20-00-44/02-bob-fresh-installation.png",
+  "<workspace>/research/privacy-stagenet-wallet-20261024/evidence/stagenet-popup-fresh-2026-10-24T20-00-44/03-import-form-Alice-fresh.png",
+  "<workspace>/research/privacy-stagenet-wallet-20261024/evidence/stagenet-popup-fresh-2026-10-24T20-00-44/04-alice-fresh-installation.png"
+ ],
+ "backendRun": "<workspace>/research/privacy-stagenet-wallet-20261024/runs/stagenet-backend-2026-10-24T17-50-16",
+ "results": {
+  "A": 15,
+  "B": 5,
+  "sameAddresses": true,
+  "pending": {
+   "pending": 0,
+   "history": 0
+  }
+ }
+}

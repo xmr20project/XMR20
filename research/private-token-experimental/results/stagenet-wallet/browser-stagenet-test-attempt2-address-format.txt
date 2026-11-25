@@ -1,0 +1,22 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✖ actual popup on public stagenet: receive, send with change, lost reply, reopen, confirm, fresh recovery (343172.273167ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 345609.568
+
+✖ failing tests:
+
+test at browser-stagenet.test.mjs:22:1
+✖ actual popup on public stagenet: receive, send with change, lost reply, reopen, confirm, fresh recovery (343172.273167ms)
+  page.waitForFunction: Timeout 300000ms exceeded.
+      at h.rowsReady (<workspace>/research/privacy-stagenet-wallet-20261024/browser-harness.mjs:32:35)
+      at h.importAccount (<workspace>/research/privacy-stagenet-wallet-20261024/browser-harness.mjs:39:104)
+      at async TestContext.<anonymous> (<workspace>/research/privacy-stagenet-wallet-20261024/browser-stagenet.test.mjs:41:4) {
+    name: 'TimeoutError'
+  }
+exit 1

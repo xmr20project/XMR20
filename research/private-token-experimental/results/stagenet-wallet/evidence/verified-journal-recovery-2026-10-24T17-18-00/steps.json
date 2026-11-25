@@ -1,0 +1,124 @@
+[
+ {
+  "at": "2026-10-24T17:18:58.714Z",
+  "step": "account imported; holder keys derived in the extension and registered by public token address",
+  "name": "Alpha"
+ },
+ {
+  "at": "2026-10-24T17:19:01.839Z",
+  "step": "account imported; holder keys derived in the extension and registered by public token address",
+  "name": "Beta"
+ },
+ {
+  "at": "2026-10-24T17:19:05.333Z",
+  "step": "TEST SERVICE: mined test XMR to this account for carrier fees",
+  "text": "Mined 1 coinbase output to this account (test service). It unlocks after 60 blocks; advance the chain. XMR for carrier fees: 0.000000 XMR spendable · 35.167565 XMR locked until block 310"
+ },
+ {
+  "at": "2026-10-24T17:19:05.976Z",
+  "step": "TEST SERVICE: mined test XMR to this account for carrier fees",
+  "text": "Mined 1 coinbase output to this account (test service). It unlocks after 60 blocks; advance the chain. XMR for carrier fees: 0.000000 XMR spendable · 70.335063 XMR locked until block 311"
+ },
+ {
+  "at": "2026-10-24T17:19:06.625Z",
+  "step": "TEST SERVICE: mined test XMR to this account for carrier fees",
+  "text": "Mined 1 coinbase output to this account (test service). It unlocks after 60 blocks; advance the chain. XMR for carrier fees: 0.000000 XMR spendable · 105.502494 XMR locked until block 312"
+ },
+ {
+  "at": "2026-10-24T17:19:11.593Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-24T17:19:47.728Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-24T17:20:19.309Z",
+  "step": "2a. A: record proved, no carrier (interrupted)",
+  "error": "TEST HOOK: simulated interruption after built (the popup stopped here; nothing else ran)."
+ },
+ {
+  "at": "2026-10-24T17:20:23.762Z",
+  "step": "account imported; holder keys derived in the extension and registered by public token address",
+  "name": "Alpha (fresh install)"
+ },
+ {
+  "at": "2026-10-24T17:20:59.385Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-24T17:21:03.237Z",
+  "step": "2a. A reopened: stale proved record marked rejected, not carried, no fee",
+  "staleStatus": "rejected",
+  "feePaid": "0",
+  "balanceA": 91.5
+ },
+ {
+  "at": "2026-10-24T17:21:38.032Z",
+  "step": "2b. A: carrier signed, never broadcast",
+  "error": "TEST HOOK: simulated interruption after signed (the popup stopped here; nothing else ran).",
+  "txid": "2f0f66f51850afe54438285f459b3e5939d47851e569d694fc433f7301b93b97"
+ },
+ {
+  "at": "2026-10-24T17:22:11.276Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-24T17:22:14.596Z",
+  "step": "2b. A reopened: stale signed carrier NOT re-sent (notes already spent); fee saved",
+  "staleCarrierSent": false,
+  "feeSaved": "3024000000",
+  "balanceA": 88.5
+ },
+ {
+  "at": "2026-10-24T17:22:47.778Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-24T17:22:47.792Z",
+  "step": "TEST SERVICE: rolled the chain back 12 blocks and flushed the pool",
+  "popped": 12,
+  "from": 353,
+  "tip": 341,
+  "note": "TEST SERVICE: chain rolled back; pool flushed."
+ },
+ {
+  "at": "2026-10-24T17:22:53.543Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-24T17:22:53.553Z",
+  "step": "4. rollback: balances reverted, same carrier re-sent once, no second fee",
+  "rolledBack": 12,
+  "resentSameTxid": "564feec2d16ba56ae676c6e8d4178d6a5e8fc75e76c8e6f07e0fdd7af366ea0f",
+  "secondFee": "0"
+ },
+ {
+  "at": "2026-10-24T17:23:29.691Z",
+  "step": "5. concurrent sends from two installations",
+  "A": " | The test daemon refused the carrier (Failed). Its XMR input was spent by another transaction; approve a new carrier from the pending list (new fee; the proved record is kept).",
+  "B": "Published f08ced13962286db… (996-byte record, 1 input, change 53.9 X; proved locally in 30 s; carrier 809ac1267ad8bb50… 2520 bytes, tx_extra 1056 bytes, fee 0.003024 XMR paid from this wallet). Advance the chain to confirm. | "
+ },
+ {
+  "at": "2026-10-24T17:23:31.888Z",
+  "step": "TEST SERVICE: mined confirmation blocks"
+ },
+ {
+  "at": "2026-10-24T17:23:37.911Z",
+  "step": "5. outcome: one admitted at most; loser shown as rejected/conflicted; fee consequence recorded",
+  "outcomes": [
+   {
+    "amount": "500000",
+    "status": "rejected",
+    "error": "Notes already spent by another installation (or an earlier operation); this saved record was NOT sent and no carrier fee was paid (signed carrier discarded)."
+   },
+   {
+    "amount": "600000",
+    "status": "confirmed",
+    "error": null
+   }
+  ],
+  "credited": 0.6,
+  "feesPaidPiconero": "3024000000"
+ }
+]
